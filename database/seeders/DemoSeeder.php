@@ -46,6 +46,19 @@ class DemoSeeder extends Seeder
             ['id' => 3, 'codigo_interno' => 'DIDECO-BS', 'nombre' => 'Solicitud de beneficio social', 'descripcion' => 'Postulación a beneficios sociales municipales.', 'codigo_cpat' => 'PA-UNI00003-00001', 'plazo_dias' => 15, 'activo' => 1] + $t,
             ['id' => 4, 'codigo_interno' => 'ALC-AU', 'nombre' => 'Solicitud de audiencia con el alcalde', 'descripcion' => 'Solicitud de audiencia (la atienden Alcaldía y Secretaría).', 'codigo_cpat' => null, 'plazo_dias' => 20, 'activo' => 1] + $t,
         ]);
+        DB::table('instituciones')->insert([
+            ['codigo' => 'DEMO-MUN-SD', 'nombre' => 'I. Municipalidad de Santo Domingo (código de EJEMPLO)', 'tipo' => 'Municipalidad', 'codigo_padre' => null, 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
+            ['codigo' => 'DEMO-SEGPRES', 'nombre' => 'Ministerio Secretaría General de la Presidencia (EJEMPLO)', 'tipo' => 'Ministerio', 'codigo_padre' => null, 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
+            ['codigo' => 'DEMO-GORE-VAL', 'nombre' => 'Gobierno Regional de Valparaíso (EJEMPLO)', 'tipo' => 'Gobierno Regional', 'codigo_padre' => null, 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
+        ]);
+        DB::table('procesos_codificador')->insert([
+            ['codigo' => 'DEMO-PROC-EDIF', 'nombre' => 'Permisos de edificación (EJEMPLO)', 'institucion_codigo' => 'DEMO-MUN-SD', 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
+            ['codigo' => 'DEMO-PROC-CERT', 'nombre' => 'Certificados municipales (EJEMPLO)', 'institucion_codigo' => 'DEMO-MUN-SD', 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
+        ]);
+        DB::table('tramites')->where('id', 1)->update(['proceso_codigo' => 'DEMO-PROC-EDIF']);
+        DB::table('pisee_servicios')->insert([
+            ['codigo' => 'DEMO-CONSULTA', 'nombre' => 'Consulta de ejemplo (SIN contrato real)', 'institucion_codigo' => 'DEMO-SEGPRES', 'ruta' => '/demo/v1/consulta', 'metodo' => 'GET', 'param_run' => 'run', 'descripcion' => 'Servicio ficticio solo para desarrollo.', 'activo' => 1] + $t,
+        ]);
         DB::table('tramite_unidad')->insert([
             ['tramite_id' => 1, 'unidad_id' => 3], ['tramite_id' => 2, 'unidad_id' => 3], ['tramite_id' => 3, 'unidad_id' => 4],
             ['tramite_id' => 4, 'unidad_id' => 1], ['tramite_id' => 4, 'unidad_id' => 2],

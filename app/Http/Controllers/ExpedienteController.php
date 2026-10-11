@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Exceptions\FlujoException;
 use App\Models\Archivo;
 use App\Models\Comentario;
+use App\Models\ComunicacionOficial;
 use App\Models\Derivacion;
 use App\Models\Expediente;
+use App\Models\Institucion;
 use App\Models\Notificacion;
+use App\Models\PiseeConsulta;
+use App\Models\PiseeServicio;
 use App\Models\Plantilla;
 use App\Models\TipoDocumento;
 use App\Models\Usuario;
@@ -35,6 +39,13 @@ class ExpedienteController extends Controller
             'plantillas' => Plantilla::query()->where('activo', true)->get(),
             'usuarios' => Usuario::query()->where('activo', true)->whereIn('rol', ['funcionario', 'alcalde', 'secretario'])->orderBy('apellidos')->get(),
             'puedeOperar' => $r->user()->can('operar', $expediente),
+            'instituciones' => Institucion::query()->where('activo', true)->orderBy('nombre')->get(['codigo', 'nombre']),
+            'servicios' => PiseeServicio::query()->where('activo', true)->orderBy('nombre')->get(),
+            'consultas' => PiseeConsulta::query()->with(['servicio', 'usuario'])->where('expediente_id', $expediente->id)->orderByDesc('id')->get(),
+            'comunicaciones' => ComunicacionOficial::query()->with('documento')->where('expediente_id', $expediente->id)->orderByDesc('id')->get(),
+            'piseeOn' => in_array(config('sgd.pisee.mode'), ['mock', 'api'], true),
+            'piseeMock' => config('sgd.pisee.mode') === 'mock',
+            'docModo' => config('sgd.docdigital.mode'),
         ]);
     }
 

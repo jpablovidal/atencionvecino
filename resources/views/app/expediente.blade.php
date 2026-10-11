@@ -73,6 +73,39 @@
 </div>
 @endif
 
+<h2 class="h4 mt-4">Comunicaciones oficiales (DocDigital)</h2>
+@if($docModo==='outbox')<p class="small text-muted">Modo <strong>outbox</strong>: el sistema no envía; la comunicación queda <strong>pendiente</strong> hasta que usted registre el folio obtenido en DocDigital.</p>
+@elseif($docModo==='mock')<p class="small sim">MODO SIMULADO (solo desarrollo): no se envía nada realmente.</p>@endif
+@if($puedeOperar)
+<form method="post" action="{{ route('app.comunicacion.crear',$e) }}" class="card card-body mb-3">@csrf
+<div class="form-row">
+<div class="form-group col-md-4"><label for="cd_doc">Documento vigente</label><select class="form-control" id="cd_doc" name="documento_id" required>@foreach($e->documentos->where('estado','vigente') as $d)<option value="{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</option>@endforeach</select></div>
+<div class="form-group col-md-4"><label for="cd_inst">Institución destinataria (Codificador)</label><select class="form-control" id="cd_inst" name="institucion_codigo" required>@foreach($instituciones as $i)<option value="{{ $i->codigo }}">{{ $i->nombre }} ({{ $i->codigo }})</option>@endforeach</select></div>
+<div class="form-group col-md-4"><label for="cd_asunto">Asunto</label><input class="form-control" id="cd_asunto" name="asunto" required minlength="3" maxlength="190"></div></div>
+<div><button class="btn btn-primary">Crear comunicación</button></div></form>@endif
+<table class="table table-sm"><thead><tr><th>Documento</th><th>Destino</th><th>Asunto</th><th>Estado</th><th>Evidencia</th></tr></thead><tbody>
+@forelse($comunicaciones as $c)<tr><td>{{ $c->documento?->numeroFormateado() }}</td><td>{{ $c->institucion_nombre }}</td><td>{{ $c->asunto }}</td>
+<td><span class="estado estado-{{ $c->estado }}">{{ $c->estado }}</span> @if($c->ultimo_error)<small>{{ $c->ultimo_error }}</small>@endif</td>
+<td>@if($c->evidencia){{ $c->evidencia_tipo }}: <span class="hash">{{ $c->evidencia }}</span>@if($c->evidencia_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif
+@elseif($puedeOperar && $c->estado==='fallida' && $docModo!=='outbox')<form method="post" action="{{ route('app.comunicacion.reintentar',$c) }}">@csrf<button class="btn btn-sm btn-outline-primary">Reintentar</button></form>
+@elseif($puedeOperar && $docModo==='outbox')<form method="post" action="{{ route('app.comunicacion.evidencia',$c) }}" class="form-inline">@csrf<label class="sr-only" for="fo{{ $c->id }}">Folio DocDigital</label><input class="form-control form-control-sm mr-1" id="fo{{ $c->id }}" name="folio" required maxlength="120" placeholder="Folio DocDigital"><button class="btn btn-sm btn-primary">Registrar</button></form>@else — @endif</td></tr>
+@empty<tr><td colspan="5">Sin comunicaciones.</td></tr>@endforelse</tbody></table>
+
+<h2 class="h4 mt-4">Consultas a servicios del Estado (PISEE)</h2>
+@if(! $piseeOn)<p class="small text-muted">La integración PISEE no está habilitada en este ambiente.</p>
+@else
+@if($piseeMock)<p class="small sim">MODO SIMULADO (solo desarrollo): los datos no provienen de PISEE.</p>@endif
+<p class="small text-muted">Solo se consulta el RUN del solicitante de este expediente, con finalidad obligatoria. El resultado se guarda cifrado y cada consulta queda auditada.</p>
+@if($puedeOperar && $e->estado==='abierto')
+<form method="post" action="{{ route('app.pisee.consultar',$e) }}" class="card card-body mb-3">@csrf
+<div class="form-row"><div class="form-group col-md-5"><label for="ps_s">Servicio</label><select class="form-control" id="ps_s" name="servicio_id" required>@foreach($servicios as $s)<option value="{{ $s->id }}">{{ $s->nombre }}</option>@endforeach</select></div>
+<div class="form-group col-md-7"><label for="ps_f">Finalidad de la consulta</label><input class="form-control" id="ps_f" name="finalidad" required minlength="10" maxlength="255" placeholder="Ej.: verificar antecedentes para resolver la solicitud"></div></div>
+<div><button class="btn btn-primary">Consultar</button></div></form>@endif
+<table class="table table-sm"><thead><tr><th>Fecha</th><th>Servicio</th><th>Funcionario</th><th>Finalidad</th><th>Resultado</th></tr></thead><tbody>
+@forelse($consultas as $c)<tr><td>{{ $c->created_at }}</td><td>{{ $c->servicio->nombre }}</td><td>{{ $c->usuario->nombreCompleto() }}</td><td>{{ $c->finalidad }}</td>
+<td>@if($c->archivo_id)<a href="{{ route('app.expediente.archivo',[$e,$c->archivo_id]) }}">Ver resultado (JSON)</a>@else<span class="estado estado-fallida">{{ $c->error }}</span>@endif</td></tr>@empty<tr><td colspan="5">Sin consultas.</td></tr>@endforelse</tbody></table>
+@endif
+
 @if($e->estado==='cerrado')
 <h2 class="h4 mt-4">Notificación al ciudadano</h2>
 <p class="small text-muted">Las notificaciones quedan <strong>pendientes</strong> hasta registrar evidencia real de envío. El sistema no afirma haber enviado nada sin evidencia.</p>

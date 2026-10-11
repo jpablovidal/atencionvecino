@@ -52,3 +52,15 @@ Cada control se **demuestra con pruebas automatizadas** (carpeta `tests/`). `ven
 - El control de `session` ata `last_seen` a la sesión; no hay bloqueo de sesiones concurrentes.
 - Sin antivirus/ClamAV (no disponible en hosting compartido): la validación es estructural por firma binaria.
 - Ley 21.663: plazos de reporte y obligaciones por tipo de sujeto **A VALIDAR**.
+
+## 5. Interoperabilidad (PISEE, Codificador, DocDigital)
+
+| Riesgo | Control | Prueba |
+|---|---|---|
+| A01 / SSRF | URLs de nodo, Codificador y DocDigital **fijas por `.env` y https**; servicios PISEE en **lista blanca** administrada con ruta relativa validada (sin esquema/host/`..`/`//`); sin redirecciones; timeouts; sin SSRF por parámetros de usuario. | `InteroperabilidadTest::test_pisee_lista_blanca_de_rutas_y_permisos`, `test_pisee_exige_finalidad_url_https*` |
+| A01 / minimización | PISEE solo consulta el **RUN del solicitante del expediente**, con **finalidad obligatoria**, solo el funcionario con acceso operativo (ni admin ni auditor); resultado **cifrado** y marcado sensible; la bitácora registra servicio/estado, **nunca** el resultado. DocDigital entrante solo visible a la unidad receptora y al auditor. | `test_pisee_api_consulta_solo_al_solicitante*`, `test_docdigital_recibidos_*` |
+| A04 | mTLS hacia el nodo PISEE con verificación del servidor siempre activa; archivos entrantes/salientes cifrados en reposo. | `test_pisee_api_consulta_solo_al_solicitante*` |
+| A05 | Subidas de DocDigital validadas por contenido (PDF sin JS/EmbeddedFile…); CSV del Codificador UTF-8, ≤5 MB, códigos con patrón estricto; asunto sin CR/LF. | `test_docdigital_recibidos_*`, `test_codificador_*` |
+| A06 | Estados *pendiente/enviada/fallida*, evidencia obligatoria, idempotencia y reintentos por cola; sin duplicar comunicaciones; DocDigital en modo API exige PDF con **FEA real** (nunca firma simulada). | `test_docdigital_*` |
+| A02 | `ProductionGuard` prohíbe `DOCDIGITAL_MODE=mock/demo`, `PISEE_MODE=mock`, nodo PISEE no-https y DocDigital prod sin URL/token. | `test_guard_de_produccion_con_interoperabilidad` |
+| A09 | Auditoría de `pisee.consulta`, `docdigital.crear/enviada/fallo/evidencia/descarga/sincronizar/entrante_rechazado`, `codificador.carga`. | `InteroperabilidadTest` |

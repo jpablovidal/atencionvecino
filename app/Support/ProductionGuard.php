@@ -34,6 +34,18 @@ class ProductionGuard
         if (! config('app.key')) {
             $e[] = 'APP_KEY ausente';
         }
+        if (in_array(config('sgd.docdigital.mode'), ['mock', 'demo'], true)) {
+            $e[] = 'DOCDIGITAL_MODE mock/demo está prohibido';
+        }
+        if (config('sgd.docdigital.mode') === 'prod' && (! config('sgd.docdigital.url_prod') || ! config('sgd.docdigital.api_token'))) {
+            $e[] = 'DocDigital prod sin URL/token';
+        }
+        if (config('sgd.pisee.mode') === 'mock') {
+            $e[] = 'PISEE_MODE=mock está prohibido';
+        }
+        if (config('sgd.pisee.mode') === 'api' && ! str_starts_with((string) config('sgd.pisee.base_url'), 'https://')) {
+            $e[] = 'PISEE_BASE_URL debe ser https';
+        }
         if (config('sgd.llm.enabled') && ! config('sgd.llm.api_key')) {
             $e[] = 'LLM_ENABLED sin LLM_API_KEY';
         }

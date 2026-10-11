@@ -44,7 +44,8 @@ class SeguridadHttpTest extends TestCase
             $this->get('/'), $this->get('/publico'), $this->get('/validar'), $this->get('/ingreso'),
             $this->comoCiudadano()->get('/ciudadano'), $this->comoCiudadano()->get('/ciudadano/nueva/1'), $this->comoCiudadano()->get("/ciudadano/solicitudes/{$s->folio}"),
             $this->comoFuncionario($this->usuario('funcionario', 1))->get('/app'), $this->comoFuncionario($this->usuario('funcionario', 1))->get("/app/expedientes/{$e->id}"),
-            $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/plantillas/nuevo'), $this->comoFuncionario($this->usuario('admin'))->get('/app/diagnostico'),
+            $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/plantillas/nuevo'), $this->comoFuncionario($this->usuario('admin'))->get('/app/diagnostico'), $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/codificador'),
+            $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/pisee'), $this->comoFuncionario($this->usuario('funcionario', 1))->get('/app/comunicaciones'),
         ];
         foreach ($paginas as $i => $r) {
             $r->assertOk();

@@ -13,6 +13,10 @@ use App\Services\FileVault;
 use App\Services\Firma\FirmaClient;
 use App\Services\Firma\HttpFirmaClient;
 use App\Services\Firma\MockFirmaClient;
+use App\Services\Interop\DocDigital\DocDigitalClient;
+use App\Services\Interop\DocDigital\DocDigitalException;
+use App\Services\Interop\DocDigital\HttpDocDigitalClient;
+use App\Services\Interop\DocDigital\MockDocDigitalClient;
 use App\Support\HashedDatabaseSessionHandler;
 use App\Support\ProductionGuard;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -34,6 +38,26 @@ class AppServiceProvider extends ServiceProvider
             return $c['mode'] === 'mock' ? new MockFirmaClient : new HttpFirmaClient($c, $c['mode']);
         });
         $this->app->singleton(ClaveUnicaService::class, fn () => new ClaveUnicaService(config('sgd.claveunica')));
+        $this->app->singleton(DocDigitalClient::class, function () {
+            $c = config('sgd.docdigital');
+
+            return match ($c['mode']) {
+                'mock' => new MockDocDigitalClient,
+                'demo', 'prod' => new HttpDocDigitalClient($c, $c['mode']),
+                default => new class implements DocDigitalClient
+                {
+                    public function enviar(string $pdf, string $nombre, array $meta): array
+                    {
+                        throw new DocDigitalException('DocDigital está en modo outbox: registre la evidencia manualmente.');
+                    }
+
+                    public function recibidos(): array
+                    {
+                        return [];
+                    }
+                },
+            };
+        });
         $this->app->singleton(CasillaAdapter::class, fn () => new CasillaAdapter(config('sgd.casilla')));
     }
 
@@ -57,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('envio', fn (Request $r) => Limit::perMinute(10)->by($r->session()->get('ciudadano.run', $ip($r))));
         RateLimiter::for('publico', fn (Request $r) => Limit::perMinute((int) config('sgd.validar_rate_per_minute'))->by($ip($r)));
         RateLimiter::for('firma', fn (Request $r) => Limit::perMinute(10)->by((string) $r->user()?->id));
+        RateLimiter::for('interop', fn (Request $r) => Limit::perMinute(10)->by((string) $r->user()?->id));
         RateLimiter::for('llm', fn (Request $r) => [
             Limit::perMinute((int) config('sgd.llm.per_minute'))->by('llm-m'.$r->user()?->id),
             Limit::perDay((int) config('sgd.llm.per_day'))->by('llm-d'.$r->user()?->id),

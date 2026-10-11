@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $activo
  * @property string|null $created_at
  * @property string|null $updated_at
+ * @property string|null $proceso_codigo
  */
 class Tramite extends Model
 {

@@ -5,6 +5,7 @@ use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\FuncionarioController;
+use App\Http\Controllers\InteropController;
 use App\Http\Controllers\MantenedorController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\SeguridadController;
@@ -73,6 +74,14 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::get('/documentos/{documento}/pdf', [DocumentoController::class, 'pdf'])->name('documento.pdf');
     Route::post('/llm/borrador', [DocumentoController::class, 'llm'])->middleware('throttle:llm')->name('llm');
 
+    // Interoperabilidad: PISEE, DocDigital, Codificador
+    Route::post('/expedientes/{expediente}/pisee', [InteropController::class, 'pisee'])->middleware('throttle:interop')->name('pisee.consultar');
+    Route::post('/expedientes/{expediente}/comunicaciones', [InteropController::class, 'comunicar'])->middleware('throttle:interop')->name('comunicacion.crear');
+    Route::post('/comunicaciones/{comunicacion}/evidencia', [InteropController::class, 'evidencia'])->name('comunicacion.evidencia');
+    Route::post('/comunicaciones/{comunicacion}/reintentar', [InteropController::class, 'reintentar'])->name('comunicacion.reintentar');
+    Route::get('/comunicaciones', [InteropController::class, 'bandeja'])->name('comunicaciones');
+    Route::get('/comunicaciones/{comunicacion}/archivo', [InteropController::class, 'archivo'])->name('comunicacion.archivo');
+
     Route::middleware('rol:admin,auditor')->group(function () {
         Route::get('/seguridad', [SeguridadController::class, 'panel'])->name('seguridad');
         Route::post('/seguridad/verificar', [SeguridadController::class, 'verificar'])->name('seguridad.verificar');
@@ -86,6 +95,9 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::post('/delegaciones/{delegacion}/revocar', [MantenedorController::class, 'revocarDelegacion'])->middleware('rol:alcalde')->name('delegaciones.revocar');
 
     Route::middleware('rol:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/codificador', [InteropController::class, 'codificador'])->name('codificador');
+        Route::post('/codificador/importar', [InteropController::class, 'importar'])->name('codificador.importar');
+        Route::post('/codificador/sincronizar', [InteropController::class, 'sincronizar'])->name('codificador.sincronizar');
         Route::get('/{entidad}', [MantenedorController::class, 'index'])->name('index');
         Route::get('/{entidad}/nuevo', [MantenedorController::class, 'crear'])->name('crear');
         Route::post('/{entidad}', [MantenedorController::class, 'guardar'])->name('guardar');

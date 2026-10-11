@@ -70,7 +70,7 @@ class SchemaSql
     public static function render(): string
     {
         config(['database.connections.mysql.charset' => 'utf8mb4', 'database.connections.mysql.collation' => 'utf8mb4_unicode_ci']);
-        $files = glob(database_path('migrations/2025_*_create_sgd_schema.php')) ?: [];
+        $files = glob(database_path('migrations/2025_*_create_sgd_*.php')) ?: [];
         sort($files);
         $out = [];
         $prev = config('database.default');

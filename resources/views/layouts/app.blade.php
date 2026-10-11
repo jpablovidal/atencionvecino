@@ -32,9 +32,11 @@
     @auth
       <a href="{{ route('app.bandeja') }}">Bandeja</a>
       @if(auth()->user()->operaExpedientes() || auth()->user()->rol==='auditor')<a href="{{ route('app.vigentes') }}">Documentos vigentes</a>@endif
+      @if(auth()->user()->operaExpedientes() || auth()->user()->rol==='auditor')<a href="{{ route('app.comunicaciones') }}">Comunicaciones oficiales</a>@endif
       @if(auth()->user()->esRol('alcalde','admin','auditor'))<a href="{{ route('app.delegaciones') }}">Delegaciones de firma</a>@endif
       @if(auth()->user()->rol==='admin')
         @foreach(['unidades'=>'Unidades','usuarios'=>'Usuarios','tramites'=>'Trámites','tipos'=>'Tipos de documento','plantillas'=>'Plantillas'] as $k=>$v)<a href="{{ route('app.admin.index',$k) }}">{{ $v }}</a>@endforeach
+        <a href="{{ route('app.admin.codificador') }}">Codificador</a><a href="{{ route('app.admin.index','pisee') }}">Servicios PISEE</a>
         <a href="{{ route('app.diagnostico') }}">Diagnóstico</a>
       @endif
       @if(auth()->user()->esRol('admin','auditor'))<a href="{{ route('app.seguridad') }}">Seguridad</a>@endif

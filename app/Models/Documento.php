@@ -30,6 +30,8 @@ use Illuminate\Support\Carbon;
  * @property int $creado_por
  * @property string|null $created_at
  * @property string|null $updated_at
+ * @property string|null $pdf_firmado_ruta
+ * @property string|null $pdf_firmado_sha256
  */
 class Documento extends Model
 {

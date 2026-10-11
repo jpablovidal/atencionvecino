@@ -28,3 +28,10 @@ Ver `DECISIONES.md` #1, #2 y #5 (ágil=1 / clásico=2 por defecto; primera firma
 - **Interoperabilidad (PISEE), integración con SIAPER/otros sistemas:** no implementadas.
 - **Sesiones `__Host-`:** la cookie requiere HTTPS; en `http://localhost` Chromium la acepta (verificado), otros navegadores pueden no hacerlo.
 - El **panel de incidentes** registra hitos pero no envía reportes; plazos legales A VALIDAR.
+
+## Interoperabilidad (PISEE, Codificador, DocDigital) — **no verificada contra los servicios reales**
+- **Sin acceso a las especificaciones oficiales** (los hosts de Gobierno Digital no eran alcanzables desde el entorno de construcción; solo se pudieron consultar resúmenes de búsqueda). Los contratos no se inventaron: son configurables y están marcados **A VALIDAR** en el código (`HttpDocDigitalClient`, `PiseeService`, `CodificadorService::sincronizar`) y en `docs/NORMATIVA.md` §11–13.
+- **PISEE:** solo consumidor, con mTLS y una cabecera de identificación configurable. Si el nodo exige otro mecanismo (firma de mensajes, cabeceras adicionales, SOAP, etc.), hay que adaptar `PiseeService::llamar()`. Requiere adhesión a los T&C PISEE y un nodo instalado en la municipalidad. No se publican servicios propios como proveedor.
+- **Codificador:** catálogo local; formato de códigos y esquema de la API no validados. La vía confiable hoy es la **carga CSV**.
+- **DocDigital:** rutas/URLs/token y formas JSON a validar en **DemoDoc**; requiere Administrador Principal e interlocutor ante la SGD. Solo se envían PDF con FEA real (`pdf_firmado_*`, devuelto por FirmaGob); la numeración propia de DocDigital no se integra con el correlativo del SGD. No se implementa visación/firma dentro de DocDigital ni acuse de recepción/lectura (solo el ID de envío).
+- La sincronización de recibidos asume que la API entrega el PDF en base64 en la lista (forma A VALIDAR); los entrantes no crean expedientes automáticamente: quedan en la bandeja de la unidad receptora (`DOCDIGITAL_UNIDAD_RECEPCION`).

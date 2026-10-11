@@ -25,3 +25,8 @@ Gestiona **mantenedores**: unidades, usuarios (roles, habilitación para firmar)
 
 ## Auditor
 Solo lectura: expedientes, documentos vigentes, delegaciones y `/app/seguridad` (verificar cadena, ver eventos e incidentes). No puede modificar nada.
+
+## Interoperabilidad (funcionarios)
+- **Comunicaciones oficiales (DocDigital):** en el expediente, *Comunicaciones oficiales* → elija un documento **vigente**, la **institución destinataria** (Codificador) y el asunto. En modo *outbox* quedará **pendiente**: envíelo por DocDigital y registre el **folio**; en modo API se envía solo y reintenta. El menú **Comunicaciones oficiales** lista lo **recibido** por su unidad.
+- **Consultas PISEE:** en el expediente (abierto) elija el servicio e indique la **finalidad**; solo se consulta al solicitante. El resultado queda cifrado en el expediente.
+- **Administrador:** *Codificador* (carga CSV/sincronización, instituciones, procesos) y *Servicios PISEE* (lista blanca). En *Trámites* asocie el **proceso** del Codificador.

@@ -212,7 +212,7 @@ class DocumentoService
             }
             $paso->forceFill(['estado' => 'completado', 'simulada' => $res['simulada'], 'checksum_original' => $res['checksum_original'], 'completado_en' => now()])->save();
             if ($nuevo) {
-                $doc->forceFill(['pdf_ruta' => $nuevo['ruta'], 'pdf_sha256' => $nuevo['sha256']])->save();
+                $doc->forceFill(['pdf_ruta' => $nuevo['ruta'], 'pdf_sha256' => $nuevo['sha256'], 'pdf_firmado_ruta' => $nuevo['ruta'], 'pdf_firmado_sha256' => $nuevo['sha256']])->save();
             }
             $this->audit->registrar('documento.firmar', 'documento', $doc->id, ['simulada' => $res['simulada']], true);
         });

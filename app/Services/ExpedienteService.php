@@ -42,14 +42,14 @@ class ExpedienteService
         $now = now('America/Santiago')->toIso8601String();
 
         return [
-            'identificacion' => ['codigo' => $e->codigo, 'nombre' => $s->tramite->nombre.' - '.$s->nombres.' '.$s->apellidos, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $e->unidad->nombre ?? null],
+            'identificacion' => ['codigo' => $e->codigo, 'institucion_codigo' => config('sgd.institucion_codigo'), 'nombre' => $s->tramite->nombre.' - '.$s->nombres.' '.$s->apellidos, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $e->unidad->nombre ?? null],
             'descripcion' => ['resumen' => mb_substr($s->detalle, 0, 500), 'folio_solicitud' => $s->folio],
             'temporalidad' => ['fecha_apertura' => $now, 'fecha_cierre' => null, 'plazo_dias' => $s->tramite->plazo_dias],
             'caracterizacion' => ['tipo_expediente' => 'Solicitud ciudadana', 'serie_documental' => $s->tramite->codigo_interno],
             'relaciones' => ['solicitud_id' => $s->id, 'expedientes_relacionados' => []],
             'poderes' => ['responsable_run' => null, 'representacion' => 'Titular'],
             'seguridad' => ['nivel_acceso' => 'reservado', 'datos_personales' => true],
-            'procedimiento' => ['codigo_cpat' => $s->tramite->codigo_cpat, 'tramite' => $s->tramite->nombre],
+            'procedimiento' => ['codigo_cpat' => $s->tramite->codigo_cpat, 'codigo_proceso' => $s->tramite->proceso_codigo, 'tramite' => $s->tramite->nombre],
             'version' => ['esquema' => 'MGDEE-A-VALIDAR', 'version_expediente' => 1],
         ];
     }

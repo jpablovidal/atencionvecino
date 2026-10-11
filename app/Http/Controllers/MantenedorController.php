@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\DelegacionFirma;
+use App\Models\Institucion;
+use App\Models\PiseeServicio;
 use App\Models\Plantilla;
+use App\Models\ProcesoCodificador;
 use App\Models\TipoDocumento;
 use App\Models\Tramite;
 use App\Models\TramiteAnexo;
@@ -45,6 +48,7 @@ class MantenedorController extends Controller
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
                 'descripcion' => ['Descripción', 'textarea', ['nullable', 'string', 'max:2000']],
                 'codigo_cpat' => ['Código CPAT (ej. PA-UNI00002-00001)', 'text', ['nullable', 'regex:'.self::CPAT]],
+                'proceso_codigo' => ['Proceso del Codificador', 'proceso', ['nullable', 'string', 'max:40', 'exists:procesos_codificador,codigo']],
                 'plazo_dias' => ['Plazo (días)', 'number', ['required', 'integer', 'between:1,365']],
                 'unidades' => ['Unidades responsables', 'unidades', ['required', 'array', 'min:1']],
                 'anexos_txt' => ['Anexos requeridos (uno por línea: Nombre|1 obligatorio, Nombre|0 opcional)', 'textarea', ['nullable', 'string', 'max:2000']],
@@ -56,6 +60,26 @@ class MantenedorController extends Controller
                 'firma_alcalde' => ['Primera firma: alcalde o delegado vigente', 'check', ['nullable', 'boolean']],
                 'firmas_agil' => ['Firmas en flujo ágil', 'number', ['required', 'integer', 'between:1,3']],
                 'firmas_clasico' => ['Firmas en flujo clásico', 'number', ['required', 'integer', 'between:1,3']],
+            ], 'unico' => ['codigo']],
+            'instituciones' => ['modelo' => Institucion::class, 'titulo' => 'Codificador: instituciones', 'cols' => ['codigo', 'nombre', 'tipo', 'origen'], 'campos' => [
+                'codigo' => ['Código (Codificador)', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],
+                'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
+                'tipo' => ['Tipo', 'text', ['nullable', 'string', 'max:60']],
+                'codigo_padre' => ['Código de la institución padre', 'text', ['nullable', 'string', 'max:40']],
+            ], 'unico' => ['codigo']],
+            'procesos' => ['modelo' => ProcesoCodificador::class, 'titulo' => 'Codificador: procesos', 'cols' => ['codigo', 'nombre', 'institucion_codigo', 'origen'], 'campos' => [
+                'codigo' => ['Código (Codificador)', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],
+                'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
+                'institucion_codigo' => ['Código de la institución', 'text', ['nullable', 'string', 'max:40']],
+            ], 'unico' => ['codigo']],
+            'pisee' => ['modelo' => PiseeServicio::class, 'titulo' => 'Servicios PISEE (lista blanca)', 'cols' => ['codigo', 'nombre', 'ruta', 'metodo'], 'campos' => [
+                'codigo' => ['Código interno', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],
+                'nombre' => ['Nombre del servicio', 'text', ['required', 'string', 'max:190']],
+                'institucion_codigo' => ['Institución proveedora (código)', 'text', ['nullable', 'string', 'max:40']],
+                'ruta' => ['Ruta en el nodo PISEE (ej. /servicio/v1/consulta)', 'text', ['required', 'string', 'max:200', 'regex:#^/[A-Za-z0-9._~\\-]+(/[A-Za-z0-9._~\\-{}]+)*$#']],
+                'metodo' => ['Método', 'select:GET,POST', ['required', Rule::in(['GET', 'POST'])]],
+                'param_run' => ['Parámetro que lleva el RUN (vacío = no envía RUN)', 'text', ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9_\\-]+$/']],
+                'descripcion' => ['Descripción / base legal', 'textarea', ['nullable', 'string', 'max:2000']],
             ], 'unico' => ['codigo']],
             'plantillas' => ['modelo' => Plantilla::class, 'titulo' => 'Plantillas', 'cols' => ['nombre'], 'campos' => [
                 'tipo_documento_id' => ['Tipo de documento', 'tipo', ['required', 'integer', 'exists:tipos_documento,id']],
@@ -92,6 +116,7 @@ class MantenedorController extends Controller
         return [
             'entidad' => $entidad, 'def' => $this->def($entidad), 'fila' => $fila,
             'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(), 'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(),
+            'procesos' => ProcesoCodificador::query()->where('activo', true)->orderBy('nombre')->get(),
             'sel' => $fila instanceof Tramite ? $fila->unidades()->pluck('unidades.id')->all() : [],
             'anexosTxt' => $fila instanceof Tramite ? $fila->anexos->map(fn ($a) => $a->nombre.'|'.($a->obligatorio ? 1 : 0))->implode("\n") : '',
         ];

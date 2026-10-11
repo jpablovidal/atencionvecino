@@ -76,6 +76,44 @@ return [
         'timeout' => 30,
     ],
 
+    // Código de ESTA institución en el Codificador de Instituciones y Procesos del Estado (A VALIDAR formato)
+    'institucion_codigo' => env('CODIFICADOR_INSTITUCION_CODIGO'),
+
+    // Codificador: manual (mantenedor/CSV) | api (sincronización; forma del JSON A VALIDAR)
+    'codificador' => [
+        'mode' => env('CODIFICADOR_MODE', 'manual'),
+        'api_url' => env('CODIFICADOR_API_URL'),
+        'api_token' => env('CODIFICADOR_API_TOKEN'),
+        'timeout' => 20,
+        'max_bytes' => 5 * 1024 * 1024,
+    ],
+
+    // PISEE (consumo de servicios del Estado mediante el nodo de interoperabilidad). disabled|mock|api
+    'pisee' => [
+        'mode' => env('PISEE_MODE', 'disabled'),
+        'base_url' => env('PISEE_BASE_URL'), // nodo/Security Server de la municipalidad, https
+        'header_cliente' => env('PISEE_HEADER_CLIENTE'), // nombre de la cabecera de identificación del consumidor (A VALIDAR)
+        'valor_cliente' => env('PISEE_VALOR_CLIENTE'),
+        'cert' => env('PISEE_MTLS_CERT'), // certificado cliente (PEM) fuera del docroot
+        'key' => env('PISEE_MTLS_KEY'),
+        'ca' => env('PISEE_CA_BUNDLE'),
+        'timeout' => 20,
+        'max_bytes' => 1024 * 1024,
+    ],
+
+    // DocDigital (comunicaciones oficiales del Estado). outbox|mock|demo|prod  (mock y demo prohibidos en producción)
+    'docdigital' => [
+        'mode' => env('DOCDIGITAL_MODE', 'outbox'),
+        'url_demo' => env('DOCDIGITAL_URL_DEMO'),
+        'url_prod' => env('DOCDIGITAL_URL_PROD'),
+        'api_token' => env('DOCDIGITAL_API_TOKEN'),
+        'path_enviar' => env('DOCDIGITAL_PATH_ENVIAR'), // A VALIDAR con la guía de integración API MW V2
+        'path_recibidos' => env('DOCDIGITAL_PATH_RECIBIDOS'),
+        'unidad_recepcion' => env('DOCDIGITAL_UNIDAD_RECEPCION', 'SECMUN'), // código de unidad que recibe lo entrante
+        'timeout' => 30,
+        'max_bytes' => 10 * 1024 * 1024,
+    ],
+
     // Validación pública
     'validar_rate_per_minute' => 30,
 ];

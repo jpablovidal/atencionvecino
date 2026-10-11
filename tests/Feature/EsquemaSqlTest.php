@@ -33,6 +33,10 @@ class EsquemaSqlTest extends TestCase
             preg_match_all('/`(\w+)` (?:bigint|varchar|char|tinyint|smallint|int|text|longtext|json|timestamp|date|datetime)/', $cuerpo, $c);
             $enSql[$tabla] = $c[1];
         }
+        preg_match_all('/^alter table `(\w+)` add `(\w+)` (?:bigint|varchar|char|tinyint|smallint|int|text|longtext|json|timestamp|date|datetime)/m', $sql, $alt, PREG_SET_ORDER);
+        foreach ($alt as [, $tabla, $col]) {
+            $enSql[$tabla][] = $col;
+        }
         $enSqlite = [];
         foreach (Schema::getTables() as $t) {
             if (in_array($t['name'], ['migrations', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs'], true) || str_starts_with($t['name'], 'sqlite_')) {

@@ -26,3 +26,7 @@ Ante ambigüedad se eligió la opción **más segura** y se documentó aquí.
 | 20 | PDF/A | No se garantiza PDF/A (Dompdf). Se deja como **A VALIDAR**/mejora. | Sin dependencia pesada. |
 | 21 | Larastan | No pudo instalarse vía Composer en el entorno de construcción (restricciones de red); el análisis se ejecutó con `phpstan.phar` + Larastan clonado (nivel 5, 0 errores). `phpstan.neon` queda listo. | Limitación de entorno. |
 | 22 | TinyMCE | v7 GPL autoalojada (`license_key: 'gpl'`), paquetes de idioma `es` de `tinymce-i18n` (licencia A VALIDAR). | Sin CDN. |
+| 23 | PISEE | Consumidor genérico con lista blanca de servicios administrable; RUN consultado = RUN del solicitante; finalidad obligatoria; resultado cifrado y fuera de la bitácora; deshabilitado por defecto. | Minimización (Ley 21.719/21.663) y contratos no verificados. |
+| 24 | Codificador | Catálogo local + CSV/API; el proceso se asocia al trámite y los códigos entran a MGDEE (`institucion_codigo`, `codigo_proceso`). | Sin fuente verificable; CSV es lo seguro. |
+| 25 | DocDigital | Modo `outbox` por defecto (pendiente hasta registrar folio); modos API exigen PDF con FEA real, por lo que se conserva el PDF firmado por FirmaGob (`pdf_firmado_*`) además de la copia pública. | "Nunca afirmar lo no enviado"; requisito FEA de DocDigital. |
+| 26 | Recepción DocDigital | Entrantes a la bandeja de una unidad configurable, sin crear expedientes automáticamente. | Evita decisiones jurídicas automáticas. |

@@ -4,6 +4,7 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 
 - **Vía 1 – Ciudadano:** ClaveÚnica, solicitud con anexos, folio, comprobante PDF con hash/QR, seguimiento, devoluciones con plazo, descarga de documentos notificados.
 - **Vía 2 – Funcionarios:** bandeja por unidad, expediente electrónico (metadatos MGDEE/MGDDE), plantillas con TinyMCE, visación y firma electrónica avanzada (FirmaGob), correlativo por tipo/año, copia pública con certificado y validación `/validar/{codigo}`, notificaciones con evidencia.
+- **Interoperabilidad:** PISEE (consulta de servicios), Codificador (instituciones y procesos) y DocDigital (comunicaciones oficiales), apagadas/seguras por defecto y con contratos **A VALIDAR**.
 - **Stack:** PHP 8.3 (compatible 8.2) · Laravel 12 · MySQL 8/MariaDB 10.6+ · sin Node ni procesos permanentes en producción.
 
 > **Estado real:** ver [`docs/LIMITACIONES.md`](docs/LIMITACIONES.md). Todo lo que depende de credenciales reales (ClaveÚnica, FirmaGob, Casilla Única, cuenta de servicio de Google) está implementado contra contratos públicos y probado con clientes simulados, pero **no** se ha probado contra los servicios reales.
@@ -146,6 +147,14 @@ El correo sale **solo** por la Gmail API con una **cuenta de servicio con delega
    - **DMARC** (TXT `_dmarc.santodomingo.cl`): comience con `v=DMARC1; p=none; rua=mailto:dmarc@santodomingo.cl` y suba a `p=quarantine` y luego `p=reject` al verificar alineación.
 10. **Alternativa documentada:** SMTP de Google con **OAuth2 (XOAUTH2)** — no implementada aquí; requiere un transporte adicional. **Prohibido** usar contraseñas de aplicación.
 11. **Rotación de la clave de la cuenta de servicio:** crear clave nueva → reemplazar el JSON (600) → probar envío → eliminar la clave antigua en Google Cloud. Ver `docs/INCIDENTES.md`.
+
+### 10 bis. Interoperabilidad: PISEE, Codificador y DocDigital
+
+Las tres integraciones vienen **apagadas/seguras por defecto** (`PISEE_MODE=disabled`, `DOCDIGITAL_MODE=outbox`, `CODIFICADOR_MODE=manual`). Los contratos de API **no pudieron verificarse** (ver `docs/NORMATIVA.md` §11–13 y `docs/LIMITACIONES.md`): valídelos con la Secretaría de Gobierno Digital antes de activar.
+
+1. **Codificador:** `/app/admin/codificador` → importe el CSV de instituciones (`codigo,nombre,tipo,codigo_padre`) y de procesos (`codigo,nombre,institucion_codigo`). Defina `CODIFICADOR_INSTITUCION_CODIGO` (código de la Municipalidad) y asocie un proceso a cada trámite. Opcional `CODIFICADOR_MODE=api` + `codificador:sincronizar`.
+2. **DocDigital:** solicite a la SGD el alta (Administrador Principal e interlocutor) y el acceso a **DemoDoc**. Con las credenciales: `DOCDIGITAL_MODE=demo`, `DOCDIGITAL_URL_DEMO`, `DOCDIGITAL_API_TOKEN`, `DOCDIGITAL_PATH_ENVIAR/RECIBIDOS` (de la guía API MW V2); ajuste `HttpDocDigitalClient` a la especificación y pruebe en DemoDoc; luego `prod`. La unidad receptora de lo entrante es `DOCDIGITAL_UNIDAD_RECEPCION`. Solo se envían PDF con **FEA real** (FirmaGob). Sin API (outbox), el funcionario envía por la web de DocDigital y registra el folio como evidencia.
+3. **PISEE:** adhiera a los T&C PISEE e instale el nodo de interoperabilidad; configure `PISEE_BASE_URL` (https), `PISEE_HEADER_CLIENTE/VALOR_CLIENTE`, certificado de cliente `PISEE_MTLS_CERT/KEY` (en `sgd_secrets`, 600) y `PISEE_CA_BUNDLE`; registre los servicios autorizados en `/app/admin/pisee` y active `PISEE_MODE=api`.
 
 ### 11. AutoSSL y HTTPS
 

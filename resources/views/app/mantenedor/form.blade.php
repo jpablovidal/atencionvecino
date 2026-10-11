@@ -14,6 +14,7 @@
   @elseif($tipo==='editor')<textarea id="{{ $k }}" name="{{ $k }}" data-editor rows="14">{{ $val }}</textarea>
   @elseif(str_starts_with($tipo,'select:'))<select class="form-control" id="{{ $k }}" name="{{ $k }}">@foreach(explode(',',substr($tipo,7)) as $o)<option @selected($val===$o)>{{ $o }}</option>@endforeach</select>
   @elseif($tipo==='unidad')<select class="form-control" id="{{ $k }}" name="{{ $k }}"><option value="">—</option>@foreach($unidades as $u)<option value="{{ $u->id }}" @selected($val==$u->id)>{{ $u->nombre }}</option>@endforeach</select>
+  @elseif($tipo==='proceso')<select class="form-control" id="{{ $k }}" name="{{ $k }}"><option value="">—</option>@foreach($procesos as $p)<option value="{{ $p->codigo }}" @selected($val===$p->codigo)>{{ $p->codigo }} — {{ $p->nombre }}</option>@endforeach</select>
   @elseif($tipo==='tipo')<select class="form-control" id="{{ $k }}" name="{{ $k }}">@foreach($tipos as $t)<option value="{{ $t->id }}" @selected($val==$t->id)>{{ $t->nombre }}</option>@endforeach</select>
   @elseif($tipo==='unidades')@foreach($unidades as $u)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="u{{ $u->id }}" name="unidades[]" value="{{ $u->id }}" @checked(in_array($u->id,old('unidades',$sel)))><label class="custom-control-label" for="u{{ $u->id }}">{{ $u->nombre }}</label></div>@endforeach
   @else<input class="form-control" id="{{ $k }}" name="{{ $k }}" type="{{ $tipo }}" value="{{ $val }}">@endif
