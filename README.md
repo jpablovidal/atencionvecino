@@ -1,0 +1,227 @@
+# SGD — Sistema de Gestión Documental · I. Municipalidad de Santo Domingo
+
+Plataforma de atención al vecino y gestión de expedientes electrónicos alineada con la **Ley 21.180** de Transformación Digital del Estado, diseñada bajo la **Ley 21.663** (Marco de Ciberseguridad), **OWASP Top 10:2025** y **OWASP Top 10 for LLM Applications 2025**.
+
+- **Vía 1 – Ciudadano:** ClaveÚnica, solicitud con anexos, folio, comprobante PDF con hash/QR, seguimiento, devoluciones con plazo, descarga de documentos notificados.
+- **Vía 2 – Funcionarios:** bandeja por unidad, expediente electrónico (metadatos MGDEE/MGDDE), plantillas con TinyMCE, visación y firma electrónica avanzada (FirmaGob), correlativo por tipo/año, copia pública con certificado y validación `/validar/{codigo}`, notificaciones con evidencia.
+- **Stack:** PHP 8.3 (compatible 8.2) · Laravel 12 · MySQL 8/MariaDB 10.6+ · sin Node ni procesos permanentes en producción.
+
+> **Estado real:** ver [`docs/LIMITACIONES.md`](docs/LIMITACIONES.md). Todo lo que depende de credenciales reales (ClaveÚnica, FirmaGob, Casilla Única, cuenta de servicio de Google) está implementado contra contratos públicos y probado con clientes simulados, pero **no** se ha probado contra los servicios reales.
+
+## Documentación
+
+| Documento | Contenido |
+|---|---|
+| [`docs/NORMATIVA.md`](docs/NORMATIVA.md) | Resumen normativo con enlaces y puntos "A VALIDAR" |
+| [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md) | Matrices OWASP Top 10:2025, OWASP LLM 2025 y Ley 21.663 |
+| [`docs/DECISIONES.md`](docs/DECISIONES.md) | Decisiones de diseño y supuestos |
+| [`docs/LIMITACIONES.md`](docs/LIMITACIONES.md) | Lo no verificado / dependiente de credenciales |
+| [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md) | Manual breve por rol |
+| [`docs/INCIDENTES.md`](docs/INCIDENTES.md) | Plan de respuesta a incidentes |
+| [`docs/sbom.cdx.json`](docs/sbom.cdx.json) | SBOM CycloneDX |
+| [`docs/capturas/`](docs/capturas) | Capturas de la verificación en navegador real |
+
+---
+
+## Instalación en cPanel (sin SSH)
+
+Todo se instala **subiendo archivos + importando SQL + editando `.env`**. No se necesita `php artisan` en el servidor.
+
+### 0. Generar el paquete de despliegue (en su equipo, una vez por versión)
+
+```bash
+scripts/build-release.sh          # produce sgd-release.zip (+ .sha256), con vendor/ (--no-dev), sin .env ni tests
+```
+
+### 1. Estructura de carpetas (segura)
+
+Solo `public/` queda expuesto. Todo lo demás está **fuera del docroot**:
+
+```
+/home/USUARIO/
+├── sgd/                  ← contenido del ZIP (app/, vendor/, config/, storage/, .env ...)
+│   └── public/           ← ÚNICO docroot del subdominio
+├── sgd_storage/          ← archivos subidos, cifrados (permisos 750)
+└── sgd_secrets/          ← gmail-sa.json y otros secretos (permisos 700; archivos 600)
+```
+
+### 2. Crear el subdominio y fijar el docroot
+
+1. cPanel → **Dominios** (o "Subdominios") → **Crear un dominio/subdominio**: `sgd.santodomingo.cl`.
+2. En **Raíz del documento** escriba **`sgd/public`** (queda `/home/USUARIO/sgd/public`). **No** use `public_html`.
+3. Cree también las carpetas `sgd_storage` y `sgd_secrets` en `/home/USUARIO/` (Administrador de archivos → *Carpeta nueva*).
+
+### 3. Versión de PHP y extensiones
+
+cPanel → **Seleccionar versión de PHP** (CloudLinux) o **MultiPHP Manager**: elija **PHP 8.3** (8.2 también funciona) para el subdominio.
+En **Extensiones** active: `pdo_mysql, mbstring, openssl, sodium, intl, curl, gd (o imagick), zip, fileinfo` (además de `ctype, json, tokenizer, xml, dom`).
+En **Opciones** (INI) sugeridas: `memory_limit=256M`, `max_execution_time=60`, `upload_max_filesize=12M`, `post_max_size=40M`, `expose_php=Off`, `display_errors=Off`.
+Después de instalar, ingrese como administrador a `/app/diagnostico`: verifica extensiones, permisos, modo mock, etc. (solo administradores).
+
+### 4. Base de datos con privilegios mínimos
+
+1. cPanel → **Bases de datos MySQL**: cree la BD `cpanelusr_sgd` y el usuario `cpanelusr_sgdapp` (contraseña larga y aleatoria).
+2. Asigne el usuario a la BD con privilegios: `SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES` durante la instalación (el SQL ya está importado vía phpMyAdmin, de modo que luego bastan `SELECT, INSERT, UPDATE, DELETE`).
+3. **Bitácora append-only (defensa en profundidad).** Si su hosting permite `GRANT` por tabla (phpMyAdmin → pestaña *SQL*, o soporte del hosting), ejecute para el usuario de aplicación:
+
+   ```sql
+   REVOKE UPDATE, DELETE ON `cpanelusr_sgd`.`audit_log` FROM 'cpanelusr_sgdapp'@'localhost';
+   REVOKE UPDATE, DELETE ON `cpanelusr_sgd`.`documento_versiones` FROM 'cpanelusr_sgdapp'@'localhost';
+   -- (si el grant fue a nivel de BD, conceda por tabla en su lugar:)
+   -- GRANT SELECT, INSERT ON `cpanelusr_sgd`.`audit_log` TO 'cpanelusr_sgdapp'@'localhost';
+   ```
+
+   La interfaz de cPanel solo asigna privilegios a nivel de base completa; si no puede hacer `GRANT` por tabla, use **triggers** (si el hosting concede `TRIGGER`): importe `database/sql/03_triggers_opcional.sql`. La aplicación además impide UPDATE/DELETE a nivel de modelo y detecta cualquier alteración con la **cadena HMAC** (`audit:verify` / `/app/seguridad`). Ver limitaciones en `docs/LIMITACIONES.md`.
+
+### 5. Importar el esquema en phpMyAdmin
+
+1. cPanel → **phpMyAdmin** → seleccione `cpanelusr_sgd` → pestaña **Importar**.
+2. Suba `database/sql/01_schema.sql` (del ZIP) → *Continuar*. Crea todas las tablas InnoDB `utf8mb4_unicode_ci` con claves foráneas e índices.
+3. *(Opcional, según §4)* importe `03_triggers_opcional.sql`.
+4. **Solo desarrollo/pruebas:** `02_seed_demo.sql` (datos de demostración, usuarios ficticios). **No importar en producción.**
+5. Si `01_schema.sql` supera `upload_max_filesize` de phpMyAdmin, divídalo por tablas o use el campo "Examinar" con compresión zip.
+
+### 6. Subir el ZIP y descomprimir
+
+1. **Administrador de archivos** → carpeta `/home/USUARIO/` → **Subir** `sgd-release.zip`.
+2. Clic derecho → **Extract**. Debe quedar `/home/USUARIO/sgd/` con `app/`, `vendor/`, `public/`, etc. Borre el ZIP.
+3. Verifique que el docroot del subdominio sigue siendo `sgd/public`.
+
+### 7. Configurar `.env`
+
+1. Copie `/home/USUARIO/sgd/.env.example` a `/home/USUARIO/sgd/.env` (Administrador de archivos → *Copy*) y edítelo.
+2. Genere las claves (cualquier equipo con PHP 8, o la terminal de cPanel si la tiene):
+
+```bash
+php -r 'echo "APP_KEY=base64:".base64_encode(random_bytes(32)),"\n";'
+php -r 'echo "AUDIT_HMAC_KEY=".bin2hex(random_bytes(32)),"\n";'
+php -r 'echo "FILE_ENCRYPTION_KEYS=\x27".json_encode(["k1"=>base64_encode(random_bytes(32))])."\x27\n";'
+```
+
+3. Complete `APP_URL=https://sgd.santodomingo.cl`, `DB_*`, `SGD_STORAGE_PATH=/home/USUARIO/sgd_storage`, ClaveÚnica, FirmaGob, y correo (§10).
+4. **Respalde las claves** (`APP_KEY`, `FILE_ENCRYPTION_KEYS`, `AUDIT_HMAC_KEY`) en un gestor de secretos: sin `FILE_ENCRYPTION_KEYS` los archivos **no se pueden recuperar**.
+5. En producción la aplicación **se niega a arrancar** si: `APP_DEBUG=true`, `APP_URL` no es https, `CLAVEUNICA_MODE=mock`, `FIRMAGOB_MODE=mock`, faltan claves/secretos o falta el JSON de la cuenta de servicio.
+
+### 8. Permisos
+
+Administrador de archivos → *Change Permissions*:
+
+| Ruta | Permiso |
+|---|---|
+| Directorios (`sgd/`, `sgd_storage/`) | `750` |
+| Archivos | `640` |
+| `sgd/.env`, `sgd_secrets/*` | **`600`** (directorio `sgd_secrets` `700`) |
+| `sgd/storage`, `sgd/bootstrap/cache`, `sgd_storage` | escribibles por el usuario (750) |
+
+### 9. Cron de cPanel (tareas y cola)
+
+cPanel → **Trabajos de Cron** → cada minuto:
+
+```
+* * * * * /usr/local/bin/php /home/USUARIO/sgd/artisan schedule:run >> /dev/null 2>&1
+```
+
+(Use la ruta de PHP 8.3 de su hosting, p. ej. `/opt/cpanel/ea-php83/root/usr/bin/php`.) El *scheduler* procesa la **cola `database`** con `queue:work --stop-when-empty --max-time=45` (sin supervisor ni Redis), verifica la cadena de auditoría cada noche y depura sesiones.
+
+### 10. Correo institucional: Google Workspace (Gmail API)
+
+El correo sale **solo** por la Gmail API con una **cuenta de servicio con delegación de todo el dominio** que suplanta un buzón dedicado (`no-responder@santodomingo.cl`). **No** se usan contraseñas de aplicación ni "aplicaciones menos seguras", ni el SMTP de cPanel.
+
+1. **Proyecto en Google Cloud:** https://console.cloud.google.com → *Nuevo proyecto* (p. ej. `sgd-santo-domingo`).
+2. **Habilitar la Gmail API:** *APIs y servicios → Biblioteca → Gmail API → Habilitar*.
+3. **Cuenta de servicio:** *IAM y administración → Cuentas de servicio → Crear* (`sgd-mailer`). Sin roles de proyecto. Entre a la cuenta → pestaña *Claves* → *Agregar clave → JSON* y descargue el archivo. Anote el **ID de cliente** (número largo, "Client ID") en *Detalles*.
+4. **Delegación de todo el dominio:** https://admin.google.com → *Seguridad → Acceso y control de datos → Controles de API → Administrar la delegación de todo el dominio → Agregar*. Pegue el **Client ID** y como alcance **únicamente** `https://www.googleapis.com/auth/gmail.send`. Guardar.
+5. **Buzón dedicado:** cree el usuario `no-responder@santodomingo.cl` (sin acceso de personas; 2FA/llaves para el admin; cuota de envío de Workspace aplica). El *sub* del JWT se fija a este buzón en `GOOGLE_MAIL_SENDER`; la cuenta de servicio no puede suplantar a otros por configuración de la aplicación (un único alcance y un único buzón).
+6. **Subir el JSON** a `/home/USUARIO/sgd_secrets/gmail-sa.json`, permisos **600**. Nunca en `public/` ni en el repositorio.
+7. En `.env`:
+   ```
+   MAIL_MAILER=gmail_api
+   GOOGLE_SERVICE_ACCOUNT_JSON=/home/USUARIO/sgd_secrets/gmail-sa.json
+   GOOGLE_MAIL_SENDER=no-responder@santodomingo.cl
+   ```
+8. **Verificar el envío de prueba:** inicie sesión como administrador → `/app/diagnostico` (debe mostrar "Cuenta de servicio Google presente"). Cree una notificación por **correo** a un expediente de prueba cerrado; en 1–2 minutos (cron) la notificación pasa a *enviada* con el **ID de mensaje de Gmail** como evidencia. Si falla queda *fallida* y se reintenta (5 intentos con *backoff*).
+9. **SPF, DKIM y DMARC** (Consola de administración de Google + DNS del dominio):
+   - **SPF** (TXT en la raíz de `santodomingo.cl`): `v=spf1 include:_spf.google.com ~all` (si ya tiene SPF, agregue el `include`; un solo registro SPF).
+   - **DKIM:** *Aplicaciones → Google Workspace → Gmail → Autenticar correo electrónico* → generar clave (2048 bits) para `santodomingo.cl`, publicar el TXT `google._domainkey` y pulsar *Iniciar autenticación*.
+   - **DMARC** (TXT `_dmarc.santodomingo.cl`): comience con `v=DMARC1; p=none; rua=mailto:dmarc@santodomingo.cl` y suba a `p=quarantine` y luego `p=reject` al verificar alineación.
+10. **Alternativa documentada:** SMTP de Google con **OAuth2 (XOAUTH2)** — no implementada aquí; requiere un transporte adicional. **Prohibido** usar contraseñas de aplicación.
+11. **Rotación de la clave de la cuenta de servicio:** crear clave nueva → reemplazar el JSON (600) → probar envío → eliminar la clave antigua en Google Cloud. Ver `docs/INCIDENTES.md`.
+
+### 11. AutoSSL y HTTPS
+
+cPanel → **SSL/TLS Status** → ejecute **AutoSSL** para `sgd.santodomingo.cl`. `public/.htaccess` fuerza HTTPS (301), activa HSTS, bloquea dotfiles y extensiones `.sql/.env/.log/.bak`, desactiva `Indexes` y fija cabeceras de seguridad. Verifique con https://www.ssllabs.com y https://securityheaders.com.
+
+### 12. Primer administrador
+
+El esquema vacío no trae usuarios. En phpMyAdmin → SQL (reemplace datos; el RUN con DV válido):
+
+```sql
+INSERT INTO unidades (codigo, nombre, activo, created_at, updated_at) VALUES ('TI','Informática',1,NOW(),NOW());
+INSERT INTO usuarios (run, nombres, apellidos, correo, cargo, rol, unidad_id, puede_firmar, activo, created_at, updated_at)
+VALUES ('12345678-5','NOMBRE','APELLIDO','admin@santodomingo.cl','Administrador','admin',NULL,0,1,NOW(),NOW());
+```
+
+Ingrese en `https://sgd.santodomingo.cl/ingreso` → *funcionario* (ClaveÚnica). Desde `/app/admin/usuarios` cree alcalde, secretario, funcionarios, auditor; en `/app/admin/tipos` y `/app/admin/plantillas` los tipos de documento (cargar los tipos base: decreto alcaldicio, decreto SIAPER, oficio, ordenanza, reglamento, instructivo) y en `/app/admin/tramites` los trámites con su **código CPAT real** y unidades responsables. El alcalde crea las delegaciones de firma en `/app/delegaciones`.
+
+### 13. Lista de verificación previa a producción
+
+- [ ] `/app/diagnostico` sin elementos "REVISAR".
+- [ ] `APP_DEBUG=false`, `APP_URL` https, sin modo mock (la app no arranca si no).
+- [ ] ClaveÚnica real configurada y URL de retorno registrada (`/claveunica/callback`).
+- [ ] FirmaGob **probado en ambiente `test`** antes de `prod`; contrato validado (ver LIMITACIONES).
+- [ ] Cuenta de servicio Google con un solo alcance; envío de prueba exitoso; SPF/DKIM/DMARC publicados.
+- [ ] Permisos 750/640/600; `.env` y `sgd_secrets` fuera del docroot; `sgd_storage` fuera del docroot.
+- [ ] `open_basedir` configurado a `/home/USUARIO/`, `expose_php=Off`, `.user.ini` aplicado (§Hardening).
+- [ ] Respaldo de BD y de `sgd_storage` probado **con restauración real**; claves respaldadas por separado.
+- [ ] `audit:verify` (panel `/app/seguridad`) = cadena íntegra.
+- [ ] GRANT sin UPDATE/DELETE en `audit_log` **o** triggers (o riesgo aceptado documentado).
+- [ ] Cron de cPanel activo; cola procesándose.
+- [ ] Protección de `/phpmyadmin` por IP/2FA; WAF/CDN opcional.
+- [ ] Plan de incidentes (`docs/INCIDENTES.md`) revisado con el encargado de ciberseguridad.
+
+### Hardening cPanel
+
+- **Permisos:** 750 directorios / 640 archivos / 600 `.env` y secretos.
+- **`.user.ini`** (en `sgd/public/`, para PHP-FPM/CloudLinux):
+  ```ini
+  open_basedir = /home/USUARIO/sgd:/home/USUARIO/sgd_storage:/home/USUARIO/sgd_secrets:/tmp
+  expose_php = Off
+  display_errors = Off
+  log_errors = On
+  session.use_strict_mode = 1
+  allow_url_fopen = Off
+  ```
+  (`allow_url_include=Off` por defecto.) Si la Gmail API/ClaveÚnica fallan por `allow_url_fopen`, recuerde que la app usa cURL, no streams.
+- **`disable_functions` recomendadas (solo PHP web/FPM):** `exec,passthru,shell_exec,system,popen,parse_ini_file,show_source`. **No deshabilite `proc_open` para el PHP de la línea de comandos (cron)**: `schedule:run` lanza `queue:work` como subproceso. En cPanel el PHP CLI del cron usa un `php.ini` distinto del de PHP-FPM; si ambos comparten ajuste, programe en su lugar dos entradas de cron: `schedule:run` y `queue:work --stop-when-empty --max-time=45` (y retire esa línea de `routes/console.php`).
+- **ModSecurity (OWASP CRS):** compatible. Falsos positivos típicos: (a) TinyMCE envía HTML en campos `html`/`contenido_html` → excluir reglas 941xxx/942xxx para esos parámetros en las rutas `/app/documentos/*` y `/app/admin/plantillas*`; (b) subidas multipart de PDF → reglas 920420/200002 solo si el tamaño supera `SecRequestBodyLimit`. Ejemplo (WHM → ModSecurity Tools → *Rules List*): `SecRuleUpdateTargetById 941100 "!ARGS:html"` y análogo para `ARGS:contenido_html`.
+- **phpMyAdmin:** restrinja por IP en cPanel (*IP Blocker*/`.htaccess` de `/phpmyadmin`) y use 2FA de cPanel.
+- **WAF/CDN opcional** (Cloudflare u otro): si se usa, configure `TRUSTED_PROXIES` y mantenga HTTPS de extremo a extremo.
+
+### Respaldo y restauración
+
+| Qué | Cómo | Frecuencia |
+|---|---|---|
+| Base de datos | cPanel → **Respaldo** → *Descargar copia de base de datos*, o phpMyAdmin → *Exportar* (SQL, "Rápido"). | Diaria; retención 30 días |
+| Archivos (`sgd_storage`) | cPanel → **Respaldo** (home) o ZIP del directorio. **Cifrar el respaldo** (p. ej. `gpg -c`, 7-Zip AES-256) y guardarlo fuera del hosting. Los archivos ya están cifrados en reposo con `FILE_ENCRYPTION_KEYS`, pero **respalde esas claves por separado**. | Diaria |
+| `.env` y `sgd_secrets` | Copia cifrada en gestor de secretos. | En cada cambio |
+
+**Restauración:** (1) restaurar BD (phpMyAdmin → Importar el SQL, o cPanel *Restaurar*); (2) restaurar `sgd_storage` (permisos 750); (3) restaurar `.env`/secretos (600); (4) `audit:verify` desde `/app/seguridad` para comprobar la cadena; (5) abrir un expediente con documentos y comprobar que el PDF se descifra (verifica clave + integridad). **Pruebe la restauración al menos trimestralmente.**
+
+---
+
+## Desarrollo local
+
+```bash
+composer install
+cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
+php artisan key:generate && php artisan migrate --seed
+php artisan serve
+vendor/bin/phpunit            # 114+ pruebas
+vendor/bin/pint --test        # estilo
+composer audit                # dependencias
+```
+
+- Regenerar SQL tras cambiar migraciones: `php scripts/generate-schema-sql.php > database/sql/01_schema.sql` (y `--seed`, `--triggers`). Una prueba falla si el SQL deriva de las migraciones.
+- Análisis estático: `composer require --dev larastan/larastan` y descomente `includes` en `phpstan.neon`; `vendor/bin/phpstan analyse`.
+- Regenerar SBOM: `php scripts/generate-sbom.php > docs/sbom.cdx.json`.
+- Con `FIRMAGOB_MODE=mock` la firma es **simulada** (OTP `000000` provoca fallo, otro OTP de 6 dígitos "firma") y el documento lleva el sello **"FIRMA SIMULADA – sin validez legal"**. En ClaveÚnica `mock` se muestra un formulario de login simulado en `/dev/login` (la ruta no existe en producción).

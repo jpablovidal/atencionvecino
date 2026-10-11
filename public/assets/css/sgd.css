@@ -21,3 +21,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .hash{font-family:monospace;font-size:.75rem;word-break:break-all}
 .btn-primary{background:var(--sgd-primary);border-color:var(--sgd-primary)}
 .table-sm td,.table-sm th{vertical-align:middle}
+.btn,.btn:hover{text-decoration:none}
+.sgd-footer .container{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;align-items:center}
+.sgd-footer a{display:inline}
+.sgd-header a.btn-light{color:#0a2e4d}
+.sgd-footer .container{flex-direction:row!important}
+.sgd-footer .container>*{margin:0!important}

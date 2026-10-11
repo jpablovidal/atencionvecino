@@ -52,7 +52,7 @@
   @yield('contenido')
 </main>
 <footer class="sgd-footer"><div class="container">
-  I. Municipalidad de Santo Domingo · Ley 21.180 de Transformación Digital del Estado · <a href="{{ route('publico.listado') }}">Documentos públicos</a> · <a href="{{ route('validar.form') }}">Validar un documento</a>
+  <span>I. Municipalidad de Santo Domingo · Ley 21.180 de Transformación Digital del Estado</span><a href="{{ route('publico.listado') }}">Documentos públicos</a><a href="{{ route('validar.form') }}">Validar un documento</a>
 </div></footer>
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
