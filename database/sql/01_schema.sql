@@ -64,7 +64,7 @@ alter table `solicitudes` add index `solicitudes_run_index`(`run`);
 
 alter table `solicitudes` add index `solicitudes_expediente_id_index`(`expediente_id`);
 
-create table `expedientes` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(40) not null, `solicitud_id` bigint unsigned null, `unidad_id` bigint unsigned not null, `responsable_id` bigint unsigned not null, `estado` varchar(15) not null default 'abierto', `metadatos` json not null, `motivo_reapertura` text null, `cerrado_en` timestamp null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+create table `expedientes` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(40) not null, `solicitud_id` bigint unsigned null, `unidad_id` bigint unsigned not null, `responsable_id` bigint unsigned null, `estado` varchar(15) not null default 'abierto', `metadatos` json not null, `motivo_reapertura` text null, `cerrado_en` timestamp null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
 
 alter table `expedientes` add constraint `expedientes_solicitud_id_foreign` foreign key (`solicitud_id`) references `solicitudes` (`id`);
 
@@ -186,11 +186,19 @@ alter table `pisee_consultas` add constraint `pisee_consultas_servicio_id_foreig
 
 alter table `pisee_consultas` add constraint `pisee_consultas_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`);
 
-create table `comunicaciones_oficiales` (`id` bigint unsigned not null auto_increment primary key, `direccion` varchar(10) not null, `expediente_id` bigint unsigned null, `documento_id` bigint unsigned null, `institucion_codigo` varchar(40) null, `institucion_nombre` varchar(190) null, `asunto` varchar(190) not null, `estado` varchar(10) not null default 'pendiente', `evidencia_tipo` varchar(30) null, `evidencia` varchar(255) null, `evidencia_en` timestamp null, `intentos` tinyint unsigned not null default '0', `ultimo_error` varchar(120) null, `archivo_id` bigint unsigned null, `unidad_id` bigint unsigned null, `creado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+alter table `expedientes` add `origen` varchar(12) not null default 'solicitud';
+
+alter table `expedientes` add `comunicacion_id` bigint unsigned null;
+
+alter table `expedientes` add index `expedientes_comunicacion_id_index`(`comunicacion_id`);
+
+create table `comunicaciones_oficiales` (`id` bigint unsigned not null auto_increment primary key, `direccion` varchar(10) not null, `expediente_id` bigint unsigned null, `documento_id` bigint unsigned null, `institucion_codigo` varchar(40) null, `institucion_nombre` varchar(190) null, `asunto` varchar(190) not null, `estado` varchar(10) not null default 'pendiente', `evidencia_tipo` varchar(30) null, `evidencia` varchar(255) null, `evidencia_en` timestamp null, `intentos` tinyint unsigned not null default '0', `ultimo_error` varchar(120) null, `archivo_id` bigint unsigned null, `responde_a_id` bigint unsigned null, `acuse_estado` varchar(10) null, `acuse_tipo` varchar(10) null, `acuse_evidencia` varchar(255) null, `acuse_en` timestamp null, `acuse_por_id` bigint unsigned null, `unidad_id` bigint unsigned null, `creado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
 
 alter table `comunicaciones_oficiales` add constraint `comunicaciones_oficiales_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`);
 
 alter table `comunicaciones_oficiales` add constraint `comunicaciones_oficiales_documento_id_foreign` foreign key (`documento_id`) references `documentos` (`id`);
+
+alter table `comunicaciones_oficiales` add constraint `comunicaciones_oficiales_acuse_por_id_foreign` foreign key (`acuse_por_id`) references `usuarios` (`id`);
 
 alter table `comunicaciones_oficiales` add constraint `comunicaciones_oficiales_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`);
 
@@ -199,5 +207,7 @@ alter table `comunicaciones_oficiales` add constraint `comunicaciones_oficiales_
 alter table `comunicaciones_oficiales` add index `comunicaciones_oficiales_direccion_estado_index`(`direccion`, `estado`);
 
 alter table `comunicaciones_oficiales` add unique `comunicaciones_oficiales_direccion_evidencia_tipo_evidencia_unique`(`direccion`, `evidencia_tipo`, `evidencia`);
+
+alter table `comunicaciones_oficiales` add index `comunicaciones_oficiales_responde_a_id_index`(`responde_a_id`);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -132,7 +132,7 @@ return new class extends Migration
             $t->string('codigo', 40)->unique();
             $t->foreignId('solicitud_id')->nullable()->unique()->constrained('solicitudes');
             $t->foreignId('unidad_id')->constrained('unidades');
-            $t->foreignId('responsable_id')->constrained('usuarios');
+            $t->foreignId('responsable_id')->nullable()->constrained('usuarios'); // null: comunicación recibida aún sin asignar
             $t->string('estado', 15)->default('abierto'); // abierto|cerrado
             $t->json('metadatos'); // MGDEE
             $t->text('motivo_reapertura')->nullable();

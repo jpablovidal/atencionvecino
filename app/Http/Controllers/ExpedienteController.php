@@ -46,6 +46,8 @@ class ExpedienteController extends Controller
             'piseeOn' => in_array(config('sgd.pisee.mode'), ['mock', 'api'], true),
             'piseeMock' => config('sgd.pisee.mode') === 'mock',
             'docModo' => config('sgd.docdigital.mode'),
+            'entrante' => $expediente->origen === 'docdigital' ? ComunicacionOficial::query()->find($expediente->comunicacion_id) : null,
+            'origenCodigo' => $expediente->metadatos['relaciones']['institucion_origen_codigo'] ?? null,
         ]);
     }
 
@@ -76,6 +78,9 @@ class ExpedienteController extends Controller
     public function devolver(Request $r, Expediente $expediente, SolicitudService $svc)
     {
         $this->operar($expediente);
+        if (! $expediente->solicitud) {
+            return back()->with('error', 'Este expediente no proviene de una solicitud ciudadana.');
+        }
         $d = $r->validate(['observacion' => 'required|string|min:5|max:2000', 'plazo_dias' => 'required|integer|between:1,90']);
         try {
             $svc->devolver($expediente->solicitud, $r->user(), $d['observacion'], (int) $d['plazo_dias']);
@@ -130,6 +135,18 @@ class ExpedienteController extends Controller
         $this->audit->registrar('archivo.descarga', 'archivo', $archivo->id, [], true);
 
         return descarga($vault->get($archivo->ruta, $archivo->sha256), $archivo->nombre_original, $archivo->mime);
+    }
+
+    public function asignarme(Request $r, Expediente $expediente, ExpedienteService $svc)
+    {
+        $this->operar($expediente);
+        try {
+            $svc->asignarResponsable($expediente, $r->user());
+        } catch (FlujoException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Expediente asignado a usted.');
     }
 
     public function cerrar(Request $r, Expediente $expediente, ExpedienteService $svc)

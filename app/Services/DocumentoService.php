@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\FlujoException;
+use App\Models\ComunicacionOficial;
 use App\Models\Documento;
 use App\Models\DocumentoPaso;
 use App\Models\DocumentoVersion;
@@ -33,6 +34,9 @@ class DocumentoService
         if ($exp->estado !== 'abierto') {
             throw new FlujoException('El expediente está cerrado.');
         }
+        if ($exp->origen === 'docdigital' && ComunicacionOficial::query()->where('id', $exp->comunicacion_id)->value('acuse_estado') !== 'registrado') {
+            throw new FlujoException('Debe acusar recibo de la comunicación recibida antes de gestionarla y responderla.');
+        }
         $html = $plantilla ? $this->combinar($plantilla->contenido_html, $exp) : '<p></p>';
 
         return DB::transaction(function () use ($exp, $tipo, $titulo, $autor, $html) {
@@ -60,6 +64,9 @@ class DocumentoService
             'solicitante_run' => $s?->run,
             'tramite' => $s?->tramite?->nombre,
             'unidad' => $exp->unidad->nombre,
+            'institucion_origen' => $exp->metadatos['relaciones']['institucion_origen'] ?? '',
+            'asunto_origen' => $exp->origen === 'docdigital' ? ($exp->metadatos['descripcion']['resumen'] ?? '') : '',
+            'folio_docdigital' => $exp->metadatos['descripcion']['folio_docdigital'] ?? '',
         ];
 
         return preg_replace_callback('/\{\{\s*([a-z_]+)\s*\}\}/', fn ($m) => array_key_exists($m[1], $v) ? e((string) $v[$m[1]]) : $m[0], $html) ?? $html;

@@ -109,6 +109,7 @@ return [
         'api_token' => env('DOCDIGITAL_API_TOKEN'),
         'path_enviar' => env('DOCDIGITAL_PATH_ENVIAR'), // A VALIDAR con la guía de integración API MW V2
         'path_recibidos' => env('DOCDIGITAL_PATH_RECIBIDOS'),
+        'path_acuse' => env('DOCDIGITAL_PATH_ACUSE'), // acuse de recibo (A VALIDAR)
         'unidad_recepcion' => env('DOCDIGITAL_UNIDAD_RECEPCION', 'SECMUN'), // código de unidad que recibe lo entrante
         'timeout' => 30,
         'max_bytes' => 10 * 1024 * 1024,

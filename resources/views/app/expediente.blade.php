@@ -4,15 +4,39 @@
 <div class="d-flex justify-content-between"><h1>Expediente {{ $e->codigo }}</h1>
 <div><span class="estado estado-{{ $e->estado }}">{{ $e->estado }}</span> <a class="btn btn-sm btn-outline-primary" href="{{ route('app.expediente.exportar',$e) }}">Exportar metadatos (JSON)</a></div></div>
 @php $m=$e->metadatos; $s=$e->solicitud; @endphp
+@if($entrante)
+<div class="card border-info mb-3"><div class="card-body">
+<h2 class="h5">Comunicación oficial recibida por DocDigital</h2>
+<p class="mb-1"><strong>{{ $entrante->asunto }}</strong> — de {{ $entrante->institucion_nombre ?? $entrante->institucion_codigo ?? 'institución no informada' }} · ID DocDigital <span class="hash">{{ $entrante->evidencia }}</span> · recibida {{ $entrante->evidencia_en }}</p>
+<p class="mb-2">Documento original: @foreach($e->archivos->where('ambito','docdigital') as $a)<a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->nombre_original }}</a> <span class="hash">{{ $a->sha256 }}</span>@endforeach</p>
+@if($entrante->acuse_estado==='registrado')
+<p class="mb-0"><span class="estado estado-vigente">acuse de recibo registrado</span> ({{ $entrante->acuse_tipo }}) {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span>@if($entrante->acuse_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif</p>
+@else
+<p class="mb-2"><span class="estado estado-pendiente">acuse de recibo pendiente</span> — debe acusar recibo antes de gestionar y responder.</p>
+@if($puedeOperar)
+@if($docModo==='outbox')
+<form method="post" action="{{ route('app.comunicacion.acuse',$entrante) }}" class="form-inline">@csrf<label class="mr-2" for="ac_ev">Referencia del acuse emitido en DocDigital</label><input class="form-control form-control-sm mr-2" id="ac_ev" name="evidencia" required maxlength="200"><button class="btn btn-sm btn-primary">Registrar acuse</button></form>
+@else
+<form method="post" action="{{ route('app.comunicacion.acuse',$entrante) }}">@csrf<button class="btn btn-sm btn-primary">Acusar recibo por DocDigital</button></form>
+@endif
+@endif
+@endif
+@if($puedeOperar && ! $e->responsable_id)<form method="post" action="{{ route('app.expediente.asignarme',$e) }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-primary">Asignarme este expediente</button></form>@endif
+</div></div>
+@endif
 <div class="card mb-3"><div class="card-body"><h2 class="h5">Metadatos MGDEE</h2>
 <dl class="row mb-0">
 <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">{{ $m['identificacion']['nombre'] ?? '' }}</dd>
 <dt class="col-sm-3">Procedimiento (CPAT)</dt><dd class="col-sm-9">{{ $m['procedimiento']['codigo_cpat'] ?? '—' }} · {{ $m['procedimiento']['tramite'] ?? '' }}</dd>
 <dt class="col-sm-3">Apertura / cierre</dt><dd class="col-sm-9">{{ $m['temporalidad']['fecha_apertura'] ?? '' }} / {{ $m['temporalidad']['fecha_cierre'] ?? '—' }}</dd>
 <dt class="col-sm-3">Seguridad</dt><dd class="col-sm-9">{{ $m['seguridad']['nivel_acceso'] ?? '' }}</dd>
-<dt class="col-sm-3">Responsable</dt><dd class="col-sm-9">{{ $e->responsable->nombreCompleto() }} ({{ $e->unidad->nombre }})</dd>
+<dt class="col-sm-3">Identificador único</dt><dd class="col-sm-9"><strong>{{ $m['identificacion']['identificador_unico'] ?? $e->codigo }}</strong> · origen: {{ $e->origen==='docdigital' ? 'comunicación oficial (DocDigital)' : 'solicitud ciudadana' }}</dd>
+<dt class="col-sm-3">Responsable</dt><dd class="col-sm-9">{{ $e->responsable?->nombreCompleto() ?? 'Sin asignar' }} ({{ $e->unidad->nombre }})</dd>
+@if($s)
 <dt class="col-sm-3">Solicitante</dt><dd class="col-sm-9">{{ $s->nombres }} {{ $s->apellidos }} · {{ $s->run }} · {{ $s->correo }} · notificar por {{ str_replace('_',' ',$s->canal_notificacion) }}</dd>
-<dt class="col-sm-3">Detalle</dt><dd class="col-sm-9">{{ $s->detalle }}</dd></dl>
+<dt class="col-sm-3">Detalle</dt><dd class="col-sm-9">{{ $s->detalle }}</dd>
+@endif
+</dl>
 @if($puedeOperar)
 <details class="mt-3"><summary>Editar metadatos</summary>
 <form method="post" action="{{ route('app.expediente.metadatos',$e) }}" class="mt-2">@csrf
@@ -62,7 +86,7 @@
 <form method="post" action="{{ route('app.expediente.derivar',$e) }}" class="col-md-4">@csrf
 <div class="form-group"><label for="d_a">Derivar a</label><select class="form-control" id="d_a" name="a_usuario_id" required>@foreach($usuarios as $u)<option value="{{ $u->id }}">{{ $u->nombreCompleto() }} ({{ $u->rol }})</option>@endforeach</select></div>
 <div class="form-group"><label for="d_m">Motivo</label><input class="form-control" id="d_m" name="motivo" required maxlength="500"></div><button class="btn btn-sm btn-primary">Derivar</button></form>
-@if($e->estado==='abierto' && $s->estado==='en_tramite')
+@if($s && $e->estado==='abierto' && $s->estado==='en_tramite')
 <form method="post" action="{{ route('app.expediente.devolver',$e) }}" class="col-md-4">@csrf
 <div class="form-group"><label for="v_o">Devolver al ciudadano: observación</label><textarea class="form-control" id="v_o" name="observacion" required minlength="5" maxlength="2000"></textarea></div>
 <div class="form-group"><label for="v_p">Plazo (1 a 90 días)</label><input class="form-control" id="v_p" type="number" min="1" max="90" name="plazo_dias" value="10" required></div><button class="btn btn-sm btn-warning">Devolver</button></form>@endif
@@ -80,11 +104,11 @@
 <form method="post" action="{{ route('app.comunicacion.crear',$e) }}" class="card card-body mb-3">@csrf
 <div class="form-row">
 <div class="form-group col-md-4"><label for="cd_doc">Documento vigente</label><select class="form-control" id="cd_doc" name="documento_id" required>@foreach($e->documentos->where('estado','vigente') as $d)<option value="{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</option>@endforeach</select></div>
-<div class="form-group col-md-4"><label for="cd_inst">Institución destinataria (Codificador)</label><select class="form-control" id="cd_inst" name="institucion_codigo" required>@foreach($instituciones as $i)<option value="{{ $i->codigo }}">{{ $i->nombre }} ({{ $i->codigo }})</option>@endforeach</select></div>
+<div class="form-group col-md-4"><label for="cd_inst">Institución destinataria (Codificador)</label><select class="form-control" id="cd_inst" name="institucion_codigo" required>@foreach($instituciones as $i)<option value="{{ $i->codigo }}" @selected($i->codigo===$origenCodigo)>{{ $i->nombre }} ({{ $i->codigo }})</option>@endforeach</select></div>
 <div class="form-group col-md-4"><label for="cd_asunto">Asunto</label><input class="form-control" id="cd_asunto" name="asunto" required minlength="3" maxlength="190"></div></div>
 <div><button class="btn btn-primary">Crear comunicación</button></div></form>@endif
 <table class="table table-sm"><thead><tr><th>Documento</th><th>Destino</th><th>Asunto</th><th>Estado</th><th>Evidencia</th></tr></thead><tbody>
-@forelse($comunicaciones as $c)<tr><td>{{ $c->documento?->numeroFormateado() }}</td><td>{{ $c->institucion_nombre }}</td><td>{{ $c->asunto }}</td>
+@forelse($comunicaciones as $c)<tr><td>{{ $c->documento?->numeroFormateado() }}</td><td>{{ $c->institucion_nombre }}</td><td>{{ $c->asunto }}@if($c->responde_a_id) <small class="text-muted">(en respuesta a la comunicación recibida)</small>@endif</td>
 <td><span class="estado estado-{{ $c->estado }}">{{ $c->estado }}</span> @if($c->ultimo_error)<small>{{ $c->ultimo_error }}</small>@endif</td>
 <td>@if($c->evidencia){{ $c->evidencia_tipo }}: <span class="hash">{{ $c->evidencia }}</span>@if($c->evidencia_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif
 @elseif($puedeOperar && $c->estado==='fallida' && $docModo!=='outbox')<form method="post" action="{{ route('app.comunicacion.reintentar',$c) }}">@csrf<button class="btn btn-sm btn-outline-primary">Reintentar</button></form>
@@ -106,7 +130,7 @@
 <td>@if($c->archivo_id)<a href="{{ route('app.expediente.archivo',[$e,$c->archivo_id]) }}">Ver resultado (JSON)</a>@else<span class="estado estado-fallida">{{ $c->error }}</span>@endif</td></tr>@empty<tr><td colspan="5">Sin consultas.</td></tr>@endforelse</tbody></table>
 @endif
 
-@if($e->estado==='cerrado')
+@if($e->estado==='cerrado' && $s)
 <h2 class="h4 mt-4">Notificación al ciudadano</h2>
 <p class="small text-muted">Las notificaciones quedan <strong>pendientes</strong> hasta registrar evidencia real de envío. El sistema no afirma haber enviado nada sin evidencia.</p>
 @if($puedeOperar)

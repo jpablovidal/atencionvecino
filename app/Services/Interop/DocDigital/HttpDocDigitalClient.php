@@ -52,7 +52,7 @@ class HttpDocDigitalClient implements DocDigitalClient
         try {
             $r = $this->http()->asJson()->post($url, [ // forma A VALIDAR
                 'asunto' => $meta['asunto'], 'destinatarios' => [['codigo_institucion' => $meta['destino_codigo']]], 'origen' => $meta['origen_codigo'],
-                'numero' => $meta['numero'], 'tipo_documento' => $meta['tipo'],
+                'numero' => $meta['numero'], 'tipo_documento' => $meta['tipo'], 'referencia' => $meta['referencia'] ?? null,
                 'archivo' => ['nombre' => $nombre, 'content-type' => 'application/pdf', 'content' => base64_encode($pdf), 'checksum' => hash('sha256', $pdf)],
             ]);
         } catch (\Throwable) {
@@ -64,6 +64,22 @@ class HttpDocDigitalClient implements DocDigitalClient
         }
 
         return ['id' => (string) $id, 'simulado' => false];
+    }
+
+    public function acusarRecibo(string $id): array
+    {
+        $url = $this->base().$this->ruta('path_acuse');
+        try {
+            $r = $this->http()->asJson()->post($url, ['id' => $id]); // forma A VALIDAR
+        } catch (\Throwable) {
+            throw new DocDigitalException('No fue posible contactar DocDigital.');
+        }
+        if (! $r->successful()) {
+            throw new DocDigitalException('DocDigital rechazó el acuse de recibo (HTTP '.$r->status().').');
+        }
+        $ev = $r->json('id') ?? $r->json('folio') ?? $r->json('acuse');
+
+        return ['evidencia' => is_scalar($ev) && (string) $ev !== '' ? mb_substr((string) $ev, 0, 120) : 'acuse-'.$id, 'simulado' => false];
     }
 
     public function recibidos(): array

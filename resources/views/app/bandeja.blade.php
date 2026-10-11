@@ -11,8 +11,13 @@
 <table class="table table-sm"><caption class="sr-only">Solicitudes por asignar</caption><thead><tr><th>Folio</th><th>Trámite</th><th>Ingreso</th><th></th></tr></thead><tbody>
 @forelse($entrantes as $s)<tr><td>{{ $s->folio }}</td><td>{{ $s->tramite->nombre }}</td><td>{{ $s->created_at->format('d-m-Y H:i') }}</td><td><a class="btn btn-sm btn-primary" href="{{ route('app.solicitud',$s->folio) }}">Revisar</a></td></tr>
 @empty<tr><td colspan="4">No hay solicitudes pendientes.</td></tr>@endforelse</tbody></table>
+@if($porAsignar->isNotEmpty())
+<h2 class="h4 mt-4">Comunicaciones oficiales recibidas por gestionar (DocDigital)</h2>
+<table class="table table-sm"><thead><tr><th>Expediente</th><th>Asunto</th><th>Origen</th></tr></thead><tbody>
+@foreach($porAsignar as $x)<tr><td><a href="{{ route('app.expediente',$x) }}">{{ $x->codigo }}</a></td><td>{{ $x->metadatos['identificacion']['nombre'] ?? '' }}</td><td>{{ $x->metadatos['relaciones']['institucion_origen'] ?? '—' }}</td></tr>@endforeach</tbody></table>
+@endif
 <h2 class="h4 mt-4">Mis expedientes</h2>
 <table class="table table-sm"><thead><tr><th>Expediente</th><th>Trámite</th><th>Estado</th></tr></thead><tbody>
-@forelse($expedientes as $e)<tr><td><a href="{{ route('app.expediente',$e) }}">{{ $e->codigo }}</a></td><td>{{ $e->solicitud?->tramite->nombre }}</td><td><span class="estado estado-{{ $e->estado }}">{{ $e->estado }}</span></td></tr>
+@forelse($expedientes as $e)<tr><td><a href="{{ route('app.expediente',$e) }}">{{ $e->codigo }}</a></td><td>{{ $e->solicitud?->tramite->nombre ?? 'Comunicación oficial (DocDigital)' }}</td><td><span class="estado estado-{{ $e->estado }}">{{ $e->estado }}</span></td></tr>
 @empty<tr><td colspan="3">Sin expedientes.</td></tr>@endforelse</tbody></table>
 @endsection

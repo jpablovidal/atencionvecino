@@ -30,6 +30,9 @@ class NotificacionService
             throw new FlujoException('Seleccione documentos vigentes del expediente.');
         }
         $s = $e->solicitud;
+        if (! $s) {
+            throw new FlujoException('Este expediente no tiene un solicitante ciudadano a quien notificar; responda por DocDigital.');
+        }
         $out = DB::transaction(function () use ($docs, $e, $s, $canal, $u) {
             $r = [];
             foreach ($docs as $d) {

@@ -78,6 +78,8 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::post('/expedientes/{expediente}/pisee', [InteropController::class, 'pisee'])->middleware('throttle:interop')->name('pisee.consultar');
     Route::post('/expedientes/{expediente}/comunicaciones', [InteropController::class, 'comunicar'])->middleware('throttle:interop')->name('comunicacion.crear');
     Route::post('/comunicaciones/{comunicacion}/evidencia', [InteropController::class, 'evidencia'])->name('comunicacion.evidencia');
+    Route::post('/comunicaciones/{comunicacion}/acuse', [InteropController::class, 'acuse'])->middleware('throttle:interop')->name('comunicacion.acuse');
+    Route::post('/expedientes/{expediente}/asignarme', [ExpedienteController::class, 'asignarme'])->name('expediente.asignarme');
     Route::post('/comunicaciones/{comunicacion}/reintentar', [InteropController::class, 'reintentar'])->name('comunicacion.reintentar');
     Route::get('/comunicaciones', [InteropController::class, 'bandeja'])->name('comunicaciones');
     Route::get('/comunicaciones/{comunicacion}/archivo', [InteropController::class, 'archivo'])->name('comunicacion.archivo');

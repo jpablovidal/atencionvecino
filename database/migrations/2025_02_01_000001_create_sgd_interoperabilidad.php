@@ -81,6 +81,11 @@ return new class extends Migration
             $t->timestamp('created_at')->useCurrent();
         });
 
+        Schema::table('expedientes', function (Blueprint $t) {
+            $t->string('origen', 12)->default('solicitud'); // solicitud|docdigital
+            $t->unsignedBigInteger('comunicacion_id')->nullable()->index(); // sin FK (referencia circular con comunicaciones_oficiales)
+        });
+
         $this->t('comunicaciones_oficiales', function (Blueprint $t) {
             $t->id();
             $t->string('direccion', 10); // saliente|entrante
@@ -96,6 +101,12 @@ return new class extends Migration
             $t->unsignedTinyInteger('intentos')->default(0);
             $t->string('ultimo_error', 120)->nullable();
             $t->unsignedBigInteger('archivo_id')->nullable();
+            $t->unsignedBigInteger('responde_a_id')->nullable()->index(); // saliente que responde a una entrante
+            $t->string('acuse_estado', 10)->nullable(); // entrante: pendiente|registrado
+            $t->string('acuse_tipo', 10)->nullable(); // api|manual|simulado
+            $t->string('acuse_evidencia', 255)->nullable();
+            $t->timestamp('acuse_en')->nullable();
+            $t->foreignId('acuse_por_id')->nullable()->constrained('usuarios');
             $t->foreignId('unidad_id')->nullable()->constrained('unidades');
             $t->foreignId('creado_por')->nullable()->constrained('usuarios');
             $t->timestamps();
@@ -109,6 +120,7 @@ return new class extends Migration
         foreach (['comunicaciones_oficiales', 'pisee_consultas', 'pisee_servicios', 'procesos_codificador', 'instituciones'] as $n) {
             Schema::dropIfExists($n);
         }
+        Schema::table('expedientes', fn (Blueprint $t) => $t->dropColumn(['origen', 'comunicacion_id']));
         Schema::table('documentos', fn (Blueprint $t) => $t->dropColumn(['pdf_firmado_ruta', 'pdf_firmado_sha256']));
         Schema::table('tramites', fn (Blueprint $t) => $t->dropColumn('proceso_codigo'));
     }

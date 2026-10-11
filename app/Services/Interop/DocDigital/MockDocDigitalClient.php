@@ -10,6 +10,11 @@ class MockDocDigitalClient implements DocDigitalClient
         return ['id' => 'SIM-'.bin2hex(random_bytes(6)), 'simulado' => true];
     }
 
+    public function acusarRecibo(string $id): array
+    {
+        return ['evidencia' => 'SIM-ACUSE-'.bin2hex(random_bytes(4)), 'simulado' => true];
+    }
+
     public function recibidos(): array
     {
         return [];

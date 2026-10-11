@@ -67,6 +67,26 @@ class InteropController extends Controller
         return back()->with('ok', 'Evidencia registrada.');
     }
 
+    public function acuse(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
+    {
+        if ($comunicacion->direccion !== 'entrante' || $comunicacion->expediente_id === null) {
+            abort(404);
+        }
+        $this->authorize('operar', Expediente::query()->findOrFail($comunicacion->expediente_id));
+        try {
+            if ($svc->modoApi()) {
+                $svc->acusarRecibo($comunicacion, $r->user());
+            } else {
+                $d = $r->validate(['evidencia' => 'required|string|max:200']);
+                $svc->acusarManual($comunicacion, $r->user(), $d['evidencia']);
+            }
+        } catch (FlujoException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Acuse de recibo registrado.');
+    }
+
     public function reintentar(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
     {
         if ($comunicacion->expediente_id === null || $comunicacion->estado !== 'fallida' || ! $svc->modoApi()) {

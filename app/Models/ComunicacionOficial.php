@@ -21,6 +21,12 @@ use Illuminate\Support\Carbon;
  * @property int $intentos
  * @property string|null $ultimo_error
  * @property int|null $archivo_id
+ * @property int|null $responde_a_id
+ * @property string|null $acuse_estado
+ * @property string|null $acuse_tipo
+ * @property string|null $acuse_evidencia
+ * @property string|null $acuse_en
+ * @property int|null $acuse_por_id
  * @property int|null $unidad_id
  * @property int|null $creado_por
  * @property string|null $created_at

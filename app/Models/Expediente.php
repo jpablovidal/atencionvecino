@@ -12,13 +12,15 @@ use Illuminate\Support\Carbon;
  * @property string $codigo
  * @property int|null $solicitud_id
  * @property int $unidad_id
- * @property int $responsable_id
+ * @property int|null $responsable_id
  * @property string $estado
  * @property array<mixed> $metadatos
  * @property string|null $motivo_reapertura
  * @property Carbon|null $cerrado_en
  * @property string|null $created_at
  * @property string|null $updated_at
+ * @property string $origen
+ * @property int|null $comunicacion_id
  */
 class Expediente extends Model
 {

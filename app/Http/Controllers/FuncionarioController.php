@@ -26,9 +26,11 @@ class FuncionarioController extends Controller
         $entrantes = collect();
         $mios = Expediente::query()->with('solicitud.tramite')->orderByDesc('id');
         $pasos = collect();
+        $porAsignar = collect();
         if ($u->operaExpedientes()) {
             $entrantes = Solicitud::query()->with('tramite')->where('estado', 'ingresada')->whereNull('expediente_id')
                 ->whereHas('tramite.unidades', fn ($q) => $q->where('unidades.id', $u->unidad_id))->orderBy('id')->get();
+            $porAsignar = Expediente::query()->where('origen', 'docdigital')->whereNull('responsable_id')->where('estado', 'abierto')->where('unidad_id', $u->unidad_id)->orderBy('id')->get();
             $mios->where(fn ($q) => $q->where('unidad_id', $u->unidad_id)->orWhere('responsable_id', $u->id)
                 ->orWhereHas('derivaciones', fn ($d) => $d->where('a_usuario_id', $u->id))
                 ->orWhereHas('documentos.pasos', fn ($p) => $p->where('usuario_id', $u->id)));
@@ -37,7 +39,7 @@ class FuncionarioController extends Controller
                 ->filter(fn ($p) => ! DocumentoPaso::query()->where('documento_id', $p->documento_id)->where('estado', 'pendiente')->where('orden', '<', $p->orden)->exists());
         }
 
-        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $mios->limit(100)->get(), 'pasos' => $pasos]);
+        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $mios->limit(100)->get(), 'pasos' => $pasos, 'porAsignar' => $porAsignar]);
     }
 
     private function solicitudDeMiUnidad(Request $r, string $folio): Solicitud
