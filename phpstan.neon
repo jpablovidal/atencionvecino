@@ -1,0 +1,10 @@
+# Análisis estático. Con Larastan instalado (composer require --dev larastan/larastan) descomente la línea includes.
+# includes:
+#     - vendor/larastan/larastan/extension.neon
+parameters:
+    level: 5
+    paths:
+        - app
+    excludePaths:
+        - app/Support/SchemaSql.php
+    treatPhpDocTypesAsCertain: false

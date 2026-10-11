@@ -1,0 +1,12 @@
+@extends('layouts.app')
+@section('titulo', 'Mis solicitudes')
+@section('contenido')
+<h1>Mis solicitudes</h1>
+<p>Bienvenido(a), <strong>{{ $c['nombres'] }} {{ $c['apellidos'] }}</strong> (RUN {{ $c['run'] }}).</p>
+<h2 class="h4">Ingresar una nueva solicitud</h2>
+<ul>@foreach($tramites as $t)<li><a href="{{ route('ciudadano.nueva',$t) }}">{{ $t->nombre }}</a></li>@endforeach</ul>
+<h2 class="h4 mt-4">Historial</h2>
+<table class="table table-sm"><caption class="sr-only">Mis solicitudes</caption><thead><tr><th>Folio</th><th>Trámite</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
+@forelse($solicitudes as $s)<tr><td><a href="{{ route('ciudadano.solicitud',$s->folio) }}">{{ $s->folio }}</a></td><td>{{ $s->tramite->nombre }}</td><td>{{ $s->created_at->format('d-m-Y') }}</td><td><span class="estado estado-{{ $s->estado }}">{{ str_replace('_',' ',$s->estado) }}</span></td></tr>
+@empty<tr><td colspan="4">Aún no ha ingresado solicitudes.</td></tr>@endforelse</tbody></table>
+@endsection
