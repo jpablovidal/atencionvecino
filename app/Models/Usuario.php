@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Permisos;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,7 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
  * @property bool $activo
  * @property string|null $created_at
  * @property string|null $updated_at
+ * @property string|null $ultimo_acceso
  */
 class Usuario extends Model implements AuthenticatableContract
 {
@@ -45,9 +47,53 @@ class Usuario extends Model implements AuthenticatableContract
         return trim($this->nombres.' '.$this->apellidos);
     }
 
+    private ?string $rolBaseCache = null;
+
+    /** @var array<int,string>|null */
+    private ?array $permisosCache = null;
+
+    /** Rol base (admin|funcionario|alcalde|secretario|auditor): los roles personalizados heredan las invariantes de su base. */
+    public function rolBase(): string
+    {
+        if ($this->rolBaseCache !== null) {
+            return $this->rolBaseCache;
+        }
+        if (in_array($this->rol, self::ROLES, true)) {
+            return $this->rolBaseCache = $this->rol;
+        }
+
+        return $this->rolBaseCache = (string) (Rol::query()->where('clave', $this->rol)->where('activo', true)->value('rol_base') ?? 'sin-rol');
+    }
+
     public function esRol(string ...$roles): bool
     {
-        return in_array($this->rol, $roles, true);
+        return in_array($this->rolBase(), $roles, true);
+    }
+
+    /** ¿Tiene el permiso? Roles del sistema: los de su base. Personalizados: los asignados, acotados por el techo de su base. */
+    public function tienePermiso(string $permiso): bool
+    {
+        if (! $this->activo) {
+            return false;
+        }
+        if ($this->permisosCache === null) {
+            $base = $this->rolBase();
+            $techo = Permisos::deBase($base);
+            if (in_array($this->rol, self::ROLES, true)) {
+                $this->permisosCache = $techo;
+            } else {
+                $rol = Rol::query()->where('clave', $this->rol)->where('activo', true)->first();
+                $this->permisosCache = $rol ? array_values(array_intersect($rol->permisos(), $techo)) : [];
+            }
+        }
+
+        return in_array($permiso, $this->permisosCache, true);
+    }
+
+    /** Usuarios que operan expedientes (roles base funcionario/alcalde/secretario, incluidos los roles personalizados). */
+    public function scopeOperadores($q)
+    {
+        return $q->whereIn('rol', Rol::query()->whereIn('rol_base', ['funcionario', 'alcalde', 'secretario'])->where('activo', true)->pluck('clave')->all());
     }
 
     /** Roles que operan expedientes (el admin no). */

@@ -3,6 +3,9 @@
 return [
     'nombre' => 'SGD - I. Municipalidad de Santo Domingo',
 
+    // Permite guardar secretos (cifrados con APP_KEY) en la BD desde el mantenedor de APIs. Apagado por defecto: usar .env.
+    'api_secretos_en_bd' => (bool) env('SGD_API_SECRETOS_EN_BD', false),
+
     // Accesibilidad: canal de contacto para reportar barreras (declaración de accesibilidad)
     'accesibilidad_contacto' => env('SGD_ACCESIBILIDAD_CONTACTO', 'accesibilidad@santodomingo.cl'),
 
@@ -20,6 +23,16 @@ return [
     // Subidas
     'upload_max_bytes' => 10 * 1024 * 1024,
     'upload_max_files' => 8,
+
+    // Repositorio de documentos: local (disco fuera del docroot) | drive (unidad compartida de Google Drive)
+    'repositorio' => [
+        'modo' => env('REPOSITORIO_MODO', 'local'),
+        'drive_sa_json' => env('GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON'),
+        'drive_shared_drive_id' => env('GOOGLE_DRIVE_SHARED_DRIVE_ID'),
+        'drive_root_folder_id' => env('GOOGLE_DRIVE_ROOT_FOLDER_ID'),
+        'timeout' => 30,
+        'max_bytes' => 25 * 1024 * 1024,
+    ],
 
     // ClaveÚnica (OIDC)
     'claveunica' => [

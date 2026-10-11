@@ -30,7 +30,7 @@ class SeguridadController extends Controller
 
     public function incidente(Request $r)
     {
-        abort_unless($r->user()->rol === 'admin', 403); // el auditor es solo lectura
+        $this->permiso('incidentes.gestionar'); // el auditor es solo lectura
         $d = $r->validate(['titulo' => 'required|string|max:190', 'descripcion' => 'required|string|max:4000', 'severidad' => 'required|in:baja,media,alta,critica', 'reportable_csirt' => 'nullable|boolean']);
         $i = Incidente::query()->create($d + ['detectado_en' => now(), 'creado_por' => $r->user()->id, 'reportable_csirt' => (bool) ($d['reportable_csirt'] ?? false)]);
         $this->audit->registrar('incidente.crear', 'incidente', $i->id, ['severidad' => $d['severidad']]);
@@ -40,7 +40,7 @@ class SeguridadController extends Controller
 
     public function actualizarIncidente(Request $r, Incidente $incidente)
     {
-        abort_unless($r->user()->rol === 'admin', 403);
+        $this->permiso('incidentes.gestionar');
         $d = $r->validate(['estado' => 'required|in:abierto,contenido,cerrado', 'marca' => 'nullable|in:alerta_temprana,segundo_reporte,informe_final']);
         $incidente->estado = $d['estado'];
         if (! empty($d['marca'])) {

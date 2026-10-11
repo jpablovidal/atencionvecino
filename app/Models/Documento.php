@@ -32,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $updated_at
  * @property string|null $pdf_firmado_ruta
  * @property string|null $pdf_firmado_sha256
+ * @property string|null $folio
  */
 class Documento extends Model
 {
@@ -84,7 +85,7 @@ class Documento extends Model
 
     public function numeroFormateado(): ?string
     {
-        return $this->numero ? sprintf('%s N° %02d/%d', $this->tipo->prefijo, $this->numero, $this->anio) : null;
+        return $this->folio ?? ($this->numero ? sprintf('%s N° %02d/%d', $this->tipo->prefijo, $this->numero, $this->anio) : null);
     }
 
     public function esPublico(): bool

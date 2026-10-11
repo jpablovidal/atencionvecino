@@ -50,12 +50,12 @@
     $items = [];
     if ($u) {
         $items[] = [route('app.bandeja'), 'Bandeja', 'app'];
-        if ($u->operaExpedientes() || $u->rol === 'auditor') {
+        if ($u->operaExpedientes() || $u->rolBase() === 'auditor') {
             $items[] = [route('app.vigentes'), 'Documentos vigentes', 'app/vigentes'];
             $items[] = [route('app.comunicaciones'), 'Comunicaciones oficiales', 'app/comunicaciones*'];
         }
         if ($u->esRol('alcalde', 'admin', 'auditor')) { $items[] = [route('app.delegaciones'), 'Delegaciones de firma', 'app/delegaciones*']; }
-        if ($u->rol === 'admin') {
+        if ($u->rolBase() === 'admin') {
             foreach (['unidades' => 'Unidades', 'usuarios' => 'Usuarios', 'tramites' => 'Trámites', 'tipos' => 'Tipos de documento', 'plantillas' => 'Plantillas', 'instituciones' => 'Instituciones', 'procesos' => 'Procesos', 'pisee' => 'Servicios PISEE'] as $k => $v) { $items[] = [route('app.admin.index', $k), $v, 'app/admin/'.$k.'*']; }
             $items[] = [route('app.admin.codificador'), 'Codificador', 'app/admin/codificador*'];
             $items[] = [route('app.diagnostico'), 'Diagnóstico', 'app/diagnostico'];

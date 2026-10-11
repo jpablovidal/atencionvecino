@@ -102,9 +102,9 @@ class InteropController extends Controller
     public function bandeja(Request $r)
     {
         $u = $r->user();
-        abort_unless($u->operaExpedientes() || $u->rol === 'auditor', 403);
+        abort_unless($u->operaExpedientes() || $u->rolBase() === 'auditor', 403);
         $q = ComunicacionOficial::query()->where('direccion', 'entrante')->orderByDesc('id');
-        if ($u->rol !== 'auditor') {
+        if ($u->rolBase() !== 'auditor') {
             $q->where('unidad_id', $u->unidad_id);
         }
 
@@ -114,7 +114,7 @@ class InteropController extends Controller
     public function archivo(Request $r, ComunicacionOficial $comunicacion, FileVault $vault)
     {
         $u = $r->user();
-        abort_unless($comunicacion->direccion === 'entrante' && $comunicacion->archivo_id && ($u->rol === 'auditor' || ($u->operaExpedientes() && $u->unidad_id === $comunicacion->unidad_id)), 404);
+        abort_unless($comunicacion->direccion === 'entrante' && $comunicacion->archivo_id && ($u->rolBase() === 'auditor' || ($u->operaExpedientes() && $u->unidad_id === $comunicacion->unidad_id)), 404);
         $a = Archivo::query()->findOrFail($comunicacion->archivo_id);
         $this->audit->registrar('docdigital.descarga', 'comunicacion', $comunicacion->id, [], true);
 
@@ -124,6 +124,8 @@ class InteropController extends Controller
     // ---- Codificador (solo admin)
     public function codificador()
     {
+        $this->permiso('codificador.gestionar');
+
         return view('app.codificador', [
             'inst' => Institucion::query()->count(), 'proc' => ProcesoCodificador::query()->count(),
             'modo' => config('sgd.codificador.mode'), 'miCodigo' => config('sgd.institucion_codigo'), 'resultado' => session('resultado'),
@@ -132,6 +134,7 @@ class InteropController extends Controller
 
     public function importar(Request $r, CodificadorService $svc)
     {
+        $this->permiso('codificador.gestionar');
         $d = $r->validate(['entidad' => 'required|in:instituciones,procesos', 'archivo' => 'required|file|max:5120']);
         try {
             $res = $svc->importarCsv($d['entidad'], (string) file_get_contents($r->file('archivo')->getRealPath()));
@@ -144,6 +147,7 @@ class InteropController extends Controller
 
     public function sincronizar(CodificadorService $svc)
     {
+        $this->permiso('codificador.gestionar');
         try {
             $res = $svc->sincronizar();
         } catch (FlujoException $e) {

@@ -11,3 +11,4 @@ Schedule::command('queue:prune-failed --hours=720')->dailyAt('03:30');
 Schedule::command('cache:prune-stale-tags')->hourly();
 Schedule::call(fn () => DB::table('sessions')->where('last_activity', '<', now()->subHours(9)->timestamp)->delete())->hourly();
 Schedule::command('docdigital:sincronizar')->everyTenMinutes()->withoutOverlapping(10);
+Schedule::command('repositorio:operar verificar --n=5')->dailyAt('03:40');

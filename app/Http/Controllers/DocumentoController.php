@@ -43,7 +43,7 @@ class DocumentoController extends Controller
         return view('app.documento', [
             'd' => $documento, 'turno' => $turno, 'miTurno' => $turno && $turno->usuario_id === $u->id,
             'puedeOperar' => $u->can('operar', $documento),
-            'usuarios' => Usuario::query()->where('activo', true)->whereIn('rol', ['funcionario', 'alcalde', 'secretario'])->orderBy('apellidos')->get(),
+            'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'llm' => (bool) config('sgd.llm.enabled'),
             'completos' => $documento->estado === 'en_flujo' && $documento->pasos->isNotEmpty() && $documento->pasos->every(fn ($p) => $p->estado === 'completado'),
         ]);

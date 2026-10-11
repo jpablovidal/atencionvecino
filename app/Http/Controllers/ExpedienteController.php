@@ -37,7 +37,7 @@ class ExpedienteController extends Controller
             'e' => $expediente, 'indice' => $svc->indice($expediente),
             'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(),
             'plantillas' => Plantilla::query()->where('activo', true)->get(),
-            'usuarios' => Usuario::query()->where('activo', true)->whereIn('rol', ['funcionario', 'alcalde', 'secretario'])->orderBy('apellidos')->get(),
+            'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'puedeOperar' => $r->user()->can('operar', $expediente),
             'instituciones' => Institucion::query()->where('activo', true)->orderBy('nombre')->get(['codigo', 'nombre']),
             'servicios' => PiseeServicio::query()->where('activo', true)->orderBy('nombre')->get(),

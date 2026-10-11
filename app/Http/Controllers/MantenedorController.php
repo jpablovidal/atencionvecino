@@ -29,11 +29,11 @@ class MantenedorController extends Controller
     private function def(string $entidad): array
     {
         $defs = [
-            'unidades' => ['modelo' => Unidad::class, 'titulo' => 'Unidades', 'cols' => ['codigo', 'nombre'], 'campos' => [
+            'unidades' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Unidad::class, 'titulo' => 'Unidades', 'cols' => ['codigo', 'nombre'], 'campos' => [
                 'codigo' => ['Código', 'text', ['required', 'string', 'max:30']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:150']],
             ], 'unico' => ['codigo']],
-            'usuarios' => ['modelo' => Usuario::class, 'titulo' => 'Usuarios', 'cols' => ['run', 'nombres', 'apellidos', 'rol'], 'campos' => [
+            'usuarios' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Usuario::class, 'titulo' => 'Usuarios', 'cols' => ['run', 'nombres', 'apellidos', 'rol'], 'campos' => [
                 'run' => ['RUN (con guion y DV)', 'text', ['required', 'string', 'max:12']],
                 'nombres' => ['Nombres', 'text', ['required', 'string', 'max:120']],
                 'apellidos' => ['Apellidos', 'text', ['required', 'string', 'max:120']],
@@ -43,7 +43,7 @@ class MantenedorController extends Controller
                 'unidad_id' => ['Unidad', 'unidad', ['nullable', 'integer', 'exists:unidades,id']],
                 'puede_firmar' => ['Habilitado para firmar', 'check', ['nullable', 'boolean']],
             ], 'unico' => ['run']],
-            'tramites' => ['modelo' => Tramite::class, 'titulo' => 'Trámites y servicios', 'cols' => ['codigo_interno', 'nombre', 'codigo_cpat'], 'campos' => [
+            'tramites' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Tramite::class, 'titulo' => 'Trámites y servicios', 'cols' => ['codigo_interno', 'nombre', 'codigo_cpat'], 'campos' => [
                 'codigo_interno' => ['Código interno', 'text', ['required', 'string', 'max:40']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
                 'descripcion' => ['Descripción', 'textarea', ['nullable', 'string', 'max:2000']],
@@ -53,7 +53,7 @@ class MantenedorController extends Controller
                 'unidades' => ['Unidades responsables', 'unidades', ['required', 'array', 'min:1']],
                 'anexos_txt' => ['Anexos requeridos (uno por línea: Nombre|1 obligatorio, Nombre|0 opcional)', 'textarea', ['nullable', 'string', 'max:2000']],
             ], 'unico' => ['codigo_interno']],
-            'tipos' => ['modelo' => TipoDocumento::class, 'titulo' => 'Tipos de documento', 'cols' => ['codigo', 'nombre', 'prefijo'], 'campos' => [
+            'tipos' => ['permiso' => 'mantenedores.gestionar', 'modelo' => TipoDocumento::class, 'titulo' => 'Tipos de documento', 'cols' => ['codigo', 'nombre', 'prefijo'], 'campos' => [
                 'codigo' => ['Código', 'text', ['required', 'string', 'max:30']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:120']],
                 'prefijo' => ['Prefijo de numeración', 'text', ['required', 'string', 'max:10']],
@@ -61,18 +61,18 @@ class MantenedorController extends Controller
                 'firmas_agil' => ['Firmas en flujo ágil', 'number', ['required', 'integer', 'between:1,3']],
                 'firmas_clasico' => ['Firmas en flujo clásico', 'number', ['required', 'integer', 'between:1,3']],
             ], 'unico' => ['codigo']],
-            'instituciones' => ['modelo' => Institucion::class, 'titulo' => 'Codificador: instituciones', 'cols' => ['codigo', 'nombre', 'tipo', 'origen'], 'campos' => [
+            'instituciones' => ['permiso' => 'codificador.gestionar', 'modelo' => Institucion::class, 'titulo' => 'Codificador: instituciones', 'cols' => ['codigo', 'nombre', 'tipo', 'origen'], 'campos' => [
                 'codigo' => ['Código (Codificador)', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
                 'tipo' => ['Tipo', 'text', ['nullable', 'string', 'max:60']],
                 'codigo_padre' => ['Código de la institución padre', 'text', ['nullable', 'string', 'max:40']],
             ], 'unico' => ['codigo']],
-            'procesos' => ['modelo' => ProcesoCodificador::class, 'titulo' => 'Codificador: procesos', 'cols' => ['codigo', 'nombre', 'institucion_codigo', 'origen'], 'campos' => [
+            'procesos' => ['permiso' => 'codificador.gestionar', 'modelo' => ProcesoCodificador::class, 'titulo' => 'Codificador: procesos', 'cols' => ['codigo', 'nombre', 'institucion_codigo', 'origen'], 'campos' => [
                 'codigo' => ['Código (Codificador)', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
                 'institucion_codigo' => ['Código de la institución', 'text', ['nullable', 'string', 'max:40']],
             ], 'unico' => ['codigo']],
-            'pisee' => ['modelo' => PiseeServicio::class, 'titulo' => 'Servicios PISEE (lista blanca)', 'cols' => ['codigo', 'nombre', 'ruta', 'metodo'], 'campos' => [
+            'pisee' => ['permiso' => 'codificador.gestionar', 'modelo' => PiseeServicio::class, 'titulo' => 'Servicios PISEE (lista blanca)', 'cols' => ['codigo', 'nombre', 'ruta', 'metodo'], 'campos' => [
                 'codigo' => ['Código interno', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],
                 'nombre' => ['Nombre del servicio', 'text', ['required', 'string', 'max:190']],
                 'institucion_codigo' => ['Institución proveedora (código)', 'text', ['nullable', 'string', 'max:40']],
@@ -81,13 +81,14 @@ class MantenedorController extends Controller
                 'param_run' => ['Parámetro que lleva el RUN (vacío = no envía RUN)', 'text', ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9_\\-]+$/']],
                 'descripcion' => ['Descripción / base legal', 'textarea', ['nullable', 'string', 'max:2000']],
             ], 'unico' => ['codigo']],
-            'plantillas' => ['modelo' => Plantilla::class, 'titulo' => 'Plantillas', 'cols' => ['nombre'], 'campos' => [
+            'plantillas' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Plantilla::class, 'titulo' => 'Plantillas', 'cols' => ['nombre'], 'campos' => [
                 'tipo_documento_id' => ['Tipo de documento', 'tipo', ['required', 'integer', 'exists:tipos_documento,id']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:150']],
                 'contenido_html' => ['Contenido ({{fecha}}, {{expediente}}, {{solicitante_nombre}}, {{solicitante_run}}, {{folio}}, {{tramite}}, {{unidad}})', 'editor', ['required', 'string', 'max:200000']],
             ], 'unico' => []],
         ];
         abort_unless(isset($defs[$entidad]), 404);
+        $this->permiso($defs[$entidad]['permiso']);
 
         return $defs[$entidad];
     }
@@ -211,7 +212,7 @@ class MantenedorController extends Controller
         return view('app.delegaciones', [
             'filas' => DelegacionFirma::query()->with(['tipo', 'delegado'])->orderByDesc('id')->get(),
             'tipos' => TipoDocumento::query()->where('activo', true)->where('firma_alcalde', true)->get(),
-            'usuarios' => Usuario::query()->where('activo', true)->where('puede_firmar', true)->whereIn('rol', ['funcionario', 'secretario'])->orderBy('apellidos')->get(),
+            'usuarios' => Usuario::query()->where('activo', true)->where('puede_firmar', true)->operadores()->where('rol', '!=', 'alcalde')->orderBy('apellidos')->get(),
         ]);
     }
 

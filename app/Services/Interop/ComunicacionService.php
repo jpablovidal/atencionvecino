@@ -158,7 +158,7 @@ class ComunicacionService
                 });
             } catch (\Throwable $t) {
                 if ($ruta) {
-                    @unlink(config('sgd.storage_path').'/'.$ruta);
+                    $this->vault->delete($ruta);
                 }
                 throw $t;
             }

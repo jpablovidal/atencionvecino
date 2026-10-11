@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureCiudadano;
 use App\Http\Middleware\EnsureFuncionario;
+use App\Http\Middleware\EnsurePermiso;
 use App\Http\Middleware\EnsureRol;
 use App\Http\Middleware\NoStore;
 use App\Http\Middleware\SecurityHeaders;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ciudadano' => EnsureCiudadano::class,
             'funcionario' => EnsureFuncionario::class,
             'rol' => EnsureRol::class,
+            'permiso' => EnsurePermiso::class,
             'nostore' => NoStore::class,
         ]);
     })

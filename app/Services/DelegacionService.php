@@ -14,7 +14,7 @@ class DelegacionService
         if (! $u->activo || ! $u->puede_firmar) {
             return false;
         }
-        if ($u->rol === 'alcalde') {
+        if ($u->rolBase() === 'alcalde') {
             return true;
         }
         $hoy = now('America/Santiago')->toDateString();

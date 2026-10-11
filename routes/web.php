@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\FoliosController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\InteropController;
 use App\Http\Controllers\MantenedorController;
 use App\Http\Controllers\PublicoController;
+use App\Http\Controllers\RepositorioController;
 use App\Http\Controllers\SeguridadController;
 use Illuminate\Support\Facades\Route;
 
@@ -90,19 +93,43 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::get('/comunicaciones', [InteropController::class, 'bandeja'])->name('comunicaciones');
     Route::get('/comunicaciones/{comunicacion}/archivo', [InteropController::class, 'archivo'])->name('comunicacion.archivo');
 
-    Route::middleware('rol:admin,auditor')->group(function () {
+    Route::middleware('permiso:seguridad.ver,logs.ver')->group(function () {
         Route::get('/seguridad', [SeguridadController::class, 'panel'])->name('seguridad');
         Route::post('/seguridad/verificar', [SeguridadController::class, 'verificar'])->name('seguridad.verificar');
         Route::post('/seguridad/incidentes', [SeguridadController::class, 'incidente'])->name('seguridad.incidente');
         Route::post('/seguridad/incidentes/{incidente}', [SeguridadController::class, 'actualizarIncidente'])->name('seguridad.incidente.actualizar');
     });
-    Route::get('/diagnostico', [SeguridadController::class, 'diagnostico'])->middleware('rol:admin')->name('diagnostico');
+    Route::get('/diagnostico', [SeguridadController::class, 'diagnostico'])->middleware('permiso:diagnostico.ver')->name('diagnostico');
 
-    Route::get('/delegaciones', [MantenedorController::class, 'delegaciones'])->middleware('rol:alcalde,admin,auditor')->name('delegaciones');
-    Route::post('/delegaciones', [MantenedorController::class, 'crearDelegacion'])->middleware('rol:alcalde')->name('delegaciones.crear');
-    Route::post('/delegaciones/{delegacion}/revocar', [MantenedorController::class, 'revocarDelegacion'])->middleware('rol:alcalde')->name('delegaciones.revocar');
+    Route::get('/delegaciones', [MantenedorController::class, 'delegaciones'])->middleware('permiso:delegaciones.ver')->name('delegaciones');
+    Route::post('/delegaciones', [MantenedorController::class, 'crearDelegacion'])->middleware('permiso:delegaciones.crear')->name('delegaciones.crear');
+    Route::post('/delegaciones/{delegacion}/revocar', [MantenedorController::class, 'revocarDelegacion'])->middleware('permiso:delegaciones.crear')->name('delegaciones.revocar');
 
-    Route::middleware('rol:admin')->prefix('admin')->name('admin.')->group(function () {
+    // ---- Administración (módulos específicos ANTES del mantenedor genérico /{entidad})
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::middleware('permiso:api.gestionar')->group(function () {
+            Route::get('/api', [ApiConfigController::class, 'index'])->name('api');
+            Route::get('/api/{servicio}', [ApiConfigController::class, 'editar'])->name('api.editar');
+            Route::post('/api/{servicio}', [ApiConfigController::class, 'actualizar'])->name('api.actualizar');
+            Route::post('/api/{servicio}/probar', [ApiConfigController::class, 'probar'])->name('api.probar');
+            Route::post('/api/{servicio}/env', [ApiConfigController::class, 'volverEnv'])->name('api.env');
+        });
+        Route::middleware('permiso:repositorio.gestionar')->group(function () {
+            Route::get('/repositorio', [RepositorioController::class, 'index'])->name('repositorio');
+            Route::post('/repositorio', [RepositorioController::class, 'guardar'])->name('repositorio.guardar');
+            Route::post('/repositorio/probar', [RepositorioController::class, 'probar'])->name('repositorio.probar');
+            Route::post('/repositorio/verificar', [RepositorioController::class, 'verificar'])->name('repositorio.verificar');
+            Route::post('/repositorio/migrar', [RepositorioController::class, 'migrar'])->name('repositorio.migrar');
+        });
+        Route::middleware('permiso:folios.gestionar')->group(function () {
+            Route::get('/folios', [FoliosController::class, 'index'])->name('folios');
+            Route::get('/folios/{tipo}', [FoliosController::class, 'editar'])->name('folios.editar');
+            Route::post('/folios/{tipo}', [FoliosController::class, 'actualizar'])->name('folios.actualizar');
+            Route::post('/folios/{tipo}/ajustar', [FoliosController::class, 'ajustar'])->name('folios.ajustar');
+        });
+    });
+
+    Route::middleware('permiso:mantenedores.gestionar,codificador.gestionar')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/codificador', [InteropController::class, 'codificador'])->name('codificador');
         Route::post('/codificador/importar', [InteropController::class, 'importar'])->name('codificador.importar');
         Route::post('/codificador/sincronizar', [InteropController::class, 'sincronizar'])->name('codificador.sincronizar');

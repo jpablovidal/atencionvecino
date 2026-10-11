@@ -1,0 +1,241 @@
+<?php
+
+namespace App\Services\Admin;
+
+use App\Exceptions\FlujoException;
+use App\Models\ApiConfig;
+use App\Models\Usuario;
+use App\Services\AuditoriaService;
+use App\Services\Repositorio\DriveClient;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+
+/**
+ * Configuración de integraciones en BD con precedencia sobre .env (por servicio, si está "activo").
+ * Los valores NO secretos se guardan en claro; los secretos solo se guardan (cifrados con APP_KEY) si
+ * SGD_API_SECRETOS_EN_BD=1; nunca se muestran de vuelta. El archivo JSON de las cuentas de servicio sigue siendo una RUTA.
+ */
+class ApiConfigService
+{
+    private const CACHE = 'sgd_api_config_v1';
+
+    public function __construct(private readonly AuditoriaService $audit) {}
+
+    public static function secretosEnBd(): bool
+    {
+        return (bool) config('sgd.api_secretos_en_bd');
+    }
+
+    /** Aplica la configuración de BD sobre config(). Tolera BD sin migrar. */
+    public static function aplicar(): void
+    {
+        try {
+            $todo = Cache::remember(self::CACHE, 300, fn () => ApiConfig::query()->where('activo', true)->get(['servicio', 'valores', 'secretos'])->map(fn ($c) => [$c->servicio, (string) $c->valores, $c->secretos])->all());
+        } catch (\Throwable) {
+            return;
+        }
+        $cat = ApiCatalogo::servicios();
+        foreach ($todo as [$servicio, $valores, $secretos]) {
+            if (! isset($cat[$servicio])) {
+                continue;
+            }
+            $v = (array) json_decode($valores, true);
+            if ($secretos && self::secretosEnBd()) {
+                try {
+                    $v += (array) json_decode(Crypt::decryptString($secretos), true);
+                } catch (\Throwable) {
+                    // clave rotada o dato corrupto: se ignoran los secretos de BD
+                }
+            }
+            foreach ($cat[$servicio]['campos'] as $clave => $def) {
+                if (array_key_exists($clave, $v)) {
+                    config([$def[2] => $def[1] === 'bool' ? (bool) $v[$clave] : ($def[1] === 'number' ? (int) $v[$clave] : $v[$clave])]);
+                }
+            }
+        }
+    }
+
+    /** @return array{activo:bool,valores:array<string,mixed>,secretos_bd:array<int,string>} */
+    public function estado(string $servicio): array
+    {
+        $c = ApiConfig::query()->where('servicio', $servicio)->first();
+        $sec = [];
+        if ($c && $c->secretos && self::secretosEnBd()) {
+            try {
+                $sec = array_keys((array) json_decode(Crypt::decryptString($c->secretos), true));
+            } catch (\Throwable) {
+            }
+        }
+
+        return ['activo' => (bool) $c?->activo, 'valores' => (array) json_decode((string) $c?->valores, true), 'secretos_bd' => $sec];
+    }
+
+    /** Valor efectivo actual (BD si aplica, si no .env) de los campos NO secretos; para los secretos solo indica el origen. */
+    public function efectivo(string $servicio): array
+    {
+        $out = [];
+        foreach (ApiCatalogo::servicios()[$servicio]['campos'] as $clave => $def) {
+            $secreto = (bool) ($def[3]['secreto'] ?? false);
+            $val = config($def[2]);
+            $out[$clave] = ['secreto' => $secreto, 'valor' => $secreto ? null : $val, 'definido' => $val !== null && $val !== '' && $val !== false];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string,mixed>  $datos  campos no secretos y, si procede, secretos
+     * @param  array<int,string>  $borrar  secretos de BD a eliminar
+     */
+    public function guardar(string $servicio, array $datos, bool $activo, array $borrar, Usuario $u): void
+    {
+        $cat = ApiCatalogo::servicios()[$servicio] ?? throw new FlujoException('Servicio desconocido.');
+        $actual = ApiConfig::query()->where('servicio', $servicio)->first();
+        $valores = [];
+        $secretos = [];
+        if ($actual && $actual->secretos && self::secretosEnBd()) {
+            try {
+                $secretos = (array) json_decode(Crypt::decryptString($actual->secretos), true);
+            } catch (\Throwable) {
+            }
+        }
+        $tocados = [];
+        foreach ($cat['campos'] as $clave => $def) {
+            [$etiqueta, $tipo, , $op] = $def + [3 => []];
+            $v = $datos[$clave] ?? null;
+            if ($op['secreto'] ?? false) {
+                if (in_array($clave, $borrar, true)) {
+                    unset($secretos[$clave]);
+                    $tocados[] = $clave.' (borrado)';
+                } elseif ($v !== null && $v !== '') {
+                    if (! self::secretosEnBd()) {
+                        throw new FlujoException("«{$etiqueta}» es un secreto: defínalo en el archivo .env (el almacenamiento de secretos en BD está desactivado: SGD_API_SECRETOS_EN_BD).");
+                    }
+                    $secretos[$clave] = $this->validar($etiqueta, 'text', (string) $v, $op);
+                    $tocados[] = $clave.' (secreto)';
+                }
+
+                continue;
+            }
+            if ($tipo === 'bool') {
+                $valores[$clave] = (bool) $v;
+            } elseif ($v === null || $v === '') {
+                continue; // vacío: se usa el valor de .env
+            } else {
+                $valores[$clave] = $this->validar($etiqueta, $tipo, (string) $v, $op);
+            }
+            $tocados[] = $clave;
+        }
+        $this->validarCoherencia($servicio, $valores);
+        ApiConfig::query()->updateOrCreate(['servicio' => $servicio], [
+            'activo' => $activo, 'valores' => (string) json_encode($valores), 'actualizado_por' => $u->id,
+            'secretos' => $secretos ? Crypt::encryptString((string) json_encode($secretos)) : null,
+        ]);
+        Cache::forget(self::CACHE);
+        $this->audit->registrar('api.configurar', 'api_config', $servicio, ['campos' => $tocados, 'activo' => $activo]);
+    }
+
+    public function volverAEnv(string $servicio, Usuario $u): void
+    {
+        ApiConfig::query()->where('servicio', $servicio)->update(['activo' => false]);
+        Cache::forget(self::CACHE);
+        $this->audit->registrar('api.volver_env', 'api_config', $servicio);
+    }
+
+    /** @param array<string,mixed> $op */
+    private function validar(string $etiqueta, string $tipo, string $v, array $op): string
+    {
+        $v = trim($v);
+        if (mb_strlen($v) > 500 || preg_match('/[\r\n\0]/', $v)) {
+            throw new FlujoException("«{$etiqueta}»: valor inválido (máx. 500 caracteres, una línea).");
+        }
+
+        return match ($tipo) {
+            'select' => array_key_exists($v, $op['opciones'] ?? []) ? $v : throw new FlujoException("«{$etiqueta}»: opción no permitida."),
+            'url' => $this->url($etiqueta, $v, (bool) ($op['privada'] ?? false)),
+            'number' => ctype_digit($v) && (int) $v <= 100000 ? $v : throw new FlujoException("«{$etiqueta}»: debe ser un número entero."),
+            'path' => $this->ruta($etiqueta, $v),
+            default => $v,
+        };
+    }
+
+    private function url(string $etiqueta, string $v, bool $privadaOk): string
+    {
+        $p = parse_url($v);
+        if (! $p || ($p['scheme'] ?? '') !== 'https' || empty($p['host']) || isset($p['user']) || isset($p['pass'])) {
+            throw new FlujoException("«{$etiqueta}»: debe ser una URL https:// sin credenciales.");
+        }
+        $host = strtolower($p['host']);
+        if (! $privadaOk && ($host === 'localhost' || (filter_var($host, FILTER_VALIDATE_IP) && ! filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)))) {
+            throw new FlujoException("«{$etiqueta}»: no se permiten direcciones locales o privadas (protección SSRF).");
+        }
+
+        return $v;
+    }
+
+    private function ruta(string $etiqueta, string $v): string
+    {
+        if (! str_starts_with($v, '/') || str_contains($v, '..') || ! preg_match('#^/[A-Za-z0-9._\-/ ]+$#', $v)) {
+            throw new FlujoException("«{$etiqueta}»: debe ser una ruta absoluta sin «..».");
+        }
+        if (str_starts_with($v, rtrim(public_path(), '/').'/')) {
+            throw new FlujoException("«{$etiqueta}»: el archivo no puede estar dentro del docroot (public/).");
+        }
+
+        return $v;
+    }
+
+    /** @param array<string,mixed> $v */
+    private function validarCoherencia(string $servicio, array $v): void
+    {
+        if (app()->isProduction()) {
+            foreach (['claveunica' => ['mode', ['mock']], 'firmagob' => ['mode', ['mock']], 'docdigital' => ['mode', ['mock', 'demo']], 'pisee' => ['mode', ['mock']]] as $s => [$campo, $prohibidos]) {
+                if ($servicio === $s && in_array($v[$campo] ?? null, $prohibidos, true)) {
+                    throw new FlujoException('Ese modo está prohibido en producción.');
+                }
+            }
+        }
+        if ($servicio === 'repositorio' && ($v['modo'] ?? null) === 'drive') {
+            foreach (['drive_sa_json', 'drive_shared_drive_id', 'drive_root_folder_id'] as $c) {
+                if (empty($v[$c]) && empty(config('sgd.repositorio.'.$c))) {
+                    throw new FlujoException('Para usar Google Drive complete la cuenta de servicio, la unidad compartida y la carpeta raíz.');
+                }
+            }
+            foreach (['drive_shared_drive_id', 'drive_root_folder_id'] as $c) {
+                if (isset($v[$c]) && ! DriveClient::idValido($v[$c])) {
+                    throw new FlujoException('El ID de Drive debe tener entre 10 y 100 caracteres (letras, números, - y _).');
+                }
+            }
+        }
+    }
+
+    /**
+     * Validación estructural de una integración (no envía datos de ciudadanos).
+     *
+     * @return array<int,array{0:string,1:bool,2:string}>
+     */
+    public function probar(string $servicio): array
+    {
+        $cat = ApiCatalogo::servicios()[$servicio] ?? throw new FlujoException('Servicio desconocido.');
+        $out = [];
+        foreach ($cat['campos'] as $clave => $def) {
+            [$etiqueta, $tipo, $path, $op] = $def + [3 => []];
+            $val = config($path);
+            $vacio = $val === null || $val === '' || $val === false;
+            $solo = ['mode', 'modo'];
+            $out[] = [$etiqueta, ! $vacio || $tipo === 'bool' || in_array($clave, $solo, true), $vacio ? 'sin definir' : (($op['secreto'] ?? false) ? 'definido' : ($tipo === 'path' ? (is_file((string) $val) ? 'archivo presente' : 'el archivo NO existe') : 'definido'))];
+            if ($tipo === 'path' && ! $vacio && ! is_file((string) $val)) {
+                $out[count($out) - 1][1] = false;
+            }
+            if ($tipo === 'path' && ! $vacio && is_file((string) $val) && (fileperms((string) $val) & 0007) !== 0) {
+                $out[] = [$etiqueta.': permisos', false, 'el archivo es legible por "otros": use permisos 600/640'];
+            }
+        }
+        if ($servicio === 'google_mail' && ($f = config('sgd.google.service_account_json')) && is_file((string) $f)) {
+            $j = json_decode((string) file_get_contents((string) $f), true);
+            $out[] = ['Contenido del JSON (client_email y private_key)', is_array($j) && ! empty($j['client_email']) && ! empty($j['private_key']) && openssl_pkey_get_private($j['private_key']) !== false, 'estructura de cuenta de servicio'];
+        }
+
+        return $out;
+    }
+}

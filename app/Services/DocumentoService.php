@@ -25,6 +25,7 @@ class DocumentoService
         private readonly DelegacionService $delegaciones,
         private readonly AuditoriaService $audit,
         private readonly FirmaClient $firma,
+        private readonly FolioService $folios,
     ) {}
 
     // ---------------------------------------------------------------- borradores
@@ -250,7 +251,7 @@ class DocumentoService
                 do {
                     $codigo = CorrelativoService::generarCodigo();
                 } while (Documento::query()->where('codigo_validacion', $codigo)->exists());
-                $doc->forceFill(['numero' => $n, 'anio' => $a, 'codigo_validacion' => $codigo, 'fecha_firma' => now('America/Santiago'), 'estado' => 'vigente']);
+                $doc->forceFill(['numero' => $n, 'anio' => $a, 'folio' => $this->folios->formatear($doc->tipo, $n, $a), 'codigo_validacion' => $codigo, 'fecha_firma' => now('America/Santiago'), 'estado' => 'vigente']);
                 $sha = hash('sha256', $doc->html);
                 $copia = $this->pdf->copiaPublica($doc, $sha);
                 $f = $this->vault->put($copia);
@@ -262,7 +263,7 @@ class DocumentoService
             });
         } catch (\Throwable $e) {
             foreach ($creados as $r) {
-                @unlink(config('sgd.storage_path').'/'.$r);
+                $this->vault->delete($r);
             }
             throw $e;
         }

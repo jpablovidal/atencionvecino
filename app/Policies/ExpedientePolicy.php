@@ -13,7 +13,7 @@ class ExpedientePolicy
         if (! $u->activo) {
             return false;
         }
-        if ($u->rol === 'auditor') {
+        if ($u->rolBase() === 'auditor') {
             return true;
         }
 

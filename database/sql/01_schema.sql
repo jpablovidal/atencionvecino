@@ -210,4 +210,76 @@ alter table `comunicaciones_oficiales` add unique `comunicaciones_oficiales_dire
 
 alter table `comunicaciones_oficiales` add index `comunicaciones_oficiales_responde_a_id_index`(`responde_a_id`);
 
+create table `config_sitio` (`id` bigint unsigned not null auto_increment primary key, `clave` varchar(40) not null, `valor` longtext not null, `actualizado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `config_sitio` add constraint `config_sitio_actualizado_por_foreign` foreign key (`actualizado_por`) references `usuarios` (`id`);
+
+alter table `config_sitio` add unique `config_sitio_clave_unique`(`clave`);
+
+create table `menu_items` (`id` bigint unsigned not null auto_increment primary key, `area` varchar(10) not null, `clave` varchar(40) null, `etiqueta` varchar(60) not null, `url` varchar(255) null, `nueva_pestana` tinyint(1) not null default '0', `orden` smallint unsigned not null default '100', `activo` tinyint(1) not null default '1', `roles` varchar(120) null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `menu_items` add unique `menu_items_clave_unique`(`clave`);
+
+create table `api_config` (`id` bigint unsigned not null auto_increment primary key, `servicio` varchar(30) not null, `activo` tinyint(1) not null default '0', `valores` longtext not null, `secretos` longtext null, `actualizado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `api_config` add constraint `api_config_actualizado_por_foreign` foreign key (`actualizado_por`) references `usuarios` (`id`);
+
+alter table `api_config` add unique `api_config_servicio_unique`(`servicio`);
+
+create table `roles` (`id` bigint unsigned not null auto_increment primary key, `clave` varchar(20) not null, `nombre` varchar(80) not null, `descripcion` varchar(255) null, `rol_base` varchar(20) not null, `sistema` tinyint(1) not null default '0', `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `roles` add unique `roles_clave_unique`(`clave`);
+
+create table `rol_permisos` (`rol_id` bigint unsigned not null, `permiso` varchar(60) not null, primary key (`rol_id`, `permiso`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `rol_permisos` add constraint `rol_permisos_rol_id_foreign` foreign key (`rol_id`) references `roles` (`id`);
+
+alter table `usuarios` add `ultimo_acceso` timestamp null;
+
+create table `firma_estilos` (`id` bigint unsigned not null auto_increment primary key, `nombre` varchar(80) not null, `texto_encabezado` varchar(80) not null default 'Firmado electrónicamente por', `mostrar_nombre` tinyint(1) not null default '1', `mostrar_cargo` tinyint(1) not null default '1', `mostrar_run` tinyint(1) not null default '0', `mostrar_fecha` tinyint(1) not null default '1', `mostrar_codigo` tinyint(1) not null default '1', `color_borde` varchar(7) not null default '#006fb3', `color_fondo` varchar(7) not null default '#ffffff', `color_texto` varchar(7) not null default '#111111', `tamano_fuente` tinyint unsigned not null default '8', `ancho_mm` smallint unsigned not null default '70', `alto_mm` smallint unsigned not null default '28', `borde_estilo` varchar(8) not null default 'solid', `alineacion_texto` varchar(8) not null default 'left', `defecto` tinyint(1) not null default '0', `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `firma_estilos` add unique `firma_estilos_nombre_unique`(`nombre`);
+
+create table `firma_posiciones` (`id` bigint unsigned not null auto_increment primary key, `nombre` varchar(80) not null, `tipo_documento_id` bigint unsigned null, `orden_firma` tinyint unsigned not null default '1', `pagina` varchar(8) not null default 'ultima', `alineacion` varchar(10) not null default 'izquierda', `margen_superior_mm` smallint unsigned not null default '12', `x_mm` smallint unsigned null, `y_mm` smallint unsigned null, `estilo_id` bigint unsigned null, `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `firma_posiciones` add constraint `firma_posiciones_tipo_documento_id_foreign` foreign key (`tipo_documento_id`) references `tipos_documento` (`id`);
+
+alter table `firma_posiciones` add constraint `firma_posiciones_estilo_id_foreign` foreign key (`estilo_id`) references `firma_estilos` (`id`);
+
+alter table `tipos_documento` add `folio_formato` varchar(80) not null default '{PREFIJO} N° {N}/{AAAA}';
+
+alter table `tipos_documento` add `folio_digitos` tinyint unsigned not null default '2';
+
+alter table `tipos_documento` add `folio_reinicio_anual` tinyint(1) not null default '1';
+
+alter table `tipos_documento` add `folio_inicio` int unsigned not null default '1';
+
+alter table `documentos` add `folio` varchar(80) null;
+
+alter table `documentos` add unique `documentos_tipo_documento_id_folio_unique`(`tipo_documento_id`, `folio`);
+
+alter table `archivos` add `almacen` varchar(10) not null default 'local';
+
+create table `repositorio_carpetas` (`id` bigint unsigned not null auto_increment primary key, `clave` varchar(40) not null, `drive_folder_id` varchar(100) not null, `created_at` timestamp not null default CURRENT_TIMESTAMP) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `repositorio_carpetas` add unique `repositorio_carpetas_clave_unique`(`clave`);
+
+create table `repositorio_reubicaciones` (`id` bigint unsigned not null auto_increment primary key, `ruta_origen` varchar(80) not null, `ruta_destino` varchar(80) not null, `md5` char(32) not null, `migrado_en` timestamp not null default CURRENT_TIMESTAMP) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `repositorio_reubicaciones` add unique `repositorio_reubicaciones_ruta_origen_unique`(`ruta_origen`);
+
+insert into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('admin', 'Administrador', 'Gestiona mantenedores, seguridad y configuración. No lee expedientes.', 'admin', 1, 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+insert into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('funcionario', 'Funcionario', 'Gestiona solicitudes y expedientes de su unidad.', 'funcionario', 1, 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+insert into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('alcalde', 'Alcalde / alcaldesa', 'Firma decretos y crea delegaciones de firma.', 'alcalde', 1, 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+insert into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('secretario', 'Secretario(a) municipal', 'Visa y firma; unidad receptora de comunicaciones oficiales.', 'secretario', 1, 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+insert into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('auditor', 'Auditor', 'Acceso de solo lectura y verificación de auditoría.', 'auditor', 1, 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+insert into `firma_estilos` (`nombre`, `defecto`, `activo`, `created_at`, `updated_at`) values ('Estándar', 1, 1, '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+
+insert into `firma_posiciones` (`activo`, `alineacion`, `created_at`, `margen_superior_mm`, `nombre`, `orden_firma`, `pagina`, `updated_at`) values (1, 'izquierda', '2026-01-01 00:00:00', 14, 'Primera firma (izquierda)', 1, 'ultima', '2026-01-01 00:00:00'), (1, 'derecha', '2026-01-01 00:00:00', 14, 'Segunda firma (derecha)', 2, 'ultima', '2026-01-01 00:00:00');
+
 SET FOREIGN_KEY_CHECKS = 1;

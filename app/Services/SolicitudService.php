@@ -78,7 +78,7 @@ class SolicitudService
             });
         } catch (\Throwable $e) {
             foreach ($creados as $r) {
-                @unlink(config('sgd.storage_path').'/'.$r);
+                $this->vault->delete($r);
             }
             throw $e;
         }
@@ -179,7 +179,7 @@ class SolicitudService
             });
         } catch (\Throwable $e) {
             foreach ($creados as $r) {
-                @unlink(config('sgd.storage_path').'/'.$r);
+                $this->vault->delete($r);
             }
             throw $e;
         }

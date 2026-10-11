@@ -7,6 +7,7 @@ use App\Models\Documento;
 use App\Models\Expediente;
 use App\Policies\DocumentoPolicy;
 use App\Policies\ExpedientePolicy;
+use App\Services\Admin\ApiConfigService;
 use App\Services\Casilla\CasillaAdapter;
 use App\Services\ClaveUnicaService;
 use App\Services\FileVault;
@@ -68,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        ApiConfigService::aplicar(); // la configuración de BD prevalece sobre .env
         ProductionGuard::verificar();
         Paginator::useBootstrapFour();
 

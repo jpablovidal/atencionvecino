@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $sensible
  * @property string $subido_por
  * @property string $created_at
+ * @property string $almacen
  */
 class Archivo extends Model
 {
@@ -30,6 +31,11 @@ class Archivo extends Model
     protected $guarded = ['id'];
 
     public $timestamps = false;
+
+    protected static function booted(): void
+    {
+        static::creating(fn (self $a) => $a->almacen = str_starts_with((string) $a->ruta, 'gd:') ? 'drive' : 'local');
+    }
 
     protected $casts = ['sensible' => 'boolean'];
 }

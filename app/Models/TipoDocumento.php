@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $activo
  * @property string|null $created_at
  * @property string|null $updated_at
+ * @property string $folio_formato
+ * @property int $folio_digitos
+ * @property bool $folio_reinicio_anual
+ * @property int $folio_inicio
  */
 class TipoDocumento extends Model
 {
@@ -22,5 +26,5 @@ class TipoDocumento extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['firma_alcalde' => 'boolean', 'activo' => 'boolean'];
+    protected $casts = ['firma_alcalde' => 'boolean', 'activo' => 'boolean', 'folio_reinicio_anual' => 'boolean'];
 }

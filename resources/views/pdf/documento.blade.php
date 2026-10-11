@@ -12,7 +12,7 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px;color:#111} h1,h2,h3{co
 <h2>Hoja de certificado de copia pública</h2>
 <table width="100%">
 <tr><td class="k">Tipo de documento</td><td>{{ $doc->tipo->nombre }}</td></tr>
-<tr><td class="k">N° / año</td><td>{{ sprintf('%02d', $doc->numero) }} / {{ $doc->anio }}</td></tr>
+<tr><td class="k">Folio</td><td>{{ $doc->numeroFormateado() }} (N° {{ $doc->numero }}, año {{ $doc->anio }})</td></tr>
 <tr><td class="k">Fecha de firma</td><td>{{ $doc->fecha_firma?->timezone('America/Santiago')->format('d-m-Y H:i') }} (hora de Chile)</td></tr>
 <tr><td class="k">Título</td><td>{{ $doc->titulo }}</td></tr>
 <tr><td class="k">Firmantes</td><td>@foreach($doc->pasos->where('tipo','firma') as $p){{ $p->usuario->nombreCompleto() }} ({{ $p->usuario->cargo }})@if($p->simulada) <span class="sim">FIRMA SIMULADA – sin validez legal</span>@endif<br>@endforeach</td></tr>
