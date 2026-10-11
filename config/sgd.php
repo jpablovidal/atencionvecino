@@ -3,6 +3,9 @@
 return [
     'nombre' => 'SGD - I. Municipalidad de Santo Domingo',
 
+    // Accesibilidad: canal de contacto para reportar barreras (declaración de accesibilidad)
+    'accesibilidad_contacto' => env('SGD_ACCESIBILIDAD_CONTACTO', 'accesibilidad@santodomingo.cl'),
+
     // Sesión
     'sesion_inactividad_min' => 30,
     'sesion_absoluta_horas' => 8,

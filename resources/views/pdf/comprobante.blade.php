@@ -15,7 +15,7 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px} h1{color:#006fb3;font-
 <tr><td class="k">Detalle</td><td>{{ $s->detalle }}</td></tr>
 </table>
 <h3>Anexos</h3>
-<table><tr><th>Nombre</th><th>Tamaño (bytes)</th><th>SHA-256</th></tr>
+<table><tr><th scope="col">Nombre</th><th scope="col">Tamaño (bytes)</th><th scope="col">SHA-256</th></tr>
 @forelse($anexos as $a)<tr><td>{{ $a['nombre'] }}</td><td>{{ $a['tamano'] }}</td><td style="font-size:7px">{{ $a['sha256'] }}</td></tr>
 @empty<tr><td colspan="3">Sin anexos</td></tr>@endforelse</table>
 <p>Código de verificación: <strong>{{ $codigo }}</strong></p>

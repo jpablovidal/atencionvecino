@@ -37,3 +37,6 @@ Ver `DECISIONES.md` #1, #2 y #5 (ágil=1 / clásico=2 por defecto; primera firma
 - La sincronización de recibidos asume que la API entrega el PDF en base64 en la lista (forma A VALIDAR); los entrantes no crean expedientes automáticamente: quedan en la bandeja de la unidad receptora (`DOCDIGITAL_UNIDAD_RECEPCION`).
 
 - **Recepción (expediente por comunicación entrante):** depende de que la API de DocDigital entregue el PDF en la lista de recibidos y de un endpoint de **acuse de recibo** (`DOCDIGITAL_PATH_ACUSE`, forma A VALIDAR). El acuse a través de la API no se probó contra DocDigital real; en `outbox` es una referencia manual. No se interpreta el contenido de la comunicación (sin clasificación automática ni plazos de respuesta). El identificador único usa el código de institución del Codificador (A VALIDAR el esquema oficial).
+
+## Accesibilidad
+Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegador real, 0 violaciones en las páginas auditadas) y revisión de teclado, **pero sin auditoría manual con lectores de pantalla ni certificación externa**; los PDF generados no son PDF/UA; el canal de contacto y su plazo de respuesta (`SGD_ACCESIBILIDAD_CONTACTO`) deben definirse por la Municipalidad.

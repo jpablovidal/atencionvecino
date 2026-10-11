@@ -16,7 +16,7 @@ tar --exclude-vcs \
     --exclude='./vendor' --exclude='./node_modules' --exclude='./tests' --exclude='./.env' --exclude='./.env.*' \
     --exclude='./storage/logs/*' --exclude='./storage/framework/*/*' --exclude='./storage/app/sgd_storage' \
     --exclude='./database/*.sqlite' --exclude='./docs/capturas' --exclude='./sgd-release.zip' --exclude='./.phpunit.cache' \
-    --exclude='./phpunit.xml' --exclude='./phpstan.neon' --exclude='./.github' --exclude='./scripts/generate-model-docs.php' \
+    --exclude='./phpunit.xml' --exclude='./phpstan.neon' --exclude='./.github' --exclude='./scripts/generate-model-docs.php' --exclude='./scripts/a11y-audit.js' --exclude='./docs/manuales/pdf' \
     --exclude='./.phpunit.result.cache' --exclude='./.editorconfig' --exclude='./.gitattributes' --exclude='./.styleci.yml' \
     -cf - . | tar -xf - -C "$STAGE"
 cp .env.example "$STAGE/.env.example"

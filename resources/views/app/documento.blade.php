@@ -72,7 +72,7 @@
 @endif
 
 <h2 class="h4">Historial de versiones (inmutable)</h2>
-<table class="table table-sm"><thead><tr><th>Versión</th><th>Fecha</th><th>SHA-256 HTML</th><th>SHA-256 PDF</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">Versión</th><th scope="col">Fecha</th><th scope="col">SHA-256 HTML</th><th scope="col">SHA-256 PDF</th></tr></thead><tbody>
 @foreach($d->versiones as $v)<tr><td>{{ $v->version }}</td><td>{{ $v->created_at }}</td><td class="hash">{{ $v->html_sha256 }}</td><td class="hash">{{ $v->pdf_sha256 }}</td></tr>@endforeach</tbody></table>
 @endsection
 @push('scripts')<script src="{{ asset('assets/tinymce/tinymce.min.js') }}"></script>@endpush

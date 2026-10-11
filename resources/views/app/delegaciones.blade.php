@@ -2,7 +2,7 @@
 @section('titulo', 'Delegaciones de firma')
 @section('contenido')
 <h1>Delegaciones de firma</h1>
-<table class="table table-sm"><thead><tr><th>Tipo</th><th>Delegado(a)</th><th>Decreto</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">Tipo</th><th scope="col">Delegado(a)</th><th scope="col">Decreto</th><th scope="col">Vigencia</th><th scope="col">Estado</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody>
 @foreach($filas as $f)<tr><td>{{ $f->tipo->nombre }}</td><td>{{ $f->delegado->nombreCompleto() }}</td><td>{{ $f->decreto_referencia }}</td><td>{{ $f->vigente_desde->format('d-m-Y') }} a {{ $f->vigente_hasta->format('d-m-Y') }}</td><td>{{ $f->activo?'activa':'revocada' }}</td>
 <td>@if(auth()->user()->rol==='alcalde' && $f->activo)<form method="post" action="{{ route('app.delegaciones.revocar',$f) }}">@csrf<button class="btn btn-sm btn-outline-danger">Revocar</button></form>@endif</td></tr>@endforeach</tbody></table>
 @if(auth()->user()->rol==='alcalde')

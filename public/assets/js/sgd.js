@@ -20,6 +20,7 @@
       promotion: false,
       branding: false,
       menubar: false,
+      resize: false, /* el tirador de redimensión de TinyMCE no cumple ARIA; la altura es fija y el editor es responsive */
       height: 420,
       plugins: 'lists link table code autolink',
       toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | table link | removeformat | code',

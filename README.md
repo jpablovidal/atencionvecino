@@ -17,7 +17,8 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 | [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md) | Matrices OWASP Top 10:2025, OWASP LLM 2025 y Ley 21.663 |
 | [`docs/DECISIONES.md`](docs/DECISIONES.md) | Decisiones de diseño y supuestos |
 | [`docs/LIMITACIONES.md`](docs/LIMITACIONES.md) | Lo no verificado / dependiente de credenciales |
-| [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md) | Manual breve por rol |
+| [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md) | Índice de **manuales por perfil** (ciudadano, funcionario, secretario, alcalde, administrador, auditor, público): fuentes en `resources/manuales/`, publicados en `/ayuda`, PDF con `php scripts/build-manuales-pdf.php` |
+| [`docs/ACCESIBILIDAD.md`](docs/ACCESIBILIDAD.md) | Elementos de accesibilidad (WCAG 2.2 AA), verificación y limitaciones; página pública `/accesibilidad` |
 | [`docs/INCIDENTES.md`](docs/INCIDENTES.md) | Plan de respuesta a incidentes |
 | [`docs/sbom.cdx.json`](docs/sbom.cdx.json) | SBOM CycloneDX |
 | [`docs/capturas/`](docs/capturas) | Capturas de la verificación en navegador real |

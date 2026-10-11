@@ -7,7 +7,7 @@
 
 <h2 class="h4">Registro de incidentes (Ley 21.663)</h2>
 <p class="small text-muted">Marque los hitos de reporte al CSIRT Nacional (ANCI). Plazos exactos A VALIDAR en docs/NORMATIVA.md.</p>
-<table class="table table-sm"><thead><tr><th>#</th><th>Incidente</th><th>Severidad</th><th>Estado</th><th>Alerta temprana</th><th>2.º reporte</th><th>Informe final</th><th></th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">#</th><th scope="col">Incidente</th><th scope="col">Severidad</th><th scope="col">Estado</th><th scope="col">Alerta temprana</th><th scope="col">2.º reporte</th><th scope="col">Informe final</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody>
 @foreach($incidentes as $i)<tr><td>{{ $i->id }}</td><td>{{ $i->titulo }}<br><small>{{ $i->descripcion }}</small></td><td>{{ $i->severidad }}{{ $i->reportable_csirt?' · reportable':'' }}</td><td>{{ $i->estado }}</td><td>{{ $i->alerta_temprana_en?->format('d-m-Y H:i') ?? '—' }}</td><td>{{ $i->segundo_reporte_en?->format('d-m-Y H:i') ?? '—' }}</td><td>{{ $i->informe_final_en?->format('d-m-Y H:i') ?? '—' }}</td>
 <td>@if(auth()->user()->rol==='admin')<form method="post" action="{{ route('app.seguridad.incidente.actualizar',$i) }}" class="form-inline">@csrf
 <select name="estado" class="form-control form-control-sm mr-1" aria-label="Estado"><option>abierto</option><option>contenido</option><option>cerrado</option></select>
@@ -21,6 +21,6 @@
 <div><button class="btn btn-primary">Registrar</button></div></form>@endif
 
 <h2 class="h4">Últimos eventos de auditoría</h2>
-<table class="table table-sm"><thead><tr><th>#</th><th>Fecha</th><th>Rol</th><th>Acción</th><th>Entidad</th><th>IP</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">#</th><th scope="col">Fecha</th><th scope="col">Rol</th><th scope="col">Acción</th><th scope="col">Entidad</th><th scope="col">IP</th></tr></thead><tbody>
 @foreach($eventos as $v)<tr><td>{{ $v->id }}</td><td>{{ $v->ts }}</td><td>{{ $v->actor_rol }}</td><td>{{ $v->accion }}</td><td>{{ $v->entidad }} {{ $v->entidad_id }}</td><td>{{ $v->ip }}</td></tr>@endforeach</tbody></table>
 @endsection

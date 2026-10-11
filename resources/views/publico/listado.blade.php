@@ -9,7 +9,7 @@
   <button class="btn btn-primary">Filtrar</button>
 </form>
 <table class="table table-sm table-striped"><caption class="sr-only">Documentos públicos vigentes</caption>
-<thead><tr><th>Documento</th><th>Título</th><th>Fecha de firma</th><th>Acceso</th></tr></thead><tbody>
+<thead><tr><th scope="col">Documento</th><th scope="col">Título</th><th scope="col">Fecha de firma</th><th scope="col">Acceso</th></tr></thead><tbody>
 @forelse($docs as $d)
 <tr><td>{{ $d->numeroFormateado() }}</td><td>{{ $d->titulo }}</td><td>{{ $d->fecha_firma?->format('d-m-Y') }}</td>
 <td><a href="{{ route('validar',$d->codigo_validacion) }}">Ver y validar</a> · <a href="{{ route('validar.copia',$d->codigo_validacion) }}">PDF</a></td></tr>

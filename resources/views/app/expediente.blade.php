@@ -47,10 +47,10 @@
 </div></div>
 
 <h2 class="h4">Índice del expediente</h2>
-<table class="table table-sm"><thead><tr><th>Tipo</th><th>Título</th><th>SHA-256</th></tr></thead><tbody>@foreach($indice as $i)<tr><td>{{ $i['tipo'] }}</td><td>{{ $i['titulo'] }} {{ $i['numero'] ?? '' }}</td><td class="hash">{{ $i['sha256'] }}</td></tr>@endforeach</tbody></table>
+<table class="table table-sm"><thead><tr><th scope="col">Tipo</th><th scope="col">Título</th><th scope="col">SHA-256</th></tr></thead><tbody>@foreach($indice as $i)<tr><td>{{ $i['tipo'] }}</td><td>{{ $i['titulo'] }} {{ $i['numero'] ?? '' }}</td><td class="hash">{{ $i['sha256'] }}</td></tr>@endforeach</tbody></table>
 
 <h2 class="h4">Documentos</h2>
-<table class="table table-sm"><thead><tr><th>Título</th><th>Tipo</th><th>Estado</th><th>N°</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">Título</th><th scope="col">Tipo</th><th scope="col">Estado</th><th scope="col">N°</th></tr></thead><tbody>
 @forelse($e->documentos as $d)<tr><td><a href="{{ route('app.documento',$d) }}">{{ $d->titulo }}</a></td><td>{{ $d->tipo->nombre }}</td><td><span class="estado estado-{{ $d->estado }}">{{ str_replace('_',' ',$d->estado) }}</span></td><td>{{ $d->numeroFormateado() }}</td></tr>@empty<tr><td colspan="4">Sin documentos.</td></tr>@endforelse</tbody></table>
 @if($puedeOperar && $e->estado==='abierto')
 <form method="post" action="{{ route('app.documento.store',$e) }}" class="form-inline mb-4">@csrf
@@ -107,7 +107,7 @@
 <div class="form-group col-md-4"><label for="cd_inst">Institución destinataria (Codificador)</label><select class="form-control" id="cd_inst" name="institucion_codigo" required>@foreach($instituciones as $i)<option value="{{ $i->codigo }}" @selected($i->codigo===$origenCodigo)>{{ $i->nombre }} ({{ $i->codigo }})</option>@endforeach</select></div>
 <div class="form-group col-md-4"><label for="cd_asunto">Asunto</label><input class="form-control" id="cd_asunto" name="asunto" required minlength="3" maxlength="190"></div></div>
 <div><button class="btn btn-primary">Crear comunicación</button></div></form>@endif
-<table class="table table-sm"><thead><tr><th>Documento</th><th>Destino</th><th>Asunto</th><th>Estado</th><th>Evidencia</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">Documento</th><th scope="col">Destino</th><th scope="col">Asunto</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead><tbody>
 @forelse($comunicaciones as $c)<tr><td>{{ $c->documento?->numeroFormateado() }}</td><td>{{ $c->institucion_nombre }}</td><td>{{ $c->asunto }}@if($c->responde_a_id) <small class="text-muted">(en respuesta a la comunicación recibida)</small>@endif</td>
 <td><span class="estado estado-{{ $c->estado }}">{{ $c->estado }}</span> @if($c->ultimo_error)<small>{{ $c->ultimo_error }}</small>@endif</td>
 <td>@if($c->evidencia){{ $c->evidencia_tipo }}: <span class="hash">{{ $c->evidencia }}</span>@if($c->evidencia_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif
@@ -125,7 +125,7 @@
 <div class="form-row"><div class="form-group col-md-5"><label for="ps_s">Servicio</label><select class="form-control" id="ps_s" name="servicio_id" required>@foreach($servicios as $s)<option value="{{ $s->id }}">{{ $s->nombre }}</option>@endforeach</select></div>
 <div class="form-group col-md-7"><label for="ps_f">Finalidad de la consulta</label><input class="form-control" id="ps_f" name="finalidad" required minlength="10" maxlength="255" placeholder="Ej.: verificar antecedentes para resolver la solicitud"></div></div>
 <div><button class="btn btn-primary">Consultar</button></div></form>@endif
-<table class="table table-sm"><thead><tr><th>Fecha</th><th>Servicio</th><th>Funcionario</th><th>Finalidad</th><th>Resultado</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">Fecha</th><th scope="col">Servicio</th><th scope="col">Funcionario</th><th scope="col">Finalidad</th><th scope="col">Resultado</th></tr></thead><tbody>
 @forelse($consultas as $c)<tr><td>{{ $c->created_at }}</td><td>{{ $c->servicio->nombre }}</td><td>{{ $c->usuario->nombreCompleto() }}</td><td>{{ $c->finalidad }}</td>
 <td>@if($c->archivo_id)<a href="{{ route('app.expediente.archivo',[$e,$c->archivo_id]) }}">Ver resultado (JSON)</a>@else<span class="estado estado-fallida">{{ $c->error }}</span>@endif</td></tr>@empty<tr><td colspan="5">Sin consultas.</td></tr>@endforelse</tbody></table>
 @endif
@@ -139,7 +139,7 @@
 @foreach($e->documentos->where('estado','vigente') as $d)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="n_{{ $d->id }}" name="documentos[]" value="{{ $d->id }}"><label class="custom-control-label" for="n_{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</label></div>@endforeach</fieldset>
 <div class="form-group mt-2"><label for="n_canal">Canal</label><select class="form-control col-md-4" id="n_canal" name="canal">@foreach(['casilla_unica'=>'Casilla Única','correo'=>'Correo (aviso con enlace)','presencial'=>'Soporte físico / presencial'] as $v=>$l)<option value="{{ $v }}" @selected($s->canal_notificacion===$v)>{{ $l }}</option>@endforeach</select></div>
 <div><button class="btn btn-primary">Crear notificaciones</button></div></form>@endif
-<table class="table table-sm"><thead><tr><th>Documento</th><th>Canal</th><th>Estado</th><th>Evidencia</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th scope="col">Documento</th><th scope="col">Canal</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead><tbody>
 @foreach($e->notificaciones as $n)<tr><td>{{ $n->documento?->numeroFormateado() }}</td><td>{{ str_replace('_',' ',$n->canal) }}</td><td><span class="estado estado-{{ $n->estado }}">{{ $n->estado }}</span> @if($n->ultimo_error)<small>{{ $n->ultimo_error }}</small>@endif</td>
 <td>@if($n->evidencia){{ $n->evidencia_tipo }}: <span class="hash">{{ $n->evidencia }}</span>@elseif($puedeOperar && $n->canal!=='correo' && $n->estado!=='enviada')
 <form method="post" action="{{ route('app.notificacion.evidencia',$n) }}" class="form-inline">@csrf<label class="sr-only" for="ev{{ $n->id }}">Evidencia</label>

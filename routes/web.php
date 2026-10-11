@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ExpedienteController;
@@ -21,6 +22,11 @@ Route::middleware('throttle:publico')->group(function () {
     Route::get('/validar/{codigo}/copia', [PublicoController::class, 'copia'])->name('validar.copia')->where('codigo', 'SDD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}');
     Route::get('/validar-comprobante/{folio}/{codigo}', [PublicoController::class, 'validarComprobante'])->name('validar.comprobante');
 });
+
+// ---- Ayuda y accesibilidad (públicas)
+Route::get('/accesibilidad', [AyudaController::class, 'accesibilidad'])->name('accesibilidad');
+Route::get('/ayuda', [AyudaController::class, 'indice'])->name('ayuda');
+Route::get('/ayuda/{perfil}', [AyudaController::class, 'manual'])->where('perfil', '[a-z\-]+')->name('ayuda.manual');
 
 // ---- Autenticación (solo ClaveÚnica)
 Route::get('/ingreso', [AuthController::class, 'ingreso'])->name('ingreso');
