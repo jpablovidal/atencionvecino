@@ -16,6 +16,9 @@ class DemoSeeder extends Seeder
 
     public function run(): void
     {
+        if (app()->isProduction() && ! \App\Support\Ambiente::esPruebas()) {
+            throw new \RuntimeException('DemoSeeder (datos ficticios) solo puede ejecutarse en local o con SGD_AMBIENTE=pruebas.');
+        }
         $t = ['created_at' => self::NOW, 'updated_at' => self::NOW];
         DB::table('unidades')->insert([
             ['id' => 1, 'codigo' => 'ALC', 'nombre' => 'Alcaldía', 'activo' => 1] + $t,

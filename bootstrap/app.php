@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: env('TRUSTED_PROXIES') ? explode(',', env('TRUSTED_PROXIES')) : null);
         // Solo se atienden peticiones cuyo Host sea el de APP_URL (evita envenenamiento del encabezado Host en enlaces y correos)
         $middleware->trustHosts(at: function (): array {
-            $h = parse_url((string) env('APP_URL'), PHP_URL_HOST);
+            $h = parse_url((string) config('app.url'), PHP_URL_HOST); // config(), no env(): funciona con la configuración en caché
 
             return $h ? ['^'.preg_quote($h, '#').'$'] : [];
         }, subdomains: false);
