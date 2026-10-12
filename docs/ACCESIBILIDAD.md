@@ -55,7 +55,7 @@
 | diagnostico | normal | 0 |
 | seguridad | normal | 0 |
 
-**Total de violaciones: 0** (40 páginas/modos, incluidas las de administración y las de formatos/plantillas con el editor completo; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
+**Total de violaciones: 0** (43 páginas/modos, incluidas las de administración y las de formatos/plantillas con el editor completo; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
 
 Comprobaciones de comportamiento:
 - Primer Tab: {"texto":"Saltar al contenido","visible":true}

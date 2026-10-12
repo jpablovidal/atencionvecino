@@ -22,6 +22,7 @@ use App\Http\Controllers\RepositorioController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SeguridadController;
 use App\Http\Controllers\SesionesController;
+use App\Http\Controllers\SistemaController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Support\Facades\Route;
 
@@ -125,6 +126,11 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     });
     Route::get('/sesiones', [SesionesController::class, 'index'])->middleware('permiso:sesiones.ver')->name('sesiones');
     Route::post('/sesiones/{id}/cerrar', [SesionesController::class, 'cerrar'])->middleware('permiso:sesiones.cerrar')->name('sesiones.cerrar');
+    Route::get('/sistema/recursos', [SistemaController::class, 'recursos'])->middleware('permiso:recursos.ver')->name('sistema.recursos');
+    Route::middleware('permiso:componentes.ver')->group(function () {
+        Route::get('/sistema/componentes', [SistemaController::class, 'componentes'])->name('sistema.componentes');
+        Route::get('/sistema/componentes.json', [SistemaController::class, 'exportar'])->name('sistema.componentes.json');
+    });
     Route::get('/diagnostico', [SeguridadController::class, 'diagnostico'])->middleware('permiso:diagnostico.ver')->name('diagnostico');
 
     Route::get('/delegaciones', [MantenedorController::class, 'delegaciones'])->middleware('permiso:delegaciones.ver')->name('delegaciones');

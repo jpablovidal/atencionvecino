@@ -11,6 +11,7 @@ use App\Models\Solicitud;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
+use App\Services\Firma\ArchivoFirmaService;
 use Illuminate\Http\Request;
 
 class FuncionarioController extends Controller
@@ -57,6 +58,8 @@ class FuncionarioController extends Controller
         if ($s->expediente_id) {
             return redirect()->route('app.expediente', $s->expediente_id);
         }
+        $s->archivos()->whereNull('firma_estado')->limit(10)->get()->each(fn ($a) => app(ArchivoFirmaService::class)->reanalizar($a));
+        $s->unsetRelation('archivos');
         $this->audit->registrar('solicitud.ver', 'solicitud', $s->folio, [], true);
 
         return view('app.solicitud', ['s' => $s]);

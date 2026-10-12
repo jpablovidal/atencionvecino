@@ -59,6 +59,8 @@ class MenuService
             'seguridad' => $i('Seguridad', 'app.seguridad', 'app/seguridad*', ['app'], 'seguridad.ver', $s, 300),
             'logs' => $i('Registro de logs', 'app.logs', 'app/logs*', ['app'], 'logs.ver', $s, 310),
             'sesiones' => $i('Usuarios conectados', 'app.sesiones', 'app/sesiones*', ['app'], 'sesiones.ver', $s, 320),
+            'recursos' => $i('Recursos del servidor', 'app.sistema.recursos', 'app/sistema/recursos*', ['app'], 'recursos.ver', $s, 325),
+            'componentes' => $i('Componentes y librerías', 'app.sistema.componentes', 'app/sistema/componentes*', ['app'], 'componentes.ver', $s, 328),
             'diagnostico' => $i('Diagnóstico', 'app.diagnostico', 'app/diagnostico', ['app'], 'diagnostico.ver', $s, 330),
             'ayuda' => $i('Ayuda', 'ayuda', 'ayuda*', ['publico', 'ciudadano', 'app'], null, null, 900, true),
         ];

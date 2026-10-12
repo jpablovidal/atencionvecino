@@ -40,6 +40,8 @@ class Permisos
             'logs.exportar' => ['Exportar registro de auditoría', 'Seguridad', ['admin', 'auditor']],
             'sesiones.ver' => ['Ver usuarios conectados', 'Seguridad', ['admin']],
             'sesiones.cerrar' => ['Cerrar sesiones de usuarios', 'Seguridad', ['admin']],
+            'recursos.ver' => ['Ver consumo de recursos del servidor (CPU, memoria, disco)', 'Seguridad', ['admin']],
+            'componentes.ver' => ['Ver librerías, versiones y recursos externos (CDN)', 'Seguridad', ['admin', 'auditor']],
             'diagnostico.ver' => ['Ver diagnóstico del servidor', 'Administración', ['admin']],
             'mantenedores.gestionar' => ['Mantenedores (unidades, usuarios, trámites, tipos, plantillas)', 'Administración', ['admin']],
             'codificador.gestionar' => ['Codificador y servicios PISEE', 'Administración', ['admin']],

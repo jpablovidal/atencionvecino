@@ -8,7 +8,7 @@
 <div class="card border-info mb-3"><div class="card-body">
 <h2 class="h5">Comunicación oficial recibida por DocDigital</h2>
 <p class="mb-1"><strong>{{ $entrante->asunto }}</strong> — de {{ $entrante->institucion_nombre ?? $entrante->institucion_codigo ?? 'institución no informada' }} · ID DocDigital <span class="hash">{{ $entrante->evidencia }}</span> · recibida {{ $entrante->evidencia_en }}</p>
-<p class="mb-2">Documento original: @foreach($e->archivos->where('ambito','docdigital') as $a)<a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->nombre_original }}</a> <span class="hash">{{ $a->sha256 }}</span>@endforeach</p>
+<p class="mb-2">Documento original: @foreach($e->archivos->where('ambito','docdigital') as $a)<a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->nombre_original }}</a> <span class="hash">{{ $a->sha256 }}</span> @include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endforeach</p>
 @if($entrante->acuse_estado==='registrado')
 <p class="mb-0"><span class="estado estado-vigente">acuse de recibo registrado</span> ({{ $entrante->acuse_tipo }}) {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span>@if($entrante->acuse_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif</p>
 @else
@@ -62,7 +62,7 @@
 <button class="btn btn-primary">Crear</button></form>@endif
 
 <h2 class="h4">Archivos del expediente</h2>
-<ul>@foreach($e->archivos->where('ambito','!=','comprobante') as $a)<li><a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->titulo ?: $a->nombre_original }}</a> <small>({{ $a->ambito }}, {{ $a->nivel_acceso }}{{ $a->sensible?', sensible':'' }})</small></li>@endforeach</ul>
+<ul>@foreach($e->archivos->where('ambito','!=','comprobante') as $a)<li><a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->titulo ?: $a->nombre_original }}</a> <small>({{ $a->ambito }}, {{ $a->nivel_acceso }}{{ $a->sensible?', sensible':'' }})</small> @if($a->mime === 'application/pdf')@include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endif</li>@endforeach</ul>
 @if($puedeOperar && $e->estado==='abierto')
 <form method="post" action="{{ route('app.expediente.subir',$e) }}" enctype="multipart/form-data" class="card card-body mb-4">@csrf
 <h3 class="h6">Cargar archivo</h3>

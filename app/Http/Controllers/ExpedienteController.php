@@ -18,6 +18,7 @@ use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
+use App\Services\Firma\ArchivoFirmaService;
 use App\Services\NotificacionService;
 use App\Services\SolicitudService;
 use App\Support\UploadValidator;
@@ -27,9 +28,10 @@ class ExpedienteController extends Controller
 {
     public function __construct(private readonly AuditoriaService $audit) {}
 
-    public function show(Request $r, Expediente $expediente, ExpedienteService $svc)
+    public function show(Request $r, Expediente $expediente, ExpedienteService $svc, ArchivoFirmaService $firmas)
     {
         $this->authorize('ver', $expediente);
+        $expediente->archivos()->whereNull('firma_estado')->limit(10)->get()->each(fn ($a) => $firmas->reanalizar($a)); // archivos anteriores al reconocimiento de firmas
         $expediente->load(['solicitud.tramite', 'solicitud.devoluciones', 'documentos.tipo', 'documentos.pasos.usuario', 'archivos', 'comentarios.usuario', 'derivaciones.de', 'derivaciones.a', 'notificaciones.documento', 'responsable', 'unidad']);
         $this->audit->registrar('expediente.ver', 'expediente', $expediente->id, [], true);
 
@@ -107,7 +109,7 @@ class ExpedienteController extends Controller
         return back()->with('ok', 'Expediente derivado a '.$dest->nombreCompleto().'.');
     }
 
-    public function subir(Request $r, Expediente $expediente, FileVault $vault)
+    public function subir(Request $r, Expediente $expediente, FileVault $vault, ArchivoFirmaService $firmas)
     {
         $this->permiso('expedientes.operar');
         $this->operar($expediente);
@@ -121,13 +123,16 @@ class ExpedienteController extends Controller
         } catch (\InvalidArgumentException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
-        $f = $vault->put((string) file_get_contents($r->file('archivo')->getRealPath()));
-        Archivo::query()->create([
+        $bytes = (string) file_get_contents($r->file('archivo')->getRealPath());
+        $f = $vault->put($bytes);
+        $a = new Archivo([
             'expediente_id' => $expediente->id, 'solicitud_id' => $expediente->solicitud_id, 'ambito' => 'expediente',
             'nombre_original' => mb_substr(preg_replace('/[^\w.\- ]+/u', '_', basename($r->file('archivo')->getClientOriginalName())) ?: 'archivo', 0, 190),
             'mime' => $tipo['mime'], 'tamano' => $f['tamano'], 'sha256' => $f['sha256'], 'ruta' => $f['ruta'], 'titulo' => $d['titulo'], 'resumen' => $d['resumen'] ?? null,
             'palabras_clave' => $d['palabras_clave'] ?? null, 'nivel_acceso' => $d['nivel_acceso'], 'sensible' => (bool) ($d['sensible'] ?? false), 'subido_por' => $r->user()->run,
         ]);
+        $firmas->analizar($a, $bytes);
+        $a->save();
         $this->audit->registrar('archivo.subir', 'expediente', $expediente->id, ['sha256' => $f['sha256']]);
 
         return back()->with('ok', 'Archivo cargado.');

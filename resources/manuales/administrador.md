@@ -4,7 +4,7 @@ El administrador gestiona los **mantenedores**, la **seguridad** y el **diagnós
 
 ## 1. Menú del administrador
 
-El menú se agrupa en **Administración** (Unidades, Usuarios, Roles y permisos, Trámites, Tipos de documento, Plantillas, Folios, Estilo y posición de firmas, Instituciones, Procesos, Codificador, Servicios PISEE, APIs e integraciones, Repositorio, Apariencia, Barra de menú) y **Seguridad y operación** (Seguridad, Registro de logs, Usuarios conectados, Diagnóstico). Cada persona ve solo lo que su rol permite; los grupos se despliegan con Enter o Espacio y se cierran con Esc.
+El menú se agrupa en **Administración** (Unidades, Usuarios, Roles y permisos, Trámites, Tipos de documento, Plantillas, Folios, Estilo y posición de firmas, Instituciones, Procesos, Codificador, Servicios PISEE, APIs e integraciones, Repositorio, Apariencia, Barra de menú) y **Seguridad y operación** (Seguridad, Registro de logs, Usuarios conectados, Recursos del servidor, Componentes y librerías, Diagnóstico). Cada persona ve solo lo que su rol permite; los grupos se despliegan con Enter o Espacio y se cierran con Esc.
 
 En todos los mantenedores **no existe el borrado**: se **desactiva** (botón *Desactivar/Activar*). Cada cambio queda en la bitácora de auditoría.
 
@@ -152,7 +152,21 @@ Puede cambiar `SGD_ACCESIBILIDAD_CONTACTO` (correo que aparece en la declaració
 
 **Seguridad y operación → Usuarios conectados.** Lista las sesiones con actividad reciente (funcionarios y ciudadanos con RUN enmascarado), su IP, navegador, inicio y última actividad. **Cerrar sesión** fuerza la salida de esa persona (queda auditado); su propia sesión se cierra con *Salir*.
 
-## 24. Problemas frecuentes
+## 24. Recursos del servidor
+
+**Seguridad y operación → Recursos del servidor.** Muestra CPU, memoria (RAM), disco, memoria de PHP y OPcache, tamaño de la base de datos, archivos del repositorio, sesiones activas y cola de trabajos, cada uno con su **estado en texto** (Normal, Atención desde 70 %, Crítico desde 90 %). Abajo hay un **histórico** (24 horas, 7 o 30 días) con gráficos y la tabla de datos de cada uno. Si el hosting informa límites de su plan, se usan esos; si algo no puede leerse, dice «sin dato». Si no hay gráficos, revise que el cron de cPanel ejecute `schedule:run` cada minuto (las muestras se toman cada 5 minutos).
+
+Qué hacer: *Crítico* en disco → depure respaldos/logs o amplíe el plan; *Crítico* en memoria o CPU sostenido → revise la cola y consulte al proveedor de hosting; *Cola con fallidos* → revise el registro de logs.
+
+## 25. Componentes y librerías
+
+**Seguridad y operación → Componentes y librerías.** Inventario con las versiones de PHP, Laravel, base de datos y bibliotecas del sistema, de **cada librería PHP** (con licencia) y de **cada activo front-end** (jQuery, Bootstrap, TinyMCE, gob.cl, tipografías, con tamaño y huella SHA-256). La sección **Recursos externos (CDN)** debe decir «Sin CDN ni recursos externos»; si detecta alguno, lista el archivo y la dirección. **Descargar inventario (JSON)** entrega todo en un archivo para auditorías. Para vulnerabilidades conocidas use `composer audit`.
+
+## 26. Firmas electrónicas en archivos cargados
+
+Junto a cada PDF (expediente, anexos, comunicaciones de DocDigital) verá si está **firmado electrónicamente**. Use *Ver firmas* para ver firmante, emisor, fecha, vigencia del certificado, integridad y cobertura. «Firma inválida o documento alterado» significa que el contenido cambió después de firmarse. «Confianza del emisor no verificada» aparece mientras no se configure `SGD_FIRMA_CA_BUNDLE` (CA de prestadores acreditados). Esta verificación **no reemplaza** la validación legal ni revisa revocación de certificados.
+
+## 27. Problemas frecuentes
 
 | Problema | Qué hacer |
 |---|---|

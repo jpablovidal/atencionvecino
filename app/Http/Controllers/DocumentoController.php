@@ -10,6 +10,8 @@ use App\Models\TipoDocumento;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
+use App\Services\FileVault;
+use App\Services\Firma\FirmaPdfInspector;
 use App\Services\LlmAsistente;
 use Illuminate\Http\Request;
 
@@ -36,16 +38,24 @@ class DocumentoController extends Controller
         return redirect()->route('app.documento', $doc)->with('ok', 'Documento creado.');
     }
 
-    public function show(Request $r, Documento $documento)
+    public function show(Request $r, Documento $documento, FirmaPdfInspector $inspector, FileVault $vault)
     {
         $this->authorize('ver', $documento);
         $documento->load(['tipo', 'pasos.usuario', 'versiones', 'expediente']);
         $this->audit->registrar('documento.ver', 'documento', $documento->id, [], $documento->sensible);
         $u = $r->user();
+        $firmaPdf = null;
+        if ($documento->estado === 'vigente' && $documento->pdf_firmado_ruta) {
+            try {
+                $firmaPdf = $inspector->inspeccionar($vault->get($documento->pdf_firmado_ruta, (string) $documento->pdf_firmado_sha256));
+            } catch (\Throwable) {
+                $firmaPdf = ['estado' => 'no_verificable', 'firmas' => [], 'observaciones' => ['No se pudo leer el PDF firmado.']];
+            }
+        }
         $turno = $documento->estado === 'en_flujo' ? $documento->pasos->where('estado', 'pendiente')->sortBy('orden')->first() : null;
 
         return view('app.documento', [
-            'd' => $documento, 'turno' => $turno, 'miTurno' => $turno && $turno->usuario_id === $u->id,
+            'd' => $documento, 'firmaPdf' => $firmaPdf, 'turno' => $turno, 'miTurno' => $turno && $turno->usuario_id === $u->id,
             'puedeOperar' => $u->can('operar', $documento),
             'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'llm' => (bool) config('sgd.llm.enabled'),

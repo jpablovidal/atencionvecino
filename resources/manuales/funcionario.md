@@ -122,3 +122,8 @@ Barra superior: tamaño de texto, alto contraste, texto legible, subrayar enlace
 | OTP inválido o expirado | Genere un nuevo OTP en FirmaGob; cuidado: 5 errores seguidos bloquean temporalmente. |
 | No puedo editar el documento | Está en flujo o vigente; solo se editan borradores. |
 | La notificación quedó "fallida" | Se reintenta sola; si persiste avise al administrador (revisión de correo/cola). |
+
+
+## Firmas electrónicas en los archivos
+
+Junto a cada PDF verá si trae **firma electrónica**: «Firmado electrónicamente», «Sin firma electrónica», «Firmado, con cambios posteriores» o «Firma inválida o documento alterado» (en este caso no confíe en el documento y avise al administrador). *Ver firmas* muestra quién firmó, el emisor del certificado y la fecha. El sistema guarda el archivo tal como llegó, para no invalidar la firma.

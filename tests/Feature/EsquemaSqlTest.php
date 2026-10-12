@@ -30,10 +30,10 @@ class EsquemaSqlTest extends TestCase
         preg_match_all('/^create table `(\w+)` \((.+?)\) default character set/ms', $sql, $m, PREG_SET_ORDER);
         $enSql = [];
         foreach ($m as [, $tabla, $cuerpo]) {
-            preg_match_all('/`(\w+)` (?:bigint|varchar|char|tinyint|smallint|int|text|longtext|json|timestamp|date|datetime)/', $cuerpo, $c);
+            preg_match_all('/`(\w+)` (?:bigint|varchar|char|tinyint|smallint|int|text|longtext|json|decimal|timestamp|date|datetime)/', $cuerpo, $c);
             $enSql[$tabla] = $c[1];
         }
-        preg_match_all('/^alter table `(\w+)` add `(\w+)` (?:bigint|varchar|char|tinyint|smallint|int|text|longtext|json|timestamp|date|datetime)/m', $sql, $alt, PREG_SET_ORDER);
+        preg_match_all('/^alter table `(\w+)` add `(\w+)` (?:bigint|varchar|char|tinyint|smallint|int|text|longtext|json|decimal|timestamp|date|datetime)/m', $sql, $alt, PREG_SET_ORDER);
         foreach ($alt as [, $tabla, $col]) {
             $enSql[$tabla][] = $col;
         }

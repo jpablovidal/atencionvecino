@@ -127,3 +127,11 @@ html.a11y-contrast .sgd-nav-grupo>summary{color:#ffff00}
 .formato-vista table{border-collapse:collapse}
 .formato-vista td,.formato-vista th{border:1px solid #999;padding:3px 6px}
 .formato-vista div[style*="page-break-after"]{border-top:2px dashed #006fb3;margin:16px 0;font-size:0;color:transparent}
+
+/* Panel de recursos: estados (siempre acompañados de texto) y gráficos de línea */
+.barra-ok{background:#1b6b32}.barra-aviso{background:#8a5a00}.barra-critico{background:#a4161a}.barra-sin_dato{background:#6b7782}
+.nivel-aviso{border-left:6px solid #8a5a00}.nivel-critico{border-left:6px solid #a4161a}.nivel-ok{border-left:6px solid #1b6b32}.nivel-sin_dato{border-left:6px solid #6b7782}
+.grafico-svg{width:100%;height:auto;max-height:190px;background:#fff;border:1px solid #c5ced6}
+.grafico-linea{stroke:#005a94;stroke-width:2;vector-effect:non-scaling-stroke}
+.grafico-eje{stroke:#d3dae0;stroke-width:1;vector-effect:non-scaling-stroke}
+.grafico-txt{font-size:10px;fill:#3d4852}

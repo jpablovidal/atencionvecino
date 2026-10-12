@@ -314,4 +314,16 @@ alter table `recursos_imagen` add index `recursos_imagen_sha256_index`(`sha256`)
 
 select * from `plantillas`;
 
+alter table `archivos` add `firma_estado` varchar(20) null;
+
+alter table `archivos` add `firma_detalle` longtext null;
+
+alter table `archivos` add `firma_analizada_en` timestamp null;
+
+alter table `archivos` add index `archivos_firma_estado_index`(`firma_estado`);
+
+create table `metricas_recursos` (`id` bigint unsigned not null auto_increment primary key, `ts` timestamp not null, `cpu_pct` decimal(5, 1) null, `carga1` decimal(6, 2) null, `mem_usada` bigint unsigned null, `mem_total` bigint unsigned null, `disco_usado` bigint unsigned null, `disco_total` bigint unsigned null, `bd_bytes` bigint unsigned null, `archivos_bytes` bigint unsigned null, `sesiones` int unsigned null, `cola_pendiente` int unsigned null, `cola_fallida` int unsigned null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `metricas_recursos` add index `metricas_recursos_ts_index`(`ts`);
+
 SET FOREIGN_KEY_CHECKS = 1;

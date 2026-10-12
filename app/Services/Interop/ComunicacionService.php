@@ -13,6 +13,7 @@ use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
+use App\Services\Firma\ArchivoFirmaService;
 use App\Services\Interop\DocDigital\DocDigitalClient;
 use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Support\UploadValidator;
@@ -31,6 +32,7 @@ class ComunicacionService
         private readonly DocDigitalClient $client,
         private readonly CodificadorService $codificador,
         private readonly ExpedienteService $expedientes,
+        private readonly ArchivoFirmaService $firmas,
     ) {}
 
     public function modoApi(): bool
@@ -141,10 +143,12 @@ class ComunicacionService
                 DB::transaction(function () use ($r, $unidad, &$res, &$ruta) {
                     $f = $this->vault->put($r['pdf']);
                     $ruta = $f['ruta'];
-                    $a = Archivo::query()->create([
+                    $a = new Archivo([
                         'ambito' => 'docdigital', 'nombre_original' => 'docdigital-'.preg_replace('/[^A-Za-z0-9_.-]/', '_', $r['id']).'.pdf', 'mime' => 'application/pdf', 'tamano' => $f['tamano'],
                         'sha256' => $f['sha256'], 'ruta' => $f['ruta'], 'titulo' => mb_substr($r['asunto'], 0, 190), 'nivel_acceso' => 'reservado', 'sensible' => true, 'subido_por' => 'docdigital',
                     ]);
+                    $this->firmas->analizar($a, $r['pdf']); // las comunicaciones del Estado suelen venir con firma electrónica: se reconoce y se verifica
+                    $a->save();
                     $c = ComunicacionOficial::query()->create([
                         'direccion' => 'entrante', 'institucion_codigo' => $r['origen_codigo'] ? mb_substr($r['origen_codigo'], 0, 40) : null,
                         'institucion_nombre' => $r['origen_nombre'] ? mb_substr($r['origen_nombre'], 0, 190) : null, 'asunto' => mb_substr($r['asunto'], 0, 190), 'estado' => 'recibida',

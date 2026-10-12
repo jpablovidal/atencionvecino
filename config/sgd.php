@@ -24,6 +24,9 @@ return [
     'upload_max_bytes' => 10 * 1024 * 1024,
     'upload_max_files' => 8,
 
+    // Reconocimiento de firmas electrónicas en PDF: paquete PEM de CA de confianza (prestadores acreditados; A VALIDAR). Vacío = no se afirma confianza.
+    'firma' => ['ca_bundle' => env('SGD_FIRMA_CA_BUNDLE')],
+
     // Repositorio de documentos: local (disco fuera del docroot) | drive (unidad compartida de Google Drive)
     'repositorio' => [
         'modo' => env('REPOSITORIO_MODO', 'local'),

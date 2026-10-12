@@ -23,6 +23,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $subido_por
  * @property string $created_at
  * @property string $almacen
+ * @property string|null $firma_estado
+ * @property string|null $firma_detalle
+ * @property string|null $firma_analizada_en
  */
 class Archivo extends Model
 {
@@ -38,4 +41,10 @@ class Archivo extends Model
     }
 
     protected $casts = ['sensible' => 'boolean'];
+
+    /** @return array<string,mixed>|null resultado del análisis de firma electrónica */
+    public function firma(): ?array
+    {
+        return $this->firma_detalle ? json_decode($this->firma_detalle, true) : null;
+    }
 }

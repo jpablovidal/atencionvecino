@@ -233,8 +233,14 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 | Roles y permisos | `/app/admin/roles` | Roles personalizados con permisos acotados por su rol base. |
 | Usuarios | `/app/admin/usuarios` | Alta/edición con roles dinámicos, búsqueda y resguardos (no desactivarse; siempre un administrador activo). |
 | Plantillas y formatos | `/app/admin/plantillas` | Editor TinyMCE completo (tablas, imágenes, colores, tipografías, saltos de página, variables), visibilidad por unidad (toda la municipalidad o direcciones como Salud/Educación) e historial de versiones. Catálogo para todo el personal en `/app/formatos`. |
+| Recursos del servidor | `/app/sistema/recursos` | Dashboard de CPU, memoria (RAM), disco, memoria PHP/OPcache, base de datos, cola y sesiones, con estado en texto (Normal/Atención/Crítico) e histórico de 24 h, 7 y 30 días (muestra cada 5 min con `recursos:muestrear`). Respeta los límites del plan de hosting (cgroup) cuando los informa. |
+| Componentes y librerías | `/app/sistema/componentes` | Versiones de plataforma, de cada librería PHP (Composer) y de cada activo front-end (con SHA-256), verificación de **recursos externos/CDN** y descarga del inventario en JSON. |
 | Registro de logs | `/app/logs` | Filtros (fecha, acción, actor, entidad, IP), exportación CSV auditada y cola redactada del log de aplicación. |
 | Usuarios conectados | `/app/sesiones` | Sesiones activas (RUN enmascarado) y cierre forzado. |
+
+### Firmas electrónicas en archivos cargados
+
+Todo PDF que se carga (anexos del ciudadano, archivos del expediente, comunicaciones de DocDigital) se **analiza**: se reconoce si trae firma electrónica (PAdES/PKCS#7), quién firmó, con qué certificado y emisor, cuándo, si el contenido **coincide** con lo firmado (verificación criptográfica), si se **agregó contenido** después de firmar y, opcionalmente, si la cadena del certificado es de **confianza**. El archivo original **no se modifica** (la firma sigue válida) y el resultado se ve junto a cada archivo («Firmado electrónicamente», «Firma inválida o documento alterado», «Sin firma electrónica»…). Para afirmar confianza del emisor configure `SGD_FIRMA_CA_BUNDLE` con un PEM de las CA de prestadores acreditados (lista **A VALIDAR**); sin él se verifica la integridad pero no la confianza. No revisa revocación (CRL/OCSP). Los archivos anteriores se analizan al abrirse o con `php artisan archivos:analizar-firmas` (hay una tarea horaria).
 
 ### Repositorio en una unidad compartida de Google Drive
 
@@ -256,7 +262,7 @@ composer install
 cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
 php artisan key:generate && php artisan migrate --seed
 php artisan serve
-vendor/bin/phpunit            # 250 pruebas
+vendor/bin/phpunit            # 276 pruebas
 vendor/bin/pint --test        # estilo
 composer audit                # dependencias
 ```

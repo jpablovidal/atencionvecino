@@ -11,6 +11,7 @@
 <p class="mb-1">Fecha de firma: {{ $d->fecha_firma->timezone('America/Santiago')->format('d-m-Y H:i') }} (hora de Chile)</p>
 <p class="mb-1">Validación pública: <a href="{{ route('validar',$d->codigo_validacion) }}">{{ route('validar',$d->codigo_validacion) }}</a></p>
 <p class="mb-1">SHA-256 de la copia: <span class="hash">{{ $d->pdf_sha256 }}</span></p>
+@if($firmaPdf)<p class="mb-2">Firma electrónica del PDF firmado: @include('partials.firma_resultado', ['estado' => $firmaPdf['estado'], 'det' => $firmaPdf])</p>@endif
 <a class="btn btn-sm btn-primary" href="{{ route('app.documento.pdf',$d) }}">Ver copia pública (PDF)</a></div></div>
 @else
 <a class="btn btn-sm btn-outline-primary mb-3" href="{{ route('app.documento.pdf',$d) }}">Ver PDF de la versión actual</a>

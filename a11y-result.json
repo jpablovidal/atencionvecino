@@ -211,6 +211,24 @@
    "reglas": 43
   },
   {
+   "pagina": "recursos",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 47
+  },
+  {
+   "pagina": "recursos-7d",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 47
+  },
+  {
+   "pagina": "componentes",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 48
+  },
+  {
    "pagina": "formatos",
    "modo": "normal",
    "violaciones": 0,
@@ -248,7 +266,7 @@
   "Foco visible (outline) en botón de accesibilidad: solid 3px rgb(255, 176, 0)",
   "Clases tras activar opciones: a11y-contrast a11y-legible a11y-fs-2 a11y-links",
   "aria-pressed contraste: true",
-  "Anuncio en región aria-live: \"\"",
+  "Anuncio en región aria-live: \"Fuente y espaciado legibles activado\"",
   "Persistencia tras recargar: a11y-contrast a11y-legible a11y-links a11y-fs-2",
   "Tras Restablecer: \"\"",
   "Reflow 320px inicio: scrollWidth=320 clientWidth=320 OK",

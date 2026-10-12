@@ -8,13 +8,14 @@ use App\Models\Devolucion;
 use App\Models\Solicitud;
 use App\Models\Tramite;
 use App\Models\Usuario;
+use App\Services\Firma\ArchivoFirmaService;
 use App\Support\UploadValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class SolicitudService
 {
-    public function __construct(private readonly FileVault $vault, private readonly PdfService $pdf, private readonly AuditoriaService $audit) {}
+    public function __construct(private readonly FileVault $vault, private readonly PdfService $pdf, private readonly AuditoriaService $audit, private readonly ArchivoFirmaService $firmas) {}
 
     /**
      * @param  array{run:string,nombres:string,apellidos:string}  $ciudadano  (de ClaveÚnica, no editable)
@@ -91,10 +92,12 @@ class SolicitudService
         $r = $this->vault->put($bytes);
         $creados[] = $r['ruta'];
         $nombre = preg_replace('/[^\w.\- ]+/u', '_', basename($f->getClientOriginalName())) ?: 'archivo';
-        Archivo::query()->create([
+        $a = new Archivo([
             'solicitud_id' => $s->id, 'expediente_id' => $s->expediente_id, 'ambito' => $ambito, 'nombre_original' => mb_substr($nombre, 0, 190), 'mime' => $tipo['mime'],
             'tamano' => $r['tamano'], 'sha256' => $r['sha256'], 'ruta' => $r['ruta'], 'titulo' => $titulo, 'subido_por' => $run, 'nivel_acceso' => 'reservado',
         ]);
+        $this->firmas->analizar($a, $bytes);
+        $a->save();
 
         return ['nombre' => $nombre, 'sha256' => $r['sha256'], 'tamano' => $r['tamano']];
     }
