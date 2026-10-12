@@ -24,6 +24,10 @@ return [
     'upload_max_bytes' => 10 * 1024 * 1024,
     'upload_max_files' => 8,
 
+    // Conexiones: contadores por hora para el mapa/ranking (sin URL ni contenido) y retención en días
+    'registrar_conexiones' => (bool) env('SGD_REGISTRAR_CONEXIONES', true),
+    'conexiones_retencion_dias' => (int) env('SGD_CONEXIONES_RETENCION_DIAS', 90),
+
     // Ambiente: produccion (defecto) | pruebas (modos simulados + acceso con contraseña, hasta la fecha indicada AAAA-MM-DD)
     'ambiente' => env('SGD_AMBIENTE', 'produccion'),
     'acceso_pruebas_hasta' => env('SGD_ACCESO_PRUEBAS_HASTA'),

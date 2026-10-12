@@ -116,6 +116,25 @@
     };
     selTipo.addEventListener('change', filtrar); filtrar();
   }
+  /* Convierte HTML en un fragmento inerte: se analiza con DOMParser (sin cargar recursos ni ejecutar nada) y solo se copian
+     etiquetas de texto/tabla permitidas, sin atributos salvo enlaces https y colspan/rowspan. */
+  function fragmentoSeguro(html) {
+    var permitidas = { P: 1, BR: 1, STRONG: 1, B: 1, EM: 1, I: 1, U: 1, UL: 1, OL: 1, LI: 1, H1: 1, H2: 1, H3: 1, H4: 1, TABLE: 1, THEAD: 1, TBODY: 1, TR: 1, TD: 1, TH: 1, BLOCKQUOTE: 1, SPAN: 1, DIV: 1, A: 1, HR: 1 };
+    var doc = new DOMParser().parseFromString('<!doctype html><body>' + String(html), 'text/html');
+    var frag = document.createDocumentFragment();
+    (function copiar(origen, destino) {
+      Array.prototype.forEach.call(origen.childNodes, function (n) {
+        if (n.nodeType === 3) { destino.appendChild(document.createTextNode(n.nodeValue)); return; }
+        if (n.nodeType !== 1) { return; }
+        if (!permitidas[n.tagName]) { copiar(n, destino); return; } /* etiqueta no permitida: se conserva solo su texto */
+        var e = document.createElement(n.tagName.toLowerCase());
+        if (n.tagName === 'A') { var h = n.getAttribute('href') || ''; if (/^https:\/\//i.test(h)) { e.setAttribute('href', h); e.setAttribute('rel', 'noopener noreferrer'); } }
+        ['colspan', 'rowspan'].forEach(function (k) { if (n.hasAttribute(k) && /^\d{1,2}$/.test(n.getAttribute(k))) { e.setAttribute(k, n.getAttribute(k)); } });
+        copiar(n, e); destino.appendChild(e);
+      });
+    })(doc.body, frag);
+    return frag;
+  }
   var llmBtn = document.getElementById('llm-generar');
   if (llmBtn) {
     var token = document.querySelector('meta[name="csrf-token"]').content;
@@ -135,7 +154,7 @@
           if (!x.ok) { out.textContent = x.j.error || 'Error'; ins.hidden = true; return; }
           last = x.j.html;
           out.textContent = '';
-          var p = document.createElement('div'); p.innerHTML = last; /* HTML ya sanitizado en servidor; se muestra solo como vista previa */
+          var p = document.createElement('div'); p.appendChild(fragmentoSeguro(last)); last = p.innerHTML; /* servidor y cliente sanean: doble barrera */
           out.appendChild(p);
           var a = document.createElement('p'); a.className = 'text-danger small'; a.textContent = (x.j.advertencias || []).join(' ');
           out.appendChild(a);

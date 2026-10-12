@@ -48,4 +48,8 @@ Ante ambigüedad se eligió la opción **más segura** y se documentó aquí.
 | 42 | Confianza del emisor | No se afirma sin `SGD_FIRMA_CA_BUNDLE`. | No aparentar validez legal que no se ha comprobado. |
 | 43 | Recursos del servidor | Lectura de `/proc` y cgroups + funciones PHP; histórico en BD cada 5 min (35 días). Estado siempre con texto. | Sin agentes ni programas externos; accesible. |
 | 44 | Inventario | Generado en vivo desde `installed.json` y archivos de `public/assets`; detección de CDN estática; JSON exportable. | Evidencia verificable de «sin CDN» y de versiones. |
+| 45 | Conexiones | Contadores por hora (no cada petición) en `conexiones_resumen`; registro entrante en middleware *terminable* y saliente con `Http::globalMiddleware` (solo host). | Mapa/ranking sin guardar contenido ni URL y con costo mínimo. |
+| 46 | Geolocalización | Base local DB-IP Lite (país) + Natural Earth; sin consultas a terceros; atribución visible. | Sin dependencias externas ni fuga de IP a terceros; licencia CC BY 4.0. |
+| 47 | Sanitización | Se sanea al guardar **y** al mostrar; red de seguridad final; sin invisibles/bidi; IA solo como texto escapado. | Defensa en profundidad ante contenido alterado en BD o evasiones. |
+| 48 | Firma PDF (corrección) | El relleno del CMS se descarta por longitud DER, no con `rtrim`. | `rtrim` truncaba firmas terminadas en 0x00 (≈1/256). |
 

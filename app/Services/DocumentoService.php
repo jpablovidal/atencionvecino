@@ -33,6 +33,7 @@ class DocumentoService
 
     public function crear(Expediente $exp, TipoDocumento $tipo, ?Plantilla $plantilla, string $titulo, Usuario $autor): Documento
     {
+        $titulo = HtmlSanitizer::sinInvisibles($titulo);
         if ($exp->estado !== 'abierto') {
             throw new FlujoException('El expediente está cerrado.');
         }
@@ -76,6 +77,8 @@ class DocumentoService
 
     public function guardar(Documento $doc, string $titulo, string $html, array $meta, Usuario $autor): Documento
     {
+        $titulo = HtmlSanitizer::sinInvisibles($titulo);
+
         return DB::transaction(function () use ($doc, $titulo, $html, $meta, $autor) {
             $doc = Documento::query()->lockForUpdate()->findOrFail($doc->id);
             if (! $doc->editable()) {

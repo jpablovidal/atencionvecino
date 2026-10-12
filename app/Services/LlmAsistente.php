@@ -16,6 +16,15 @@ class LlmAsistente
 
     private const PATRONES_INYECCION = '/(ignora|olvida|ignore|disregard)\s+(todas?\s+)?(las\s+|tus\s+|the\s+|previous\s+|prior\s+)?(instrucciones|reglas|instructions|rules)|system\s*prompt|prompt\s+del\s+sistema|act[uú]a\s+como|you\s+are\s+now/iu';
 
+    public const MAX_SALIDA = 30000;
+
+    /** ¿La salida del modelo trae marcado activo, esquemas peligrosos o direcciones? (se neutraliza igual; sirve para advertir y auditar) */
+    public static function salidaSospechosa(string $t): bool
+    {
+        return (bool) preg_match('/<\s*\/?\s*(script|iframe|object|embed|svg|math|style|link|meta|form|input|img|base)\b|\bon[a-z]+\s*=|(?:javascript|vbscript|data|file)\s*:|https?:\/\/|\/\/[a-z0-9.-]+\.[a-z]{2,}|\{\{|@php|<\?/i', $t)
+            || (bool) preg_match(HtmlSanitizer::INVISIBLES, $t);
+    }
+
     public function __construct(private readonly HtmlSanitizer $san) {}
 
     public static function redactar(string $t): string
@@ -36,12 +45,14 @@ class LlmAsistente
     /** Arma el mensaje de usuario: instrucción del funcionario + borrador redactado como dato delimitado. */
     public function construirMensaje(string $instruccion, string $borrador): string
     {
+        $instruccion = preg_replace(HtmlSanitizer::INVISIBLES, '', $instruccion) ?? '';
+        $borrador = preg_replace(HtmlSanitizer::INVISIBLES, '', $borrador) ?? '';
         $borrador = str_replace(['<datos_no_confiables>', '</datos_no_confiables>'], '', self::redactar($borrador));
 
         return 'Instrucción del funcionario: '.self::redactar($instruccion)."\n\n<datos_no_confiables>\n".$borrador."\n</datos_no_confiables>";
     }
 
-    /** @return array{html:string,advertencias:array<int,string>} */
+    /** @return array{html:string,advertencias:array<int,string>,sospechosa:bool} */
     public function generar(string $instruccion, string $borrador): array
     {
         $cfg = config('sgd.llm');
@@ -64,13 +75,19 @@ class LlmAsistente
             throw new \RuntimeException('El asistente IA no respondió.');
         }
         $texto = (string) ($resp->json('content.0.text') ?? '');
+        $texto = mb_substr($texto, 0, self::MAX_SALIDA);
+        $sospechosa = self::salidaSospechosa($texto);
+        if ($sospechosa) {
+            $adv[] = 'La respuesta de la IA contenía marcado, enlaces o direcciones: se mostró solo como texto y se eliminó todo lo ejecutable. Revise el borrador con especial cuidado.';
+        }
 
-        return ['html' => $this->aHtmlSeguro($texto), 'advertencias' => $adv];
+        return ['html' => $this->aHtmlSeguro($texto), 'advertencias' => $adv, 'sospechosa' => $sospechosa];
     }
 
     /** La salida es no confiable: se escapa por completo y luego se sanitiza (nunca se inserta HTML crudo). */
     public function aHtmlSeguro(string $texto): string
     {
+        $texto = preg_replace(HtmlSanitizer::INVISIBLES, '', $texto) ?? '';
         $parrafos = array_filter(array_map('trim', preg_split('/\R{2,}/', $texto) ?: []));
         $html = implode('', array_map(fn ($p) => '<p>'.nl2br(e($p), false).'</p>', $parrafos));
 

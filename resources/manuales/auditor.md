@@ -11,6 +11,7 @@ El rol de auditor tiene **acceso de solo lectura**. Puede consultar expedientes,
 | **Comunicaciones oficiales** | Lo recibido por DocDigital y su acuse de recibo. |
 | **Delegaciones de firma** | Quién tiene delegación, para qué tipo, con qué decreto y vigencia. |
 | **Seguridad** | Verificación de la cadena de auditoría, últimos eventos e incidentes. |
+| **Conexiones y mapa** | Mapa por país y ranking de IP (entrantes y salientes), con errores y tipo de uso; útil para detectar escaneos. Datos por hora, sin URL ni contenido. |
 | **Componentes y librerías** | Versiones de cada librería y activo, verificación de «sin CDN» e inventario descargable (JSON). |
 | **Registro de logs** | Búsqueda con filtros (fecha, acción, rol, RUN, entidad, IP) y exportación CSV (queda registrada). |
 

@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureFuncionario;
 use App\Http\Middleware\EnsurePermiso;
 use App\Http\Middleware\EnsureRol;
 use App\Http\Middleware\NoStore;
+use App\Http\Middleware\RegistrarConexion;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SessionLimits;
 use App\Services\AuditoriaService;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         }, subdomains: false);
         $middleware->encryptCookies(except: []);
         $middleware->append(SecurityHeaders::class);
+        $middleware->append(RegistrarConexion::class);
         $middleware->web(append: [SessionLimits::class]);
         $middleware->alias([
             'ciudadano' => EnsureCiudadano::class,

@@ -114,7 +114,7 @@ class FirmaPdfInspector
             return null;
         }
         $der = hex2bin($hex) ?: '';
-        $der = rtrim($der, "\0"); // relleno de ceros del marcador de posición
+        $der = self::recortarDer($der); // el relleno de ceros del marcador de posición se descarta por LONGITUD (no por «rtrim»: la firma puede terminar en 0x00)
         if ($der === '' || ord($der[0]) !== 0x30) {
             return null;
         }
@@ -139,6 +139,16 @@ class FirmaPdfInspector
         }
 
         return $f;
+    }
+
+    /** Devuelve exactamente la estructura DER inicial (según su longitud declarada) y descarta el relleno posterior. */
+    public static function recortarDer(string $d): string
+    {
+        try {
+            return $d === '' ? '' : substr($d, 0, Der::nodo($d, 0)['end']);
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     private function cubreTodo(string $pdf, int $len, int $finFirmado): bool

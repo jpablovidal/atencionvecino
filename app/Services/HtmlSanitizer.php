@@ -13,14 +13,40 @@ class HtmlSanitizer
     /** Patrón de las imágenes de la biblioteca interna (única fuente de imágenes admitida). */
     public const RUTA_IMAGEN = '#^/app/recursos/[0-9]{1,9}$#';
 
+    /** Caracteres de control e invisibles que permiten falsificar texto (bidireccionales, anchura cero, BOM, controles C0/C1). */
+    public const INVISIBLES = '/[\x{0000}-\x{0008}\x{000B}\x{000C}\x{000E}-\x{001F}\x{007F}-\x{009F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2064}\x{2066}-\x{206F}\x{FEFF}\x{FFF9}-\x{FFFB}]/u';
+
+    /** Red de seguridad final: si algo de esto llegara a la salida, se descarta el marcado y queda solo el texto. */
+    private const PELIGRO = '/<\s*(script|iframe|frame|object|embed|applet|svg|math|style|link|meta|base|form|input|button|textarea|select|template|noscript|video|audio|source|portal|dialog|details)\b|\son[a-z]+\s*=|(?:href|src|action|formaction|background|poster|xlink:href)\s*=\s*["\']?\s*(?:javascript|vbscript|livescript|data|file|blob)\s*:|style\s*=\s*"[^"]*(?:expression\s*\(|url\s*\(|@import|-moz-binding|behavior\s*:)/i';
+
+    /** Texto plano (títulos, nombres): sin caracteres invisibles/bidireccionales ni controles. */
+    public static function sinInvisibles(string $t): string
+    {
+        return trim(preg_replace(self::INVISIBLES, '', $t) ?? '');
+    }
+
     public function limpiar(string $html): string
     {
+        // 1) se eliminan caracteres invisibles/bidireccionales y bytes nulos antes de analizar (evita evasiones y texto falsificado)
+        $html = preg_replace(self::INVISIBLES, '', $html) ?? '';
         $limpio = $this->purifier()->purify($html);
 
-        // Solo imágenes de la biblioteca interna: cualquier otra (rutas relativas arbitrarias, etc.) se elimina.
-        return preg_replace_callback('/<img\b[^>]*>/i', function ($m) {
+        // 2) solo imágenes de la biblioteca interna: cualquier otra (rutas relativas arbitrarias, etc.) se elimina
+        $limpio = preg_replace_callback('/<img\b[^>]*>/i', function ($m) {
             return preg_match('/\ssrc="([^"]*)"/i', $m[0], $s) && preg_match(self::RUTA_IMAGEN, html_entity_decode($s[1])) ? $m[0] : '';
         }, $limpio) ?? '';
+
+        // 3) enlaces: sin «//host» ni «\\host» (protocolo relativo = salto a un sitio externo no declarado)
+        $limpio = preg_replace_callback('/<a\b[^>]*\shref="\s*(?:\/\/|\\\\)[^"]*"[^>]*>/i', fn ($m) => '<a>', $limpio) ?? '';
+
+        // 4) red de seguridad: tras el sanitizador no debe quedar nada ejecutable; si queda, se conserva solo el texto y se alerta
+        if (preg_match(self::PELIGRO, $limpio)) {
+            report(new \RuntimeException('HtmlSanitizer: la salida contenía marcado peligroso tras sanitizar; se redujo a texto.'));
+
+            return '<p>'.e(trim(html_entity_decode(strip_tags($limpio), ENT_QUOTES | ENT_HTML5))).'</p>';
+        }
+
+        return $limpio;
     }
 
     private function purifier(): HTMLPurifier

@@ -43,7 +43,8 @@ class PlantillaService
         }
 
         return DB::transaction(function () use ($p, $d, $html, $alcance, $unidades, $u) {
-            $nombre = trim($d['nombre']);
+            $nombre = HtmlSanitizer::sinInvisibles($d['nombre']);
+            $d['descripcion'] = isset($d['descripcion']) ? HtmlSanitizer::sinInvisibles((string) $d['descripcion']) : null;
             $cambio = ! $p || $p->contenido_html !== $html || $p->nombre !== $nombre;
             $datos = ['tipo_documento_id' => $d['tipo_documento_id'], 'nombre' => $nombre, 'descripcion' => ($d['descripcion'] ?? null) ?: null,
                 'contenido_html' => $html, 'alcance' => $alcance, 'actualizado_por' => $u->id];
@@ -96,6 +97,8 @@ class PlantillaService
     /** Contenido con datos de ejemplo (valores escapados). */
     public function conMuestra(string $html): string
     {
-        return preg_replace_callback('/\{\{\s*([a-z_]+)\s*\}\}/', fn ($m) => isset(self::VARIABLES[$m[1]]) ? e(self::VARIABLES[$m[1]][1]) : $m[0], $html) ?? $html;
+        $con = preg_replace_callback('/\{\{\s*([a-z_]+)\s*\}\}/', fn ($m) => isset(self::VARIABLES[$m[1]]) ? e(self::VARIABLES[$m[1]][1]) : $m[0], $html) ?? $html;
+
+        return $this->san->limpiar($con); // defensa en profundidad: también al mostrar, aunque el dato guardado ya esté limpio
     }
 }

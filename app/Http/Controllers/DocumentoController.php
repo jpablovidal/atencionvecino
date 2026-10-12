@@ -12,6 +12,7 @@ use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
 use App\Services\FileVault;
 use App\Services\Firma\FirmaPdfInspector;
+use App\Services\HtmlSanitizer;
 use App\Services\LlmAsistente;
 use Illuminate\Http\Request;
 
@@ -55,7 +56,7 @@ class DocumentoController extends Controller
         $turno = $documento->estado === 'en_flujo' ? $documento->pasos->where('estado', 'pendiente')->sortBy('orden')->first() : null;
 
         return view('app.documento', [
-            'd' => $documento, 'firmaPdf' => $firmaPdf, 'turno' => $turno, 'miTurno' => $turno && $turno->usuario_id === $u->id,
+            'd' => $documento, 'htmlSeguro' => app(HtmlSanitizer::class)->limpiar((string) $documento->html), 'firmaPdf' => $firmaPdf, 'turno' => $turno, 'miTurno' => $turno && $turno->usuario_id === $u->id,
             'puedeOperar' => $u->can('operar', $documento),
             'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'llm' => (bool) config('sgd.llm.enabled'),
@@ -161,6 +162,10 @@ class DocumentoController extends Controller
             return response()->json(['error' => 'El asistente no está disponible.'], 503);
         }
         $this->audit->registrar('llm.borrador', null, null, ['chars' => strlen($d['instruccion'])]);
+        if (! empty($res['sospechosa'])) {
+            $this->audit->registrar('llm.salida_sospechosa', null, null, [], true); // no se registra el contenido
+        }
+        unset($res['sospechosa']);
 
         return response()->json($res);
     }

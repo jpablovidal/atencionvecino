@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\AuditoriaService;
 use App\Services\Sistema\ComponentesService;
+use App\Services\Sistema\ConexionesService;
 use App\Services\Sistema\RecursosService;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,14 @@ class SistemaController extends Controller
         $horas = ['24h' => 24, '7d' => 168, '30d' => 720][$rango];
 
         return view('app.sistema.recursos', ['s' => $svc->instantanea(), 'rango' => $rango, 'historico' => $svc->historico($horas)]);
+    }
+
+    public function conexiones(Request $r, ConexionesService $svc)
+    {
+        $f = $r->validate(['rango' => 'nullable|in:24h,7d,30d', 'direccion' => 'nullable|in:todas,entrante,saliente']);
+
+        return view('app.sistema.conexiones', ['r' => $svc->reporte($f['rango'] ?? '24h', $f['direccion'] ?? 'todas'), 'retencion' => (int) config('sgd.conexiones_retencion_dias'),
+            'activo' => (bool) config('sgd.registrar_conexiones')]);
     }
 
     public function componentes(Request $r, ComponentesService $svc)

@@ -14,3 +14,4 @@ Schedule::command('docdigital:sincronizar')->everyTenMinutes()->withoutOverlappi
 Schedule::command('repositorio:operar verificar --n=5')->dailyAt('03:40');
 Schedule::command('archivos:analizar-firmas --lote=100')->hourly()->withoutOverlapping(30);
 Schedule::command('recursos:muestrear')->everyFiveMinutes()->withoutOverlapping(5);
+Schedule::command('conexiones:depurar')->dailyAt('03:50');

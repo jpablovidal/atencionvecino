@@ -55,7 +55,7 @@
 | diagnostico | normal | 0 |
 | seguridad | normal | 0 |
 
-**Total de violaciones: 0** (43 páginas/modos, incluidas las de administración y las de formatos/plantillas con el editor completo; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
+**Total de violaciones: 0** (45 páginas/modos, incluidas las de administración y las de formatos/plantillas con el editor completo; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
 
 Comprobaciones de comportamiento:
 - Primer Tab: {"texto":"Saltar al contenido","visible":true}
@@ -80,6 +80,8 @@ Capturas: `docs/capturas/a11y-*.png`.
 - El logo exige **texto alternativo** cuando se muestra; el SVG está prohibido.
 - Los grupos de la barra de menú son `<details>/<summary>` operables con teclado (Enter/Espacio) y se cierran con **Esc** o al hacer clic fuera; los enlaces que abren pestaña nueva lo anuncian a lectores de pantalla.
 - Las páginas de administración nuevas (apariencia, menú, APIs, folios, firmas, repositorio, roles, usuarios, logs, sesiones) están cubiertas por `AccesibilidadTest` y por `scripts/a11y-audit.cjs` (axe-core).
+
+- **Mapa de conexiones:** el mapa es un SVG con título y descripción (`role="img"`), cada país tiene su título con el valor, la información completa está en una **tabla** equivalente y la escala se explica con texto; el color nunca es el único medio (valores y niveles en texto).
 
 ## Limitaciones (honestas)
 - **No** hay auditoría con personas usuarias de lectores de pantalla (NVDA, JAWS, VoiceOver) ni certificación externa; las herramientas automáticas detectan alrededor de un tercio de los problemas posibles. Se recomienda una auditoría manual antes de producción.

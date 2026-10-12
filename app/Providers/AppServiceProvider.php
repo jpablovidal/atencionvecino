@@ -20,12 +20,14 @@ use App\Services\Interop\DocDigital\DocDigitalClient;
 use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Interop\DocDigital\MockDocDigitalClient;
+use App\Services\Sistema\ConexionesService;
 use App\Support\HashedDatabaseSessionHandler;
 use App\Support\ProductionGuard;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\View;
@@ -76,6 +78,37 @@ class AppServiceProvider extends ServiceProvider
         ApiConfigService::aplicar(); // la configuración de BD prevalece sobre .env
         ProductionGuard::verificar();
         Paginator::useBootstrapFour();
+
+        // Conexiones SALIENTES (integraciones): host de destino, sin URL completa, cabeceras ni cuerpo
+        Http::globalMiddleware(fn (callable $handler) => function ($request, array $options) use ($handler) {
+            $host = (string) $request->getUri()->getHost();
+            $anotar = function (bool $error) use ($host) {
+                try {
+                    if (config('sgd.registrar_conexiones') && $host !== '') {
+                        ConexionesService::registrar('saliente', strtolower($host), 'integracion', $error);
+                    }
+                } catch (\Throwable) {
+                }
+            };
+
+            try {
+                $promesa = $handler($request, $options);
+            } catch (\Throwable $e) { // fallo síncrono (p. ej. simulaciones)
+                $anotar(true);
+
+                throw $e;
+            }
+
+            return $promesa->then(function ($resp) use ($anotar) {
+                $anotar($resp->getStatusCode() >= 400);
+
+                return $resp;
+            }, function ($e) use ($anotar) {
+                $anotar(true);
+
+                throw $e;
+            });
+        });
 
         Session::extend('sgd_database', function ($app) {
             $c = $app['config']['session'];

@@ -20,7 +20,7 @@
 @if($d->editable() && $puedeOperar)
 <form method="post" action="{{ route('app.documento.guardar',$d) }}" class="mb-4">@csrf
 <div class="form-group"><label for="titulo">Título</label><input class="form-control" id="titulo" name="titulo" value="{{ old('titulo',$d->titulo) }}" required maxlength="190"></div>
-<div class="form-group"><label for="html">Contenido</label><textarea id="html" name="html" data-editor data-upload-url="{{ route('app.recursos.subir') }}" rows="14">{{ old('html',$d->html) }}</textarea></div>
+<div class="form-group"><label for="html">Contenido</label><textarea id="html" name="html" data-editor data-upload-url="{{ route('app.recursos.subir') }}" rows="14">{{ old('html',$htmlSeguro) }}</textarea></div>
 <div class="form-row">
 <div class="form-group col-md-6"><label for="resumen">Resumen (MGDDE)</label><input class="form-control" id="resumen" name="resumen" maxlength="1000" value="{{ old('resumen',$d->resumen) }}"></div>
 <div class="form-group col-md-6"><label for="palabras_clave">Palabras clave</label><input class="form-control" id="palabras_clave" name="palabras_clave" maxlength="255" value="{{ old('palabras_clave',$d->palabras_clave) }}"></div></div>
@@ -37,7 +37,7 @@
 <button type="button" class="btn btn-sm btn-primary mt-2" id="llm-insertar" hidden>Insertar en el documento</button></div></div>
 @endif
 @else
-<div class="card mb-4"><div class="card-body">{!! $d->html !!}</div></div>
+<div class="card mb-4"><div class="card-body">{!! $htmlSeguro !!}</div></div>
 @endif
 
 <h2 class="h4">Flujo de visación y firma</h2>

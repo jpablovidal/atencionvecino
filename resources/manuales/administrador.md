@@ -4,7 +4,7 @@ El administrador gestiona los **mantenedores**, la **seguridad** y el **diagnós
 
 ## 1. Menú del administrador
 
-El menú se agrupa en **Administración** (Unidades, Usuarios, Roles y permisos, Trámites, Tipos de documento, Plantillas, Folios, Estilo y posición de firmas, Instituciones, Procesos, Codificador, Servicios PISEE, APIs e integraciones, Repositorio, Apariencia, Barra de menú) y **Seguridad y operación** (Seguridad, Registro de logs, Usuarios conectados, Recursos del servidor, Componentes y librerías, Diagnóstico). Cada persona ve solo lo que su rol permite; los grupos se despliegan con Enter o Espacio y se cierran con Esc.
+El menú se agrupa en **Administración** (Unidades, Usuarios, Roles y permisos, Trámites, Tipos de documento, Plantillas, Folios, Estilo y posición de firmas, Instituciones, Procesos, Codificador, Servicios PISEE, APIs e integraciones, Repositorio, Apariencia, Barra de menú) y **Seguridad y operación** (Seguridad, Registro de logs, Usuarios conectados, Conexiones y mapa, Recursos del servidor, Componentes y librerías, Diagnóstico). Cada persona ve solo lo que su rol permite; los grupos se despliegan con Enter o Espacio y se cierran con Esc.
 
 En todos los mantenedores **no existe el borrado**: se **desactiva** (botón *Desactivar/Activar*). Cada cambio queda en la bitácora de auditoría.
 
@@ -166,7 +166,22 @@ Qué hacer: *Crítico* en disco → depure respaldos/logs o amplíe el plan; *Cr
 
 Junto a cada PDF (expediente, anexos, comunicaciones de DocDigital) verá si está **firmado electrónicamente**. Use *Ver firmas* para ver firmante, emisor, fecha, vigencia del certificado, integridad y cobertura. «Firma inválida o documento alterado» significa que el contenido cambió después de firmarse. «Confianza del emisor no verificada» aparece mientras no se configure `SGD_FIRMA_CA_BUNDLE` (CA de prestadores acreditados). Esta verificación **no reemplaza** la validación legal ni revisa revocación de certificados.
 
-## 27. Problemas frecuentes
+## 27. Conexiones y mapa
+
+**Seguridad y operación → Conexiones y mapa.** Muestra **de dónde llegan** las conexiones al sistema (*entrantes*) y **a qué servicios se conecta** el sistema (*salientes*: ClaveÚnica, FirmaGob, DocDigital, Google, etc.).
+
+- **Filtros:** últimas 24 horas, 7 o 30 días; entrantes, salientes o ambas.
+- **Mapa por país:** más oscuro = más conexiones (escala logarítmica). Pase el mouse o use la **tabla «Conexiones por país»**, equivalente para lectores de pantalla. «Red interna / local» agrupa direcciones privadas.
+- **Ranking de IP:** las 20 IP con más conexiones, su país, errores y el tipo de uso (público, ingreso, ciudadanos, funcionarios). Una **proporción alta de errores** (resaltada) con muchas conexiones suele ser un **escaneo automatizado**; para bloquear una IP use el firewall del hosting (cPanel → *IP Blocker*).
+- **Destinos salientes:** servicios con más conexiones desde el sistema y sus errores (útil para detectar caídas de integraciones).
+- **Privacidad:** solo se guardan contadores por hora (IP o servidor de destino y tipo de ruta); **no** se guarda la dirección visitada ni el contenido. Las IP son datos personales: el panel es solo para administración y auditoría y los datos se eliminan a los 90 días.
+- La ubicación por IP es **aproximada** (por país). VPN, proxy o redes móviles pueden aparecer en otro país.
+
+## 28. Seguridad del contenido (plantillas, documentos e IA)
+
+El sistema **no ejecuta código** que alguien pegue en una plantilla, un documento o la respuesta de la IA: elimina scripts, formularios, marcos, estilos peligrosos, enlaces a otros sitios sin protocolo y caracteres invisibles o de inversión de texto, tanto al guardar como al mostrar y al generar el PDF. Las imágenes solo pueden venir de la biblioteca interna. Las respuestas de la IA se muestran como **texto**; si traían marcado, enlaces o direcciones, aparece una advertencia y queda registrado `llm.salida_sospechosa` (en el registro de logs). Aun así, **toda redacción de la IA debe ser revisada por una persona**.
+
+## 29. Problemas frecuentes
 
 | Problema | Qué hacer |
 |---|---|

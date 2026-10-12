@@ -330,4 +330,12 @@ create table `cuentas_prueba` (`id` bigint unsigned not null auto_increment prim
 
 alter table `cuentas_prueba` add unique `cuentas_prueba_run_unique`(`run`);
 
+create table `conexiones_resumen` (`id` bigint unsigned not null auto_increment primary key, `bucket` datetime not null, `direccion` varchar(10) not null, `clave` varchar(190) not null, `grupo` varchar(20) not null, `hits` int unsigned not null default '0', `errores` int unsigned not null default '0', `ultimo` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `conexiones_resumen` add unique `conexiones_uniq`(`bucket`, `direccion`, `clave`, `grupo`);
+
+alter table `conexiones_resumen` add index `conexiones_resumen_direccion_bucket_index`(`direccion`, `bucket`);
+
+create table `geo_dns_cache` (`host` varchar(190) not null, `ip` varchar(45) null, `pais` varchar(2) null, `resuelto_en` timestamp null, primary key (`host`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
 SET FOREIGN_KEY_CHECKS = 1;

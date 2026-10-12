@@ -32,6 +32,15 @@ class FirmaElectronicaArchivosTest extends TestCase
     }
 
     // ------------------------------------------------------------------ inspector
+    /** Regresión: una firma cuyo último byte es 0x00 se truncaba al quitar el relleno con rtrim (fallaba ~1 de cada 256 firmas). */
+    public function test_el_relleno_se_descarta_por_longitud_y_no_se_pierde_un_byte_final_cero(): void
+    {
+        $der = "\x30\x03\x02\x01\x00"; // SEQUENCE { INTEGER 0 }: termina en 0x00
+        $this->assertSame($der, FirmaPdfInspector::recortarDer($der.str_repeat("\0", 100)));
+        $this->assertSame('', FirmaPdfInspector::recortarDer(''));
+        $this->assertSame('', FirmaPdfInspector::recortarDer("\x30\x82\xff"));
+    }
+
     public function test_pdf_sin_firma_y_no_pdf(): void
     {
         $this->assertSame('sin_firma', $this->insp()->inspeccionar($this->pdfValido())['estado']);

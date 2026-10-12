@@ -8,6 +8,7 @@ use App\Models\PlantillaVersion;
 use App\Models\TipoDocumento;
 use App\Models\Unidad;
 use App\Services\AuditoriaService;
+use App\Services\HtmlSanitizer;
 use App\Services\PdfService;
 use App\Services\PlantillaService;
 use Illuminate\Http\Request;
@@ -102,7 +103,8 @@ class PlantillasController extends Controller
     private function datosForm(?Plantilla $p): array
     {
         return ['p' => $p, 'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(), 'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(),
-            'sel' => $p ? $p->unidades()->pluck('unidades.id')->all() : [], 'variables' => PlantillaService::VARIABLES];
+            'sel' => $p ? $p->unidades()->pluck('unidades.id')->all() : [], 'variables' => PlantillaService::VARIABLES,
+            'contenido' => $p ? app(HtmlSanitizer::class)->limpiar($p->contenido_html) : ''];
     }
 
     public function guardar(Request $r, ?Plantilla $plantilla = null)

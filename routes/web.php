@@ -128,6 +128,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     });
     Route::get('/sesiones', [SesionesController::class, 'index'])->middleware('permiso:sesiones.ver')->name('sesiones');
     Route::post('/sesiones/{id}/cerrar', [SesionesController::class, 'cerrar'])->middleware('permiso:sesiones.cerrar')->name('sesiones.cerrar');
+    Route::get('/sistema/conexiones', [SistemaController::class, 'conexiones'])->middleware('permiso:conexiones.ver')->name('sistema.conexiones');
     Route::get('/sistema/recursos', [SistemaController::class, 'recursos'])->middleware('permiso:recursos.ver')->name('sistema.recursos');
     Route::middleware('permiso:componentes.ver')->group(function () {
         Route::get('/sistema/componentes', [SistemaController::class, 'componentes'])->name('sistema.componentes');

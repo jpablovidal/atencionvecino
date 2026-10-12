@@ -127,3 +127,7 @@ Barra superior: tamaño de texto, alto contraste, texto legible, subrayar enlace
 ## Firmas electrónicas en los archivos
 
 Junto a cada PDF verá si trae **firma electrónica**: «Firmado electrónicamente», «Sin firma electrónica», «Firmado, con cambios posteriores» o «Firma inválida o documento alterado» (en este caso no confíe en el documento y avise al administrador). *Ver firmas* muestra quién firmó, el emisor del certificado y la fecha. El sistema guarda el archivo tal como llegó, para no invalidar la firma.
+
+## Asistente de redacción (IA) y contenido seguro
+
+Si su institución habilita el asistente, la IA solo propone **texto**: usted decide qué insertar y **debe revisarlo** (normas, nombres, cifras). Si aparece la advertencia «contenía marcado, enlaces o direcciones», revise con especial cuidado: el sistema ya eliminó todo lo ejecutable, pero el texto podría ser engañoso. Lo mismo vale para el contenido que pegue desde otros programas: el sistema elimina scripts, imágenes externas y caracteres invisibles al guardar.

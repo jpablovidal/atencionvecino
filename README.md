@@ -240,6 +240,7 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 | Roles y permisos | `/app/admin/roles` | Roles personalizados con permisos acotados por su rol base. |
 | Usuarios | `/app/admin/usuarios` | Alta/edición con roles dinámicos, búsqueda y resguardos (no desactivarse; siempre un administrador activo). |
 | Plantillas y formatos | `/app/admin/plantillas` | Editor TinyMCE completo (tablas, imágenes, colores, tipografías, saltos de página, variables), visibilidad por unidad (toda la municipalidad o direcciones como Salud/Educación) e historial de versiones. Catálogo para todo el personal en `/app/formatos`. |
+| Conexiones y mapa | `/app/sistema/conexiones` | **Mapa del mundo** con el origen de las conexiones al sistema (y el destino de las que hace hacia ClaveÚnica, FirmaGob, Google, etc.), **ranking de las IP con más conexiones**, errores por IP (posible escaneo), evolución y tipo de uso. Solo contadores por hora: no guarda URL ni contenido; retención 90 días. |
 | Recursos del servidor | `/app/sistema/recursos` | Dashboard de CPU, memoria (RAM), disco, memoria PHP/OPcache, base de datos, cola y sesiones, con estado en texto (Normal/Atención/Crítico) e histórico de 24 h, 7 y 30 días (muestra cada 5 min con `recursos:muestrear`). Respeta los límites del plan de hosting (cgroup) cuando los informa. |
 | Componentes y librerías | `/app/sistema/componentes` | Versiones de plataforma, de cada librería PHP (Composer) y de cada activo front-end (con SHA-256), verificación de **recursos externos/CDN** y descarga del inventario en JSON. |
 | Registro de logs | `/app/logs` | Filtros (fecha, acción, actor, entidad, IP), exportación CSV auditada y cola redactada del log de aplicación. |
@@ -262,6 +263,10 @@ Prueba en la unidad compartida real: **pendiente** (ver `docs/LIMITACIONES.md`);
 
 ---
 
+## Geolocalización y mapa (sin servicios externos)
+
+El mapa usa una base **local** de país por IP (`resources/geoip/ipv4.bin` / `ipv6.bin`, DB-IP «IP to Country Lite», **CC BY 4.0**) y trazos del mundo de Natural Earth (dominio público). No se consulta ningún servicio externo. Para actualizarla (mensual, opcional) descargue los CSV de https://db-ip.com/db/download/ip-to-country-lite y el GeoJSON de países de Natural Earth y ejecute `php scripts/build-geoip.php ipv4.csv ipv6.csv paises.geojson`. Las IP son datos personales: el panel es solo para administración/auditoría y los contadores se depuran a los `SGD_CONEXIONES_RETENCION_DIAS` (90) días con `conexiones:depurar` (tarea diaria). Detrás de un proxy/CDN configure `TRUSTED_PROXIES` para ver la IP real del visitante.
+
 ## Desarrollo local
 
 ```bash
@@ -269,7 +274,7 @@ composer install
 cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
 php artisan key:generate && php artisan migrate --seed
 php artisan serve
-vendor/bin/phpunit            # 303 pruebas
+vendor/bin/phpunit            # 624 pruebas
 vendor/bin/pint --test        # estilo
 composer audit                # dependencias
 ```

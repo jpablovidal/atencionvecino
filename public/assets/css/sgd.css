@@ -138,3 +138,10 @@ html.a11y-contrast .sgd-nav-grupo>summary{color:#ffff00}
 
 /* Ambiente de pruebas: aviso permanente (texto sobre fondo con contraste ≥ 4,5:1) */
 .banner-pruebas{background:#ffd966;color:#3b2a00;padding:6px 12px;text-align:center;font-size:14px;border-bottom:2px solid #8a5a00}
+
+/* Mapa de conexiones por país: 6 niveles (el nivel también se indica con texto en el título de cada país y en la tabla) */
+.mapa-svg{width:100%;height:auto;background:#fff;border:1px solid #c5ced6}
+.mapa-mar{fill:#f4f8fb}
+.mapa-svg path{stroke:#fff;stroke-width:.4}
+.mp-0{fill:#e3e8ec;background:#e3e8ec}.mp-1{fill:#cfe3f2;background:#cfe3f2}.mp-2{fill:#9ccae8;background:#9ccae8}.mp-3{fill:#5fa8d3;background:#5fa8d3}.mp-4{fill:#2b7fb8;background:#2b7fb8}.mp-5{fill:#0d4f8a;background:#0d4f8a}
+.leyenda-mapa{display:inline-block;margin-right:12px}.cuadro{display:inline-block;width:14px;height:14px;vertical-align:-2px;border:1px solid #8896a2}

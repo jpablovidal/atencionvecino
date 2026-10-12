@@ -17,7 +17,7 @@
   </fieldset>
   <div class="form-group"><label for="contenido_html">Contenido</label>
     <p id="ayuda-editor" class="small text-muted">Use el botón <strong>Variables</strong> para insertar campos de combinación. Las imágenes se suben desde el botón de imagen (PNG, JPG o WebP, hasta 2 MB) o arrastrándolas al editor. Atajo de ayuda: Alt+0.</p>
-    <textarea id="contenido_html" name="contenido_html" data-editor data-height="560" data-upload-url="{{ route('app.recursos.subir') }}" data-variables="{{ json_encode(collect($variables)->map(fn ($v) => $v[0])->all(), JSON_UNESCAPED_UNICODE) }}" aria-describedby="ayuda-editor" rows="18">{{ old('contenido_html', $p->contenido_html ?? '') }}</textarea></div>
+    <textarea id="contenido_html" name="contenido_html" data-editor data-height="560" data-upload-url="{{ route('app.recursos.subir') }}" data-variables="{{ json_encode(collect($variables)->map(fn ($v) => $v[0])->all(), JSON_UNESCAPED_UNICODE) }}" aria-describedby="ayuda-editor" rows="18">{{ old('contenido_html', $contenido) }}</textarea></div>
   <button class="btn btn-primary">Guardar</button> <a class="btn btn-link" href="{{ route('app.admin.plantillas') }}">Cancelar</a>
 </form>
 @endsection
