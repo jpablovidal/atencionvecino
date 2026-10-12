@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Imagen de la biblioteca del editor (re-codificada, cifrada en el repositorio). Inmutable y sin borrado:
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $sha256
  * @property string $ruta
  * @property int|null $subido_por
- * @property \Illuminate\Support\Carbon|null $created_at
+ * @property Carbon|null $created_at
  */
 class RecursoImagen extends Model
 {

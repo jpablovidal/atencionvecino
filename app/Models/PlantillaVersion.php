@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Instantánea inmutable de una plantilla.
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $contenido_html
  * @property string $sha256
  * @property int|null $creado_por
- * @property \Illuminate\Support\Carbon|null $created_at
+ * @property Carbon|null $created_at
  */
 class PlantillaVersion extends Model
 {

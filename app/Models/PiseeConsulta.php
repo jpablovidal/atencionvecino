@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $http_status
  * @property string|null $error
  * @property int|null $archivo_id
- * @property \Illuminate\Support\Carbon $created_at
+ * @property Carbon $created_at
  */
 class PiseeConsulta extends Model
 {

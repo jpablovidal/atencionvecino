@@ -11,11 +11,11 @@ use Illuminate\Support\Carbon;
  * @property string $descripcion
  * @property string $severidad
  * @property string $estado
- * @property \Illuminate\Support\Carbon $detectado_en
+ * @property Carbon $detectado_en
  * @property bool $reportable_csirt
- * @property \Illuminate\Support\Carbon|null $alerta_temprana_en
- * @property \Illuminate\Support\Carbon|null $segundo_reporte_en
- * @property \Illuminate\Support\Carbon|null $informe_final_en
+ * @property Carbon|null $alerta_temprana_en
+ * @property Carbon|null $segundo_reporte_en
+ * @property Carbon|null $informe_final_en
  * @property int $creado_por
  * @property string|null $created_at
  * @property string|null $updated_at

@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $estado
  * @property array<mixed> $metadatos
  * @property string|null $motivo_reapertura
- * @property \Illuminate\Support\Carbon|null $cerrado_en
+ * @property Carbon|null $cerrado_en
  * @property string|null $created_at
  * @property string|null $updated_at
  * @property string $origen

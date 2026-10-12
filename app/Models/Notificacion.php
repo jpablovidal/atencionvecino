@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $destinatario_correo
  * @property string|null $evidencia_tipo
  * @property string|null $evidencia
- * @property \Illuminate\Support\Carbon|null $evidencia_en
+ * @property Carbon|null $evidencia_en
  * @property int $intentos
  * @property string|null $ultimo_error
  * @property int $creado_por
