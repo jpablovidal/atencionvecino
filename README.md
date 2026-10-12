@@ -269,7 +269,7 @@ composer install
 cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
 php artisan key:generate && php artisan migrate --seed
 php artisan serve
-vendor/bin/phpunit            # 276 pruebas
+vendor/bin/phpunit            # 303 pruebas
 vendor/bin/pint --test        # estilo
 composer audit                # dependencias
 ```

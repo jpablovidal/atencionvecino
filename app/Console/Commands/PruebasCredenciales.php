@@ -14,6 +14,7 @@ class PruebasCredenciales extends Command
     protected $signature = 'pruebas:credenciales
         {--archivo= : JSON {"RUN":"contraseña",...} con las cuentas a crear/actualizar (se borra al terminar con --borrar)}
         {--borrar : Borra el archivo de credenciales después de leerlo}
+        {--demo : Crea cuentas para los usuarios activos y 2 vecinos de prueba con contraseñas aleatorias (se muestran una sola vez)}
         {--rotar : Genera contraseñas nuevas aleatorias para todas las cuentas y las muestra una sola vez}
         {--desactivar : Desactiva todas las cuentas de prueba}';
 
@@ -29,6 +30,21 @@ class PruebasCredenciales extends Command
         if ($this->option('desactivar')) {
             $n = CuentaPrueba::query()->update(['activo' => false]);
             $this->info("Cuentas desactivadas: $n");
+
+            return self::SUCCESS;
+        }
+        if ($this->option('demo')) {
+            $filas = [];
+            $ruts = Usuario::query()->where('activo', true)->orderBy('id')->get()->map(fn ($u) => [$u->run, 'funcionario', $u->nombres, $u->apellidos]);
+            foreach ([20000001, 20000002] as $i => $n) {
+                $ruts->push([$n.'-'.Run::dv((string) $n), 'ciudadano', 'Vecino', 'De Prueba '.($i + 1)]);
+            }
+            foreach ($ruts as [$run, $tipo, $nom, $ape]) {
+                $pw = $this->generar();
+                CuentaPrueba::query()->updateOrCreate(['run' => $run], ['tipo' => $tipo, 'nombres' => $nom, 'apellidos' => $ape, 'password' => Hash::make($pw), 'activo' => true]);
+                $filas[] = [$run, $tipo, $nom.' '.$ape, $pw];
+            }
+            $this->table(['RUN (usuario)', 'Tipo', 'Nombre', 'Contraseña (se muestra una vez)'], $filas);
 
             return self::SUCCESS;
         }

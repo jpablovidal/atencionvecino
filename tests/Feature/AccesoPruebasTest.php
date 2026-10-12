@@ -175,6 +175,8 @@ class AccesoPruebasTest extends TestCase
         $antes = CuentaPrueba::query()->where('run', $adm->run)->value('password');
         $this->artisan('pruebas:credenciales', ['--rotar' => true])->assertSuccessful();
         $this->assertNotSame($antes, CuentaPrueba::query()->where('run', $adm->run)->value('password'));
+        $this->artisan('pruebas:credenciales', ['--demo' => true])->assertSuccessful();
+        $this->assertGreaterThanOrEqual(10, CuentaPrueba::query()->count()); // usuarios demo + 2 vecinos
         $this->artisan('pruebas:credenciales', ['--desactivar' => true])->assertSuccessful();
         $this->assertSame(0, CuentaPrueba::query()->where('activo', true)->count());
     }

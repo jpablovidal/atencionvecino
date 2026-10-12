@@ -32,7 +32,7 @@ APP_ENV=production php artisan package:discover --ansi || true
 
 # Directorios que Laravel necesita escribibles
 mkdir -p storage/framework/{cache,sessions,views,htmlpurifier,dompdf} storage/logs bootstrap/cache
-touch storage/logs/.gitkeep
+for d in storage/framework/cache storage/framework/sessions storage/framework/views storage/framework/htmlpurifier storage/framework/dompdf storage/logs bootstrap/cache; do touch "$d/.gitkeep"; done # el ZIP solo guarda archivos: sin esto las carpetas vacías no existirían
 find . -name '.git*' -not -name '.gitkeep' -prune -exec rm -rf {} + 2>/dev/null || true
 find . -type d \( -name tests -o -name Tests -o -name docs \) -path './vendor/*' -prune -exec rm -rf {} + 2>/dev/null || true
 find vendor -type f \( -name 'phpunit.xml*' -o -name '.phpunit.result.cache' -o -name 'phpstan*.neon' -o -name 'CHANGELOG*' \) -delete 2>/dev/null || true
