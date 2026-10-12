@@ -326,4 +326,8 @@ create table `metricas_recursos` (`id` bigint unsigned not null auto_increment p
 
 alter table `metricas_recursos` add index `metricas_recursos_ts_index`(`ts`);
 
+create table `cuentas_prueba` (`id` bigint unsigned not null auto_increment primary key, `run` varchar(12) not null, `tipo` varchar(12) not null, `nombres` varchar(120) not null, `apellidos` varchar(120) not null, `password` varchar(255) not null, `activo` tinyint(1) not null default '1', `ultimo_ingreso` timestamp null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `cuentas_prueba` add unique `cuentas_prueba_run_unique`(`run`);
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CuentaPrueba;
 use App\Models\Usuario;
+use App\Support\Ambiente;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
 use App\Support\Run;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -15,7 +19,41 @@ class AuthController extends Controller
 
     public function ingreso()
     {
-        return view('auth.ingreso');
+        return view('auth.ingreso', ['pruebas' => Ambiente::accesoPruebasActivo(), 'claveunica' => config('sgd.claveunica.mode') !== 'mock' || ! app()->isProduction()]);
+    }
+
+    // ---- Acceso de PRUEBAS con usuario y contraseña (solo SGD_AMBIENTE=pruebas y hasta la fecha configurada)
+    public function pruebasForm()
+    {
+        abort_unless(Ambiente::accesoPruebasActivo(), 404);
+
+        return view('auth.pruebas');
+    }
+
+    public function pruebasLogin(Request $request)
+    {
+        abort_unless(Ambiente::accesoPruebasActivo(), 404);
+        $d = $request->validate(['run' => 'required|string|max:15', 'password' => 'required|string|max:200']);
+        $run = Run::normalizar($d['run']);
+        $clave = 'pruebas:'.hash('sha256', ($run ?? $d['run']).'|'.$request->ip());
+        if (RateLimiter::tooManyAttempts($clave, 5)) {
+            $this->audit->registrar('auth.fallo', null, null, ['motivo' => 'pruebas_bloqueo', 'run' => $run ? Run::enmascarar($run) : null], false, ['run' => null, 'rol' => null]);
+
+            return back()->withInput(['run' => $d['run']])->with('error', 'Demasiados intentos. Espere 15 minutos.');
+        }
+        $c = $run ? CuentaPrueba::query()->where('run', $run)->where('activo', true)->first() : null;
+        // comparación de costo constante aunque la cuenta no exista (sin enumeración por tiempo)
+        $ok = Hash::check($d['password'], $c->password ?? '$2y$12$wugNHhvPcVl3Q/Ov6fLV.ekUSbZV.fXIZ1Wekxz6T1aMXX58cYswW');
+        if (! $c || ! $ok) {
+            RateLimiter::hit($clave, 900);
+            $this->audit->registrar('auth.fallo', null, null, ['motivo' => 'pruebas_credenciales', 'run' => $run ? Run::enmascarar($run) : null], false, ['run' => null, 'rol' => null]);
+
+            return back()->withInput(['run' => $d['run']])->with('error', 'RUN o contraseña incorrectos.');
+        }
+        RateLimiter::clear($clave);
+        $c->forceFill(['ultimo_ingreso' => now()])->save();
+
+        return $this->iniciar($request, $c->tipo, ['run' => $c->run, 'nombres' => $c->nombres, 'apellidos' => $c->apellidos]);
     }
 
     public function redirigir(Request $request, string $via, ClaveUnicaService $cu)

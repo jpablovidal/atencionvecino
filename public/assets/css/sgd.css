@@ -135,3 +135,6 @@ html.a11y-contrast .sgd-nav-grupo>summary{color:#ffff00}
 .grafico-linea{stroke:#005a94;stroke-width:2;vector-effect:non-scaling-stroke}
 .grafico-eje{stroke:#d3dae0;stroke-width:1;vector-effect:non-scaling-stroke}
 .grafico-txt{font-size:10px;fill:#3d4852}
+
+/* Ambiente de pruebas: aviso permanente (texto sobre fondo con contraste ≥ 4,5:1) */
+.banner-pruebas{background:#ffd966;color:#3b2a00;padding:6px 12px;text-align:center;font-size:14px;border-bottom:2px solid #8a5a00}

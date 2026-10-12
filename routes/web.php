@@ -48,6 +48,8 @@ Route::get('/ayuda/{perfil}', [AyudaController::class, 'manual'])->where('perfil
 
 // ---- Autenticación (solo ClaveÚnica)
 Route::get('/ingreso', [AuthController::class, 'ingreso'])->name('ingreso');
+Route::get('/ingreso/pruebas', [AuthController::class, 'pruebasForm'])->name('ingreso.pruebas');
+Route::post('/ingreso/pruebas', [AuthController::class, 'pruebasLogin'])->middleware('throttle:login')->name('ingreso.pruebas.entrar');
 Route::get('/ingreso/{via}', [AuthController::class, 'redirigir'])->where('via', 'ciudadano|funcionario')->middleware('throttle:login')->name('ingreso.via');
 Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback');
 Route::post('/salir', [AuthController::class, 'salir'])->name('salir');

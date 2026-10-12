@@ -13,6 +13,7 @@
 <script src="{{ asset('assets/js/a11y-init.js') }}"></script>
 </head>
 <body>
+@if(\App\Support\Ambiente::esPruebas())<div class="banner-pruebas" role="note"><strong>AMBIENTE DE PRUEBAS</strong> — firmas y comunicaciones simuladas, sin validez legal.@if(\App\Support\Ambiente::pruebasHasta()) Acceso de pruebas hasta el {{ \App\Support\Ambiente::pruebasHasta()->format('d-m-Y') }}.@endif</div>@endif
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
 <a class="skip-link skip-link-2" href="#navegacion">Saltar a la navegación</a>
 <div id="a11y-anuncio" class="sr-anuncio" role="status" aria-live="polite" aria-atomic="true"></div>

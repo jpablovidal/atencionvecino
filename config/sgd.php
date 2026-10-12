@@ -24,6 +24,10 @@ return [
     'upload_max_bytes' => 10 * 1024 * 1024,
     'upload_max_files' => 8,
 
+    // Ambiente: produccion (defecto) | pruebas (modos simulados + acceso con contraseña, hasta la fecha indicada AAAA-MM-DD)
+    'ambiente' => env('SGD_AMBIENTE', 'produccion'),
+    'acceso_pruebas_hasta' => env('SGD_ACCESO_PRUEBAS_HASTA'),
+
     // Reconocimiento de firmas electrónicas en PDF: paquete PEM de CA de confianza (prestadores acreditados; A VALIDAR). Vacío = no se afirma confianza.
     'firma' => ['ca_bundle' => env('SGD_FIRMA_CA_BUNDLE')],
 
