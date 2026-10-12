@@ -1,7 +1,8 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><style>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Comprobante electrónico de ingreso</title><style>
 body{font-family:'DejaVu Sans',sans-serif;font-size:11px} h1{color:#006fb3;font-size:18px} table{border-collapse:collapse;width:100%} td,th{border:1px solid #999;padding:4px 6px}
 .k{width:28%;background:#eef4f9;font-weight:bold}
 </style></head><body>
+@if(! empty($logoPdf))<p><img src="{{ $logoPdf }}" alt="" style="height:14mm"></p>@endif
 <h1>Comprobante electrónico de ingreso</h1>
 <p>I. Municipalidad de Santo Domingo</p>
 <table>

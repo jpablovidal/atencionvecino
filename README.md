@@ -218,6 +218,34 @@ Ingrese en `https://sgd.santodomingo.cl/ingreso` → *funcionario* (ClaveÚnica)
 
 **Restauración:** (1) restaurar BD (phpMyAdmin → Importar el SQL, o cPanel *Restaurar*); (2) restaurar `sgd_storage` (permisos 750); (3) restaurar `.env`/secretos (600); (4) `audit:verify` desde `/app/seguridad` para comprobar la cadena; (5) abrir un expediente con documentos y comprobar que el PDF se descifra (verifica clave + integridad). **Pruebe la restauración al menos trimestralmente.**
 
+## Administración del sistema (módulos del menú)
+
+Todos requieren el rol **administrador** (o el permiso específico) y quedan en la bitácora de auditoría. Detalle operativo en `resources/manuales/administrador.md`.
+
+| Módulo | Ruta | Qué permite |
+|---|---|---|
+| Apariencia | `/app/admin/apariencia` | Logo (PNG/JPG/WebP re-codificado; sin SVG), colores con **validación de contraste WCAG ≥ 4,5:1**, encabezado y pie (textos y enlaces https/internos). |
+| Barra de menú | `/app/admin/menu` | Renombrar, reordenar u ocultar ítems del sistema (los protegidos no se ocultan) y agregar enlaces propios por área/rol. El menú **no concede ni quita permisos**. |
+| APIs e integraciones | `/app/admin/api` | Ver estado, editar URL/modo, probar conexión y volver a `.env` para ClaveÚnica, FirmaGob, casilla, Gmail, DocDigital, PISEE, Codificador, LLM y repositorio. Los secretos **no se muestran**; solo se guardan en BD si `SGD_API_SECRETOS_EN_BD=1`. |
+| Folios | `/app/admin/folios` | Formato (`{PREFIJO} {TIPO} {N} {AAAA} {AA}`), dígitos, reinicio anual o continuo y número inicial por tipo de documento. |
+| Firmas | `/app/admin/firmas` | Estilos (colores, tamaño, texto) y posiciones de las firmas en la copia pública; vista previa en PDF. |
+| Repositorio | `/app/admin/repositorio` | Local o **unidad compartida de Google Drive**: probar, migrar archivos existentes y verificar integridad. |
+| Roles y permisos | `/app/admin/roles` | Roles personalizados con permisos acotados por su rol base. |
+| Usuarios | `/app/admin/usuarios` | Alta/edición con roles dinámicos, búsqueda y resguardos (no desactivarse; siempre un administrador activo). |
+| Registro de logs | `/app/logs` | Filtros (fecha, acción, actor, entidad, IP), exportación CSV auditada y cola redactada del log de aplicación. |
+| Usuarios conectados | `/app/sesiones` | Sesiones activas (RUN enmascarado) y cierre forzado. |
+
+### Repositorio en una unidad compartida de Google Drive
+
+1. En Google Workspace cree una **Unidad compartida** (p. ej. «SGD Santo Domingo») y anote su ID (la URL `drive.google.com/drive/folders/<ID>`).
+2. En Google Cloud: cree una **cuenta de servicio**, habilite la **Google Drive API** y descargue su clave JSON. Guárdela **fuera del docroot** (`/home/USUARIO/sgd_secrets/drive-sa.json`, permisos 600).
+3. Agregue el correo de la cuenta de servicio como **miembro de la unidad compartida** con rol *Gestor de contenido* (no hace falta delegación de dominio ni compartir carpetas individuales).
+4. En `.env`: `REPOSITORIO_MODO=drive`, `GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON=/ruta/drive-sa.json`, `GOOGLE_DRIVE_SHARED_DRIVE_ID=<ID>` (y opcional `GOOGLE_DRIVE_ROOT_FOLDER_ID`).
+5. En **Administración → Repositorio** pulse *Probar conexión* (crea, lee y borra un archivo de prueba). Luego la acción de migración para mover los archivos existentes (cola en segundo plano) y *Verificar integridad* (hay una verificación diaria programada).
+6. Los archivos se **cifran antes de salir del servidor**: ni Google ni quien administre la unidad pueden leer los documentos sin la clave de `sgd_secrets`. **Respalde esas claves**: sin ellas los archivos en Drive son irrecuperables. Si Drive falla, las **escrituras fallan cerradas** (no se guarda en otro lugar sin avisar).
+
+Prueba en la unidad compartida real: **pendiente** (ver `docs/LIMITACIONES.md`); las pruebas automáticas usan un Drive simulado.
+
 ---
 
 ## Desarrollo local
@@ -227,7 +255,7 @@ composer install
 cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
 php artisan key:generate && php artisan migrate --seed
 php artisan serve
-vendor/bin/phpunit            # 114+ pruebas
+vendor/bin/phpunit            # 234 pruebas
 vendor/bin/pint --test        # estilo
 composer audit                # dependencias
 ```

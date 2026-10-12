@@ -1,18 +1,26 @@
 <?php
 
+use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\FirmasController;
 use App\Http\Controllers\FoliosController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\InteropController;
+use App\Http\Controllers\LogsController;
 use App\Http\Controllers\MantenedorController;
+use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RepositorioController;
+use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SeguridadController;
+use App\Http\Controllers\SesionesController;
+use App\Http\Controllers\UsuariosController;
 use Illuminate\Support\Facades\Route;
 
 // ---- Público
@@ -25,6 +33,10 @@ Route::middleware('throttle:publico')->group(function () {
     Route::get('/validar/{codigo}/copia', [PublicoController::class, 'copia'])->name('validar.copia')->where('codigo', 'SDD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}');
     Route::get('/validar-comprobante/{folio}/{codigo}', [PublicoController::class, 'validarComprobante'])->name('validar.comprobante');
 });
+
+// ---- Marca (públicas): CSS de colores y logo
+Route::get('/marca/estilo.css', [MarcaController::class, 'css'])->name('marca.css');
+Route::get('/marca/logo', [MarcaController::class, 'logo'])->name('marca.logo');
 
 // ---- Ayuda y accesibilidad (públicas)
 Route::get('/accesibilidad', [AyudaController::class, 'accesibilidad'])->name('accesibilidad');
@@ -99,6 +111,13 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::post('/seguridad/incidentes', [SeguridadController::class, 'incidente'])->name('seguridad.incidente');
         Route::post('/seguridad/incidentes/{incidente}', [SeguridadController::class, 'actualizarIncidente'])->name('seguridad.incidente.actualizar');
     });
+    Route::middleware('permiso:logs.ver')->group(function () {
+        Route::get('/logs', [LogsController::class, 'index'])->name('logs');
+        Route::get('/logs/exportar', [LogsController::class, 'exportar'])->name('logs.exportar');
+        Route::get('/logs/aplicacion', [LogsController::class, 'aplicacion'])->name('logs.aplicacion');
+    });
+    Route::get('/sesiones', [SesionesController::class, 'index'])->middleware('permiso:sesiones.ver')->name('sesiones');
+    Route::post('/sesiones/{id}/cerrar', [SesionesController::class, 'cerrar'])->middleware('permiso:sesiones.cerrar')->name('sesiones.cerrar');
     Route::get('/diagnostico', [SeguridadController::class, 'diagnostico'])->middleware('permiso:diagnostico.ver')->name('diagnostico');
 
     Route::get('/delegaciones', [MantenedorController::class, 'delegaciones'])->middleware('permiso:delegaciones.ver')->name('delegaciones');
@@ -107,6 +126,37 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
 
     // ---- Administración (módulos específicos ANTES del mantenedor genérico /{entidad})
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::middleware('permiso:apariencia.gestionar')->group(function () {
+            Route::get('/apariencia', [AparienciaController::class, 'index'])->name('apariencia');
+            Route::post('/apariencia', [AparienciaController::class, 'guardar'])->name('apariencia.guardar');
+            Route::post('/apariencia/logo', [AparienciaController::class, 'logo'])->name('apariencia.logo');
+            Route::post('/apariencia/logo/quitar', [AparienciaController::class, 'quitarLogo'])->name('apariencia.logo.quitar');
+            Route::post('/apariencia/restablecer', [AparienciaController::class, 'restablecer'])->name('apariencia.restablecer');
+        });
+        Route::middleware('permiso:roles.gestionar')->group(function () {
+            Route::get('/roles', [RolesController::class, 'index'])->name('roles');
+            Route::get('/roles/nuevo', [RolesController::class, 'crear'])->name('roles.crear');
+            Route::post('/roles', [RolesController::class, 'guardar'])->name('roles.guardar');
+            Route::get('/roles/{rol}', [RolesController::class, 'editar'])->name('roles.editar');
+            Route::post('/roles/{rol}', [RolesController::class, 'guardar'])->name('roles.actualizar');
+            Route::post('/roles/{rol}/estado', [RolesController::class, 'alternar'])->name('roles.alternar');
+            Route::post('/roles/{rol}/eliminar', [RolesController::class, 'eliminar'])->name('roles.eliminar');
+        });
+        Route::middleware('permiso:mantenedores.gestionar')->group(function () {
+            Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');
+            Route::get('/usuarios/nuevo', [UsuariosController::class, 'crear'])->name('usuarios.crear');
+            Route::post('/usuarios', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+            Route::get('/usuarios/{usuario}', [UsuariosController::class, 'editar'])->whereNumber('usuario')->name('usuarios.editar');
+            Route::post('/usuarios/{usuario}', [UsuariosController::class, 'guardar'])->whereNumber('usuario')->name('usuarios.actualizar');
+            Route::post('/usuarios/{usuario}/activo', [UsuariosController::class, 'alternar'])->whereNumber('usuario')->name('usuarios.alternar');
+        });
+        Route::middleware('permiso:menu.gestionar')->group(function () {
+            Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+            Route::post('/menu/sistema/{clave}', [MenuController::class, 'sistema'])->name('menu.sistema');
+            Route::post('/menu/sistema/{clave}/restablecer', [MenuController::class, 'restablecer'])->name('menu.restablecer');
+            Route::post('/menu/propio/{item?}', [MenuController::class, 'propio'])->name('menu.propio');
+            Route::post('/menu/propio/{item}/eliminar', [MenuController::class, 'eliminar'])->name('menu.eliminar');
+        });
         Route::middleware('permiso:api.gestionar')->group(function () {
             Route::get('/api', [ApiConfigController::class, 'index'])->name('api');
             Route::get('/api/{servicio}', [ApiConfigController::class, 'editar'])->name('api.editar');
@@ -120,6 +170,15 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::post('/repositorio/probar', [RepositorioController::class, 'probar'])->name('repositorio.probar');
             Route::post('/repositorio/verificar', [RepositorioController::class, 'verificar'])->name('repositorio.verificar');
             Route::post('/repositorio/migrar', [RepositorioController::class, 'migrar'])->name('repositorio.migrar');
+        });
+        Route::middleware('permiso:firmas.gestionar')->group(function () {
+            Route::get('/firmas', [FirmasController::class, 'index'])->name('firmas');
+            Route::get('/firmas/prueba', [FirmasController::class, 'prueba'])->name('firmas.prueba');
+            Route::post('/firmas/estilos/{estilo?}', [FirmasController::class, 'guardarEstilo'])->name('firmas.estilo.guardar');
+            Route::post('/firmas/estilos/{estilo}/defecto', [FirmasController::class, 'estiloDefecto'])->name('firmas.estilo.defecto');
+            Route::post('/firmas/estilos/{estilo}/activo', [FirmasController::class, 'estiloAlternar'])->name('firmas.estilo.activo');
+            Route::post('/firmas/posiciones/{posicion?}', [FirmasController::class, 'guardarPosicion'])->name('firmas.posicion.guardar');
+            Route::post('/firmas/posiciones/{posicion}/activo', [FirmasController::class, 'posicionAlternar'])->name('firmas.posicion.activo');
         });
         Route::middleware('permiso:folios.gestionar')->group(function () {
             Route::get('/folios', [FoliosController::class, 'index'])->name('folios');

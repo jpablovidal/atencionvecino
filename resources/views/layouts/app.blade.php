@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{{ asset('assets/css/sgd-fonts.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/gob.cl.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/sgd.css') }}">
+<link rel="stylesheet" href="{{ route('marca.css', ['v' => $marca['version']]) }}">
 <script src="{{ asset('assets/js/a11y-init.js') }}"></script>
 </head>
 <body>
@@ -31,7 +32,10 @@
 </div></div>
 <header class="sgd-header">
   <div class="container d-flex flex-wrap justify-content-between align-items-center py-3">
-    <a href="{{ route('inicio') }}" class="titulo text-decoration-none">I. Municipalidad de Santo Domingo<br><small>Sistema de Gestión Documental</small></a>
+    <a href="{{ route('inicio') }}" class="titulo text-decoration-none d-inline-flex align-items-center">
+      @if($marca['header']['mostrar_logo'] && $marca['logo'])<img class="sgd-logo" src="{{ route('marca.logo', ['v' => substr($marca['logo']['sha256'], 0, 10)]) }}" alt="{{ $marca['header']['logo_alt'] }}" width="{{ (int) round($marca['header']['logo_alto_px'] * $marca['logo']['ancho'] / max(1, $marca['logo']['alto'])) }}" height="{{ $marca['header']['logo_alto_px'] }}">@endif
+      <span>{{ $marca['header']['titulo'] }}@if($marca['header']['subtitulo'] !== '')<br><small>{{ $marca['header']['subtitulo'] }}</small>@endif</span>
+    </a>
     <div class="text-right">
       @if(session('ciudadano'))
         <span>{{ session('ciudadano.nombres') }} {{ session('ciudadano.apellidos') }} · {{ session('ciudadano.run') }}</span>
@@ -45,30 +49,20 @@
       @endif
     </div>
   </div>
-  @php
-    $u = auth()->user();
-    $items = [];
-    if ($u) {
-        $items[] = [route('app.bandeja'), 'Bandeja', 'app'];
-        if ($u->operaExpedientes() || $u->rolBase() === 'auditor') {
-            $items[] = [route('app.vigentes'), 'Documentos vigentes', 'app/vigentes'];
-            $items[] = [route('app.comunicaciones'), 'Comunicaciones oficiales', 'app/comunicaciones*'];
-        }
-        if ($u->esRol('alcalde', 'admin', 'auditor')) { $items[] = [route('app.delegaciones'), 'Delegaciones de firma', 'app/delegaciones*']; }
-        if ($u->rolBase() === 'admin') {
-            foreach (['unidades' => 'Unidades', 'usuarios' => 'Usuarios', 'tramites' => 'Trámites', 'tipos' => 'Tipos de documento', 'plantillas' => 'Plantillas', 'instituciones' => 'Instituciones', 'procesos' => 'Procesos', 'pisee' => 'Servicios PISEE'] as $k => $v) { $items[] = [route('app.admin.index', $k), $v, 'app/admin/'.$k.'*']; }
-            $items[] = [route('app.admin.codificador'), 'Codificador', 'app/admin/codificador*'];
-            $items[] = [route('app.diagnostico'), 'Diagnóstico', 'app/diagnostico'];
-        }
-        if ($u->esRol('admin', 'auditor')) { $items[] = [route('app.seguridad'), 'Seguridad', 'app/seguridad*']; }
-    } else {
-        $items = [[route('inicio'), 'Inicio', '/'], [route('publico.listado'), 'Documentos públicos', 'publico*'], [route('validar.form'), 'Validar documento', 'validar*']];
-        if (session('ciudadano')) { $items[] = [route('ciudadano.index'), 'Mis solicitudes', 'ciudadano*']; }
-    }
-    $items[] = [route('ayuda'), 'Ayuda', 'ayuda*'];
-  @endphp
   <nav id="navegacion" class="sgd-nav" aria-label="Navegación principal" tabindex="-1"><div class="container">
-    @foreach($items as [$url, $texto, $patron])<a href="{{ $url }}" @if(request()->is($patron)) aria-current="page" @endif>{{ $texto }}</a>@endforeach
+    @php $abiertos = []; @endphp
+    @foreach($menuItems as $it)
+      @if($it['grupo'])
+        @unless(isset($abiertos[$it['grupo']]))
+          @php $abiertos[$it['grupo']] = true; @endphp
+          <details class="sgd-nav-grupo"><summary>{{ $it['grupo'] }}</summary>
+            <ul class="list-unstyled">@foreach($menuItems as $g)@if($g['grupo'] === $it['grupo'])<li><a href="{{ $g['url'] }}" @if(request()->is($g['patron'])) aria-current="page" @endif>{{ $g['etiqueta'] }}</a></li>@endif @endforeach</ul>
+          </details>
+        @endunless
+      @else
+        <a href="{{ $it['url'] }}" @if(request()->is($it['patron'])) aria-current="page" @endif @if($it['nueva']) target="_blank" rel="noopener noreferrer" @endif>{{ $it['etiqueta'] }}@if($it['nueva'])<span class="sr-only"> (se abre en una pestaña nueva)</span>@endif</a>
+      @endif
+    @endforeach
   </div></nav>
 </header>
 <main id="contenido" class="container py-4" tabindex="-1">
@@ -79,13 +73,18 @@
   @yield('contenido')
 </main>
 <footer class="sgd-footer"><div class="container">
-  <p class="mb-2">I. Municipalidad de Santo Domingo · Ley 21.180 de Transformación Digital del Estado</p>
+  @if($marca['footer']['texto'] !== '')<p class="mb-2">{{ $marca['footer']['texto'] }}</p>@endif
   <ul class="list-inline mb-0">
-    <li class="list-inline-item"><a href="{{ route('accesibilidad') }}">Accesibilidad</a></li>
-    <li class="list-inline-item"><a href="{{ route('ayuda') }}">Ayuda y manuales</a></li>
-    <li class="list-inline-item"><a href="{{ route('publico.listado') }}">Documentos públicos</a></li>
-    <li class="list-inline-item"><a href="{{ route('validar.form') }}">Validar un documento</a></li>
+    @forelse($marca['footer']['enlaces'] as $e)
+      <li class="list-inline-item"><a href="{{ str_starts_with($e['url'], '/') ? url($e['url']) : $e['url'] }}" @unless(str_starts_with($e['url'], '/')) rel="noopener noreferrer" @endunless>{{ $e['etiqueta'] }}</a></li>
+    @empty
+      <li class="list-inline-item"><a href="{{ route('accesibilidad') }}">Accesibilidad</a></li>
+      <li class="list-inline-item"><a href="{{ route('ayuda') }}">Ayuda y manuales</a></li>
+      <li class="list-inline-item"><a href="{{ route('publico.listado') }}">Documentos públicos</a></li>
+      <li class="list-inline-item"><a href="{{ route('validar.form') }}">Validar un documento</a></li>
+    @endforelse
   </ul>
+  @if($marca['footer']['texto_legal'] !== '')<p class="small mt-2 mb-0">{{ $marca['footer']['texto_legal'] }}</p>@endif
 </div></footer>
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>

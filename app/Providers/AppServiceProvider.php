@@ -7,7 +7,9 @@ use App\Models\Documento;
 use App\Models\Expediente;
 use App\Policies\DocumentoPolicy;
 use App\Policies\ExpedientePolicy;
+use App\Services\Admin\AparienciaService;
 use App\Services\Admin\ApiConfigService;
+use App\Services\Admin\MenuService;
 use App\Services\Casilla\CasillaAdapter;
 use App\Services\ClaveUnicaService;
 use App\Services\FileVault;
@@ -26,12 +28,14 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(MenuService::class);
         $this->app->singleton(FileVault::class, fn () => FileVault::fromConfig());
         $this->app->singleton(FirmaClient::class, function () {
             $c = config('sgd.firmagob');
@@ -79,6 +83,27 @@ class AppServiceProvider extends ServiceProvider
             return new HashedDatabaseSessionHandler($app['db']->connection($c['connection']), $c['table'], $c['lifetime'], $app);
         });
         $this->app->afterResolving('mail.manager', fn ($m) => $m->extend('gmail_api', fn () => new GmailApiTransport(config('sgd.google'))));
+
+        // Marca (colores, encabezado, pie, logo) y menú configurables: datos para el layout, tolerantes a BD sin migrar.
+        View::composer('layouts.app', function ($view) {
+            try {
+                $u = auth()->user();
+                $area = $u ? 'app' : (session('ciudadano') ? 'ciudadano' : 'publico');
+                $marca = app(AparienciaService::class)->datos();
+                $menu = app(MenuService::class)->items($area, $u);
+            } catch (\Throwable) {
+                $marca = AparienciaService::DEFECTO + ['version' => '0'];
+                $menu = [];
+            }
+            $view->with(['marca' => $marca, 'menuItems' => $menu]);
+        });
+        View::composer(['pdf.documento', 'pdf.comprobante'], function ($view) {
+            try {
+                $view->with('logoPdf', app(AparienciaService::class)->logoDataUri());
+            } catch (\Throwable) {
+                $view->with('logoPdf', null);
+            }
+        });
 
         Gate::policy(Expediente::class, ExpedientePolicy::class);
         Gate::policy(Documento::class, DocumentoPolicy::class);

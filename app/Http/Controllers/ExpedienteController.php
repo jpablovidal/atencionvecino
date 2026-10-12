@@ -58,6 +58,7 @@ class ExpedienteController extends Controller
 
     public function metadatos(Request $r, Expediente $expediente, ExpedienteService $svc)
     {
+        $this->permiso('expedientes.operar');
         $this->operar($expediente);
         $d = $r->validate(['resumen' => 'nullable|string|max:1000', 'serie' => 'nullable|string|max:120', 'nivel_acceso' => 'required|in:publico,reservado']);
         $svc->actualizarMetadatos($expediente, $d);
@@ -67,6 +68,7 @@ class ExpedienteController extends Controller
 
     public function comentar(Request $r, Expediente $expediente)
     {
+        $this->permiso('expedientes.operar');
         $this->operar($expediente);
         $d = $r->validate(['texto' => 'required|string|max:2000', 'tipo' => 'required|in:comentario,observacion']);
         Comentario::query()->create(['expediente_id' => $expediente->id, 'usuario_id' => $r->user()->id] + $d);
@@ -77,6 +79,7 @@ class ExpedienteController extends Controller
 
     public function devolver(Request $r, Expediente $expediente, SolicitudService $svc)
     {
+        $this->permiso('expedientes.devolver');
         $this->operar($expediente);
         if (! $expediente->solicitud) {
             return back()->with('error', 'Este expediente no proviene de una solicitud ciudadana.');
@@ -93,6 +96,7 @@ class ExpedienteController extends Controller
 
     public function derivar(Request $r, Expediente $expediente)
     {
+        $this->permiso('expedientes.derivar');
         $this->operar($expediente);
         $d = $r->validate(['a_usuario_id' => 'required|integer|exists:usuarios,id', 'motivo' => 'required|string|min:3|max:500']);
         $dest = Usuario::query()->where('id', $d['a_usuario_id'])->where('activo', true)->firstOrFail();
@@ -105,6 +109,7 @@ class ExpedienteController extends Controller
 
     public function subir(Request $r, Expediente $expediente, FileVault $vault)
     {
+        $this->permiso('expedientes.operar');
         $this->operar($expediente);
         abort_unless($expediente->estado === 'abierto', 422);
         $d = $r->validate([
@@ -151,6 +156,7 @@ class ExpedienteController extends Controller
 
     public function cerrar(Request $r, Expediente $expediente, ExpedienteService $svc)
     {
+        $this->permiso('expedientes.cerrar');
         $this->operar($expediente);
         try {
             $svc->cerrar($expediente);
@@ -163,6 +169,7 @@ class ExpedienteController extends Controller
 
     public function reabrir(Request $r, Expediente $expediente, ExpedienteService $svc)
     {
+        $this->permiso('expedientes.cerrar');
         $this->operar($expediente);
         $d = $r->validate(['motivo' => 'required|string|min:5|max:500']);
         try {
@@ -176,6 +183,7 @@ class ExpedienteController extends Controller
 
     public function exportar(Request $r, Expediente $expediente, ExpedienteService $svc)
     {
+        $this->permiso('expedientes.exportar');
         $this->authorize('ver', $expediente);
         $json = json_encode($svc->exportar($expediente), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
@@ -184,6 +192,7 @@ class ExpedienteController extends Controller
 
     public function notificar(Request $r, Expediente $expediente, NotificacionService $svc)
     {
+        $this->permiso('notificaciones.gestionar');
         $this->operar($expediente);
         $d = $r->validate(['documentos' => 'required|array|min:1|max:50', 'documentos.*' => 'integer', 'canal' => 'required|in:casilla_unica,correo,presencial']);
         try {
@@ -197,6 +206,7 @@ class ExpedienteController extends Controller
 
     public function evidencia(Request $r, Notificacion $notificacion, NotificacionService $svc)
     {
+        $this->permiso('notificaciones.gestionar');
         $notificacion->load('expediente');
         $this->operar($notificacion->expediente);
         $d = $r->validate(['tipo' => 'required|in:id_casilla_unica,acta_presencial', 'valor' => 'required|string|max:250']);

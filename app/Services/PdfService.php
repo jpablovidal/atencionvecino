@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\Models\Documento;
 use App\Models\Solicitud;
+use App\Services\Firma\FirmaRenderer;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
 class PdfService
 {
-    public function __construct(private readonly QrService $qr) {}
+    public function __construct(private readonly QrService $qr, private readonly FirmaRenderer $firmas) {}
 
     public function html(string $html, ?string $tituloPie = null): string
     {
@@ -22,15 +23,26 @@ class PdfService
         return $this->render('pdf.documento', ['doc' => $d, 'contenido' => $html, 'version' => $version, 'copia' => false]);
     }
 
-    /** Copia pública: documento + hoja de certificado. */
+    /** Copia pública: documento + sellos de firma configurados + hoja de certificado. */
     public function copiaPublica(Documento $d, string $sha256Version): string
+    {
+        return $this->aPdf($this->htmlCopiaPublica($d, $sha256Version));
+    }
+
+    public function htmlCopiaPublica(Documento $d, string $sha256Version): string
     {
         $url = url('/validar/'.$d->codigo_validacion);
 
-        return $this->render('pdf.documento', [
+        return view('pdf.documento', [
             'doc' => $d->loadMissing(['tipo', 'pasos.usuario', 'expediente']), 'contenido' => $d->html, 'version' => $d->version_actual,
-            'copia' => true, 'sha' => $sha256Version, 'url' => $url, 'qr' => $this->qr->dataUri($url),
-        ]);
+            'copia' => true, 'sha' => $sha256Version, 'url' => $url, 'qr' => $this->qr->dataUri($url), 'sellos' => $this->firmas->html($d),
+        ])->render();
+    }
+
+    /** PDF de prueba con datos ficticios para la vista previa de estilos y posiciones. */
+    public function pruebaFirmas(?int $tipoId): string
+    {
+        return $this->aPdf(view('pdf.prueba_firmas', ['sellos' => $this->firmas->muestra($tipoId, 2)])->render());
     }
 
     /** @param array<int,array{nombre:string,sha256:string,tamano:int}> $anexos */
@@ -43,6 +55,11 @@ class PdfService
 
     private function render(string $vista, array $datos): string
     {
+        return $this->aPdf(view($vista, $datos)->render());
+    }
+
+    private function aPdf(string $html): string
+    {
         $o = new Options;
         $o->set('isRemoteEnabled', false);
         $o->set('isPhpEnabled', false);
@@ -53,7 +70,7 @@ class PdfService
         $o->set('tempDir', storage_path('framework/dompdf'));
         @mkdir(storage_path('framework/dompdf'), 0750, true);
         $dompdf = new Dompdf($o);
-        $dompdf->loadHtml(view($vista, $datos)->render(), 'UTF-8');
+        $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('letter');
         $dompdf->render();
 

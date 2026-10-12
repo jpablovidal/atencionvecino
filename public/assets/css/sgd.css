@@ -1,17 +1,17 @@
 :root{--sgd-primary:#006fb3;--sgd-dark:#0a2e4d}
 body{font-family:Roboto,sans-serif;background:#f7f9fb;color:#1c2b36}
-h1,h2,h3,h4{font-family:"Roboto Slab",serif;color:var(--sgd-dark)}
+h1,h2,h3,h4{font-family:"Roboto Slab",serif;color:var(--sgd-title,#0a2e4d)}
 .skip-link{position:absolute;left:-999px;top:0;background:#fff;color:#000;padding:.6rem 1rem;z-index:2000;border:2px solid #000}
 .skip-link:focus{left:8px;top:8px}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.btn:focus-visible{outline:3px solid #ffb000!important;outline-offset:2px;box-shadow:none}
-.sgd-header{background:var(--sgd-primary);color:#fff}
-.sgd-header a{color:#fff}
+.sgd-header{background:var(--sgd-header-bg,#006fb3);color:var(--sgd-header-fg,#fff)}
+.sgd-header a{color:var(--sgd-header-fg,#fff)}
 .sgd-header .titulo{font-family:"Roboto Slab",serif;font-size:1.25rem;font-weight:700}
-.sgd-nav{background:var(--sgd-dark)}
-.sgd-nav a{color:#fff;padding:.6rem .9rem;display:inline-block}
+.sgd-nav{background:var(--sgd-nav-bg,#0a2e4d)}
+.sgd-nav a{color:var(--sgd-nav-fg,#fff);padding:.6rem .9rem;display:inline-block}
 .sgd-nav a:hover{background:rgba(255,255,255,.15);text-decoration:none}
-.sgd-footer{background:var(--sgd-dark);color:#fff;margin-top:3rem;padding:1.5rem 0;font-size:.9rem}
-.sgd-footer a{color:#cfe6f7}
+.sgd-footer{background:var(--sgd-footer-bg,#0a2e4d);color:var(--sgd-footer-fg,#fff);margin-top:3rem;padding:1.5rem 0;font-size:.9rem}
+.sgd-footer a{color:var(--sgd-footer-link,#cfe6f7)}
 .card{border-radius:6px;border:1px solid #d6dee5}
 .estado{display:inline-block;padding:.15rem .6rem;border-radius:12px;font-size:.8rem;font-weight:700;background:#e3eef6;color:#0a2e4d}
 .estado-vigente,.estado-enviada,.estado-finalizada{background:#d9f0dc;color:#0b4a1c}
@@ -19,7 +19,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .estado-pendiente,.estado-borrador,.estado-en_flujo{background:#fff1cc;color:#5c4200}
 .sim{color:#b00020;font-weight:700}
 .hash{font-family:monospace;font-size:.75rem;word-break:break-all}
-.btn-primary{background:var(--sgd-primary);border-color:var(--sgd-primary)}
+.btn-primary{background:var(--sgd-primary,#006fb3);border-color:var(--sgd-primary,#006fb3);color:#fff}
 .table-sm td,.table-sm th{vertical-align:middle}
 .btn,.btn:hover{text-decoration:none}
 .sgd-header a.btn-light{color:#0a2e4d}
@@ -95,3 +95,28 @@ html.a11y-contrast kbd{background:#000;color:#fff;border-color:#fff}
 .sgd-footer li>a{display:inline-block;padding:.35rem 0}
 html.a11y-contrast .btn-primary,html.a11y-contrast .btn-success,html.a11y-contrast .btn-warning{background:#ffff00!important;color:#000!important;border:2px solid #fff!important}
 html.a11y-contrast .btn-outline-primary,html.a11y-contrast .btn-outline-secondary,html.a11y-contrast .btn-outline-danger,html.a11y-contrast .btn-outline-light,html.a11y-contrast .btn-light,html.a11y-contrast .btn-link{background:#000!important;color:#fff!important;border:2px solid #fff!important}
+/* Vista previa de la hoja de firmas (carta 215×279 mm a escala) */
+.hoja-wrap{width:119mm;height:154mm;overflow:hidden;border:1px solid #9aa7b2;background:#fff;color:#111}
+.hoja-previa{position:relative;width:215mm;height:279mm;transform-origin:top left;transform:scale(.55);padding:18mm 20mm;box-sizing:border-box;font-size:11px}
+.hoja-previa .lineas p{margin:0 0 6px;color:#6b7782}
+html.a11y-contrast .hoja-wrap{border-color:#fff}
+/* Logo y menú agrupado (desplegable accesible con <details>) */
+.sgd-logo{height:var(--sgd-logo-h,48px);width:auto;margin-right:.75rem}
+.sgd-nav .container{display:flex;flex-wrap:wrap;align-items:stretch}
+.sgd-nav-grupo{position:relative}
+.sgd-nav-grupo>summary{list-style:none;cursor:pointer;color:var(--sgd-nav-fg,#fff);padding:.6rem .9rem;display:inline-block}
+.sgd-nav-grupo>summary::-webkit-details-marker{display:none}
+.sgd-nav-grupo>summary::after{content:" ▾"}
+.sgd-nav-grupo[open]>summary,.sgd-nav-grupo>summary:hover{background:rgba(255,255,255,.15)}
+.sgd-nav-grupo>ul{position:absolute;left:0;top:100%;z-index:1500;min-width:17rem;margin:0;padding:.25rem 0;background:var(--sgd-nav-bg,#0a2e4d);border:1px solid var(--sgd-nav-fg,#fff);box-shadow:0 6px 16px rgba(0,0,0,.3)}
+.sgd-nav-grupo>ul a{display:block;padding:.55rem 1rem}
+html.a11y-contrast .sgd-nav-grupo>ul{background:#000;border:2px solid #fff}
+html.a11y-contrast .sgd-nav-grupo>summary{color:#ffff00}
+@media (max-width:576px){.sgd-nav-grupo>ul{position:static;border:0;box-shadow:none}}
+
+/* Contraste AA (≥4,5:1) para insignias y botones de peligro en las páginas de administración */
+.badge-secondary { background-color: #4a4f55; color: #fff; }
+.badge-info { background-color: #0b5563; color: #fff; }
+.badge-warning { background-color: #ffc107; color: #212529; }
+.btn-outline-danger { color: #a4161a; border-color: #a4161a; }
+.btn-outline-danger:hover, .btn-outline-danger:focus { background-color: #a4161a; border-color: #a4161a; color: #fff; }

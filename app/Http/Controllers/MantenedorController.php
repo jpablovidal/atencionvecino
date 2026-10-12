@@ -14,7 +14,6 @@ use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\HtmlSanitizer;
-use App\Support\Run;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -33,16 +32,6 @@ class MantenedorController extends Controller
                 'codigo' => ['Código', 'text', ['required', 'string', 'max:30']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:150']],
             ], 'unico' => ['codigo']],
-            'usuarios' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Usuario::class, 'titulo' => 'Usuarios', 'cols' => ['run', 'nombres', 'apellidos', 'rol'], 'campos' => [
-                'run' => ['RUN (con guion y DV)', 'text', ['required', 'string', 'max:12']],
-                'nombres' => ['Nombres', 'text', ['required', 'string', 'max:120']],
-                'apellidos' => ['Apellidos', 'text', ['required', 'string', 'max:120']],
-                'correo' => ['Correo institucional', 'email', ['required', 'email', 'max:190']],
-                'cargo' => ['Cargo', 'text', ['nullable', 'string', 'max:120']],
-                'rol' => ['Rol', 'select:'.implode(',', Usuario::ROLES), ['required', Rule::in(Usuario::ROLES)]],
-                'unidad_id' => ['Unidad', 'unidad', ['nullable', 'integer', 'exists:unidades,id']],
-                'puede_firmar' => ['Habilitado para firmar', 'check', ['nullable', 'boolean']],
-            ], 'unico' => ['run']],
             'tramites' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Tramite::class, 'titulo' => 'Trámites y servicios', 'cols' => ['codigo_interno', 'nombre', 'codigo_cpat'], 'campos' => [
                 'codigo_interno' => ['Código interno', 'text', ['required', 'string', 'max:40']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
@@ -152,21 +141,8 @@ class MantenedorController extends Controller
     private function persistir(Request $r, string $entidad, ?int $id)
     {
         $def = $this->def($entidad);
-        if ($entidad === 'usuarios') {
-            $run = Run::normalizar((string) $r->input('run'));
-            if ($run === null) {
-                abort(422, 'RUN inválido');
-            }
-            $r->merge(['run' => $run]);
-        }
         $d = $r->validate($this->reglas($def, $id));
         $d = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $d);
-        if ($entidad === 'usuarios') {
-            $d['puede_firmar'] = (bool) ($d['puede_firmar'] ?? false);
-            if (in_array($d['rol'], ['admin', 'auditor'], true)) {
-                $d['puede_firmar'] = false;
-            }
-        }
         if ($entidad === 'tipos') {
             $d['firma_alcalde'] = (bool) ($d['firma_alcalde'] ?? false);
         }

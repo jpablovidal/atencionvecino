@@ -1,0 +1,195 @@
+<?php
+
+namespace App\Services\Admin;
+
+use App\Exceptions\FlujoException;
+use App\Models\MenuItem;
+use App\Models\Usuario;
+use App\Services\AuditoriaService;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route;
+
+/**
+ * Barra de menú configurable. Los ítems del sistema (definidos aquí, con su permiso) pueden renombrarse, reordenarse y,
+ * salvo los protegidos, ocultarse; el administrador puede agregar enlaces propios (ruta interna o https://) por área y rol.
+ * Un ítem nunca se muestra a quien no tiene el permiso: el menú no concede acceso (la autorización sigue en el servidor).
+ */
+class MenuService
+{
+    /** @var array<string,array{etiqueta:string,ruta:string,patron:string,areas:array<int,string>,permiso:?string,grupo:?string,orden:int,protegido:bool}>|null */
+    private ?array $base = null;
+
+    private ?Collection $filas = null;
+
+    public function __construct(private readonly AuditoriaService $audit) {}
+
+    /** @return array<string,array{etiqueta:string,ruta:string,patron:string,areas:array<int,string>,permiso:?string,grupo:?string,orden:int,protegido:bool}> */
+    public function sistema(): array
+    {
+        $a = 'Administración';
+        $s = 'Seguridad y operación';
+        $i = fn (string $e, string $r, string $p, array $areas, ?string $perm, ?string $g, int $o, bool $prot = false) => ['etiqueta' => $e, 'ruta' => $r, 'patron' => $p, 'areas' => $areas, 'permiso' => $perm, 'grupo' => $g, 'orden' => $o, 'protegido' => $prot];
+
+        return $this->base ??= [
+            'inicio' => $i('Inicio', 'inicio', '/', ['publico', 'ciudadano'], null, null, 10, true),
+            'publico' => $i('Documentos públicos', 'publico.listado', 'publico*', ['publico', 'ciudadano'], null, null, 20),
+            'validar' => $i('Validar documento', 'validar.form', 'validar*', ['publico', 'ciudadano'], null, null, 30),
+            'mis_solicitudes' => $i('Mis solicitudes', 'ciudadano.index', 'ciudadano*', ['ciudadano'], null, null, 40, true),
+            'bandeja' => $i('Bandeja', 'app.bandeja', 'app', ['app'], null, null, 10, true),
+            'vigentes' => $i('Documentos vigentes', 'app.vigentes', 'app/vigentes', ['app'], 'vigentes.ver', null, 20),
+            'comunicaciones' => $i('Comunicaciones oficiales', 'app.comunicaciones', 'app/comunicaciones*', ['app'], 'comunicaciones.ver', null, 30),
+            'delegaciones' => $i('Delegaciones de firma', 'app.delegaciones', 'app/delegaciones*', ['app'], 'delegaciones.ver', null, 40),
+            'unidades' => $i('Unidades', 'app.admin.index:unidades', 'app/admin/unidades*', ['app'], 'mantenedores.gestionar', $a, 100),
+            'usuarios' => $i('Usuarios', 'app.admin.index:usuarios', 'app/admin/usuarios*', ['app'], 'mantenedores.gestionar', $a, 110),
+            'roles' => $i('Roles y permisos', 'app.admin.roles', 'app/admin/roles*', ['app'], 'roles.gestionar', $a, 115),
+            'tramites' => $i('Trámites', 'app.admin.index:tramites', 'app/admin/tramites*', ['app'], 'mantenedores.gestionar', $a, 120),
+            'tipos' => $i('Tipos de documento', 'app.admin.index:tipos', 'app/admin/tipos*', ['app'], 'mantenedores.gestionar', $a, 130),
+            'plantillas' => $i('Plantillas', 'app.admin.index:plantillas', 'app/admin/plantillas*', ['app'], 'mantenedores.gestionar', $a, 140),
+            'folios' => $i('Folios', 'app.admin.folios', 'app/admin/folios*', ['app'], 'folios.gestionar', $a, 150),
+            'firmas' => $i('Estilo y posición de firmas', 'app.admin.firmas', 'app/admin/firmas*', ['app'], 'firmas.gestionar', $a, 160),
+            'instituciones' => $i('Instituciones', 'app.admin.index:instituciones', 'app/admin/instituciones*', ['app'], 'codificador.gestionar', $a, 170),
+            'procesos' => $i('Procesos', 'app.admin.index:procesos', 'app/admin/procesos*', ['app'], 'codificador.gestionar', $a, 175),
+            'codificador' => $i('Codificador', 'app.admin.codificador', 'app/admin/codificador*', ['app'], 'codificador.gestionar', $a, 180),
+            'pisee' => $i('Servicios PISEE', 'app.admin.index:pisee', 'app/admin/pisee*', ['app'], 'codificador.gestionar', $a, 185),
+            'api' => $i('APIs e integraciones', 'app.admin.api', 'app/admin/api*', ['app'], 'api.gestionar', $a, 190),
+            'repositorio' => $i('Repositorio', 'app.admin.repositorio', 'app/admin/repositorio*', ['app'], 'repositorio.gestionar', $a, 195),
+            'apariencia' => $i('Apariencia', 'app.admin.apariencia', 'app/admin/apariencia*', ['app'], 'apariencia.gestionar', $a, 200),
+            'menu' => $i('Barra de menú', 'app.admin.menu', 'app/admin/menu*', ['app'], 'menu.gestionar', $a, 205),
+            'seguridad' => $i('Seguridad', 'app.seguridad', 'app/seguridad*', ['app'], 'seguridad.ver', $s, 300),
+            'logs' => $i('Registro de logs', 'app.logs', 'app/logs*', ['app'], 'logs.ver', $s, 310),
+            'sesiones' => $i('Usuarios conectados', 'app.sesiones', 'app/sesiones*', ['app'], 'sesiones.ver', $s, 320),
+            'diagnostico' => $i('Diagnóstico', 'app.diagnostico', 'app/diagnostico', ['app'], 'diagnostico.ver', $s, 330),
+            'ayuda' => $i('Ayuda', 'ayuda', 'ayuda*', ['publico', 'ciudadano', 'app'], null, null, 900, true),
+        ];
+    }
+
+    private function filas(): Collection
+    {
+        try {
+            return $this->filas ??= MenuItem::query()->get();
+        } catch (\Throwable) {
+            return collect();
+        }
+    }
+
+    public function olvidar(): void
+    {
+        $this->filas = null;
+    }
+
+    private function urlDe(string $ruta): ?string
+    {
+        [$nombre, $param] = array_pad(explode(':', $ruta, 2), 2, null);
+        if (! Route::has($nombre)) {
+            return null;
+        }
+
+        return $param ? route($nombre, $param) : route($nombre);
+    }
+
+    /** @return array<int,array{url:string,etiqueta:string,patron:string,grupo:?string,nueva:bool}> */
+    public function items(string $area, ?Usuario $u): array
+    {
+        $filas = $this->filas();
+        $por = $filas->whereNotNull('clave')->keyBy('clave');
+        $out = [];
+        foreach ($this->sistema() as $clave => $d) {
+            if (! in_array($area, $d['areas'], true) || ($d['permiso'] && ! ($u && $u->tienePermiso($d['permiso'])))) {
+                continue;
+            }
+            $o = $por->get($clave);
+            if ($o && ! $o->activo && ! $d['protegido']) {
+                continue;
+            }
+            if ($url = $this->urlDe($d['ruta'])) {
+                $out[] = ['url' => $url, 'etiqueta' => $o?->etiqueta ?: $d['etiqueta'], 'patron' => $d['patron'], 'grupo' => $d['grupo'], 'nueva' => false, 'orden' => $o->orden ?? $d['orden']];
+            }
+        }
+        foreach ($filas->whereNull('clave') as $c) {
+            if (! $c->activo || $c->area !== $area) {
+                continue;
+            }
+            $roles = array_filter(explode(',', (string) $c->roles));
+            if ($roles && ! ($u && in_array($u->rolBase(), $roles, true))) {
+                continue;
+            }
+            $out[] = ['url' => str_starts_with((string) $c->url, '/') ? url($c->url) : (string) $c->url, 'etiqueta' => $c->etiqueta, 'patron' => ltrim((string) parse_url((string) $c->url, PHP_URL_PATH), '/') ?: '/', 'grupo' => null, 'nueva' => (bool) $c->nueva_pestana, 'orden' => $c->orden];
+        }
+        usort($out, fn ($a, $b) => [$a['orden'], $a['etiqueta']] <=> [$b['orden'], $b['etiqueta']]);
+
+        return $out;
+    }
+
+    // ------------------------------------------------------------------ administración
+    /** @param array<string,mixed> $d */
+    public function guardarSistema(string $clave, array $d, Usuario $u): void
+    {
+        $def = $this->sistema()[$clave] ?? throw new FlujoException('Ítem de menú desconocido.');
+        $etq = $this->etiqueta((string) ($d['etiqueta'] ?? ''));
+        $orden = $this->orden($d['orden'] ?? 100);
+        $activo = $def['protegido'] ? true : (bool) ($d['activo'] ?? false);
+        MenuItem::query()->updateOrCreate(['clave' => $clave], ['area' => $def['areas'][0], 'etiqueta' => $etq, 'orden' => $orden, 'activo' => $activo]);
+        $this->olvidar();
+        $this->audit->registrar('menu.guardar', 'menu_item', $clave);
+    }
+
+    public function restablecerSistema(string $clave): void
+    {
+        MenuItem::query()->where('clave', $clave)->delete();
+        $this->olvidar();
+        $this->audit->registrar('menu.restablecer', 'menu_item', $clave);
+    }
+
+    /** @param array<string,mixed> $d */
+    public function guardarPropio(array $d, ?MenuItem $m, Usuario $u): MenuItem
+    {
+        if (! in_array($d['area'] ?? '', ['publico', 'ciudadano', 'app'], true)) {
+            throw new FlujoException('Área inválida.');
+        }
+        $roles = array_values(array_unique(array_filter((array) ($d['roles'] ?? []))));
+        if (array_diff($roles, Usuario::ROLES)) {
+            throw new FlujoException('Rol inválido.');
+        }
+        if ($roles && $d['area'] !== 'app') {
+            throw new FlujoException('Solo los enlaces del área de funcionarios pueden limitarse por rol.');
+        }
+        $url = AparienciaService::urlSegura((string) ($d['url'] ?? ''));
+        $m ??= new MenuItem;
+        $m->fill(['area' => $d['area'], 'clave' => null, 'etiqueta' => $this->etiqueta((string) ($d['etiqueta'] ?? '')), 'url' => $url, 'nueva_pestana' => (bool) ($d['nueva_pestana'] ?? false),
+            'orden' => $this->orden($d['orden'] ?? 100), 'activo' => (bool) ($d['activo'] ?? true), 'roles' => $roles ? implode(',', $roles) : null])->save();
+        $this->olvidar();
+        $this->audit->registrar('menu.propio_guardar', 'menu_item', $m->id);
+
+        return $m;
+    }
+
+    public function eliminarPropio(MenuItem $m): void
+    {
+        if ($m->clave !== null) {
+            throw new FlujoException('Los ítems del sistema no se eliminan: se pueden ocultar o restablecer.');
+        }
+        $id = $m->id;
+        $m->delete();
+        $this->olvidar();
+        $this->audit->registrar('menu.propio_eliminar', 'menu_item', $id);
+    }
+
+    private function etiqueta(string $e): string
+    {
+        $e = trim($e);
+        if ($e === '' || mb_strlen($e) > 40 || preg_match('/[\r\n\0<>]/', $e)) {
+            throw new FlujoException('La etiqueta debe tener entre 1 y 40 caracteres, sin símbolos < >.');
+        }
+
+        return $e;
+    }
+
+    private function orden(mixed $o): int
+    {
+        if (! is_numeric($o) || (int) $o < 0 || (int) $o > 999) {
+            throw new FlujoException('El orden debe estar entre 0 y 999.');
+        }
+
+        return (int) $o;
+    }
+}

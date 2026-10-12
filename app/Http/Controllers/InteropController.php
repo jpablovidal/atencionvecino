@@ -25,6 +25,7 @@ class InteropController extends Controller
     // ---- PISEE
     public function pisee(Request $r, Expediente $expediente, PiseeService $svc)
     {
+        $this->permiso('pisee.consultar');
         $this->authorize('operar', $expediente);
         $d = $r->validate(['servicio_id' => 'required|integer|exists:pisee_servicios,id', 'finalidad' => 'required|string|min:10|max:255']);
         try {
@@ -39,6 +40,7 @@ class InteropController extends Controller
     // ---- DocDigital: saliente
     public function comunicar(Request $r, Expediente $expediente, ComunicacionService $svc)
     {
+        $this->permiso('comunicaciones.despachar');
         $this->authorize('operar', $expediente);
         $d = $r->validate(['documento_id' => 'required|integer', 'institucion_codigo' => 'required|string|max:40', 'asunto' => 'required|string|min:3|max:190']);
         $doc = Documento::query()->where('expediente_id', $expediente->id)->findOrFail($d['documento_id']);
@@ -53,6 +55,7 @@ class InteropController extends Controller
 
     public function evidencia(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
     {
+        $this->permiso('comunicaciones.despachar');
         if ($comunicacion->expediente_id === null) {
             abort(404);
         }
@@ -69,6 +72,7 @@ class InteropController extends Controller
 
     public function acuse(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
     {
+        $this->permiso('comunicaciones.acusar');
         if ($comunicacion->direccion !== 'entrante' || $comunicacion->expediente_id === null) {
             abort(404);
         }
@@ -89,6 +93,7 @@ class InteropController extends Controller
 
     public function reintentar(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
     {
+        $this->permiso('comunicaciones.despachar');
         if ($comunicacion->expediente_id === null || $comunicacion->estado !== 'fallida' || ! $svc->modoApi()) {
             abort(404);
         }
@@ -101,6 +106,7 @@ class InteropController extends Controller
     // ---- DocDigital: bandeja de entrantes de mi unidad
     public function bandeja(Request $r)
     {
+        $this->permiso('comunicaciones.ver');
         $u = $r->user();
         abort_unless($u->operaExpedientes() || $u->rolBase() === 'auditor', 403);
         $q = ComunicacionOficial::query()->where('direccion', 'entrante')->orderByDesc('id');

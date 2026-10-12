@@ -66,3 +66,19 @@ Cada control se **demuestra con pruebas automatizadas** (carpeta `tests/`). `ven
 | A09 | Auditoría de `pisee.consulta`, `docdigital.crear/enviada/fallo/evidencia/descarga/sincronizar/entrante_rechazado`, `codificador.carga`. | `InteroperabilidadTest` |
 | A06/A10 | Recepción: comunicación + archivo cifrado + expediente en **una transacción** (si falla, se borra el archivo y no queda nada); sin unidad de recepción válida no se almacena nada; acuse y respuesta con estados explícitos; sin acuse no se redacta respuesta. | `RecepcionDocDigitalTest` |
 | A01 | El expediente entrante solo lo ven la unidad receptora, quienes reciben derivación o firman y el auditor; el acuse y el despacho exigen acceso operativo (ni admin ni auditor). | `RecepcionDocDigitalTest::test_acuse_falla_cerrado_y_permisos` |
+
+## 6. Administración (apariencia, menú, APIs, folios, firmas, repositorio, roles, logs, sesiones)
+
+| Control | Implementación | Prueba |
+|---|---|---|
+| A01 · mínimo privilegio | Catálogo de permisos (`App\Support\Permisos`); middleware `permiso:` en rutas y `permiso()` en acciones. Un rol personalizado hereda las invariantes de su **rol base** y **nunca** supera su techo; `roles.gestionar` y `delegaciones.crear` son exclusivos de roles del sistema. Roles inactivos o inexistentes no otorgan nada. | `AdministracionAccesoTest` |
+| A01 · resguardos de cuentas | No se puede desactivar la propia cuenta ni al último administrador activo; al cambiar rol/estado se **cierran las sesiones** del usuario. | `test_resguardos_*`, `test_desactivar_o_cambiar_rol_*` |
+| A03 · logo | Solo PNG/JPG/WebP por **contenido**, ≤1 MB, dimensiones acotadas, **re-codificado con GD** (elimina metadatos y carga incrustada), almacenado fuera del docroot con verificación de integridad (SHA-256) y servido con `nosniff`. SVG rechazado (puede contener scripts). | `AparienciaMenuTest` |
+| A03 · colores/CSS | Solo `#RRGGBB` validado; el CSS dinámico se genera de valores validados (sin inyección). Contraste mínimo 4,5:1 en cada par texto/fondo. | `test_css_dinamico_*`, `test_contraste_*` |
+| A03 · enlaces | Pie y menú: solo rutas internas `/…` o `https://` sin credenciales; se rechazan `javascript:`, `data:`, `http:`, `//host`. Externos con `rel="noopener noreferrer"`. | `test_validacion_de_enlaces_del_pie` |
+| A02 · secretos de APIs | Nunca se muestran; en BD solo con `SGD_API_SECRETOS_EN_BD=1` (cifrados con APP_KEY). URLs https con protección SSRF; `ProductionGuard` se evalúa **después** de aplicar la configuración. | `ApiConfigRepositorioHttpTest` |
+| A02 · Drive | Contenido **cifrado antes de subir**; cuenta de servicio con clave fuera del docroot; verificación md5 de extremo a extremo; el original local se borra solo después de registrar la reubicación verificada. | `RepositorioDriveTest` |
+| A09 · logs | `audit_log` append-only con HMAC; RUN enmascarado en pantalla; exportación CSV **auditada** (sensible) y con neutralización de fórmulas; log de aplicación solo para `diagnostico.ver` y **redactado** (RUN, correos, tokens, rutas). | `test_exportar_csv_*`, `test_log_de_aplicacion_*` |
+| A07 · sesiones | Vista de sesiones sin exponer tokens (la BD guarda solo el hash); cierre forzado auditado; la propia sesión no se cierra desde la lista; `unserialize` con `allowed_classes=false`. | `test_cierre_forzado_*`, `test_payload_malicioso_*` |
+| Folios | Contadores atómicos con bloqueo; `documentos.folio` inmutable con unicidad `(tipo, folio)`; el contador solo se ajusta al alza. | `FoliosTest` |
+

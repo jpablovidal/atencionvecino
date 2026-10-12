@@ -67,6 +67,7 @@ class AuthController extends Controller
         $request->session()->put(['login_at' => time(), 'last_seen' => time()]);
         if ($u !== null) {
             Auth::login($u);
+            $u->forceFill(['ultimo_acceso' => now()])->save();
             $this->audit->registrar('auth.login', 'usuario', $u->id, ['via' => 'funcionario'], false, ['run' => $u->run, 'rol' => $u->rol]);
 
             return redirect()->route('app.bandeja');

@@ -86,6 +86,7 @@ class FuncionarioController extends Controller
     /** Listado final de documentos vigentes (todos los que completaron su flujo) que el usuario puede ver. */
     public function vigentes(Request $r)
     {
+        $this->permiso('vigentes.ver');
         $u = $r->user();
         abort_unless($u->operaExpedientes() || $u->rolBase() === 'auditor', 403);
         $q = Documento::query()->with(['tipo', 'expediente'])->where('estado', 'vigente');

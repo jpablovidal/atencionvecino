@@ -40,6 +40,7 @@ class AccesibilidadTest extends TestCase
             'admin-plantilla' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/plantillas/1'), 'codificador' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/codificador'),
             'diagnostico' => $this->comoFuncionario($this->usuario('admin'))->get('/app/diagnostico'), 'seguridad' => $this->comoFuncionario($this->usuario('auditor'))->get('/app/seguridad'),
             'delegaciones' => $this->comoFuncionario($this->usuario('alcalde'))->get('/app/delegaciones'),
+            'adm-apariencia' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/apariencia'), 'adm-menu' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/menu'), 'adm-api' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/api'), 'adm-api-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/api/pisee'), 'adm-folios' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/folios'), 'adm-firmas' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/firmas'), 'adm-repositorio' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/repositorio'), 'adm-roles' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/roles'), 'adm-rol-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/roles/nuevo'), 'adm-usuario-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/usuarios/nuevo'), 'adm-logs' => $this->comoFuncionario($this->usuario('admin'))->get('/app/logs'), 'adm-logs-app' => $this->comoFuncionario($this->usuario('admin'))->get('/app/logs/aplicacion'), 'adm-sesiones' => $this->comoFuncionario($this->usuario('admin'))->get('/app/sesiones'),
         ];
         foreach (array_keys(ManualRenderer::PERFILES) as $p) {
             $h['manual-'.$p] = $this->get('/ayuda/'.$p);
@@ -130,7 +131,7 @@ class AccesibilidadTest extends TestCase
                 $this->assertNotSame('', trim($th->textContent), "$nombre: encabezado de tabla vacío");
                 $this->assertContains($th->getAttribute('scope'), ['col', 'row'], "$nombre: th sin scope");
             }
-            foreach ($x->query('//table') as $t) {
+            foreach ($x->query('//table[not(@role="presentation")]') as $t) {
                 $this->assertGreaterThan(0, $x->query('.//th', $t)->length, "$nombre: tabla sin encabezados");
             }
             foreach ($x->query('//a[@target="_blank"]') as $a) {

@@ -92,7 +92,7 @@ class TramitesYMantenedoresTest extends TestCase
         $this->assertFalse((bool) Usuario::query()->find(4)->activo);
         $this->assertDatabaseHas('usuarios', ['id' => 4]);
         $this->comoFuncionario($admin)->delete('/app/admin/usuarios/4')->assertStatus(405);
-        $this->assertDatabaseHas('audit_log', ['accion' => 'mantenedor.activo']);
+        $this->assertDatabaseHas('audit_log', ['accion' => 'usuario.activo']);
     }
 
     public function test_usuario_con_run_valido_y_unico_y_roles_validos(): void

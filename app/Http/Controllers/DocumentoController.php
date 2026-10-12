@@ -19,6 +19,7 @@ class DocumentoController extends Controller
 
     public function store(Request $r, Expediente $expediente)
     {
+        $this->permiso('documentos.crear');
         $this->authorize('operar', $expediente);
         $d = $r->validate(['tipo_documento_id' => 'required|integer|exists:tipos_documento,id', 'plantilla_id' => 'nullable|integer|exists:plantillas,id', 'titulo' => 'required|string|max:190']);
         $tipo = TipoDocumento::query()->where('activo', true)->findOrFail($d['tipo_documento_id']);
@@ -51,6 +52,7 @@ class DocumentoController extends Controller
 
     public function guardar(Request $r, Documento $documento)
     {
+        $this->permiso('documentos.crear');
         $this->authorize('operar', $documento);
         $d = $r->validate([
             'titulo' => 'required|string|max:190', 'html' => 'required|string|max:200000', 'resumen' => 'nullable|string|max:1000', 'palabras_clave' => 'nullable|string|max:255',
@@ -135,6 +137,7 @@ class DocumentoController extends Controller
 
     public function llm(Request $r, LlmAsistente $llm)
     {
+        $this->permiso('llm.usar');
         $d = $r->validate(['instruccion' => 'required|string|max:1000', 'borrador' => 'nullable|string|max:6000']);
         try {
             $res = $llm->generar($d['instruccion'], strip_tags((string) ($d['borrador'] ?? '')));

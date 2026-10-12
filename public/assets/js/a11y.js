@@ -67,6 +67,17 @@
     });
   });
 
+  /* Menús desplegables de la navegación: Esc los cierra y devuelve el foco; también al salir del menú o hacer clic fuera. */
+  document.querySelectorAll('.sgd-nav-grupo').forEach(function (d) {
+    d.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && d.hasAttribute('open')) { d.removeAttribute('open'); var s = d.querySelector('summary'); if (s) { s.focus(); } }
+    });
+    d.addEventListener('focusout', function (e) { if (d.hasAttribute('open') && e.relatedTarget && !d.contains(e.relatedTarget)) { d.removeAttribute('open'); } });
+  });
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('.sgd-nav-grupo[open]').forEach(function (d) { if (!d.contains(e.target)) { d.removeAttribute('open'); } });
+  });
+
   /* Esc cierra el menú de la barra de accesibilidad (si está abierto en pantallas pequeñas). */
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {

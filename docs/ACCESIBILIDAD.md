@@ -55,7 +55,7 @@
 | diagnostico | normal | 0 |
 | seguridad | normal | 0 |
 
-**Total de violaciones: 0.** Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
+**Total de violaciones: 0** (35 páginas/modos, incluidas las 11 de administración nuevas; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
 
 Comprobaciones de comportamiento:
 - Primer Tab: {"texto":"Saltar al contenido","visible":true}
@@ -74,6 +74,12 @@ Comprobaciones de comportamiento:
 - Tras error de validación el foco está en: #resumen-errores ; aria-invalid en #correo: true
 
 Capturas: `docs/capturas/a11y-*.png`.
+
+## Personalización segura (apariencia y menú)
+- Los colores del encabezado, menú, pie, botones y títulos se **validan con contraste ≥ 4,5:1** al guardarse; no es posible configurar combinaciones ilegibles.
+- El logo exige **texto alternativo** cuando se muestra; el SVG está prohibido.
+- Los grupos de la barra de menú son `<details>/<summary>` operables con teclado (Enter/Espacio) y se cierran con **Esc** o al hacer clic fuera; los enlaces que abren pestaña nueva lo anuncian a lectores de pantalla.
+- Las páginas de administración nuevas (apariencia, menú, APIs, folios, firmas, repositorio, roles, usuarios, logs, sesiones) están cubiertas por `AccesibilidadTest` y por `scripts/a11y-audit.js` (axe-core).
 
 ## Limitaciones (honestas)
 - **No** hay auditoría con personas usuarias de lectores de pantalla (NVDA, JAWS, VoiceOver) ni certificación externa; las herramientas automáticas detectan alrededor de un tercio de los problemas posibles. Se recomienda una auditoría manual antes de producción.
