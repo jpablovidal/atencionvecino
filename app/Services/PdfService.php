@@ -10,7 +10,7 @@ use Dompdf\Options;
 
 class PdfService
 {
-    public function __construct(private readonly QrService $qr, private readonly FirmaRenderer $firmas) {}
+    public function __construct(private readonly QrService $qr, private readonly FirmaRenderer $firmas, private readonly RecursoImagenService $imagenes) {}
 
     public function html(string $html, ?string $tituloPie = null): string
     {
@@ -60,6 +60,7 @@ class PdfService
 
     private function aPdf(string $html): string
     {
+        $html = $this->imagenes->incrustar($html);
         $o = new Options;
         $o->set('isRemoteEnabled', false);
         $o->set('isPhpEnabled', false);

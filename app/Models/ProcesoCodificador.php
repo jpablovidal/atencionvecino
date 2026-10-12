@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $institucion_codigo
  * @property bool $activo
  * @property string $origen
- * @property Carbon|null $sincronizado_en
+ * @property \Illuminate\Support\Carbon|null $sincronizado_en
  * @property string|null $created_at
  * @property string|null $updated_at
  */

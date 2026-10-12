@@ -111,7 +111,7 @@ class TramitesYMantenedoresTest extends TestCase
 
     public function test_plantillas_se_sanitizan_en_servidor(): void
     {
-        $this->comoFuncionario($this->usuario('admin'))->post('/app/admin/plantillas', ['tipo_documento_id' => 3, 'nombre' => 'Mala', 'contenido_html' => '<p>Hola {{fecha}}</p><script>alert(1)</script><img src=x onerror=alert(1)>'])->assertRedirect();
+        $this->comoFuncionario($this->usuario('admin'))->post('/app/admin/plantillas', ['tipo_documento_id' => 3, 'nombre' => 'Mala', 'alcance' => 'todas', 'contenido_html' => '<p>Hola {{fecha}}</p><script>alert(1)</script><img src=x onerror=alert(1)>'])->assertRedirect();
         $p = Plantilla::query()->where('nombre', 'Mala')->first();
         $this->assertStringNotContainsString('script', $p->contenido_html);
         $this->assertStringNotContainsString('onerror', $p->contenido_html);

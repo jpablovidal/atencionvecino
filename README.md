@@ -232,6 +232,7 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 | Repositorio | `/app/admin/repositorio` | Local o **unidad compartida de Google Drive**: probar, migrar archivos existentes y verificar integridad. |
 | Roles y permisos | `/app/admin/roles` | Roles personalizados con permisos acotados por su rol base. |
 | Usuarios | `/app/admin/usuarios` | Alta/edición con roles dinámicos, búsqueda y resguardos (no desactivarse; siempre un administrador activo). |
+| Plantillas y formatos | `/app/admin/plantillas` | Editor TinyMCE completo (tablas, imágenes, colores, tipografías, saltos de página, variables), visibilidad por unidad (toda la municipalidad o direcciones como Salud/Educación) e historial de versiones. Catálogo para todo el personal en `/app/formatos`. |
 | Registro de logs | `/app/logs` | Filtros (fecha, acción, actor, entidad, IP), exportación CSV auditada y cola redactada del log de aplicación. |
 | Usuarios conectados | `/app/sesiones` | Sesiones activas (RUN enmascarado) y cierre forzado. |
 
@@ -255,7 +256,7 @@ composer install
 cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
 php artisan key:generate && php artisan migrate --seed
 php artisan serve
-vendor/bin/phpunit            # 234 pruebas
+vendor/bin/phpunit            # 250 pruebas
 vendor/bin/pint --test        # estilo
 composer audit                # dependencias
 ```

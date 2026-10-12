@@ -57,7 +57,7 @@
 <label class="mr-2" for="tipo_documento_id">Nuevo documento</label>
 <select class="form-control mr-2" id="tipo_documento_id" name="tipo_documento_id" required>@foreach($tipos as $t)<option value="{{ $t->id }}">{{ $t->nombre }}</option>@endforeach</select>
 <label class="mr-2 sr-only" for="plantilla_id">Plantilla</label>
-<select class="form-control mr-2" id="plantilla_id" name="plantilla_id"><option value="">Sin plantilla</option>@foreach($plantillas as $p)<option value="{{ $p->id }}">{{ $p->nombre }}</option>@endforeach</select>
+<select class="form-control mr-2" id="plantilla_id" name="plantilla_id"><option value="">Sin plantilla</option>@foreach($plantillas as $p)<option value="{{ $p->id }}" data-tipo="{{ $p->tipo_documento_id }}">{{ $p->nombre }}</option>@endforeach</select>
 <label class="sr-only" for="titulo">Título</label><input class="form-control mr-2" id="titulo" name="titulo" placeholder="Título" required maxlength="190">
 <button class="btn btn-primary">Crear</button></form>@endif
 

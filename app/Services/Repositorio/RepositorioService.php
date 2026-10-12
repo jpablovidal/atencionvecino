@@ -50,6 +50,7 @@ class RepositorioService
             DB::table('documentos')->whereNotNull('pdf_ruta')->select('pdf_ruta as r'),
             DB::table('documentos')->whereNotNull('pdf_firmado_ruta')->select('pdf_firmado_ruta as r'),
             DB::table('documento_versiones')->whereNotNull('pdf_ruta')->select('pdf_ruta as r'),
+            DB::table('recursos_imagen')->select('ruta as r'),
         ];
         $u = $fuentes[0];
         foreach (array_slice($fuentes, 1) as $f) {

@@ -29,6 +29,8 @@ class Permisos
             'comunicaciones.acusar' => ['Acusar recibo de comunicaciones', 'Notificaciones y comunicaciones', $op],
             'comunicaciones.despachar' => ['Despachar comunicaciones por DocDigital', 'Notificaciones y comunicaciones', $op],
             'pisee.consultar' => ['Consultar servicios PISEE', 'Notificaciones y comunicaciones', $op],
+            'plantillas.ver' => ['Ver el catálogo de formatos y plantillas', 'Documentos', [...self::OP, 'auditor', 'admin']],
+            'plantillas.gestionar' => ['Administrar formatos y plantillas (editor, visibilidad por unidad, imágenes)', 'Administración', ['admin']],
             'llm.usar' => ['Usar el asistente de redacción con IA', 'Documentos', $op],
             'delegaciones.ver' => ['Ver delegaciones de firma', 'Firma', ['alcalde', 'admin', 'auditor']],
             'delegaciones.crear' => ['Crear y revocar delegaciones de firma', 'Firma', ['alcalde'], true],

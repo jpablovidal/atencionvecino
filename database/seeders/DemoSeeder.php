@@ -82,6 +82,10 @@ class DemoSeeder extends Seeder
                 'contenido_html' => '<h2>'.$nom.'</h2><p>Santo Domingo, {{fecha}}.</p><p>VISTOS: la solicitud folio {{folio}} de {{solicitante_nombre}}, RUN {{solicitante_run}}, expediente {{expediente}} ({{tramite}}).</p><p>CONSIDERANDO: [COMPLETAR]</p><p>DECRETO / RESUELVO: [COMPLETAR]</p><p>Anótese, comuníquese y archívese.</p>',
             ] + $t);
         }
+        foreach (DB::table('plantillas')->get() as $pl) { // versión 1 de cada plantilla (historial)
+            DB::table('plantilla_versiones')->insert(['plantilla_id' => $pl->id, 'version' => 1, 'nombre' => $pl->nombre, 'contenido_html' => $pl->contenido_html,
+                'sha256' => hash('sha256', (string) $pl->contenido_html), 'created_at' => '2026-01-01 00:00:00']);
+        }
         DB::table('delegaciones_firma')->insert([
             'id' => 1, 'tipo_documento_id' => 1, 'delegado_id' => 8, 'decreto_referencia' => 'Decreto Alcaldicio N° 123/2026 (DEMO)',
             'vigente_desde' => '2026-01-01', 'vigente_hasta' => '2026-12-31', 'creado_por' => 2, 'activo' => 1,

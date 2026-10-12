@@ -11,7 +11,12 @@
   });
   var ta = document.querySelector('textarea[data-editor]');
   if (ta && window.tinymce) {
-    window.tinymce.init({
+    var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    var urlSubida = ta.getAttribute('data-upload-url');
+    var variables = {};
+    try { variables = JSON.parse(ta.getAttribute('data-variables') || '{}'); } catch (e) { variables = {}; }
+    var SALTO = '<div style="page-break-after: always;">&nbsp;</div>';
+    var cfg = {
       target: ta,
       license_key: 'gpl',
       base_url: '/assets/tinymce',
@@ -19,16 +24,97 @@
       language: 'es',
       promotion: false,
       branding: false,
-      menubar: false,
       resize: false, /* el tirador de redimensión de TinyMCE no cumple ARIA; la altura es fija y el editor es responsive */
-      height: 420,
-      plugins: 'lists link table code autolink',
-      toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | table link | removeformat | code',
+      height: parseInt(ta.getAttribute('data-height') || '520', 10),
+      plugins: 'advlist anchor autolink charmap code fullscreen help image insertdatetime link lists nonbreaking preview quickbars searchreplace table visualblocks visualchars wordcount',
+      menubar: 'edit view insert format table tools help',
+      menu: {
+        insert: { title: 'Insertar', items: 'image link table charmap hr saltopagina variables | insertdatetime nonbreaking anchor' }
+      },
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough subscript superscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent lineheight | table image link charmap hr | variables saltopagina | searchreplace visualblocks fullscreen preview | removeformat code help',
+      toolbar_mode: 'wrap',
+      font_family_formats: 'Arial=arial,helvetica,sans-serif; Verdana=verdana,sans-serif; Tahoma=tahoma,sans-serif; Georgia=georgia,serif; Times New Roman=times new roman,times,serif; Courier New=courier new,courier,monospace; Roboto=roboto,arial,sans-serif',
+      font_size_formats: '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 20pt 24pt 28pt 36pt',
+      line_height_formats: '1 1.15 1.3 1.5 2',
+      block_formats: 'Párrafo=p; Título 1=h1; Título 2=h2; Título 3=h3; Título 4=h4; Título 5=h5; Título 6=h6; Preformateado=pre',
+      table_default_attributes: { border: '1' },
+      table_default_styles: { 'border-collapse': 'collapse', width: '100%' },
+      table_advtab: true, table_cell_advtab: true, table_row_advtab: true,
+      table_appearance_options: true, table_grid: true,
+      table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | tablemergecells tablesplitcells',
+      image_title: true, image_description: true, image_dimensions: true, image_advtab: false,
+      images_file_types: 'jpeg,jpg,png,webp',
+      resize_img_proportional: true,
+      object_resizing: 'img,table',
+      quickbars_selection_toolbar: 'bold italic | blocks | quicklink',
+      quickbars_insert_toolbar: false,
+      quickbars_image_toolbar: 'alignleft aligncenter alignright | imageoptions',
+      link_default_protocol: 'https',
+      link_title: false,
+      target_list: false,
+      invalid_elements: 'script,iframe,object,embed,form,input,button,select,textarea,video,audio,svg,style,link,meta',
+      contextmenu: false,
+      browser_spellcheck: true,
+      statusbar: true,
+      elementpath: false,
       content_css: '/assets/css/editor-content.css',
-      paste_data_images: false,
+      paste_data_images: !!urlSubida,
+      automatic_uploads: !!urlSubida,
       convert_urls: false,
-      setup: function (ed) { ed.on('change input', function () { ed.save(); }); }
+      relative_urls: false,
+      setup: function (ed) {
+        ed.on('change input', function () { ed.save(); });
+        ed.ui.registry.addIcon('saltopagina', '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M5 3h14v6H5zM5 15h14v6H5z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 12h20" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/></svg>');
+        ed.ui.registry.addButton('saltopagina', { icon: 'saltopagina', tooltip: 'Salto de página', onAction: function () { ed.insertContent(SALTO); } });
+        ed.ui.registry.addMenuItem('saltopagina', { icon: 'saltopagina', text: 'Salto de página', onAction: function () { ed.insertContent(SALTO); } });
+        var claves = Object.keys(variables);
+        if (claves.length) {
+          var items = claves.map(function (k) { return { type: 'menuitem', text: variables[k] + ' — {{' + k + '}}', onAction: function () { ed.insertContent('{{' + k + '}}'); } }; });
+          ed.ui.registry.addMenuButton('variables', { text: 'Variables', tooltip: 'Variables: insertar campo de combinación', fetch: function (cb) { cb(items); } });
+          ed.ui.registry.addNestedMenuItem('variables', { text: 'Campos de combinación', getSubmenuItems: function () { return items; } });
+        }
+      }
+    };
+    if (urlSubida) {
+      cfg.images_upload_handler = function (blobInfo) {
+        return new Promise(function (resolve, reject) {
+          var fd = new FormData();
+          fd.append('file', blobInfo.blob(), blobInfo.filename());
+          fetch(urlSubida, { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+            .then(function (x) {
+              if (x.ok && x.j.location) { resolve(x.j.location); } else { reject({ message: (x.j && (x.j.error || x.j.message)) || 'No se pudo subir la imagen.', remove: true }); }
+            })
+            .catch(function () { reject({ message: 'Error de red al subir la imagen.', remove: true }); });
+        });
+      };
+    }
+    window.tinymce.init(cfg).then(function (eds) {
+      var ed = eds[0];
+      var form = ta.closest('form');
+      if (ed && form) {
+        form.addEventListener('submit', function (e) {
+          /* imágenes pegadas (blob:) pendientes de subir: se suben antes de enviar */
+          if (urlSubida && ed.getBody().querySelector('img[src^="blob:"],img[src^="data:"]') && !form.__subido) {
+            e.preventDefault();
+            ed.uploadImages().then(function () { ed.save(); form.__subido = true; form.requestSubmit ? form.requestSubmit() : form.submit(); });
+          }
+        });
+      }
     });
+  }
+  var selTipo = document.getElementById('tipo_documento_id');
+  var selPlantilla = document.getElementById('plantilla_id');
+  if (selTipo && selPlantilla) {
+    var filtrar = function () {
+      Array.prototype.forEach.call(selPlantilla.options, function (o) {
+        var t = o.getAttribute('data-tipo');
+        var oculto = t !== null && t !== selTipo.value;
+        o.hidden = oculto; o.disabled = oculto;
+      });
+      if (selPlantilla.selectedOptions[0] && selPlantilla.selectedOptions[0].disabled) { selPlantilla.value = ''; }
+    };
+    selTipo.addEventListener('change', filtrar); filtrar();
   }
   var llmBtn = document.getElementById('llm-generar');
   if (llmBtn) {

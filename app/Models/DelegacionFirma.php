@@ -11,8 +11,8 @@ use Illuminate\Support\Carbon;
  * @property int $tipo_documento_id
  * @property int $delegado_id
  * @property string $decreto_referencia
- * @property Carbon $vigente_desde
- * @property Carbon $vigente_hasta
+ * @property \Illuminate\Support\Carbon $vigente_desde
+ * @property \Illuminate\Support\Carbon $vigente_hasta
  * @property int $creado_por
  * @property bool $activo
  * @property string|null $created_at

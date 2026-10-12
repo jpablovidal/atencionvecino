@@ -33,9 +33,21 @@ La solicitud llega a la bandeja de **todas** las unidades responsables; la prime
 
 Cada tipo define: código, nombre, prefijo de numeración, **si la primera firma es del alcalde/delegado**, **firmas del flujo ágil** y **firmas del flujo clásico**. Ajuste las reglas según la normativa del municipio (por defecto 1 y 2). Puede crear tipos nuevos (por ejemplo "Resolución").
 
-## 6. Plantillas
+## 6. Plantillas y formatos
 
-Redacte plantillas con el editor. Use campos de combinación: `{{fecha}}`, `{{expediente}}`, `{{folio}}`, `{{solicitante_nombre}}`, `{{solicitante_run}}`, `{{tramite}}`, `{{unidad}}`, `{{institucion_origen}}`, `{{asunto_origen}}`, `{{folio_docdigital}}`. El HTML se **sanitiza en el servidor** (se eliminan scripts y atributos peligrosos).
+**Administración → Plantillas.** Aquí se mantienen los **formatos oficiales** (decretos, oficios, instructivos, etc.) que el personal usa para partir sus documentos.
+
+1. **Nueva plantilla**: nombre, **tipo de documento**, descripción (se muestra en el catálogo) y contenido.
+2. **¿Quién puede verla?** *Toda la municipalidad*, o **solo las direcciones o unidades que marque** (por ejemplo Salud, Educación u otra). Para que exista una dirección en la lista debe estar creada en *Unidades*. Los administradores y el auditor ven todos los formatos; el resto, solo los de toda la municipalidad y los de su unidad.
+3. **Editor completo**: menús (Editar, Ver, Insertar, Formato, Tabla, Herramientas, Ayuda), estilos de párrafo y títulos, tipo y tamaño de letra, negrita/cursiva/subrayado/tachado, subíndice/superíndice, colores de texto y de fondo, alineación (incluida justificada), listas, sangría e interlineado, **tablas** (filas, columnas, combinar celdas, bordes, anchos), **imágenes**, enlaces, caracteres especiales, línea horizontal, fecha, buscar y reemplazar, bloques visibles, pantalla completa, vista previa, código fuente y ayuda (Alt+0).
+4. **Imágenes**: botón de imagen → pestaña *Cargar* (o arrastre/pegue la imagen en el editor). PNG, JPG o WebP de hasta 2 MB; se reescalan a 1600 px, se **re-codifican** (sin metadatos) y se guardan **cifradas** en el repositorio. Complete el texto alternativo. No se aceptan SVG, GIF ni imágenes de otros sitios. Las imágenes cargadas no se eliminan (los documentos ya emitidos pueden usarlas).
+5. **Variables**: botón *Variables* → inserta campos como `{{fecha}}`, `{{expediente}}`, `{{folio}}`, `{{solicitante_nombre}}`, `{{solicitante_run}}`, `{{tramite}}`, `{{unidad}}`, `{{institucion_origen}}`, `{{asunto_origen}}`, `{{folio_docdigital}}`. Al crear el documento se reemplazan (con los valores escapados).
+6. **Salto de página**: botón dedicado; en el PDF inicia una página nueva.
+7. **Historial**: cada guardado con cambios crea una **versión inmutable**. Desde *Historial de versiones* puede ver cualquier versión y **restaurarla** (se crea una versión nueva).
+8. **Duplicar** crea una copia **inactiva** para adaptar un formato; **Desactivar** la retira del catálogo sin borrarla.
+9. **Ver** muestra la vista previa con datos de ejemplo y un **PDF de ejemplo**.
+
+El contenido se **sanitiza en el servidor** con una lista blanca (se eliminan scripts, estilos peligrosos, iframes, formularios e imágenes externas), independiente de lo que haga el navegador.
 
 ## 7. Codificador de instituciones y procesos
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\DelegacionFirma;
 use App\Models\Institucion;
 use App\Models\PiseeServicio;
-use App\Models\Plantilla;
 use App\Models\ProcesoCodificador;
 use App\Models\TipoDocumento;
 use App\Models\Tramite;
@@ -13,7 +12,6 @@ use App\Models\TramiteAnexo;
 use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
-use App\Services\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -23,7 +21,7 @@ class MantenedorController extends Controller
 {
     public const CPAT = '/^[A-Z]{2}-[A-Z]{3}\d{5}-\d{5}$/'; // p. ej. PA-UNI00002-00001 (patrón A VALIDAR)
 
-    public function __construct(private readonly AuditoriaService $audit, private readonly HtmlSanitizer $san) {}
+    public function __construct(private readonly AuditoriaService $audit) {}
 
     private function def(string $entidad): array
     {
@@ -70,11 +68,6 @@ class MantenedorController extends Controller
                 'param_run' => ['Parámetro que lleva el RUN (vacío = no envía RUN)', 'text', ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9_\\-]+$/']],
                 'descripcion' => ['Descripción / base legal', 'textarea', ['nullable', 'string', 'max:2000']],
             ], 'unico' => ['codigo']],
-            'plantillas' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Plantilla::class, 'titulo' => 'Plantillas', 'cols' => ['nombre'], 'campos' => [
-                'tipo_documento_id' => ['Tipo de documento', 'tipo', ['required', 'integer', 'exists:tipos_documento,id']],
-                'nombre' => ['Nombre', 'text', ['required', 'string', 'max:150']],
-                'contenido_html' => ['Contenido ({{fecha}}, {{expediente}}, {{solicitante_nombre}}, {{solicitante_run}}, {{folio}}, {{tramite}}, {{unidad}})', 'editor', ['required', 'string', 'max:200000']],
-            ], 'unico' => []],
         ];
         abort_unless(isset($defs[$entidad]), 404);
         $this->permiso($defs[$entidad]['permiso']);
@@ -145,9 +138,6 @@ class MantenedorController extends Controller
         $d = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $d);
         if ($entidad === 'tipos') {
             $d['firma_alcalde'] = (bool) ($d['firma_alcalde'] ?? false);
-        }
-        if ($entidad === 'plantillas') {
-            $d['contenido_html'] = $this->san->limpiar($d['contenido_html']);
         }
         DB::transaction(function () use ($def, $entidad, $id, $d) {
             $unidades = $d['unidades'] ?? null;

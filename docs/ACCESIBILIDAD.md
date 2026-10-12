@@ -17,7 +17,7 @@
 | **Preferencias del sistema** | CSS | `prefers-reduced-motion`, `forced-colors` (alto contraste de Windows), impresión (`@media print`). |
 | **Declaración de accesibilidad** | `/accesibilidad` | Estado de conformidad (parcial, honesto), atajos de teclado, lectores de pantalla, limitaciones, **canal para reportar barreras** (`SGD_ACCESIBILIDAD_CONTACTO`). |
 | **Manuales accesibles** | `/ayuda`, `resources/manuales/` | Siete manuales por perfil con índice, imágenes con texto alternativo, impresión limpia y versión PDF (`php scripts/build-manuales-pdf.php`). |
-| **Editor de documentos** | TinyMCE autoalojado | Idioma español, navegación por teclado (Alt+F10), tirador de redimensión desactivado (no cumplía ARIA). |
+| **Editor de documentos** | TinyMCE autoalojado | Idioma español, navegación por teclado (Alt+F10), menús y barra con nombre accesible, ayuda integrada (Alt+0), imágenes con texto alternativo, tirador de redimensión desactivado (no cumplía ARIA). |
 | **PDF generados** | `resources/views/pdf/*` | Idioma y título declarados; el QR siempre va acompañado del código y la URL en texto. *No* son PDF etiquetados (ver limitaciones). |
 
 ## Cómo se verifica
@@ -55,7 +55,7 @@
 | diagnostico | normal | 0 |
 | seguridad | normal | 0 |
 
-**Total de violaciones: 0** (35 páginas/modos, incluidas las 11 de administración nuevas; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
+**Total de violaciones: 0** (40 páginas/modos, incluidas las de administración y las de formatos/plantillas con el editor completo; en esa auditoría se corrigió el contraste de insignias `badge-secondary/info` y de `btn-outline-danger`). Hallazgos corregidos durante la auditoría: nombre accesible de los botones de tamaño de texto (WCAG 2.5.3), contraste de `code`, `kbd`, `.text-danger` y botones secundarios heredados del framework, tamaño de objetivos (2.5.8), `<thead>` dañado por una expresión regular del renderizador de manuales, encabezados de tabla vacíos y un `aria-label` inválido del tirador de TinyMCE.
 
 Comprobaciones de comportamiento:
 - Primer Tab: {"texto":"Saltar al contenido","visible":true}

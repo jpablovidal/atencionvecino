@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property bool $simulada
  * @property string|null $checksum_original
  * @property string|null $comentario
- * @property Carbon|null $completado_en
+ * @property \Illuminate\Support\Carbon|null $completado_en
  * @property string|null $created_at
  * @property string|null $updated_at
  */

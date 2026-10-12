@@ -120,3 +120,10 @@ html.a11y-contrast .sgd-nav-grupo>summary{color:#ffff00}
 .badge-warning { background-color: #ffc107; color: #212529; }
 .btn-outline-danger { color: #a4161a; border-color: #a4161a; }
 .btn-outline-danger:hover, .btn-outline-danger:focus { background-color: #a4161a; border-color: #a4161a; color: #fff; }
+
+/* Vista previa de formatos (hoja carta a tamaño real, con desplazamiento) */
+.formato-vista{max-width:215mm;background:#fff;color:#111;border:1px solid #9aa7b2;padding:18mm 20mm;font-size:14px;line-height:1.5;overflow:auto}
+.formato-vista img{max-width:100%;height:auto}
+.formato-vista table{border-collapse:collapse}
+.formato-vista td,.formato-vista th{border:1px solid #999;padding:3px 6px}
+.formato-vista div[style*="page-break-after"]{border-top:2px dashed #006fb3;margin:16px 0;font-size:0;color:transparent}

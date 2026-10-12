@@ -124,7 +124,7 @@
    "pagina": "admin-plantilla",
    "modo": "normal",
    "violaciones": 0,
-   "reglas": 49
+   "reglas": 51
   },
   {
    "pagina": "codificador",
@@ -206,6 +206,36 @@
   },
   {
    "pagina": "sesiones",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 43
+  },
+  {
+   "pagina": "formatos",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 43
+  },
+  {
+   "pagina": "formato",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 38
+  },
+  {
+   "pagina": "plantillas",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 48
+  },
+  {
+   "pagina": "plantilla-nueva",
+   "modo": "normal",
+   "violaciones": 0,
+   "reglas": 51
+  },
+  {
+   "pagina": "plantilla-versiones",
    "modo": "normal",
    "violaciones": 0,
    "reglas": 43

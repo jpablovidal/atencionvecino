@@ -15,7 +15,9 @@ use App\Http\Controllers\LogsController;
 use App\Http\Controllers\MantenedorController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\PublicoController;
+use App\Http\Controllers\RecursosController;
 use App\Http\Controllers\RepositorioController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SeguridadController;
@@ -68,6 +70,11 @@ Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadan
 Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->group(function () {
     Route::get('/', [FuncionarioController::class, 'bandeja'])->name('bandeja');
     Route::get('/vigentes', [FuncionarioController::class, 'vigentes'])->name('vigentes');
+    Route::get('/formatos', [PlantillasController::class, 'catalogo'])->name('formatos');
+    Route::get('/formatos/{plantilla}', [PlantillasController::class, 'ver'])->whereNumber('plantilla')->name('formato');
+    Route::get('/formatos/{plantilla}/pdf', [PlantillasController::class, 'pdf'])->whereNumber('plantilla')->name('formato.pdf');
+    Route::post('/recursos', [RecursosController::class, 'subir'])->middleware('throttle:30,1')->name('recursos.subir');
+    Route::get('/recursos/{recurso}', [RecursosController::class, 'mostrar'])->whereNumber('recurso')->name('recursos.mostrar');
     Route::get('/solicitudes/{folio}', [FuncionarioController::class, 'solicitud'])->name('solicitud');
     Route::post('/solicitudes/{folio}/asignar', [FuncionarioController::class, 'asignar'])->name('asignar');
     Route::get('/solicitudes/{folio}/archivos/{archivo}', [FuncionarioController::class, 'archivoSolicitud'])->name('solicitud.archivo');
@@ -141,6 +148,18 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::post('/roles/{rol}', [RolesController::class, 'guardar'])->name('roles.actualizar');
             Route::post('/roles/{rol}/estado', [RolesController::class, 'alternar'])->name('roles.alternar');
             Route::post('/roles/{rol}/eliminar', [RolesController::class, 'eliminar'])->name('roles.eliminar');
+        });
+        Route::middleware('permiso:plantillas.gestionar')->group(function () {
+            Route::get('/plantillas', [PlantillasController::class, 'index'])->name('plantillas');
+            Route::get('/plantillas/nuevo', [PlantillasController::class, 'crear'])->name('plantillas.crear');
+            Route::post('/plantillas', [PlantillasController::class, 'guardar'])->name('plantillas.guardar');
+            Route::get('/plantillas/{plantilla}', [PlantillasController::class, 'editar'])->whereNumber('plantilla')->name('plantillas.editar');
+            Route::post('/plantillas/{plantilla}', [PlantillasController::class, 'guardar'])->whereNumber('plantilla')->name('plantillas.actualizar');
+            Route::post('/plantillas/{plantilla}/estado', [PlantillasController::class, 'alternar'])->whereNumber('plantilla')->name('plantillas.alternar');
+            Route::post('/plantillas/{plantilla}/duplicar', [PlantillasController::class, 'duplicar'])->whereNumber('plantilla')->name('plantillas.duplicar');
+            Route::get('/plantillas/{plantilla}/versiones', [PlantillasController::class, 'versiones'])->whereNumber('plantilla')->name('plantillas.versiones');
+            Route::get('/plantillas/{plantilla}/versiones/{version}', [PlantillasController::class, 'verVersion'])->whereNumber(['plantilla', 'version'])->name('plantillas.version');
+            Route::post('/plantillas/{plantilla}/versiones/{version}/restaurar', [PlantillasController::class, 'restaurar'])->whereNumber(['plantilla', 'version'])->name('plantillas.restaurar');
         });
         Route::middleware('permiso:mantenedores.gestionar')->group(function () {
             Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');

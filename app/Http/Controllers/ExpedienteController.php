@@ -36,7 +36,7 @@ class ExpedienteController extends Controller
         return view('app.expediente', [
             'e' => $expediente, 'indice' => $svc->indice($expediente),
             'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(),
-            'plantillas' => Plantilla::query()->where('activo', true)->get(),
+            'plantillas' => Plantilla::query()->visiblesPara($r->user())->where('activo', true)->orderBy('nombre')->get(),
             'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'puedeOperar' => $r->user()->can('operar', $expediente),
             'instituciones' => Institucion::query()->where('activo', true)->orderBy('nombre')->get(['codigo', 'nombre']),

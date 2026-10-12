@@ -282,4 +282,36 @@ insert into `firma_estilos` (`nombre`, `defecto`, `activo`, `created_at`, `updat
 
 insert into `firma_posiciones` (`activo`, `alineacion`, `created_at`, `margen_superior_mm`, `nombre`, `orden_firma`, `pagina`, `updated_at`) values (1, 'izquierda', '2026-01-01 00:00:00', 14, 'Primera firma (izquierda)', 1, 'ultima', '2026-01-01 00:00:00'), (1, 'derecha', '2026-01-01 00:00:00', 14, 'Segunda firma (derecha)', 2, 'ultima', '2026-01-01 00:00:00');
 
+alter table `plantillas` add `descripcion` varchar(255) null;
+
+alter table `plantillas` add `alcance` varchar(10) not null default 'todas';
+
+alter table `plantillas` add `version` int unsigned not null default '1';
+
+alter table `plantillas` add `actualizado_por` bigint unsigned null;
+
+alter table `plantillas` add constraint `plantillas_actualizado_por_foreign` foreign key (`actualizado_por`) references `usuarios` (`id`);
+
+create table `plantilla_unidades` (`plantilla_id` bigint unsigned not null, `unidad_id` bigint unsigned not null, primary key (`plantilla_id`, `unidad_id`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `plantilla_unidades` add constraint `plantilla_unidades_plantilla_id_foreign` foreign key (`plantilla_id`) references `plantillas` (`id`);
+
+alter table `plantilla_unidades` add constraint `plantilla_unidades_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`);
+
+create table `plantilla_versiones` (`id` bigint unsigned not null auto_increment primary key, `plantilla_id` bigint unsigned not null, `version` int unsigned not null, `nombre` varchar(150) not null, `contenido_html` longtext not null, `sha256` char(64) not null, `creado_por` bigint unsigned null, `created_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `plantilla_versiones` add constraint `plantilla_versiones_plantilla_id_foreign` foreign key (`plantilla_id`) references `plantillas` (`id`);
+
+alter table `plantilla_versiones` add constraint `plantilla_versiones_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `plantilla_versiones` add unique `plantilla_versiones_plantilla_id_version_unique`(`plantilla_id`, `version`);
+
+create table `recursos_imagen` (`id` bigint unsigned not null auto_increment primary key, `nombre` varchar(120) not null, `mime` varchar(20) not null, `ancho` smallint unsigned not null, `alto` smallint unsigned not null, `tamano` int unsigned not null, `sha256` char(64) not null, `ruta` varchar(255) not null, `subido_por` bigint unsigned null, `created_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `recursos_imagen` add constraint `recursos_imagen_subido_por_foreign` foreign key (`subido_por`) references `usuarios` (`id`);
+
+alter table `recursos_imagen` add index `recursos_imagen_sha256_index`(`sha256`);
+
+select * from `plantillas`;
+
 SET FOREIGN_KEY_CHECKS = 1;

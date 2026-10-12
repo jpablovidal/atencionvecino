@@ -46,6 +46,10 @@ Ver `DECISIONES.md` #1, #2 y #5 (ágil=1 / clásico=2 por defecto; primera firma
 - **Usuarios conectados:** se basa en la tabla de sesiones (actividad dentro del tiempo de vida de sesión); no detecta usuarios con la pestaña abierta pero inactiva más allá de ese plazo.
 - **Log de aplicación:** la redacción es por patrones (RUN, correos, tokens, rutas); puede dejar pasar datos con formatos no previstos. Revíselo antes de compartirlo fuera de la institución.
 - **Logo y accesibilidad:** el sistema exige texto alternativo y valida contraste de colores, pero no puede juzgar si el contenido del logo es legible.
+- **Editor (TinyMCE 7, GPL):** se omiten por seguridad los plugins de medios (`media`, iframes), `codesample` y emoticonos. El sanitizador del servidor es la autoridad: lo que el editor muestre y el servidor elimine (p. ej. un estilo no admitido) desaparece al guardar. Fuentes: solo las de la lista (Arial, Verdana, Tahoma, Georgia, Times, Courier, Roboto); en PDF Dompdf las aproxima con las fuentes que dispone.
+- **Imágenes en PDF:** se incrustan con Dompdf; imágenes muy grandes o muchas imágenes aumentan memoria y tamaño del PDF. Las imágenes subidas no se pueden borrar (solo dejar de usarlas); no hay depuración de huérfanas.
+- **Visibilidad de formatos:** se basa en la unidad del usuario (una unidad por persona); no hay jerarquía de unidades (una dirección no hereda a sus departamentos).
+- **PDF de ejemplo de formatos:** usa datos ficticios y no tiene validez; no incluye firmas ni folio.
 
 ## Accesibilidad
 Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegador real, 0 violaciones en las páginas auditadas) y revisión de teclado, **pero sin auditoría manual con lectores de pantalla ni certificación externa**; los PDF generados no son PDF/UA; el canal de contacto y su plazo de respuesta (`SGD_ACCESIBILIDAD_CONTACTO`) deben definirse por la Municipalidad.

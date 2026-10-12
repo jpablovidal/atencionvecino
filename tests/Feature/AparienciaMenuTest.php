@@ -233,7 +233,7 @@ class AparienciaMenuTest extends TestCase
         $this->assertSame(['Inicio', 'Documentos públicos', 'Validar documento', 'Ayuda'], $this->etiquetas('publico'));
         $this->assertSame(['Inicio', 'Documentos públicos', 'Validar documento', 'Mis solicitudes', 'Ayuda'], $this->etiquetas('ciudadano'));
         $f = $this->etiquetas('app', $this->usuario('funcionario'));
-        $this->assertSame(['Bandeja', 'Documentos vigentes', 'Comunicaciones oficiales', 'Ayuda'], $f);
+        $this->assertSame(['Bandeja', 'Documentos vigentes', 'Formatos y plantillas', 'Comunicaciones oficiales', 'Ayuda'], $f);
         $a = $this->etiquetas('app', $this->usuario('admin'));
         foreach (['Usuarios', 'Folios', 'Estilo y posición de firmas', 'APIs e integraciones', 'Repositorio', 'Apariencia', 'Barra de menú', 'Diagnóstico'] as $e) {
             $this->assertContains($e, $a);

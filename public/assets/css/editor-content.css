@@ -1,1 +1,6 @@
-body{font-family:Roboto,Arial,sans-serif;font-size:14px;line-height:1.5}table{border-collapse:collapse}td,th{border:1px solid #999;padding:3px 6px}
+body{font-family:Roboto,Arial,sans-serif;font-size:14px;line-height:1.5;padding:8px}
+table{border-collapse:collapse}td,th{border:1px solid #999;padding:3px 6px}
+img{max-width:100%;height:auto}
+/* Salto de página: se muestra como línea punteada en el editor (en el PDF inicia una página nueva) */
+div[style*="page-break-after"]{border-top:2px dashed #006fb3;margin:16px 0;color:#006fb3;font-size:11px;text-align:center}
+div[style*="page-break-after"]::before{content:"Salto de página";}

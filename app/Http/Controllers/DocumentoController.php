@@ -23,7 +23,10 @@ class DocumentoController extends Controller
         $this->authorize('operar', $expediente);
         $d = $r->validate(['tipo_documento_id' => 'required|integer|exists:tipos_documento,id', 'plantilla_id' => 'nullable|integer|exists:plantillas,id', 'titulo' => 'required|string|max:190']);
         $tipo = TipoDocumento::query()->where('activo', true)->findOrFail($d['tipo_documento_id']);
-        $pl = ! empty($d['plantilla_id']) ? Plantilla::query()->where('activo', true)->where('tipo_documento_id', $tipo->id)->first() : null;
+        $pl = ! empty($d['plantilla_id']) ? Plantilla::query()->visiblesPara($r->user())->where('activo', true)->where('tipo_documento_id', $tipo->id)->where('id', $d['plantilla_id'])->first() : null;
+        if (! empty($d['plantilla_id']) && ! $pl) {
+            return back()->with('error', 'La plantilla elegida no corresponde al tipo de documento o no está disponible para su unidad.');
+        }
         try {
             $doc = $this->svc->crear($expediente, $tipo, $pl, $d['titulo'], $r->user());
         } catch (FlujoException $e) {

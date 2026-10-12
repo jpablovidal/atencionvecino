@@ -1,5 +1,5 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><title>Documento oficial</title><style>
-body{font-family:'DejaVu Sans',sans-serif;font-size:11px;color:#111} h1,h2,h3{color:#006fb3} table{border-collapse:collapse} td,th{border:1px solid #999;padding:3px 5px}
+body{font-family:'DejaVu Sans',sans-serif;font-size:11px;color:#111} h1,h2,h3{color:#006fb3} table{border-collapse:collapse} img{max-width:100%} td,th{border:1px solid #999;padding:3px 5px}
 .enc{border-bottom:2px solid #006fb3;margin-bottom:12px;padding-bottom:6px;font-size:10px;color:#333} .hoja{page-break-before:always} .sim{color:#b00020;font-weight:bold}
 .k{width:30%;background:#eef4f9;font-weight:bold}
 </style></head><body>

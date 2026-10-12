@@ -36,7 +36,7 @@ Después de ingresar verá su **Bandeja**:
 
 ### 4.1 Crear un documento
 
-En **Nuevo documento** elija el **tipo** (decreto alcaldicio, decreto SIAPER, oficio, ordenanza, reglamento, instructivo u otro creado por el administrador), una **plantilla** y un **título**. El editor se abre con el texto de la plantilla.
+Antes de redactar puede revisar los **formatos disponibles para su unidad** en el menú **Formatos y plantillas** (vista previa y PDF de ejemplo). En **Nuevo documento** elija el **tipo** (decreto alcaldicio, decreto SIAPER, oficio, ordenanza, reglamento, instructivo u otro creado por el administrador), una **plantilla** y un **título**. El editor se abre con el texto de la plantilla.
 
 **Campos de combinación** (se reemplazan solos, ya escapados por seguridad): `{{fecha}}`, `{{expediente}}`, `{{folio}}`, `{{solicitante_nombre}}`, `{{solicitante_run}}`, `{{tramite}}`, `{{unidad}}`, y para comunicaciones recibidas `{{institucion_origen}}`, `{{asunto_origen}}`, `{{folio_docdigital}}`.
 
@@ -44,7 +44,7 @@ En **Nuevo documento** elija el **tipo** (decreto alcaldicio, decreto SIAPER, of
 
 ### 4.2 Editar y versiones
 
-Edite el texto con la barra del editor (títulos, negrita, listas, tablas, enlaces). Complete resumen, palabras clave, nivel de acceso (**público/reservado**) y **sensible** (un documento sensible nunca aparece en el listado público). Cada **Guardar nueva versión** crea una versión **inmutable** (HTML y PDF con su huella SHA-256), visible en el historial.
+Edite el texto con el editor completo (títulos, tipo y tamaño de letra, colores, listas, **tablas**, **imágenes**, enlaces, saltos de página, buscar y reemplazar, pantalla completa). Para insertar una imagen use el botón de imagen → *Cargar* o arrástrela al editor (PNG, JPG o WebP hasta 2 MB; escriba el texto alternativo). Complete resumen, palabras clave, nivel de acceso (**público/reservado**) y **sensible** (un documento sensible nunca aparece en el listado público). Cada **Guardar nueva versión** crea una versión **inmutable** (HTML y PDF con su huella SHA-256), visible en el historial.
 
 > Solo se puede editar un documento en estado **borrador**. Si está en flujo de firma o vigente ya no se edita: si se rechaza, vuelve a borrador.
 

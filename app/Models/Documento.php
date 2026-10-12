@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $html
  * @property int|null $numero
  * @property int|null $anio
- * @property Carbon|null $fecha_firma
+ * @property \Illuminate\Support\Carbon|null $fecha_firma
  * @property string|null $codigo_validacion
  * @property string|null $pdf_ruta
  * @property string|null $pdf_sha256

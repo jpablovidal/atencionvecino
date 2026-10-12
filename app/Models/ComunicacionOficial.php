@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $estado
  * @property string|null $evidencia_tipo
  * @property string|null $evidencia
- * @property Carbon|null $evidencia_en
+ * @property \Illuminate\Support\Carbon|null $evidencia_en
  * @property int $intentos
  * @property string|null $ultimo_error
  * @property int|null $archivo_id
