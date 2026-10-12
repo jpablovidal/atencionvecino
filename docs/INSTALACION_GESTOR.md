@@ -103,6 +103,10 @@ FILE_ENCRYPTION_KEY_ID=k1
 FILE_ENCRYPTION_KEYS='{"k1":"${FILEKEY_V}"}'
 AUDIT_HMAC_KEY=${HMAC_V}
 
+# Conexiones (mapa y ranking de IP): contadores por hora, sin URL ni contenido; se eliminan a los 90 días
+SGD_REGISTRAR_CONEXIONES=true
+SGD_CONEXIONES_RETENCION_DIAS=90
+
 # Integraciones SIMULADAS (solo permitidas en SGD_AMBIENTE=pruebas)
 CLAVEUNICA_MODE=mock
 FIRMAGOB_MODE=mock
@@ -153,7 +157,7 @@ Ingreso: https://gestor.santodomingo.cl/ingreso → **«Ingresar con usuario y c
 |---|---|---|---|
 | (las contraseñas se muestran una sola vez en el paso 6) | | | |
 
-Flujo sugerido: (1) **Vecina 1** ingresa una solicitud de «Permiso de edificación» con 2 anexos PDF → (2) **Funcionario DOM** la ve en su bandeja, se la asigna, crea un *Oficio* desde plantilla, edita con el editor (tabla, imagen) e inicia el flujo con la **Secretaria** como firmante → (3) **Secretaria** firma con cualquier OTP de 6 dígitos distinto de `000000` (la firma es simulada) → (4) el documento queda vigente; valídelo en `/validar` con su código y véalo en `/publico` → (5) **Auditoría** revisa el registro de logs y la cadena HMAC; **Administrador** revisa roles, plantillas, apariencia, APIs, folios, repositorio, recursos del servidor y componentes.
+Flujo sugerido: (1) **Vecina 1** ingresa una solicitud de «Permiso de edificación» con 2 anexos PDF → (2) **Funcionario DOM** la ve en su bandeja, se la asigna, crea un *Oficio* desde plantilla, edita con el editor (tabla, imagen) e inicia el flujo con la **Secretaria** como firmante → (3) **Secretaria** firma con cualquier OTP de 6 dígitos distinto de `000000` (la firma es simulada) → (4) el documento queda vigente; valídelo en `/validar` con su código y véalo en `/publico` → (5) **Auditoría** revisa el registro de logs y la cadena HMAC; **Administrador** revisa roles, plantillas, apariencia, APIs, folios, repositorio, recursos del servidor, componentes y el **mapa de conexiones** (Seguridad y operación → *Conexiones y mapa*: tras navegar con distintos perfiles verá su IP y los servicios a los que se conectó el sistema; las visitas locales aparecen como «Red interna / local»).
 - Para probar DocDigital entrante: Administrador → *APIs e integraciones* / *Comunicaciones* (modo simulado).
 - Las contraseñas se guardan solo como hash. **Cámbielas** cuando termine (§9). Tras 5 intentos fallidos la cuenta se bloquea 15 minutos.
 
