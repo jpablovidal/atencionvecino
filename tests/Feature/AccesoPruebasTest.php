@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\CuentaPrueba;
 use App\Support\Ambiente;
 use App\Support\ProductionGuard;
@@ -80,7 +81,7 @@ class AccesoPruebasTest extends TestCase
         $this->assertSame('RUN o contraseña incorrectos.', session('error')); // no revela si la cuenta existe
         $this->assertDatabaseHas('audit_log', ['accion' => 'auth.fallo']);
         $this->get('/app')->assertRedirect(); // sigue sin sesión
-        $this->assertStringNotContainsString(self::PW, (string) \App\Models\AuditLog::query()->pluck('detalle')->implode(' '));
+        $this->assertStringNotContainsString(self::PW, (string) AuditLog::query()->pluck('detalle')->implode(' '));
     }
 
     public function test_bloqueo_tras_cinco_intentos_fallidos(): void

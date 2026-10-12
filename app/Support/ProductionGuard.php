@@ -14,6 +14,9 @@ class ProductionGuard
         }
         $e = [];
         $pruebas = Ambiente::esPruebas();
+        if ($pruebas && Ambiente::pruebasHasta() && Ambiente::pruebasHasta()->greaterThan(now()->addDays(Ambiente::MAX_DIAS))) {
+            $e[] = 'SGD_ACCESO_PRUEBAS_HASTA no puede superar '.Ambiente::MAX_DIAS.' días desde hoy';
+        }
         if (! in_array(config('sgd.ambiente'), ['produccion', 'pruebas'], true)) {
             $e[] = 'SGD_AMBIENTE debe ser produccion o pruebas';
         }

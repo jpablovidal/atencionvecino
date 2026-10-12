@@ -23,7 +23,7 @@
 ## Cómo se verifica
 
 1. **Pruebas automáticas (PHPUnit)** `tests/Feature/AccesibilidadTest.php`: idioma, título, un `h1`, un `main`, navegación etiquetada, enlaces de salto, sin saltos de encabezados, etiqueta/nombre accesible de cada control, ids únicos, `alt` en imágenes, enlaces con texto, `th scope`, sin encabezados de tabla vacíos, barra de accesibilidad, contraste calculado (fórmula WCAG), resumen de errores, declaración y manuales — sobre **24 páginas representativas de cada rol**.
-2. **Auditoría axe-core en navegador real** (Chromium + Playwright; reglas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa` y `best-practice`): resultado más abajo. Se ejecuta con `scripts/a11y-audit.js` (guion de apoyo; Playwright y axe-core no se distribuyen con la aplicación).
+2. **Auditoría axe-core en navegador real** (Chromium + Playwright; reglas `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa` y `best-practice`): resultado más abajo. Se ejecuta con `scripts/a11y-audit.cjs` (guion de apoyo; Playwright y axe-core no se distribuyen con la aplicación).
 3. **Teclado y preferencias** (navegador real): primer `Tab` = "Saltar al contenido" visible; `Enter` mueve el foco a `main`; contorno de foco visible; las opciones de la barra se activan, se anuncian, **persisten al recargar** y se restablecen; foco en el resumen de errores tras un envío inválido.
 
 ## Resultado de la auditoría axe-core (último ciclo)
@@ -79,7 +79,7 @@ Capturas: `docs/capturas/a11y-*.png`.
 - Los colores del encabezado, menú, pie, botones y títulos se **validan con contraste ≥ 4,5:1** al guardarse; no es posible configurar combinaciones ilegibles.
 - El logo exige **texto alternativo** cuando se muestra; el SVG está prohibido.
 - Los grupos de la barra de menú son `<details>/<summary>` operables con teclado (Enter/Espacio) y se cierran con **Esc** o al hacer clic fuera; los enlaces que abren pestaña nueva lo anuncian a lectores de pantalla.
-- Las páginas de administración nuevas (apariencia, menú, APIs, folios, firmas, repositorio, roles, usuarios, logs, sesiones) están cubiertas por `AccesibilidadTest` y por `scripts/a11y-audit.js` (axe-core).
+- Las páginas de administración nuevas (apariencia, menú, APIs, folios, firmas, repositorio, roles, usuarios, logs, sesiones) están cubiertas por `AccesibilidadTest` y por `scripts/a11y-audit.cjs` (axe-core).
 
 ## Limitaciones (honestas)
 - **No** hay auditoría con personas usuarias de lectores de pantalla (NVDA, JAWS, VoiceOver) ni certificación externa; las herramientas automáticas detectan alrededor de un tercio de los problemas posibles. Se recomienda una auditoría manual antes de producción.

@@ -66,6 +66,13 @@ class UsuariosController extends Controller
         ]);
         $d = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $d);
         $base = (string) Rol::query()->where('clave', $d['rol'])->value('rol_base');
+        $actor = $r->user();
+        if ($usuario && $usuario->id === $actor->id && ($usuario->rol !== $d['rol'] || (int) $usuario->unidad_id !== (int) ($d['unidad_id'] ?? 0) || (bool) $usuario->puede_firmar !== (bool) ($d['puede_firmar'] ?? false))) {
+            return back()->withInput()->with('error', 'No puede modificar su propio rol, unidad ni habilitación de firma: pídalo a otra persona administradora (separación de funciones).');
+        }
+        if ($base === 'admin' && ! $actor->tienePermiso('roles.gestionar') && (! $usuario || $usuario->rol !== $d['rol'])) {
+            return back()->withInput()->with('error', 'Solo quien administra roles puede asignar un rol de administración.');
+        }
         $d['puede_firmar'] = in_array($base, ['admin', 'auditor'], true) ? false : (bool) ($d['puede_firmar'] ?? false);
         if ($usuario && $usuario->activo && ! $this->quedaAdmin($usuario, $base, true)) {
             return back()->withInput()->with('error', 'Debe existir al menos un administrador activo: no puede cambiar el rol del último.');

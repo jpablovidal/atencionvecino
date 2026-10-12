@@ -149,6 +149,7 @@ class ExpedienteController extends Controller
 
     public function asignarme(Request $r, Expediente $expediente, ExpedienteService $svc)
     {
+        $this->permiso('expedientes.operar');
         $this->operar($expediente);
         try {
             $svc->asignarResponsable($expediente, $r->user());

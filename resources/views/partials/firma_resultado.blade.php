@@ -1,6 +1,6 @@
 @php
-  $etq = \App\Services\Firma\ArchivoFirmaService::etiqueta($estado);
-  $clase = match ($estado) { 'firmada' => 'estado-vigente', 'invalida' => 'estado-fallida', 'firmada_con_cambios', 'no_verificable' => 'estado-pendiente', default => '' };
+  $etq = \App\Services\Firma\ArchivoFirmaService::etiqueta($estado, $det);
+  $clase = match ($estado) { 'firmada' => (collect($det['firmas'] ?? [])->contains(fn ($f) => ($f['cadena'] ?? '') === 'verificada') ? 'estado-vigente' : 'estado-pendiente'), 'invalida' => 'estado-fallida', 'firmada_con_cambios', 'no_verificable' => 'estado-pendiente', default => '' };
   $firmas = $det['firmas'] ?? [];
 @endphp
 <span class="estado {{ $clase }}">{{ $etq }}</span>

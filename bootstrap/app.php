@@ -24,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: env('TRUSTED_PROXIES') ? explode(',', env('TRUSTED_PROXIES')) : null);
+        // Solo se atienden peticiones cuyo Host sea el de APP_URL (evita envenenamiento del encabezado Host en enlaces y correos)
+        $middleware->trustHosts(at: function (): array {
+            $h = parse_url((string) env('APP_URL'), PHP_URL_HOST);
+
+            return $h ? ['^'.preg_quote($h, '#').'$'] : [];
+        }, subdomains: false);
         $middleware->encryptCookies(except: []);
         $middleware->append(SecurityHeaders::class);
         $middleware->web(append: [SessionLimits::class]);
@@ -37,14 +43,18 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (TokenMismatchException $e, $request) {
-            app(AuditoriaService::class)->registrar('seguridad.csrf_fallido', null, null, ['ruta' => $request->path()]);
+            if ($request->user() !== null || $request->hasSession() && $request->session()->has('ciudadano')) { // anónimos: no se registra (evita inflar la bitácora)
+                app(AuditoriaService::class)->registrar('seguridad.csrf_fallido', null, null, ['ruta' => $request->path()]);
+            }
 
             return response()->view('errores.generico', ['codigo' => 419, 'mensaje' => 'La sesión expiró o el formulario no es válido. Vuelva a intentarlo.'], 419);
         });
         $exceptions->render(function (Throwable $e, $request) {
             if ($e instanceof HttpExceptionInterface) {
                 $c = $e->getStatusCode();
-                if (in_array($c, [403, 419], true)) {
+                // las respuestas 403/419 de visitantes anónimos no se registran: evita inflar la bitácora (y su bloqueo global) desde fuera
+                $identificado = $request->user() !== null || $request->hasSession() && $request->session()->has('ciudadano');
+                if (in_array($c, [403, 419], true) && $identificado) {
                     try {
                         app(AuditoriaService::class)->registrar($c === 419 ? 'seguridad.csrf_fallido' : 'seguridad.acceso_denegado', null, null, ['ruta' => $request->path(), 'metodo' => $request->method()]);
                     } catch (Throwable) {

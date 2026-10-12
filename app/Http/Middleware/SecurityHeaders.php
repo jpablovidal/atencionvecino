@@ -23,6 +23,9 @@ class SecurityHeaders
         $h->set('X-Frame-Options', 'DENY');
         $h->set('Cross-Origin-Opener-Policy', 'same-origin');
         $h->remove('X-Powered-By');
+        if (! headers_sent()) {
+            header_remove('X-Powered-By');
+        }
 
         return $r;
     }

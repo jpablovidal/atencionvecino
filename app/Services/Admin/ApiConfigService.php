@@ -169,8 +169,28 @@ class ApiConfigService
         if (! $privadaOk && ($host === 'localhost' || (filter_var($host, FILTER_VALIDATE_IP) && ! filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)))) {
             throw new FlujoException("«{$etiqueta}»: no se permiten direcciones locales o privadas (protección SSRF).");
         }
+        if (! $privadaOk && ! filter_var($host, FILTER_VALIDATE_IP) && $this->resuelveAPrivada($host)) {
+            throw new FlujoException("«{$etiqueta}»: el nombre resuelve a una dirección local o privada (protección SSRF).");
+        }
 
         return $v;
+    }
+
+    /** Resuelve el nombre y detecta destinos internos (169.254.x.x, 10.x, 127.x…). En producción un nombre que no resuelve se rechaza. */
+    private function resuelveAPrivada(string $host): bool
+    {
+        $r = @dns_get_record($host, DNS_A + DNS_AAAA) ?: [];
+        if ($r === []) {
+            return app()->isProduction();
+        }
+        foreach ($r as $x) {
+            $ip = $x['ip'] ?? $x['ipv6'] ?? null;
+            if ($ip && ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function ruta(string $etiqueta, string $v): string

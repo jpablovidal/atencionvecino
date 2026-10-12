@@ -10,6 +10,9 @@ use Illuminate\Support\Carbon;
  */
 class Ambiente
 {
+    /** El acceso de pruebas no puede quedar habilitado por más de estos días desde hoy. */
+    public const MAX_DIAS = 45;
+
     public static function esPruebas(): bool
     {
         return config('sgd.ambiente') === 'pruebas';
@@ -37,6 +40,6 @@ class Ambiente
     {
         $h = self::pruebasHasta();
 
-        return self::esPruebas() && $h !== null && now()->lessThanOrEqualTo($h);
+        return self::esPruebas() && $h !== null && now()->lessThanOrEqualTo($h) && $h->lessThanOrEqualTo(now()->addDays(self::MAX_DIAS));
     }
 }

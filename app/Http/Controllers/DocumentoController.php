@@ -84,6 +84,7 @@ class DocumentoController extends Controller
 
     public function flujo(Request $r, Documento $documento)
     {
+        $this->permiso('documentos.crear');
         $this->authorize('operar', $documento);
         $d = $r->validate(['flujo' => 'required|in:agil,clasico', 'visadores' => 'nullable|array|max:5', 'visadores.*' => 'nullable|integer', 'firmantes' => 'required|array|min:1|max:2', 'firmantes.*' => 'nullable|integer']);
         $vis = array_values(array_filter(array_map('intval', $d['visadores'] ?? [])));

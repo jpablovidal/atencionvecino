@@ -80,7 +80,10 @@ class FuncionarioController extends Controller
     public function archivoSolicitud(Request $r, string $folio, Archivo $archivo, FileVault $vault)
     {
         $s = $this->solicitudDeMiUnidad($r, $folio);
-        abort_unless($archivo->solicitud_id === $s->id, 404);
+        abort_unless($archivo->solicitud_id === $s->id && in_array($archivo->ambito, ['anexo', 'respuesta', 'comprobante'], true), 404); // no PISEE ni cargas del expediente
+        if ($s->expediente_id) {
+            $this->authorize('ver', $s->expediente); // una vez abierto el expediente rige su política de acceso, no solo la unidad del trámite
+        }
         $this->audit->registrar('archivo.descarga', 'archivo', $archivo->id, [], true);
 
         return descarga($vault->get($archivo->ruta, $archivo->sha256), $archivo->nombre_original, $archivo->mime);

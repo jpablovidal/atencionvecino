@@ -49,10 +49,14 @@ class ArchivoFirmaService
         return ['sin_analizar' => Archivo::query()->whereNull('firma_estado')->count(), 'analizados' => $n];
     }
 
-    public static function etiqueta(?string $estado): string
+    /** @param array<string,mixed>|null $det */
+    public static function etiqueta(?string $estado, ?array $det = null): string
     {
+        // sin cadena de confianza verificada no se afirma validez: cualquiera puede autofirmar un PDF
+        $verificada = $det === null || collect($det['firmas'] ?? [])->contains(fn ($f) => ($f['cadena'] ?? '') === 'verificada');
+
         return match ($estado) {
-            'firmada' => 'Firmado electrónicamente',
+            'firmada' => $verificada ? 'Firmado electrónicamente (emisor verificado)' : 'Firma presente, emisor no verificado',
             'firmada_con_cambios' => 'Firmado, con cambios posteriores',
             'invalida' => 'Firma inválida o documento alterado',
             'no_verificable' => 'Firma presente, no verificable',

@@ -53,7 +53,7 @@ Route::post('/ingreso/pruebas', [AuthController::class, 'pruebasLogin'])->middle
 Route::get('/ingreso/{via}', [AuthController::class, 'redirigir'])->where('via', 'ciudadano|funcionario')->middleware('throttle:login')->name('ingreso.via');
 Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback');
 Route::post('/salir', [AuthController::class, 'salir'])->name('salir');
-if (config('sgd.claveunica.mode') === 'mock' && ! app()->isProduction()) {
+if (config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'testing'])) { // jamás en staging/producción
     Route::get('/dev/login', [AuthController::class, 'devForm'])->name('dev.login');
     Route::post('/dev/login', [AuthController::class, 'devLogin'])->middleware('throttle:login');
 }

@@ -161,7 +161,7 @@ class FirmaElectronicaArchivosTest extends TestCase
         $this->assertSame('Juan Pérez Soto', $a->firma()['firmas'][0]['firmante']);
         $this->assertNull(Archivo::query()->where('titulo', 'Oficio sin firma')->first()->firma_detalle);
         $html = $h->get("/app/expedientes/{$e->id}")->assertOk()->getContent();
-        $this->assertStringContainsString('Firmado electrónicamente', $html);
+        $this->assertStringContainsString('Firma presente, emisor no verificado', $html); // sin CA configurada no se afirma validez
         $this->assertStringContainsString('Juan Pérez Soto', $html);
         $this->assertStringContainsString('Firma inválida o documento alterado', $html);
         $this->assertStringContainsString('Sin firma electrónica', $html);

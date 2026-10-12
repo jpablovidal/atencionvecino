@@ -14,6 +14,9 @@ class RecursosController extends Controller
     {
         abort_unless($r->user()->tienePermiso('plantillas.gestionar') || $r->user()->tienePermiso('documentos.crear'), 403);
         $r->validate(['file' => 'required|file|max:2048']);
+        if (RecursoImagen::query()->where('subido_por', $r->user()->id)->where('created_at', '>=', now()->subDay())->count() >= 100) {
+            return response()->json(['error' => 'Alcanzó el límite diario de imágenes (100). Intente mañana.'], 429);
+        }
         try {
             $img = $svc->subir($r->file('file'), $r->user());
         } catch (FlujoException $e) {

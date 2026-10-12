@@ -13,6 +13,7 @@ use App\Models\TipoDocumento;
 use App\Models\Usuario;
 use App\Services\Firma\FirmaClient;
 use App\Services\Firma\FirmaException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class DocumentoService
@@ -203,6 +204,27 @@ class DocumentoService
         if ($doc->tipo->firma_alcalde && $primera?->id === $paso->id && ! $this->delegaciones->puedeFirmarComoAlcalde($u, $doc->tipo)) {
             throw new FlujoException('Su delegación de firma no está vigente.');
         }
+        $cerrojo = Cache::lock('firma-paso:'.$paso->id, 90); // evita dos llamadas simultáneas a FirmaGob por el mismo paso (doble envío)
+        if (! $cerrojo->get()) {
+            throw new FlujoException('Su firma ya se está procesando. Espere unos segundos y revise el estado del documento.');
+        }
+        try {
+            $this->firmarPaso($doc, $paso, $u, $otp);
+        } finally {
+            $cerrojo->release();
+        }
+
+        try {
+            return $this->finalizar($doc);
+        } catch (\Throwable $e) {
+            report($e); // la firma ya quedó registrada; "finalizar" es reintentable
+
+            return $doc->refresh();
+        }
+    }
+
+    private function firmarPaso(Documento $doc, DocumentoPaso $paso, Usuario $u, ?string $otp): void
+    {
         $pdf = $this->vault->get($doc->pdf_ruta, $doc->pdf_sha256); // verifica integridad antes de firmar
         try {
             $res = $this->firma->firmar($pdf, $u->run, $otp, $doc->titulo);
@@ -224,14 +246,6 @@ class DocumentoService
             }
             $this->audit->registrar('documento.firmar', 'documento', $doc->id, ['simulada' => $res['simulada']], true);
         });
-
-        try {
-            return $this->finalizar($doc);
-        } catch (\Throwable $e) {
-            report($e); // la firma ya quedó registrada; "finalizar" es reintentable
-
-            return $doc->refresh();
-        }
     }
 
     /** Idempotente y reintentable. Asigna número, código y copia pública cuando todos los pasos están completos. */

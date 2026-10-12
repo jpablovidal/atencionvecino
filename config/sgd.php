@@ -43,7 +43,7 @@ return [
 
     // ClaveÚnica (OIDC)
     'claveunica' => [
-        'mode' => env('CLAVEUNICA_MODE', 'mock'), // mock|real  (mock prohibido en producción)
+        'mode' => env('CLAVEUNICA_MODE', 'real'), // mock|real  (mock prohibido en producción)
         'client_id' => env('CLAVEUNICA_CLIENT_ID'),
         'client_secret' => env('CLAVEUNICA_CLIENT_SECRET'),
         'redirect_uri' => env('CLAVEUNICA_REDIRECT_URI'),
@@ -55,7 +55,7 @@ return [
 
     // FirmaGob v2
     'firmagob' => [
-        'mode' => env('FIRMAGOB_MODE', 'mock'), // mock|test|prod  (mock prohibido en producción)
+        'mode' => env('FIRMAGOB_MODE', 'prod'), // mock|test|prod  (mock prohibido en producción)
         'api_token_key' => env('FIRMAGOB_API_TOKEN_KEY'),
         'secret' => env('FIRMAGOB_SECRET'), // clave HS256 del JWT
         'entity' => env('FIRMAGOB_ENTITY', 'I. Municipalidad de Santo Domingo'),
