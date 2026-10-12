@@ -13,6 +13,14 @@ class EsquemaSqlTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            $this->markTestSkipped('Estas pruebas comparan el SQL generado con el esquema de SQLite; en MySQL/MariaDB la instalación real (migrate) se verifica aparte.');
+        }
+    }
+
     private function sqlFile(string $n): string
     {
         return (string) file_get_contents(base_path('database/sql/'.$n));

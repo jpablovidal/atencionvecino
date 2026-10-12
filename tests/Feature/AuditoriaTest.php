@@ -31,7 +31,7 @@ class AuditoriaTest extends TestCase
         foreach (range(1, 4) as $i) {
             $a->registrar('evento.'.$i, 'x', $i);
         }
-        $ids = \App\Models\AuditLog::query()->orderBy('id')->pluck('id')->all(); // en MySQL el autoincremento no vuelve a 1 tras cada prueba
+        $ids = AuditLog::query()->orderBy('id')->pluck('id')->all(); // en MySQL el autoincremento no vuelve a 1 tras cada prueba
         [, $segundo, $tercero, $cuarto] = $ids;
         // un atacante con acceso directo a la BD (se quitan los triggers para simularlo)
         foreach (AuditTriggers::drop() as $sql) {

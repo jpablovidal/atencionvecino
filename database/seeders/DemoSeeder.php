@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\Ambiente;
 use App\Support\Run;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ class DemoSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->isProduction() && ! \App\Support\Ambiente::esPruebas()) {
+        if (app()->isProduction() && ! Ambiente::esPruebas()) {
             throw new \RuntimeException('DemoSeeder (datos ficticios) solo puede ejecutarse en local o con SGD_AMBIENTE=pruebas.');
         }
         $t = ['created_at' => self::NOW, 'updated_at' => self::NOW];
