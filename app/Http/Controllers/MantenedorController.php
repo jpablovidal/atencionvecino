@@ -43,7 +43,7 @@ class MantenedorController extends Controller
             'tipos' => ['permiso' => 'mantenedores.gestionar', 'modelo' => TipoDocumento::class, 'titulo' => 'Tipos de documento', 'cols' => ['codigo', 'nombre', 'prefijo'], 'campos' => [
                 'codigo' => ['Código', 'text', ['required', 'string', 'max:30']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:120']],
-                'prefijo' => ['Prefijo de numeración', 'text', ['required', 'string', 'max:10']],
+                'prefijo' => ['Prefijo de numeración', 'text', ['required', 'string', 'max:20']],
                 'firma_alcalde' => ['Primera firma: alcalde o delegado vigente', 'check', ['nullable', 'boolean']],
                 'firmas_agil' => ['Firmas en flujo ágil', 'number', ['required', 'integer', 'between:1,3']],
                 'firmas_clasico' => ['Firmas en flujo clásico', 'number', ['required', 'integer', 'between:1,3']],

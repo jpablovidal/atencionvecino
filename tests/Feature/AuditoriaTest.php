@@ -31,18 +31,20 @@ class AuditoriaTest extends TestCase
         foreach (range(1, 4) as $i) {
             $a->registrar('evento.'.$i, 'x', $i);
         }
+        $ids = \App\Models\AuditLog::query()->orderBy('id')->pluck('id')->all(); // en MySQL el autoincremento no vuelve a 1 tras cada prueba
+        [, $segundo, $tercero, $cuarto] = $ids;
         // un atacante con acceso directo a la BD (se quitan los triggers para simularlo)
         foreach (AuditTriggers::drop() as $sql) {
             DB::unprepared($sql);
         }
-        DB::table('audit_log')->where('id', 2)->update(['accion' => 'evento.falsificado']);
-        $this->assertSame(2, $a->verificar()['roto_en']);
-        DB::table('audit_log')->where('id', 2)->update(['accion' => 'evento.2']);
+        DB::table('audit_log')->where('id', $segundo)->update(['accion' => 'evento.falsificado']);
+        $this->assertSame($segundo, $a->verificar()['roto_en']);
+        DB::table('audit_log')->where('id', $segundo)->update(['accion' => 'evento.2']);
         $this->assertTrue($a->verificar()['ok']);
-        DB::table('audit_log')->where('id', 3)->delete(); // borrado de un eslabón
+        DB::table('audit_log')->where('id', $tercero)->delete(); // borrado de un eslabón
         $res = $a->verificar();
         $this->assertFalse($res['ok']);
-        $this->assertSame(4, $res['roto_en']);
+        $this->assertSame($cuarto, $res['roto_en']);
     }
 
     public function test_inmutable_por_modelo_y_por_trigger(): void

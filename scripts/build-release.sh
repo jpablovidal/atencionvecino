@@ -20,10 +20,15 @@ tar --exclude-vcs \
     --exclude='./.phpunit.result.cache' --exclude='./.editorconfig' --exclude='./.gitattributes' --exclude='./.styleci.yml' \
     -cf - . | tar -xf - -C "$STAGE"
 cp .env.example "$STAGE/.env.example"
+# la caché de paquetes del equipo de desarrollo menciona proveedores de desarrollo: se regenera en el servidor
+rm -f "$STAGE"/bootstrap/cache/*.php
 
 echo ">> Instalando dependencias de producción (composer.lock)..."
 cd "$STAGE"
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --prefer-dist
+
+# descubrimiento de paquetes SOLO de producción (sin dependencias de desarrollo)
+APP_ENV=production php artisan package:discover --ansi || true
 
 # Directorios que Laravel necesita escribibles
 mkdir -p storage/framework/{cache,sessions,views,htmlpurifier,dompdf} storage/logs bootstrap/cache

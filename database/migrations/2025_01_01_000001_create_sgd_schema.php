@@ -82,7 +82,7 @@ return new class extends Migration
             $t->id();
             $t->string('codigo', 30)->unique();
             $t->string('nombre', 120);
-            $t->string('prefijo', 10);
+            $t->string('prefijo', 20);
             $t->boolean('firma_alcalde')->default(false); // 1ª firma solo alcalde o delegado vigente
             $t->unsignedTinyInteger('firmas_agil')->default(1);
             $t->unsignedTinyInteger('firmas_clasico')->default(2);

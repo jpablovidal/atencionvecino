@@ -19,13 +19,20 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 | [`docs/LIMITACIONES.md`](docs/LIMITACIONES.md) | Lo no verificado / dependiente de credenciales |
 | [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md) | Índice de **manuales por perfil** (ciudadano, funcionario, secretario, alcalde, administrador, auditor, público): fuentes en `resources/manuales/`, publicados en `/ayuda`, PDF con `php scripts/build-manuales-pdf.php` |
 | [`docs/ACCESIBILIDAD.md`](docs/ACCESIBILIDAD.md) | Elementos de accesibilidad (WCAG 2.2 AA), verificación y limitaciones; página pública `/accesibilidad` |
+| [`docs/INSTALACION_GESTOR.md`](docs/INSTALACION_GESTOR.md) | **Guía paso a paso por comandos** (Terminal de cPanel) para `gestor.santodomingo.cl`, con usuarios de prueba |
+| [`docs/PENTEST.md`](docs/PENTEST.md) | Pruebas de seguridad, QA y consistencia: método, hallazgos corregidos y matriz OWASP Top 10:2025 |
 | [`docs/INCIDENTES.md`](docs/INCIDENTES.md) | Plan de respuesta a incidentes |
 | [`docs/sbom.cdx.json`](docs/sbom.cdx.json) | SBOM CycloneDX |
 | [`docs/capturas/`](docs/capturas) | Capturas de la verificación en navegador real |
 
 ---
 
-## Instalación en cPanel (sin SSH)
+## Instalación en cPanel
+
+> **Con Terminal de cPanel:** siga `docs/INSTALACION_GESTOR.md` (comandos para copiar y pegar, ambiente de pruebas con usuario y contraseña). Lo que sigue es la guía general **sin Terminal**.
+
+### Ambientes
+`SGD_AMBIENTE=produccion` (por defecto): solo ClaveÚnica y servicios reales; los modos simulados están prohibidos y la aplicación se niega a arrancar si faltan. `SGD_AMBIENTE=pruebas`: permite modos simulados y el ingreso con usuario/contraseña (`pruebas:credenciales`) **solo hasta `SGD_ACCESO_PRUEBAS_HASTA`** (máx. 45 días), con aviso permanente. No use datos reales en pruebas.
 
 Todo se instala **subiendo archivos + importando SQL + editando `.env`**. No se necesita `php artisan` en el servidor.
 

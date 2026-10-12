@@ -34,7 +34,7 @@ class SistemaRecursosComponentesTest extends TestCase
         $this->assertNull($s['cpu']['pct']); // sin medición pedida
         $this->assertSame(PHP_VERSION, $s['php']['version']);
         $this->assertGreaterThan(0, $s['php']['memoria_pico']);
-        $this->assertSame('sqlite', $s['bd']['driver']);
+        $this->assertContains($s['bd']['driver'], ['sqlite', 'mysql', 'mariadb']);
         $this->assertSame(0, $s['app']['cola_fallida']);
         if ($s['memoria']['pct'] !== null) {
             $this->assertGreaterThanOrEqual(0, $s['memoria']['pct']);

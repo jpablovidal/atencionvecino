@@ -111,7 +111,7 @@ return new class extends Migration
             $t->foreignId('creado_por')->nullable()->constrained('usuarios');
             $t->timestamps();
             $t->index(['direccion', 'estado']);
-            $t->unique(['direccion', 'evidencia_tipo', 'evidencia']);
+            $t->unique(['direccion', 'evidencia_tipo', 'evidencia'], 'comunic_dir_evid_unique');
         });
     }
 

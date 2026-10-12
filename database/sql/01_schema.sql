@@ -36,7 +36,7 @@ create table `tramite_anexos` (`id` bigint unsigned not null auto_increment prim
 
 alter table `tramite_anexos` add constraint `tramite_anexos_tramite_id_foreign` foreign key (`tramite_id`) references `tramites` (`id`);
 
-create table `tipos_documento` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(30) not null, `nombre` varchar(120) not null, `prefijo` varchar(10) not null, `firma_alcalde` tinyint(1) not null default '0', `firmas_agil` tinyint unsigned not null default '1', `firmas_clasico` tinyint unsigned not null default '2', `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+create table `tipos_documento` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(30) not null, `nombre` varchar(120) not null, `prefijo` varchar(20) not null, `firma_alcalde` tinyint(1) not null default '0', `firmas_agil` tinyint unsigned not null default '1', `firmas_clasico` tinyint unsigned not null default '2', `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
 
 alter table `tipos_documento` add unique `tipos_documento_codigo_unique`(`codigo`);
 
@@ -206,7 +206,7 @@ alter table `comunicaciones_oficiales` add constraint `comunicaciones_oficiales_
 
 alter table `comunicaciones_oficiales` add index `comunicaciones_oficiales_direccion_estado_index`(`direccion`, `estado`);
 
-alter table `comunicaciones_oficiales` add unique `comunicaciones_oficiales_direccion_evidencia_tipo_evidencia_unique`(`direccion`, `evidencia_tipo`, `evidencia`);
+alter table `comunicaciones_oficiales` add unique `comunic_dir_evid_unique`(`direccion`, `evidencia_tipo`, `evidencia`);
 
 alter table `comunicaciones_oficiales` add index `comunicaciones_oficiales_responde_a_id_index`(`responde_a_id`);
 
