@@ -19,7 +19,7 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 | [`docs/LIMITACIONES.md`](docs/LIMITACIONES.md) | Lo no verificado / dependiente de credenciales |
 | [`docs/MANUAL_USUARIO.md`](docs/MANUAL_USUARIO.md) | Índice de **manuales por perfil** (ciudadano, funcionario, secretario, alcalde, administrador, auditor, público): fuentes en `resources/manuales/`, publicados en `/ayuda`, PDF con `php scripts/build-manuales-pdf.php` |
 | [`docs/ACCESIBILIDAD.md`](docs/ACCESIBILIDAD.md) | Elementos de accesibilidad (WCAG 2.2 AA), verificación y limitaciones; página pública `/accesibilidad` |
-| [`docs/INSTALACION_GESTOR.md`](docs/INSTALACION_GESTOR.md) | **Guía paso a paso por comandos** (Terminal de cPanel) para `gestor.santodomingo.cl`, con usuarios de prueba |
+| [`docs/INSTALACION_GESTOR.md`](docs/INSTALACION_GESTOR.md) | **Guía de instalación en 2 pasos** (ZIP + un comando en la Terminal de cPanel, con actualización y operación) para `gestor.santodomingo.cl` |
 | [`docs/PENTEST.md`](docs/PENTEST.md) | Pruebas de seguridad, QA y consistencia: método, hallazgos corregidos y matriz OWASP Top 10:2025 |
 | [`docs/INCIDENTES.md`](docs/INCIDENTES.md) | Plan de respuesta a incidentes |
 | [`docs/sbom.cdx.json`](docs/sbom.cdx.json) | SBOM CycloneDX |
@@ -29,7 +29,7 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 
 ## Instalación en cPanel
 
-> **Con Terminal de cPanel:** siga `docs/INSTALACION_GESTOR.md` (comandos para copiar y pegar, ambiente de pruebas con usuario y contraseña). Lo que sigue es la guía general **sin Terminal**.
+> **Con Terminal de cPanel (recomendado, 2 pasos):** suba `sgd-release.zip` y ejecute `cd ~ && unzip -q -o sgd-release.zip && rm -f sgd-release.zip && bash ~/sgd/scripts/instalar-cpanel.sh` (instala o actualiza: subdominio, `.env`, tablas, cuentas de prueba, cron y verificación). Detalle en `docs/INSTALACION_GESTOR.md`. Lo que sigue es la guía general **sin Terminal**.
 
 ### Ambientes
 `SGD_AMBIENTE=produccion` (por defecto): solo ClaveÚnica y servicios reales; los modos simulados están prohibidos y la aplicación se niega a arrancar si faltan. `SGD_AMBIENTE=pruebas`: permite modos simulados y el ingreso con usuario/contraseña (`pruebas:credenciales`) **solo hasta `SGD_ACCESO_PRUEBAS_HASTA`** (máx. 45 días), con aviso permanente. No use datos reales en pruebas.
