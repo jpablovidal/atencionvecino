@@ -30,7 +30,7 @@ class AccesibilidadTest extends TestCase
         $doc = $this->documentoVigente($e, $dom);
         $doc->forceFill(['nivel_acceso' => 'publico'])->save();
         $h = [
-            'inicio' => $this->get('/'), 'ingreso' => $this->get('/ingreso'), 'publico' => $this->get('/publico'), 'validar-form' => $this->get('/validar'),
+            'inicio' => $this->get('/'), 'ingreso' => $this->get('/ingreso'), 'publico' => $this->get('/publico'), 'catalogo' => $this->get('/tramites'), 'catalogo-ficha' => $this->get('/tramites/1/permiso-de-edificacion'), 'validar-form' => $this->get('/validar'),
             'validar' => $this->get('/validar/'.$doc->codigo_validacion), 'accesibilidad' => $this->get('/accesibilidad'), 'ayuda' => $this->get('/ayuda'),
             'ciudadano' => $this->comoCiudadano()->get('/ciudadano'), 'nueva' => $this->comoCiudadano()->get('/ciudadano/nueva/1'), 'solicitud' => $this->comoCiudadano()->get("/ciudadano/solicitudes/{$s->folio}"),
             'bandeja' => $this->comoFuncionario($dom)->get('/app'), 'expediente' => $this->comoFuncionario($dom)->get("/app/expedientes/{$e->id}"),

@@ -4,6 +4,7 @@ use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
+use App\Http\Controllers\CatalogoTramitesController;
 use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ExpedienteController;
@@ -31,6 +32,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicoController::class, 'inicio'])->name('inicio');
 Route::middleware('throttle:publico')->group(function () {
     Route::get('/publico', [PublicoController::class, 'listado'])->name('publico.listado');
+    Route::get('/tramites', [CatalogoTramitesController::class, 'index'])->name('catalogo');
+    Route::get('/tramites/{id}/{slug?}', [CatalogoTramitesController::class, 'ficha'])->whereNumber('id')->where('slug', '[a-z0-9\-]+')->name('catalogo.ficha');
     Route::get('/validar', [PublicoController::class, 'formValidar'])->name('validar.form');
     Route::post('/validar', [PublicoController::class, 'buscarValidar'])->name('validar.buscar');
     Route::get('/validar/{codigo}', [PublicoController::class, 'validar'])->name('validar')->where('codigo', 'SDD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}');

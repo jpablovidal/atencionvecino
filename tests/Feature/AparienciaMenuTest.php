@@ -230,8 +230,8 @@ class AparienciaMenuTest extends TestCase
 
     public function test_menu_por_area_y_permisos(): void
     {
-        $this->assertSame(['Inicio', 'Documentos públicos', 'Validar documento', 'Ayuda'], $this->etiquetas('publico'));
-        $this->assertSame(['Inicio', 'Documentos públicos', 'Validar documento', 'Mis solicitudes', 'Ayuda'], $this->etiquetas('ciudadano'));
+        $this->assertSame(['Inicio', 'Trámites y servicios', 'Documentos públicos', 'Validar documento', 'Ayuda'], $this->etiquetas('publico'));
+        $this->assertSame(['Inicio', 'Trámites y servicios', 'Documentos públicos', 'Validar documento', 'Mis solicitudes', 'Ayuda'], $this->etiquetas('ciudadano'));
         $f = $this->etiquetas('app', $this->usuario('funcionario'));
         $this->assertSame(['Bandeja', 'Documentos vigentes', 'Formatos y plantillas', 'Comunicaciones oficiales', 'Ayuda'], $f);
         $a = $this->etiquetas('app', $this->usuario('admin'));

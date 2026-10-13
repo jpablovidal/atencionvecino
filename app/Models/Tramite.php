@@ -31,7 +31,7 @@ class Tramite extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['activo' => 'boolean'];
+    protected $casts = ['activo' => 'boolean', 'publicado_en' => 'datetime'];
 
     /** Disponibles para la ciudadanía: publicados (activo y publicado van siempre juntos). */
     public function scopePublicados($q)

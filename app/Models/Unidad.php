@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -19,4 +20,10 @@ class Unidad extends Model
     protected $guarded = ['id'];
 
     protected $casts = ['activo' => 'boolean'];
+
+    /** @return HasMany<Tramite, $this> */
+    public function propietariaDe()
+    {
+        return $this->hasMany(Tramite::class, 'unidad_propietaria_id');
+    }
 }

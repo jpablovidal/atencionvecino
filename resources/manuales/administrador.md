@@ -33,6 +33,8 @@ Los trámites **ya no se editan como una lista del mantenedor**: cada dirección
 
 Ciclo de vida: **borrador** (no visible) → **publicado** (visible y solicitable) ↔ **deshabilitado** (no admite solicitudes nuevas; las ya ingresadas siguen su curso). Cada cambio crea una **versión inmutable** (*Historial*) y queda en la auditoría (`tramite.crear/editar/publicar/deshabilitar/reactivar/duplicar`). Los textos se guardan como **texto plano**: sin HTML, sin caracteres invisibles y sin direcciones web en el nombre; las direcciones web de la descripción se muestran como texto, sin enlace, y el sistema advierte al publicar.
 
+**Catálogo público:** `/tramites` (y el buscador de la página de inicio) muestra, sin iniciar sesión, **solo los trámites publicados**; al deshabilitar o volver a borrador un trámite desaparece al instante. No muestra códigos internos. Puede ocultar o renombrar el ítem en *Barra de menú*. Cada visita se registra como `publico.tramites`/`publico.tramite` y tiene el mismo límite de consultas por minuto que la validación pública.
+
 La solicitud llega a la bandeja de **todas** las direcciones responsables; la primera que la toma crea el expediente.
 
 ## 5. Tipos de documento y reglas de firma

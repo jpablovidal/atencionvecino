@@ -65,6 +65,6 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La **unidad del usuario** define el alcance; el sistema no valida que sea la correcta (dato administrativo). Un usuario sin unidad no puede crear trámites.
 - Un trámite tiene **una dirección propietaria**; la co-gestión entre direcciones se hace mediante el administrador (que sí puede asignar varias direcciones *responsables* de la bandeja).
 - Los textos son **texto plano** (sin formato enriquecido ni enlaces activos) por seguridad; los adjuntos del ciudadano usan los mismos tipos y límites ya existentes (PDF/JPG/PNG/TIFF, 10 MB).
-- No hay catálogo público previo al ingreso con ClaveÚnica, ni aprobación en dos pasos (quien tiene `tramites.publicar` publica directamente), ni expiración automática de trámites.
+- El catálogo público no tiene categorías temáticas (solo búsqueda y filtro por dirección), costos, horarios ni sucursales, y tras ingresar con ClaveÚnica el vecino no vuelve automáticamente al trámite elegido. No hay aprobación en dos pasos (quien tiene `tramites.publicar` publica directamente), ni expiración automática de trámites.
 - No se verifica que el contenido sea *veraz* (ver riesgo residual en `docs/PENTEST.md` §9.5).
 

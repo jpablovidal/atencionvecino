@@ -32,6 +32,7 @@ class MenuService
 
         return $this->base ??= [
             'inicio' => $i('Inicio', 'inicio', '/', ['publico', 'ciudadano'], null, null, 10, true),
+            'catalogo' => $i('Trámites y servicios', 'catalogo', 'tramites*', ['publico', 'ciudadano'], null, null, 15),
             'publico' => $i('Documentos públicos', 'publico.listado', 'publico*', ['publico', 'ciudadano'], null, null, 20),
             'validar' => $i('Validar documento', 'validar.form', 'validar*', ['publico', 'ciudadano'], null, null, 30),
             'mis_solicitudes' => $i('Mis solicitudes', 'ciudadano.index', 'ciudadano*', ['ciudadano'], null, null, 40, true),
