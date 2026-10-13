@@ -44,7 +44,7 @@ class Tramite extends Model
         return $this->estado === 'publicado' && $this->activo;
     }
 
-    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<TramiteVersion, $this> */
+    /** @return HasMany<TramiteVersion, $this> */
     public function versiones()
     {
         return $this->hasMany(TramiteVersion::class);

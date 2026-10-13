@@ -13,7 +13,6 @@ use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\InteropController;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\MantenedorController;
-use App\Http\Controllers\TramitesController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PlantillasController;
@@ -24,6 +23,7 @@ use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SeguridadController;
 use App\Http\Controllers\SesionesController;
 use App\Http\Controllers\SistemaController;
+use App\Http\Controllers\TramitesController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Support\Facades\Route;
 

@@ -60,3 +60,11 @@ Ver `DECISIONES.md` #1, #2 y #5 (ágil=1 / clásico=2 por defecto; primera firma
 
 ## Accesibilidad
 Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegador real, 0 violaciones en las páginas auditadas) y revisión de teclado, **pero sin auditoría manual con lectores de pantalla ni certificación externa**; los PDF generados no son PDF/UA; el canal de contacto y su plazo de respuesta (`SGD_ACCESIBILIDAD_CONTACTO`) deben definirse por la Municipalidad.
+
+## Gestión de trámites por dirección
+- La **unidad del usuario** define el alcance; el sistema no valida que sea la correcta (dato administrativo). Un usuario sin unidad no puede crear trámites.
+- Un trámite tiene **una dirección propietaria**; la co-gestión entre direcciones se hace mediante el administrador (que sí puede asignar varias direcciones *responsables* de la bandeja).
+- Los textos son **texto plano** (sin formato enriquecido ni enlaces activos) por seguridad; los adjuntos del ciudadano usan los mismos tipos y límites ya existentes (PDF/JPG/PNG/TIFF, 10 MB).
+- No hay catálogo público previo al ingreso con ClaveÚnica, ni aprobación en dos pasos (quien tiene `tramites.publicar` publica directamente), ni expiración automática de trámites.
+- No se verifica que el contenido sea *veraz* (ver riesgo residual en `docs/PENTEST.md` §9.5).
+

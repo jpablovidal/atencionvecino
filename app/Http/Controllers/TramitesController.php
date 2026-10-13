@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\FlujoException;
+use App\Models\ProcesoCodificador;
 use App\Models\Tramite;
 use App\Models\Unidad;
 use App\Services\TramiteService;
@@ -143,8 +144,8 @@ class TramitesController extends Controller
         return [
             'tramite' => $t, 'u' => $u, 'admin' => TramiteService::veTodas($u),
             'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(), 'unidad' => $u->unidad_id ? Unidad::query()->find($u->unidad_id) : null,
-            'sel' => $t ? $t->unidades->pluck('id')->all() : [], 'puedeEditar' => ! $t || TramiteService::puedeEditar($u, $t),
-            'procesos' => \App\Models\ProcesoCodificador::query()->where('activo', true)->orderBy('nombre')->get(),
+            'sel' => $t ? $t->unidades()->pluck('unidades.id')->all() : [], 'puedeEditar' => ! $t || TramiteService::puedeEditar($u, $t),
+            'procesos' => ProcesoCodificador::query()->where('activo', true)->orderBy('nombre')->get(),
         ];
     }
 }

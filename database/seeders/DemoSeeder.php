@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Support\Ambiente;
+use App\Support\Permisos;
 use App\Support\Run;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,18 @@ class DemoSeeder extends Seeder
             'correo' => strtolower($nom).'.'.strtolower(explode(' ', $ape)[0]).'@demo.santodomingo.invalid', 'cargo' => $cargo, 'rol' => $rol,
             'unidad_id' => $unidad, 'puede_firmar' => (int) $firma, 'activo' => 1,
         ] + $t;
+        // Roles personalizados de demostración para la gestión de trámites (base funcionario + permisos opcionales)
+        $ahora = now();
+        foreach ([
+            ['dir_tramites', 'Director(a) de trámites', 'Crea, edita, publica y deshabilita los trámites de su dirección.', ['tramites.gestionar', 'tramites.publicar']],
+            ['edit_tramites', 'Redactor(a) de trámites', 'Crea y edita borradores de trámites de su dirección; no puede publicarlos.', ['tramites.gestionar']],
+        ] as $i => [$clave, $nombre, $desc, $extra]) {
+            $rid = 6 + $i; // los 5 roles del sistema ocupan 1-5; id explícito para que 02_seed_demo.sql sea generable
+            DB::table('roles')->insert(['id' => $rid, 'clave' => $clave, 'nombre' => $nombre, 'descripcion' => $desc, 'rol_base' => 'funcionario', 'sistema' => 0, 'activo' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
+            foreach (array_unique([...Permisos::deBase('funcionario'), ...$extra]) as $perm) {
+                DB::table('rol_permisos')->insert(['rol_id' => $rid, 'permiso' => $perm]);
+            }
+        }
         DB::table('usuarios')->insert([
             $u(1, 10000001, 'Ana', 'Administradora Demo', 'admin', null, false, 'Administradora del sistema'),
             $u(2, 10000002, 'Carlos', 'Alcalde Demo', 'alcalde', 1, true, 'Alcalde'),
@@ -42,6 +55,8 @@ class DemoSeeder extends Seeder
             $u(6, 10000006, 'Marcos', 'Funcionario DIDECO', 'funcionario', 4, false, 'Funcionario DIDECO'),
             $u(7, 10000007, 'Aurora', 'Auditora Demo', 'auditor', null, false, 'Auditoría interna'),
             $u(8, 10000008, 'Daniel', 'Director DOM', 'funcionario', 3, true, 'Director de Obras'),
+            $u(9, 10000009, 'Elena', 'Directora DIDECO', 'dir_tramites', 4, false, 'Directora de Desarrollo Comunitario'),
+            $u(10, 10000010, 'Mario', 'Redactor DOM', 'edit_tramites', 3, false, 'Redactor de trámites DOM'),
         ]);
 
         DB::table('tramites')->insert([

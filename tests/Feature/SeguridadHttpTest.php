@@ -222,7 +222,7 @@ class SeguridadHttpTest extends TestCase
         $dom->forceFill(['activo' => false])->save();
         $this->app['auth']->forgetGuards();
         $this->loginDev('funcionario', $dom->run)->assertRedirect('/ingreso')->assertSessionHas('error');
-        $this->loginDev('funcionario', '10000009-'.Run::dv('10000009'))->assertRedirect('/ingreso'); // RUN inexistente
+        $this->loginDev('funcionario', '10000099-'.Run::dv('10000099'))->assertRedirect('/ingreso'); // RUN inexistente
         $this->assertDatabaseHas('audit_log', ['accion' => 'auth.fallo']);
     }
 

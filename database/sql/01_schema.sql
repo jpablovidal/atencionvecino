@@ -338,7 +338,7 @@ alter table `conexiones_resumen` add index `conexiones_resumen_direccion_bucket_
 
 create table `geo_dns_cache` (`host` varchar(190) not null, `ip` varchar(45) null, `pais` varchar(2) null, `resuelto_en` timestamp null, primary key (`host`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
 
-alter table `tramites` add `estado` varchar(12) not null default 'borrador';
+alter table `tramites` add `estado` varchar(20) not null default 'borrador';
 
 alter table `tramites` add `unidad_propietaria_id` bigint unsigned null;
 
@@ -360,7 +360,7 @@ alter table `tramite_anexos` add `descripcion` varchar(255) null;
 
 alter table `tramite_anexos` add `orden` smallint unsigned not null default '0';
 
-create table `tramite_versiones` (`id` bigint unsigned not null auto_increment primary key, `tramite_id` bigint unsigned not null, `version` int unsigned not null, `estado` varchar(12) not null, `evento` varchar(20) not null, `datos` longtext not null, `creado_por` bigint unsigned null, `created_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+create table `tramite_versiones` (`id` bigint unsigned not null auto_increment primary key, `tramite_id` bigint unsigned not null, `version` int unsigned not null, `estado` varchar(20) not null, `evento` varchar(20) not null, `datos` longtext not null, `creado_por` bigint unsigned null, `created_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
 
 alter table `tramite_versiones` add constraint `tramite_versiones_tramite_id_foreign` foreign key (`tramite_id`) references `tramites` (`id`);
 

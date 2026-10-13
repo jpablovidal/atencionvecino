@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Instantánea inmutable de un trámite (contenido completo) en cada cambio de contenido o de estado.
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $evento
  * @property string $datos
  * @property int|null $creado_por
- * @property \Illuminate\Support\Carbon|null $created_at
+ * @property Carbon|null $created_at
  */
 class TramiteVersion extends Model
 {

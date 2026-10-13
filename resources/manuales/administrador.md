@@ -23,11 +23,17 @@ Cree las unidades municipales (código y nombre). Las unidades responsables de c
 
 Para el primer administrador vea el README (alta por SQL). Los demás usuarios ingresan después con ClaveÚnica: **solo entra quien está registrado y activo**.
 
-## 4. Trámites
+## 4. Trámites y servicios
 
-Campos: código interno, nombre, descripción, **código CPAT** (formato validado, p. ej. `PA-UNI00002-00001`; use los reales del catálogo), plazo en días, **proceso del Codificador**, **unidades responsables (1 o más)** y **anexos requeridos** (una línea por anexo: `Nombre|1` obligatorio, `Nombre|0` opcional).
+Los trámites **ya no se editan como una lista del mantenedor**: cada dirección administra los suyos en **Trámites y servicios** (`/app/tramites`) con los permisos `tramites.gestionar` (crear, editar, duplicar y deshabilitar) y `tramites.publicar` (publicar y reactivar; también para editar un trámite ya publicado). Por defecto **solo el rol administrador** los tiene; para habilitar a una dirección:
 
-La solicitud llega a la bandeja de **todas** las unidades responsables; la primera que la toma crea el expediente.
+1. En *Roles y permisos* cree un rol personalizado con base **funcionario**, **alcalde** o **secretario** (el auditor nunca puede recibirlos) y marque *Trámites y servicios*. Para separar funciones cree dos roles: uno que solo **gestiona** (redacta borradores) y otro que además **publica**.
+2. Asigne el rol en *Usuarios*. **La persona debe tener una unidad (dirección) asignada**: administra solo los trámites cuya *dirección propietaria* es su unidad. Sin unidad no puede crear.
+3. Usted (administrador) ve **todas** las direcciones y es el único que puede fijar la dirección propietaria, las direcciones responsables adicionales, el **código CPAT** (formato validado, p. ej. `PA-UNI00002-00001`; use los reales del catálogo) y el **proceso del Codificador**.
+
+Ciclo de vida: **borrador** (no visible) → **publicado** (visible y solicitable) ↔ **deshabilitado** (no admite solicitudes nuevas; las ya ingresadas siguen su curso). Cada cambio crea una **versión inmutable** (*Historial*) y queda en la auditoría (`tramite.crear/editar/publicar/deshabilitar/reactivar/duplicar`). Los textos se guardan como **texto plano**: sin HTML, sin caracteres invisibles y sin direcciones web en el nombre; las direcciones web de la descripción se muestran como texto, sin enlace, y el sistema advierte al publicar.
+
+La solicitud llega a la bandeja de **todas** las direcciones responsables; la primera que la toma crea el expediente.
 
 ## 5. Tipos de documento y reglas de firma
 
@@ -119,8 +125,9 @@ Puede cambiar `SGD_ACCESIBILIDAD_CONTACTO` (correo que aparece en la declaració
 
 1. **Nuevo rol**: clave (minúsculas, números y `_`), nombre y **rol base**. El rol base fija las reglas de negocio (quién puede firmar, ser asignado a expedientes, etc.) y el **techo** de permisos.
 2. Marque los permisos necesarios. Los no admitidos por el rol base aparecen deshabilitados; `roles.gestionar` y `delegaciones.crear` están reservados a los roles del sistema.
-3. Asigne el rol en *Usuarios*. Al editar permisos, las sesiones de quienes tienen ese rol se cierran para aplicar los cambios.
-4. No se puede cambiar la base ni eliminar un rol con usuarios asignados; desactívelo solo si no tiene usuarios activos.
+3. Los permisos *Trámites y servicios* (`tramites.*`) son **opcionales**: ningún rol del sistema (salvo administrador) los trae; se entregan solo mediante roles personalizados (vea la sección 4).
+4. Asigne el rol en *Usuarios*. Al editar permisos, las sesiones de quienes tienen ese rol se cierran para aplicar los cambios.
+5. No se puede cambiar la base ni eliminar un rol con usuarios asignados; desactívelo solo si no tiene usuarios activos.
 
 ## 18. APIs e integraciones
 

@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tramites', function (Blueprint $t) {
-            $t->string('estado', 12)->default('borrador'); // borrador | publicado | deshabilitado (activo = publicado)
+            $t->string('estado', 20)->default('borrador'); // borrador | publicado | deshabilitado (activo = publicado)
             $t->foreignId('unidad_propietaria_id')->nullable()->constrained('unidades'); // dirección que lo administra
             $t->text('instrucciones')->nullable();
             $t->unsignedInteger('version')->default(1);
@@ -35,7 +35,7 @@ return new class extends Migration
             $t->id();
             $t->foreignId('tramite_id')->constrained('tramites');
             $t->unsignedInteger('version');
-            $t->string('estado', 12);
+            $t->string('estado', 20);
             $t->string('evento', 20); // crear | editar | publicar | deshabilitar | reactivar | duplicar
             $t->longText('datos'); // JSON con el contenido completo en ese momento
             $t->foreignId('creado_por')->nullable()->constrained('usuarios');

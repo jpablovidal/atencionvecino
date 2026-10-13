@@ -52,4 +52,9 @@ Ante ambigüedad se eligió la opción **más segura** y se documentó aquí.
 | 46 | Geolocalización | Base local DB-IP Lite (país) + Natural Earth; sin consultas a terceros; atribución visible. | Sin dependencias externas ni fuga de IP a terceros; licencia CC BY 4.0. |
 | 47 | Sanitización | Se sanea al guardar **y** al mostrar; red de seguridad final; sin invisibles/bidi; IA solo como texto escapado. | Defensa en profundidad ante contenido alterado en BD o evasiones. |
 | 48 | Firma PDF (corrección) | El relleno del CMS se descarta por longitud DER, no con `rtrim`. | `rtrim` truncaba firmas terminadas en 0x00 (≈1/256). |
-
+| 49 | Permisos opcionales | Se separa el **techo** del rol base del conjunto **por defecto** de los roles del sistema (`Permisos::techo` vs `deBase`): `tramites.*` pueden darse a roles personalizados de funcionario/alcalde/secretario/admin, pero solo el administrador los trae de fábrica. | Mínimo privilegio: ningún funcionario existente gana capacidades al actualizar. |
+| 50 | Gestión de trámites | Dos permisos (`gestionar`, `publicar`); alcance = dirección propietaria del usuario, aplicado en la consulta; el administrador ve todo. Editar un publicado exige `publicar`. Deshabilitar solo exige `gestionar` (acción de contención). | Separación de funciones y rapidez para retirar un trámite erróneo. |
+| 51 | Textos de trámites | Texto plano (sin HTML ni enlaces activos); nombre/ayuda sin direcciones web; advertencia al publicar si el texto largo contiene una. | Reduce phishing y XSS; el vecino confía en lo que dice el trámite. |
+| 52 | Documentos requeridos | Se desactivan (no se borran) al quitarlos; las solicitudes antiguas conservan sus archivos. Máximo 15. | Trazabilidad e integridad histórica. |
+| 53 | Mantenedor genérico | Se retira «trámites» del mantenedor genérico (404): una sola vía con controles de ciclo. | Evita saltarse la máquina de estados. |
+| 54 | Sin catálogo público | El catálogo se ve tras ClaveÚnica (Mis solicitudes); no se agrega página pública de trámites en esta versión. | Fuera de alcance; evita exponer contenido sin throttling específico. |

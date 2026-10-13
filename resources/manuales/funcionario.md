@@ -124,6 +124,18 @@ Barra superior: tamaño de texto, alto contraste, texto legible, subrayar enlace
 | La notificación quedó "fallida" | Se reintenta sola; si persiste avise al administrador (revisión de correo/cola). |
 
 
+## Trámites y servicios de su dirección (si su rol lo permite)
+
+Si el administrador le asignó un rol con **Trámites y servicios**, verá ese ítem en el menú. Solo ve y administra los trámites de **su dirección**; los de otras direcciones no existen para usted (aparecen como «no encontrado»).
+
+1. **Nuevo trámite:** escriba el **nombre**, la **descripción** (qué es y quién puede solicitarlo; mínimo 30 caracteres para publicar), las **instrucciones** (opcional) y el **plazo de respuesta** (1 a 365 días).
+2. **Documentos o archivos requeridos:** agregue una fila por cada documento que el vecino deberá cargar, con una **ayuda** opcional y la marca **Obligatorio**. Máximo 15. Para quitar uno, deje su nombre en blanco.
+3. **Guardar como borrador.** Un borrador no es visible para la ciudadanía. Use **Vista previa** para ver cómo lo verá el vecino y **Historial** para consultar las versiones.
+4. **Publicar** (requiere el permiso de publicación): el trámite queda disponible en *Mis solicitudes → Ingresar una nueva solicitud*, agrupado por dirección. Cuando un vecino lo solicita con todos los adjuntos obligatorios, la solicitud llega a su bandeja y usted la toma como siempre (**Asignármela y crear expediente**).
+5. **Deshabilitar** deja de aceptar solicitudes nuevas (las ya ingresadas continúan). **Reactivar y publicar** lo vuelve a poner disponible. **Duplicar como borrador** copia un trámite como base de otro.
+
+> Si no tiene permiso de publicación, puede crear y editar borradores, pero no publicarlos ni modificar uno ya publicado (sí puede deshabilitarlo). Los textos se guardan como texto plano: no use HTML ni enlaces.
+
 ## Firmas electrónicas en los archivos
 
 Junto a cada PDF verá si trae **firma electrónica**: «Firmado electrónicamente», «Sin firma electrónica», «Firmado, con cambios posteriores» o «Firma inválida o documento alterado» (en este caso no confíe en el documento y avise al administrador). *Ver firmas* muestra quién firmó, el emisor del certificado y la fecha. El sistema guarda el archivo tal como llegó, para no invalidar la firma.

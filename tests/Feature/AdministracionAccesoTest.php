@@ -162,7 +162,7 @@ class AdministracionAccesoTest extends TestCase
             $this->admin()->post('/app/admin/roles', ['clave' => 'otro_'.substr(md5($mal), 0, 5)] + $base + ['permisos' => [$mal]]);
             $this->assertTrue(session()->has('error') || session()->has('errors'), $mal);
         }
-        $this->assertSame(1, Rol::query()->where('sistema', false)->count());
+        $this->assertSame(3, Rol::query()->where('sistema', false)->count()); // jefe_ofic + los 2 roles de demostración de trámites
         // clave inválida, reservada o duplicada
         foreach (['Admin', 'admin', 'jefe_ofic', '1x', 'a', 'con espacio', str_repeat('a', 21)] as $c) {
             $this->admin()->post('/app/admin/roles', array_merge($base, ['clave' => $c]))->assertSessionHasErrors('clave');

@@ -18,7 +18,7 @@ Por seguridad la sesión se cierra sola tras **30 minutos sin actividad** (y com
 
 ## 2. Presentar una solicitud
 
-1. En **Mis solicitudes**, bajo "Ingresar una nueva solicitud", elija el trámite.
+1. En **Mis solicitudes**, bajo "Ingresar una nueva solicitud", busque el trámite: están agrupados por la **dirección municipal** que los atiende. Al abrirlo verá su descripción, las instrucciones, el plazo y la **lista de documentos que debe adjuntar** (con una ayuda para cada uno).
 2. Complete:
    - **Correo electrónico**: aquí se le avisará (sin adjuntos ni datos personales).
    - **Detalle de su solicitud** (mínimo 10 caracteres): explique con claridad qué necesita.
