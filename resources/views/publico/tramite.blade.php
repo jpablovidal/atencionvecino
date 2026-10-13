@@ -9,7 +9,7 @@
 <aside class="col-lg-4" aria-label="Solicitar este trámite"><div class="card"><div class="card-body">
   <h2 class="h5">¿Cómo lo solicito?</h2>
   <ol class="pl-3 small"><li>Ingrese con su ClaveÚnica.</li><li>Complete sus datos y adjunte los documentos indicados.</li><li>Reciba su folio y haga seguimiento en línea.</li></ol>
-  <a class="btn btn-primary btn-block" href="{{ route('ciudadano.nueva', $tramite) }}">Realizar este trámite en línea</a>
-  <p class="small text-muted mt-2 mb-0">Si no ha iniciado sesión, se le pedirá ingresar y luego lo encontrará en «Mis solicitudes».</p>
+  <a class="btn btn-primary btn-block" href="{{ route('catalogo.iniciar', $tramite->id) }}">Realizar este trámite en línea</a>
+  <p class="small text-muted mt-2 mb-0">Si no ha iniciado sesión, se le pedirá ingresar con ClaveÚnica y volverá directamente a este trámite.</p>
 </div></div></aside></div>
 @endsection

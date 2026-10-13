@@ -18,7 +18,7 @@ Por seguridad la sesión se cierra sola tras **30 minutos sin actividad** (y com
 
 ## 2. Presentar una solicitud
 
-0. Si aún no sabe qué necesita, revise el **catálogo público** en *Trámites y servicios* (menú superior): puede buscarlo sin iniciar sesión y ver sus requisitos antes de ingresar.
+0. Si aún no sabe qué necesita, revise el **catálogo público** en *Trámites y servicios* (menú superior): puede buscarlo sin iniciar sesión y ver sus requisitos antes de ingresar; al presionar *Realizar este trámite en línea* e ingresar con ClaveÚnica, volverá directo al formulario de ese trámite.
 1. En **Mis solicitudes**, bajo "Ingresar una nueva solicitud", busque el trámite: están agrupados por la **dirección municipal** que los atiende. Al abrirlo verá su descripción, las instrucciones, el plazo y la **lista de documentos que debe adjuntar** (con una ayuda para cada uno).
 2. Complete:
    - **Correo electrónico**: aquí se le avisará (sin adjuntos ni datos personales).

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CuentaPrueba;
+use App\Models\Tramite;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
@@ -103,6 +104,7 @@ class AuthController extends Controller
                 return $this->fallo('Su RUN no está habilitado en el sistema. Contacte al administrador.');
             }
         }
+        $pendiente = $request->session()->get('tramite_pendiente'); // se conserva solo para ciudadanos (ver abajo)
         $request->session()->invalidate(); // sesión nueva (anti fijación)
         $request->session()->regenerateToken();
         $request->session()->put(['login_at' => time(), 'last_seen' => time()]);
@@ -115,6 +117,16 @@ class AuthController extends Controller
         }
         $request->session()->put('ciudadano', $id);
         $this->audit->registrar('auth.login', null, null, ['via' => 'ciudadano'], false, ['run' => $id['run'], 'rol' => 'ciudadano']);
+
+        // retoma el trámite elegido en el catálogo: solo un id entero vigente, de un solo uso, y solo si sigue publicado
+        if (is_array($pendiente) && ($pendiente['exp'] ?? 0) >= time()) {
+            $t = Tramite::query()->publicados()->find((int) ($pendiente['id'] ?? 0));
+            if ($t) {
+                return redirect()->route('ciudadano.nueva', $t);
+            }
+
+            return redirect()->route('ciudadano.index')->with('error', 'El trámite que eligió ya no está disponible. Revise los trámites vigentes.');
+        }
 
         return redirect()->route('ciudadano.index');
     }

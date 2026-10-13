@@ -8,7 +8,7 @@ En **Trámites y servicios** (menú superior, o el buscador de la página de ini
 
 1. Escriba lo que busca (por ejemplo «certificado») o elija una **dirección municipal**.
 2. Abra el trámite para ver qué es, las instrucciones, el **plazo de respuesta** y la **lista de documentos que deberá adjuntar** (los obligatorios y los opcionales).
-3. Presione **Realizar este trámite en línea**: se le pedirá ingresar con ClaveÚnica y podrá enviar su solicitud con los adjuntos. Recibirá un folio para hacer seguimiento.
+3. Presione **Realizar este trámite en línea**: se le pedirá ingresar con ClaveÚnica y, al volver, **el sistema lo lleva directamente a ese trámite** para enviar su solicitud con los adjuntos. Recibirá un folio para hacer seguimiento.
 
 Los textos de los trámites son informativos; para confirmar un requisito, consulte en la dirección municipal que lo atiende.
 

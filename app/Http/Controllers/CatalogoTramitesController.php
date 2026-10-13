@@ -33,6 +33,21 @@ class CatalogoTramitesController extends Controller
         ]);
     }
 
+    /**
+     * «Realizar este trámite»: con sesión de ciudadano va directo al formulario; sin sesión recuerda SOLO el id del trámite
+     * (entero, de un solo uso, 30 min) y envía a ClaveÚnica. Al volver, AuthController lo retoma.
+     */
+    public function iniciar(Request $request, int $id)
+    {
+        $t = Tramite::query()->publicados()->findOrFail($id);
+        if ($request->session()->has('ciudadano')) {
+            return redirect()->route('ciudadano.nueva', $t);
+        }
+        $request->session()->put('tramite_pendiente', ['id' => $t->id, 'exp' => time() + 1800]);
+
+        return redirect()->route('ingreso')->with('ok', 'Ingrese con su ClaveÚnica para continuar con el trámite.');
+    }
+
     public function ficha(int $id, ?string $slug = null)
     {
         $t = Tramite::query()->publicados()->with(['anexos', 'unidades:id,nombre', 'propietaria:id,nombre'])->findOrFail($id);

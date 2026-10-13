@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\AuthController;
 use App\Models\Tramite;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\Support\Escenario;
 use Tests\TestCase;
 
@@ -68,5 +70,51 @@ class CatalogoPublicoTramitesTest extends TestCase
         $this->get('/tramites')->assertOk();
         $this->get('/tramites')->assertOk();
         $this->get('/tramites')->assertStatus(429);
+    }
+
+    public function test_recuerda_el_tramite_elegido_tras_ingresar(): void
+    {
+        $this->get('/tramites/1/iniciar')->assertRedirect('/ingreso')->assertSessionHas('tramite_pendiente');
+        // ingreso del ciudadano (ClaveÚnica simulada): vuelve directo al formulario del trámite elegido
+        $cu = ['run' => '20000001-3', 'nombres' => 'Vecina', 'apellidos' => 'De Prueba'];
+        $this->withSession(['tramite_pendiente' => ['id' => 1, 'exp' => time() + 600]]);
+        $r = $this->app->make(AuthController::class);
+        $m = new \ReflectionMethod($r, 'iniciar');
+        $req = Request::create('/x');
+        $req->setLaravelSession($this->app['session.store']);
+        $resp = $m->invoke($r, $req, 'ciudadano', $cu);
+        $this->assertStringEndsWith('/ciudadano/nueva/1', $resp->getTargetUrl());
+        $this->assertFalse($req->session()->has('tramite_pendiente')); // de un solo uso
+    }
+
+    public function test_trámite_pendiente_vencido_o_ya_no_publicado_no_se_retoma(): void
+    {
+        $r = $this->app->make(AuthController::class);
+        $m = new \ReflectionMethod($r, 'iniciar');
+        $cu = ['run' => '20000001-3', 'nombres' => 'Vecina', 'apellidos' => 'De Prueba'];
+        foreach ([['id' => 1, 'exp' => time() - 5], ['id' => 999, 'exp' => time() + 600]] as $pend) {
+            $req = Request::create('/x');
+            $req->setLaravelSession($this->app['session.store']);
+            $req->session()->put('tramite_pendiente', $pend);
+            $resp = $m->invoke($r, $req, 'ciudadano', $cu);
+            $this->assertStringEndsWith('/ciudadano', $resp->getTargetUrl());
+        }
+        $t = Tramite::query()->find(1);
+        $t->forceFill(['estado' => 'deshabilitado', 'activo' => false])->save();
+        $this->get('/tramites/1/iniciar')->assertNotFound();
+    }
+
+    public function test_con_sesion_de_ciudadano_va_directo_al_formulario_y_funcionario_no_arrastra_el_pendiente(): void
+    {
+        $this->comoCiudadano()->get('/tramites/1/iniciar')->assertRedirect('/ciudadano/nueva/1');
+        $this->get('/tramites/abc/iniciar')->assertNotFound();
+        $r = $this->app->make(AuthController::class);
+        $m = new \ReflectionMethod($r, 'iniciar');
+        $req = Request::create('/x');
+        $req->setLaravelSession($this->app['session.store']);
+        $req->session()->put('tramite_pendiente', ['id' => 1, 'exp' => time() + 600]);
+        $f = $this->usuario('funcionario');
+        $resp = $m->invoke($r, $req, 'funcionario', ['run' => $f->run, 'nombres' => 'x', 'apellidos' => 'y']);
+        $this->assertStringEndsWith('/app', $resp->getTargetUrl());
     }
 }
