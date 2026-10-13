@@ -133,7 +133,7 @@ cd ~/sgd || exit 1
 "$PHP" artisan pruebas:credenciales --demo
 mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "SELECT COUNT(*) AS tablas FROM information_schema.tables WHERE table_schema='$DB_NAME'; SELECT COUNT(*) AS cuentas_prueba FROM cuentas_prueba;"
 ```
-Debe indicar «Cuentas de prueba creadas/actualizadas: 10».
+Debe indicar «Cuentas de prueba creadas/actualizadas: 12».
 
 ## 7. Tareas programadas y verificación
 ```bash
@@ -156,6 +156,8 @@ Ingreso: https://gestor.santodomingo.cl/ingreso → **«Ingresar con usuario y c
 | Perfil | RUN (usuario) | Contraseña | Qué probar |
 |---|---|---|---|
 | (las contraseñas se muestran una sola vez en el paso 6) | | | |
+
+**Gestión de trámites por dirección:** ingrese como **Directora DIDECO** → menú *Trámites y servicios* → *Nuevo trámite* (nombre, descripción de al menos 30 caracteres, plazo y documentos requeridos) → *Guardar como borrador* → *Vista previa* → *Publicar*. Luego, como **Vecina 1**, el trámite aparece bajo «Dirección de Desarrollo Comunitario»; al solicitarlo con los adjuntos llega a la bandeja de **Funcionario DIDECO**, que lo toma y se genera el expediente. El **Redactor DOM** puede crear borradores de su dirección pero no publicarlos; ninguno ve los trámites de otra dirección.
 
 Flujo sugerido: (1) **Vecina 1** ingresa una solicitud de «Permiso de edificación» con 2 anexos PDF → (2) **Funcionario DOM** la ve en su bandeja, se la asigna, crea un *Oficio* desde plantilla, edita con el editor (tabla, imagen) e inicia el flujo con la **Secretaria** como firmante → (3) **Secretaria** firma con cualquier OTP de 6 dígitos distinto de `000000` (la firma es simulada) → (4) el documento queda vigente; valídelo en `/validar` con su código y véalo en `/publico` → (5) **Auditoría** revisa el registro de logs y la cadena HMAC; **Administrador** revisa roles, plantillas, apariencia, APIs, folios, repositorio, recursos del servidor, componentes y el **mapa de conexiones** (Seguridad y operación → *Conexiones y mapa*: tras navegar con distintos perfiles verá su IP y los servicios a los que se conectó el sistema; las visitas locales aparecen como «Red interna / local»).
 - Para probar DocDigital entrante: Administrador → *APIs e integraciones* / *Comunicaciones* (modo simulado).
