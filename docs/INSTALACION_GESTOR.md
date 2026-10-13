@@ -61,6 +61,7 @@ Edite `~/sgd/.env`: `SGD_AMBIENTE=produccion`, `CLAVEUNICA_MODE=real`, `FIRMAGOB
 ## Si algo falla
 | Síntoma | Qué hacer |
 |---|---|
+| Aviso «sin extensión sodium» | No hace falta hacer nada: el cifrado de archivos usa OpenSSL (mismo formato). Solo se detiene si tampoco hay OpenSSL con ChaCha20-Poly1305 |
 | El comando se detiene con «Faltan extensiones» | cPanel → *Select PHP Version* → PHP 8.3 → *Extensions* y vuelva a pegar el mismo comando (es seguro repetirlo) |
 | «No se pudo conectar» a la base | cPanel → *Bases de datos MySQL* → agregue el usuario a la base con **todos los privilegios** y repita |
 | Página 500 | `tail -n 40 ~/sgd/storage/logs/laravel.log`. Si dice «Configuración insegura para producción: …» corrija `~/sgd/.env` según el mensaje |

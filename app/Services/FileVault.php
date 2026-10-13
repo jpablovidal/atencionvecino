@@ -7,6 +7,7 @@ use App\Services\Repositorio\BlobStore;
 use App\Services\Repositorio\DriveBlobStore;
 use App\Services\Repositorio\DriveClient;
 use App\Services\Repositorio\LocalBlobStore;
+use App\Support\AeadXChaCha;
 use RuntimeException;
 
 /**
@@ -44,7 +45,7 @@ class FileVault
         $keys = [];
         foreach ((array) $decoded as $id => $b64) {
             $k = base64_decode((string) $b64, true);
-            if ($k !== false && strlen($k) === SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES) {
+            if ($k !== false && strlen($k) === AeadXChaCha::KEY_BYTES) {
                 $keys[(string) $id] = $k;
             }
         }
@@ -71,8 +72,8 @@ class FileVault
             throw new RuntimeException('El repositorio está en modo Google Drive pero no está configurado.'); // falla cerrada
         }
         $sha = hash('sha256', $plain);
-        $nonce = random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES);
-        $cipher = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt($plain, $sha, $nonce, $this->keys[$this->activeKeyId]);
+        $nonce = random_bytes(AeadXChaCha::NONCE_BYTES);
+        $cipher = AeadXChaCha::cifrar($plain, $sha, $nonce, $this->keys[$this->activeKeyId]);
         $blob = 'SGD1'.chr(strlen($this->activeKeyId)).$this->activeKeyId.$nonce.$cipher;
         $store = $this->modoEscritura() === 'drive' ? $this->drive : $this->local;
         $ruta = $store->put($blob);
@@ -155,13 +156,13 @@ class FileVault
         }
         $idLen = ord($blob[4]);
         $id = substr($blob, 5, $idLen);
-        $nonceLen = SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES;
+        $nonceLen = AeadXChaCha::NONCE_BYTES;
         $nonce = substr($blob, 5 + $idLen, $nonceLen);
         $cipher = substr($blob, 5 + $idLen + $nonceLen);
         if (! isset($this->keys[$id]) || strlen($nonce) !== $nonceLen) {
             throw new RuntimeException('Archivo no disponible.');
         }
-        $plain = sodium_crypto_aead_xchacha20poly1305_ietf_decrypt($cipher, $expectedSha256, $nonce, $this->keys[$id]);
+        $plain = AeadXChaCha::descifrar($cipher, $expectedSha256, $nonce, $this->keys[$id]);
         if ($plain === false || ! hash_equals($expectedSha256, hash('sha256', $plain))) {
             throw new RuntimeException('Integridad del archivo no verificada.');
         }

@@ -67,4 +67,4 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Los textos son **texto plano** (sin formato enriquecido ni enlaces activos) por seguridad; los adjuntos del ciudadano usan los mismos tipos y límites ya existentes (PDF/JPG/PNG/TIFF, 10 MB).
 - El catálogo público no tiene categorías temáticas (solo búsqueda y filtro por dirección), costos, horarios ni sucursales, y el trámite elegido solo se recuerda si se parte desde el botón de la ficha (no si se escribe la URL del formulario sin haber ingresado). No hay aprobación en dos pasos (quien tiene `tramites.publicar` publica directamente), ni expiración automática de trámites.
 - No se verifica que el contenido sea *veraz* (ver riesgo residual en `docs/PENTEST.md` §9.5).
-
+- **Sin extensión `sodium`:** se usa la alternativa con OpenSSL (misma salida que libsodium). Requiere OpenSSL ≥ 1.1 con `chacha20-poly1305`; el rendimiento es similar. La interoperabilidad se verificó contra libsodium en las pruebas, pero la alternativa no pasó por una auditoría criptográfica independiente.

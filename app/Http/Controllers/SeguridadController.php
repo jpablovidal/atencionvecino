@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Incidente;
 use App\Services\AuditoriaService;
+use App\Support\AeadXChaCha;
 use Illuminate\Http\Request;
 
 class SeguridadController extends Controller
@@ -58,7 +59,7 @@ class SeguridadController extends Controller
         $storage = (string) config('sgd.storage_path');
         $checks = [];
         foreach ($ext as $e) {
-            $checks[] = ['Extensión PHP '.$e, extension_loaded($e) || ($e === 'gd' && extension_loaded('imagick'))];
+            $checks[] = ['Extensión PHP '.$e, extension_loaded($e) || ($e === 'gd' && extension_loaded('imagick')) || ($e === 'sodium' && AeadXChaCha::soportado())];
         }
         $checks[] = ['PHP >= 8.2', version_compare(PHP_VERSION, '8.2.0', '>=')];
         $checks[] = ['APP_DEBUG desactivado', ! config('app.debug')];
