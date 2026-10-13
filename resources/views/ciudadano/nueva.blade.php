@@ -1,9 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Nueva solicitud')
 @section('contenido')
-<h1>{{ $tramite->nombre }}</h1>
-<p>{{ $tramite->descripcion }}</p>
-<p class="small text-muted">Plazo de respuesta: {{ $tramite->plazo_dias }} días. Unidad(es): {{ $tramite->unidades->pluck('nombre')->implode(', ') }}.</p>
+@include('partials.tramite_ficha', ['tramite' => $tramite])
 <form method="post" action="{{ route('ciudadano.store') }}" enctype="multipart/form-data" class="col-lg-8 px-0">
 @csrf
 <input type="hidden" name="tramite_id" value="{{ $tramite->id }}">
@@ -22,7 +20,7 @@
 <fieldset class="form-group"><legend class="h6">Anexos</legend>
 <p class="small text-muted">Solo PDF, JPG, PNG o TIFF. Máximo 10 MB por archivo.</p>
 @foreach($tramite->anexos as $a)
-<div class="form-group"><label for="anexo_{{ $a->id }}">{{ $a->nombre }} @if($a->obligatorio)<span class="text-danger">(obligatorio)</span>@else(opcional)@endif</label><input class="form-control-file" type="file" id="anexo_{{ $a->id }}" name="anexo_{{ $a->id }}" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff" @required($a->obligatorio)></div>
+<div class="form-group"><label for="anexo_{{ $a->id }}">{{ $a->nombre }} @if($a->obligatorio)<span class="text-danger">(obligatorio)</span>@else(opcional)@endif</label>@if($a->descripcion)<small class="form-text text-muted" id="ay-{{ $a->id }}">{{ $a->descripcion }}</small>@endif<input class="form-control-file" type="file" id="anexo_{{ $a->id }}" name="anexo_{{ $a->id }}" accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff" @required($a->obligatorio)></div>
 @endforeach
 <div class="form-group"><label for="extras">Otros anexos (opcional)</label><input class="form-control-file" type="file" id="extras" name="extras[]" multiple accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff"></div>
 </fieldset>

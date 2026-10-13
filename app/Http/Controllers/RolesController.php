@@ -42,7 +42,7 @@ class RolesController extends Controller
     {
         $ceil = [];
         foreach (['admin', 'funcionario', 'alcalde', 'secretario', 'auditor'] as $b) {
-            $ceil[$b] = array_values(array_filter(Permisos::deBase($b), fn ($p) => empty(Permisos::catalogo()[$p][3])));
+            $ceil[$b] = array_values(array_filter(Permisos::techo($b), fn ($p) => empty(Permisos::catalogo()[$p][3])));
         }
 
         return ['rol' => $rol, 'catalogo' => Permisos::catalogo(), 'techo' => $ceil, 'sel' => $rol ? $rol->permisos() : [], 'asignados' => $rol ? $rol->usuarios()->count() : 0];
@@ -61,7 +61,7 @@ class RolesController extends Controller
         if ($rol && $d['rol_base'] !== $rol->rol_base && $asignados > 0) {
             return back()->withInput()->with('error', 'No se puede cambiar el rol base de un rol con usuarios asignados; reasigne a los usuarios primero.');
         }
-        $techo = array_filter(Permisos::deBase($d['rol_base']), fn ($p) => empty(Permisos::catalogo()[$p][3]));
+        $techo = array_filter(Permisos::techo($d['rol_base']), fn ($p) => empty(Permisos::catalogo()[$p][3]));
         $fuera = array_diff($d['permisos'] ?? [], $techo);
         if ($fuera) {
             return back()->withInput()->with('error', 'Permisos no admitidos por el rol base «'.$d['rol_base'].'»: '.implode(', ', $fuera).'.');

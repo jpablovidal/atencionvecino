@@ -7,8 +7,6 @@ use App\Models\Institucion;
 use App\Models\PiseeServicio;
 use App\Models\ProcesoCodificador;
 use App\Models\TipoDocumento;
-use App\Models\Tramite;
-use App\Models\TramiteAnexo;
 use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
@@ -30,16 +28,6 @@ class MantenedorController extends Controller
                 'codigo' => ['Código', 'text', ['required', 'string', 'max:30']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:150']],
             ], 'unico' => ['codigo']],
-            'tramites' => ['permiso' => 'mantenedores.gestionar', 'modelo' => Tramite::class, 'titulo' => 'Trámites y servicios', 'cols' => ['codigo_interno', 'nombre', 'codigo_cpat'], 'campos' => [
-                'codigo_interno' => ['Código interno', 'text', ['required', 'string', 'max:40']],
-                'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
-                'descripcion' => ['Descripción', 'textarea', ['nullable', 'string', 'max:2000']],
-                'codigo_cpat' => ['Código CPAT (ej. PA-UNI00002-00001)', 'text', ['nullable', 'regex:'.self::CPAT]],
-                'proceso_codigo' => ['Proceso del Codificador', 'proceso', ['nullable', 'string', 'max:40', 'exists:procesos_codificador,codigo']],
-                'plazo_dias' => ['Plazo (días)', 'number', ['required', 'integer', 'between:1,365']],
-                'unidades' => ['Unidades responsables', 'unidades', ['required', 'array', 'min:1']],
-                'anexos_txt' => ['Anexos requeridos (uno por línea: Nombre|1 obligatorio, Nombre|0 opcional)', 'textarea', ['nullable', 'string', 'max:2000']],
-            ], 'unico' => ['codigo_interno']],
             'tipos' => ['permiso' => 'mantenedores.gestionar', 'modelo' => TipoDocumento::class, 'titulo' => 'Tipos de documento', 'cols' => ['codigo', 'nombre', 'prefijo'], 'campos' => [
                 'codigo' => ['Código', 'text', ['required', 'string', 'max:30']],
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:120']],
@@ -100,8 +88,7 @@ class MantenedorController extends Controller
             'entidad' => $entidad, 'def' => $this->def($entidad), 'fila' => $fila,
             'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(), 'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(),
             'procesos' => ProcesoCodificador::query()->where('activo', true)->orderBy('nombre')->get(),
-            'sel' => $fila instanceof Tramite ? $fila->unidades()->pluck('unidades.id')->all() : [],
-            'anexosTxt' => $fila instanceof Tramite ? $fila->anexos->map(fn ($a) => $a->nombre.'|'.($a->obligatorio ? 1 : 0))->implode("\n") : '',
+            'sel' => [], 'anexosTxt' => '',
         ];
     }
 
@@ -140,22 +127,8 @@ class MantenedorController extends Controller
             $d['firma_alcalde'] = (bool) ($d['firma_alcalde'] ?? false);
         }
         DB::transaction(function () use ($def, $entidad, $id, $d) {
-            $unidades = $d['unidades'] ?? null;
-            $anexos = $d['anexos_txt'] ?? null;
-            unset($d['unidades'], $d['anexos_txt']);
             $m = $id ? $def['modelo']::query()->findOrFail($id) : new $def['modelo'];
             $m->fill($d)->save();
-            if ($m instanceof Tramite) {
-                $m->unidades()->sync($unidades);
-                TramiteAnexo::query()->where('tramite_id', $m->id)->update(['activo' => false]);
-                foreach (preg_split('/\R/', (string) $anexos) ?: [] as $linea) {
-                    if (trim($linea) === '') {
-                        continue;
-                    }
-                    [$nombre, $ob] = array_pad(explode('|', $linea, 2), 2, '1');
-                    TramiteAnexo::query()->create(['tramite_id' => $m->id, 'nombre' => mb_substr(trim($nombre), 0, 190), 'obligatorio' => trim($ob) !== '0', 'activo' => true]);
-                }
-            }
             $this->audit->registrar('mantenedor.'.($id ? 'editar' : 'crear'), $entidad, $m->id);
         });
 

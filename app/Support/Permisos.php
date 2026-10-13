@@ -10,7 +10,7 @@ class Permisos
 {
     private const OP = ['funcionario', 'alcalde', 'secretario'];
 
-    /** @return array<string,array{0:string,1:string,2:array<int,string>,3?:bool}> clave => [etiqueta, grupo, bases, solo_sistema] */
+    /** @return array<string,array{0:string,1:string,2:array<int,string>,3?:bool,4?:array<int,string>}> clave => [etiqueta, grupo, bases (techo), solo_sistema, bases que lo reciben por defecto (omitido = las mismas)] */
     public static function catalogo(): array
     {
         $op = self::OP;
@@ -31,6 +31,8 @@ class Permisos
             'pisee.consultar' => ['Consultar servicios PISEE', 'Notificaciones y comunicaciones', $op],
             'plantillas.ver' => ['Ver el catálogo de formatos y plantillas', 'Documentos', [...self::OP, 'auditor', 'admin']],
             'plantillas.gestionar' => ['Administrar formatos y plantillas (editor, visibilidad por unidad, imágenes)', 'Administración', ['admin']],
+            'tramites.gestionar' => ['Crear, editar y deshabilitar los trámites y servicios de su dirección municipal', 'Trámites y servicios', [...self::OP, 'admin'], false, ['admin']],
+            'tramites.publicar' => ['Publicar y reactivar trámites de su dirección (los pone a disposición de la ciudadanía)', 'Trámites y servicios', [...self::OP, 'admin'], false, ['admin']],
             'llm.usar' => ['Usar el asistente de redacción con IA', 'Documentos', $op],
             'delegaciones.ver' => ['Ver delegaciones de firma', 'Firma', ['alcalde', 'admin', 'auditor']],
             'delegaciones.crear' => ['Crear y revocar delegaciones de firma', 'Firma', ['alcalde'], true],
@@ -56,8 +58,21 @@ class Permisos
         ];
     }
 
-    /** @return array<int,string> permisos por defecto (y techo) de un rol base */
+    /** @return array<int,string> permisos que recibe POR DEFECTO un rol del sistema de esa base */
     public static function deBase(string $base): array
+    {
+        $out = [];
+        foreach (self::catalogo() as $k => $d) {
+            if (in_array($base, $d[4] ?? $d[2], true)) {
+                $out[] = $k;
+            }
+        }
+
+        return $out;
+    }
+
+    /** @return array<int,string> TECHO: todos los permisos que un rol de esa base puede llegar a tener (los opcionales no se otorgan solos) */
+    public static function techo(string $base): array
     {
         $out = [];
         foreach (self::catalogo() as $k => $d) {

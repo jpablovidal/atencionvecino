@@ -36,7 +36,7 @@ class AccesibilidadTest extends TestCase
             'bandeja' => $this->comoFuncionario($dom)->get('/app'), 'expediente' => $this->comoFuncionario($dom)->get("/app/expedientes/{$e->id}"),
             'documento' => $this->comoFuncionario($dom)->get("/app/documentos/{$doc->id}"), 'vigentes' => $this->comoFuncionario($dom)->get('/app/vigentes'),
             'comunicaciones' => $this->comoFuncionario($dom)->get('/app/comunicaciones'),
-            'admin-usuarios' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/usuarios'), 'admin-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/tramites/1'),
+            'admin-usuarios' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/usuarios'), 'admin-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/tramites/1'),
             'admin-plantilla' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/plantillas/1'), 'codificador' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/codificador'),
             'diagnostico' => $this->comoFuncionario($this->usuario('admin'))->get('/app/diagnostico'), 'seguridad' => $this->comoFuncionario($this->usuario('auditor'))->get('/app/seguridad'),
             'delegaciones' => $this->comoFuncionario($this->usuario('alcalde'))->get('/app/delegaciones'),

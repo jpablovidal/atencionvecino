@@ -78,9 +78,9 @@ class Usuario extends Model implements AuthenticatableContract
         }
         if ($this->permisosCache === null) {
             $base = $this->rolBase();
-            $techo = Permisos::deBase($base);
+            $techo = Permisos::techo($base);
             if (in_array($this->rol, self::ROLES, true)) {
-                $this->permisosCache = $techo;
+                $this->permisosCache = Permisos::deBase($base);
             } else {
                 $rol = Rol::query()->where('clave', $this->rol)->where('activo', true)->first();
                 $this->permisosCache = $rol ? array_values(array_intersect($rol->permisos(), $techo)) : [];

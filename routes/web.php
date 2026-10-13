@@ -13,6 +13,7 @@ use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\InteropController;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\MantenedorController;
+use App\Http\Controllers\TramitesController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PlantillasController;
@@ -139,6 +140,20 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::get('/delegaciones', [MantenedorController::class, 'delegaciones'])->middleware('permiso:delegaciones.ver')->name('delegaciones');
     Route::post('/delegaciones', [MantenedorController::class, 'crearDelegacion'])->middleware('permiso:delegaciones.crear')->name('delegaciones.crear');
     Route::post('/delegaciones/{delegacion}/revocar', [MantenedorController::class, 'revocarDelegacion'])->middleware('permiso:delegaciones.crear')->name('delegaciones.revocar');
+
+    // ---- Trámites y servicios por dirección (el ámbito se aplica en TramiteService)
+    Route::prefix('tramites')->name('tramites.')->group(function () {
+        Route::get('/', [TramitesController::class, 'index'])->name('index');
+        Route::get('/nuevo', [TramitesController::class, 'crear'])->name('crear');
+        Route::post('/', [TramitesController::class, 'guardar'])->name('guardar');
+        Route::get('/{id}', [TramitesController::class, 'editar'])->whereNumber('id')->name('editar');
+        Route::post('/{id}', [TramitesController::class, 'actualizar'])->whereNumber('id')->name('actualizar');
+        Route::get('/{id}/vista', [TramitesController::class, 'vista'])->whereNumber('id')->name('vista');
+        Route::get('/{id}/historial', [TramitesController::class, 'historial'])->whereNumber('id')->name('historial');
+        Route::post('/{id}/publicar', [TramitesController::class, 'publicar'])->whereNumber('id')->name('publicar');
+        Route::post('/{id}/deshabilitar', [TramitesController::class, 'deshabilitar'])->whereNumber('id')->name('deshabilitar');
+        Route::post('/{id}/duplicar', [TramitesController::class, 'duplicar'])->whereNumber('id')->name('duplicar');
+    });
 
     // ---- Administración (módulos específicos ANTES del mantenedor genérico /{entidad})
     Route::prefix('admin')->name('admin.')->group(function () {

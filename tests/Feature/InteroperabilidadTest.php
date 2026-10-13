@@ -86,10 +86,10 @@ class InteroperabilidadTest extends TestCase
     public function test_tramite_referencia_proceso_existente_y_metadatos_llevan_codigos(): void
     {
         config(['sgd.institucion_codigo' => 'DEMO-MUN-SD']);
-        $base = ['codigo_interno' => 'Z-1', 'nombre' => 'Z', 'plazo_dias' => 5, 'unidades' => [3]];
+        $base = ['codigo_interno' => 'Z-1', 'nombre' => 'Trámite Z', 'plazo_dias' => 5, 'unidad_propietaria_id' => 3, 'unidades' => [3]];
         $admin = $this->usuario('admin');
-        $this->comoFuncionario($admin)->post('/app/admin/tramites', $base + ['proceso_codigo' => 'NO-EXISTE'])->assertSessionHasErrors('proceso_codigo');
-        $this->comoFuncionario($admin)->post('/app/admin/tramites', $base + ['proceso_codigo' => 'DEMO-PROC-CERT'])->assertSessionHasNoErrors();
+        $this->comoFuncionario($admin)->post('/app/tramites', $base + ['proceso_codigo' => 'NO-EXISTE'])->assertSessionHasErrors('proceso_codigo');
+        $this->comoFuncionario($admin)->post('/app/tramites', $base + ['proceso_codigo' => 'DEMO-PROC-CERT'])->assertSessionHasNoErrors();
         $this->assertSame('DEMO-PROC-CERT', Tramite::query()->where('codigo_interno', 'Z-1')->value('proceso_codigo'));
         $e = app(ExpedienteService::class)->crearDesdeSolicitud($this->solicitudDOM(), $this->usuario('funcionario', 1));
         $this->assertSame('DEMO-MUN-SD', $e->metadatos['identificacion']['institucion_codigo']);

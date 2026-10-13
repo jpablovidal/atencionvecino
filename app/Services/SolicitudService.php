@@ -24,7 +24,7 @@ class SolicitudService
      */
     public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras): Solicitud
     {
-        if (! $tramite->activo) {
+        if (! $tramite->estaPublicado()) {
             throw new FlujoException('El trámite no está disponible.');
         }
         foreach ($tramite->anexos as $a) {

@@ -67,16 +67,16 @@ class TramitesYMantenedoresTest extends TestCase
     public function test_cpat_validado_por_patron_y_multiples_unidades(): void
     {
         $admin = $this->usuario('admin');
-        $base = ['codigo_interno' => 'X-1', 'nombre' => 'Trámite X', 'plazo_dias' => 10, 'unidades' => [1, 3], 'anexos_txt' => "Cédula|1\nFoto|0"];
+        $base = ['codigo_interno' => 'X-1', 'nombre' => 'Trámite X', 'plazo_dias' => 10, 'unidad_propietaria_id' => 1, 'unidades' => [1, 3], 'anexos' => [['nombre' => 'Cédula', 'obligatorio' => 1], ['nombre' => 'Foto']]];
         foreach (['PA-UNI0002-00001', 'pa-uni00002-00001', 'XXXXXXXXXXXXXXXX', 'PA-UNI00002-0001'] as $malo) {
-            $this->comoFuncionario($admin)->post('/app/admin/tramites', $base + ['codigo_cpat' => $malo])->assertSessionHasErrors('codigo_cpat');
+            $this->comoFuncionario($admin)->post('/app/tramites', $base + ['codigo_cpat' => $malo])->assertSessionHasErrors('codigo_cpat');
         }
-        $this->comoFuncionario($admin)->post('/app/admin/tramites', $base + ['codigo_cpat' => 'PA-UNI00002-00009'])->assertRedirect('/app/admin/tramites');
+        $this->comoFuncionario($admin)->post('/app/tramites', $base + ['codigo_cpat' => 'PA-UNI00002-00009'])->assertSessionHas('ok');
         $t = Tramite::query()->where('codigo_interno', 'X-1')->first();
-        $this->assertSame([1, 3], $t->unidades()->pluck('unidades.id')->all());
+        $this->assertEqualsCanonicalizing([1, 3], $t->unidades()->pluck('unidades.id')->all());
         $this->assertSame(2, $t->anexos()->count());
         $this->assertFalse((bool) $t->anexos->firstWhere('nombre', 'Foto')->obligatorio);
-        $this->comoFuncionario($admin)->post('/app/admin/tramites', array_merge($base, ['codigo_interno' => 'X-2', 'codigo_cpat' => null, 'unidades' => []]))->assertSessionHasErrors('unidades');
+        $this->comoFuncionario($admin)->post('/app/tramites', array_merge($base, ['codigo_interno' => 'X-2', 'codigo_cpat' => null, 'unidades' => [999]]))->assertSessionHas('error');
         // la solicitud llega a la bandeja de TODAS las unidades responsables
         $t2 = Tramite::query()->find(4); // ALC + SECMUN
         $s = app(SolicitudService::class)->ingresar($this->ciudadano(), $t2, 'a@b.cl', 'Quiero una audiencia con el alcalde.', 'presencial', [], []);

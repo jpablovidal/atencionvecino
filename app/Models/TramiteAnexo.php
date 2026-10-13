@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $tramite_id
  * @property string $nombre
  * @property bool $obligatorio
+ * @property string|null $descripcion
+ * @property int $orden
  * @property bool $activo
  */
 class TramiteAnexo extends Model

@@ -36,13 +36,13 @@ class CiudadanoController extends Controller
         return view('ciudadano.index', [
             'c' => $c,
             'solicitudes' => Solicitud::query()->with('tramite')->where('run', $c['run'])->orderByDesc('id')->get(),
-            'tramites' => Tramite::query()->where('activo', true)->orderBy('nombre')->get(),
+            'tramites' => Tramite::query()->publicados()->with('propietaria')->orderBy('nombre')->get()->groupBy(fn ($t) => $t->propietaria?->nombre ?? 'Municipalidad'),
         ]);
     }
 
     public function nueva(Request $r, Tramite $tramite)
     {
-        abort_unless($tramite->activo, 404);
+        abort_unless($tramite->estaPublicado(), 404);
 
         return view('ciudadano.nueva', ['c' => $this->ciudadano($r), 'tramite' => $tramite->load('anexos', 'unidades')]);
     }

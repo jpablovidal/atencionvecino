@@ -43,7 +43,7 @@ class MenuService
             'unidades' => $i('Unidades', 'app.admin.index:unidades', 'app/admin/unidades*', ['app'], 'mantenedores.gestionar', $a, 100),
             'usuarios' => $i('Usuarios', 'app.admin.index:usuarios', 'app/admin/usuarios*', ['app'], 'mantenedores.gestionar', $a, 110),
             'roles' => $i('Roles y permisos', 'app.admin.roles', 'app/admin/roles*', ['app'], 'roles.gestionar', $a, 115),
-            'tramites' => $i('Trámites', 'app.admin.index:tramites', 'app/admin/tramites*', ['app'], 'mantenedores.gestionar', $a, 120),
+            'tramites' => $i('Trámites y servicios', 'app.tramites.index', 'app/tramites*', ['app'], 'tramites.gestionar', $a, 120),
             'tipos' => $i('Tipos de documento', 'app.admin.index:tipos', 'app/admin/tipos*', ['app'], 'mantenedores.gestionar', $a, 130),
             'plantillas' => $i('Plantillas', 'app.admin.plantillas', 'app/admin/plantillas*', ['app'], 'plantillas.gestionar', $a, 140),
             'folios' => $i('Folios', 'app.admin.folios', 'app/admin/folios*', ['app'], 'folios.gestionar', $a, 150),

@@ -60,6 +60,10 @@ class DemoSeeder extends Seeder
             ['codigo' => 'DEMO-PROC-CERT', 'nombre' => 'Certificados municipales (EJEMPLO)', 'institucion_codigo' => 'DEMO-MUN-SD', 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
         ]);
         DB::table('tramites')->where('id', 1)->update(['proceso_codigo' => 'DEMO-PROC-EDIF']);
+        // los trámites de demostración nacen publicados; la dirección propietaria es la primera responsable
+        foreach ([1 => 3, 2 => 3, 3 => 4, 4 => 1] as $tid => $uid) {
+            DB::table('tramites')->where('id', $tid)->update(['estado' => 'publicado', 'activo' => 1, 'unidad_propietaria_id' => $uid, 'publicado_en' => now(), 'version' => 0]);
+        }
         DB::table('pisee_servicios')->insert([
             ['codigo' => 'DEMO-CONSULTA', 'nombre' => 'Consulta de ejemplo (SIN contrato real)', 'institucion_codigo' => 'DEMO-SEGPRES', 'ruta' => '/demo/v1/consulta', 'metodo' => 'GET', 'param_run' => 'run', 'descripcion' => 'Servicio ficticio solo para desarrollo.', 'activo' => 1] + $t,
         ]);
