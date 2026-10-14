@@ -167,27 +167,48 @@
   }
 })();
 
-/* Menú lateral y desplegables de la barra superior (sin scripts en línea). */
+/* Menú lateral (escritorio: se oculta/muestra; móvil: cajón con fondo) y desplegables de la barra superior (sin scripts en línea). */
 (function () {
   'use strict';
   var layout = document.querySelector('.sgd-layout.con-lateral');
   var burger = document.getElementById('sgd-burger');
-  if (layout) {
+  var fondo = document.getElementById('sgd-backdrop');
+  var movil = window.matchMedia('(max-width: 991px)');
+  if (layout && burger) {
     document.querySelectorAll('.sgd-sidebar details.sgd-nav-grupo').forEach(function (d) { d.open = true; });
     var K = 'sgd_lateral';
     var oculto = false;
-    try { oculto = window.localStorage.getItem(K) === '0' && window.innerWidth >= 992; } catch (e) { oculto = false; }
-    var aplicar = function () {
-      layout.classList.toggle('lateral-oculto', oculto);
-      if (burger) { burger.setAttribute('aria-expanded', oculto ? 'false' : 'true'); }
+    try { oculto = window.localStorage.getItem(K) === '0'; } catch (e) { oculto = false; }
+    var abierto = false;
+    var pintar = function () {
+      if (movil.matches) {
+        layout.classList.remove('lateral-oculto');
+        layout.classList.toggle('lateral-abierto', abierto);
+        burger.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        if (fondo) { fondo.hidden = !abierto; }
+      } else {
+        abierto = false;
+        layout.classList.remove('lateral-abierto');
+        layout.classList.toggle('lateral-oculto', oculto);
+        burger.setAttribute('aria-expanded', oculto ? 'false' : 'true');
+        if (fondo) { fondo.hidden = true; }
+      }
     };
-    aplicar();
-    if (burger) {
-      burger.addEventListener('click', function () {
-        oculto = !oculto; aplicar();
+    pintar();
+    var cambio = function () { pintar(); };
+    if (movil.addEventListener) { movil.addEventListener('change', cambio); } else if (movil.addListener) { movil.addListener(cambio); }
+    burger.addEventListener('click', function () {
+      if (movil.matches) {
+        abierto = !abierto; pintar();
+        if (abierto) { var a = layout.querySelector('.sgd-sidebar a'); if (a) { a.focus(); } }
+      } else {
+        oculto = !oculto; pintar();
         try { window.localStorage.setItem(K, oculto ? '0' : '1'); } catch (e) { /* sin almacenamiento */ }
-      });
-    }
+      }
+    });
+    if (fondo) { fondo.addEventListener('click', function () { abierto = false; pintar(); burger.focus(); }); }
+    layout.querySelectorAll('.sgd-sidebar a').forEach(function (a) { a.addEventListener('click', function () { if (movil.matches) { abierto = false; pintar(); } }); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && abierto) { abierto = false; pintar(); burger.focus(); } });
   }
   var desplegables = document.querySelectorAll('details.a11y-mas, details.sgd-user');
   document.addEventListener('click', function (e) {

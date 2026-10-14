@@ -36,7 +36,7 @@ class MenuService
             'publico' => $i('Documentos públicos', 'publico.listado', 'publico*', ['publico', 'ciudadano'], null, null, 20),
             'validar' => $i('Validar documento', 'validar.form', 'validar*', ['publico', 'ciudadano'], null, null, 30),
             'mis_solicitudes' => $i('Mis solicitudes', 'ciudadano.index', 'ciudadano*', ['ciudadano'], null, null, 40, true),
-            'bandeja' => $i('Bandeja', 'app.bandeja', 'app', ['app'], null, null, 10, true),
+            'bandeja' => $i('Inicio', 'app.bandeja', 'app', ['app'], null, null, 10, true),
             'vigentes' => $i('Documentos vigentes', 'app.vigentes', 'app/vigentes', ['app'], 'vigentes.ver', null, 20),
             'formatos' => $i('Formatos y plantillas', 'app.formatos', 'app/formatos*', ['app'], 'plantillas.ver', null, 25),
             'comunicaciones' => $i('Comunicaciones oficiales', 'app.comunicaciones', 'app/comunicaciones*', ['app'], 'comunicaciones.ver', null, 30),
@@ -77,6 +77,26 @@ class MenuService
         }
     }
 
+    /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
+    public const ICONOS = [
+        'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
+        'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
+        'roles' => 'shield', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
+        'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
+        'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help',
+    ];
+
+    public const DESCRIPCIONES = [
+        'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
+        'comunicaciones' => 'Comunicaciones oficiales recibidas y enviadas por DocDigital.', 'delegaciones' => 'Delegaciones de firma del alcalde.',
+        'tramites' => 'Cree y publique los trámites y servicios de su dirección.', 'usuarios' => 'Altas, roles y direcciones de las personas usuarias.',
+        'roles' => 'Roles personalizados y permisos.', 'plantillas' => 'Editor de plantillas con visibilidad por dirección.', 'apariencia' => 'Logo, colores, encabezado y pie.',
+        'seguridad' => 'Bitácora de auditoría, incidentes y verificación de la cadena.', 'logs' => 'Registro de eventos con filtros y exportación.', 'conexiones' => 'Mapa y ranking de las conexiones al sistema.',
+        'recursos' => 'CPU, memoria, disco y base de datos del servidor.', 'api' => 'Estado y configuración de las integraciones.', 'ayuda' => 'Manuales de usuario y declaración de accesibilidad.',
+        'catalogo' => 'Busque un trámite y vea qué documentos necesita.', 'validar' => 'Compruebe la autenticidad de un documento con su código.', 'publico' => 'Decretos, ordenanzas y otros documentos públicos.',
+        'mis_solicitudes' => 'Siga el estado de sus solicitudes.',
+    ];
+
     public function olvidar(): void
     {
         $this->filas = null;
@@ -107,7 +127,7 @@ class MenuService
                 continue;
             }
             if ($url = $this->urlDe($d['ruta'])) {
-                $out[] = ['url' => $url, 'etiqueta' => $o?->etiqueta ?: $d['etiqueta'], 'patron' => $d['patron'], 'grupo' => $d['grupo'], 'nueva' => false, 'orden' => $o->orden ?? $d['orden']];
+                $out[] = ['url' => $url, 'etiqueta' => $o?->etiqueta ?: $d['etiqueta'], 'patron' => $d['patron'], 'grupo' => $d['grupo'], 'clave' => $clave, 'icono' => self::ICONOS[$clave] ?? 'file-text', 'descripcion' => self::DESCRIPCIONES[$clave] ?? '', 'nueva' => false, 'orden' => $o->orden ?? $d['orden']];
             }
         }
         foreach ($filas->whereNull('clave') as $c) {
@@ -118,7 +138,7 @@ class MenuService
             if ($roles && ! ($u && in_array($u->rolBase(), $roles, true))) {
                 continue;
             }
-            $out[] = ['url' => str_starts_with((string) $c->url, '/') ? url($c->url) : (string) $c->url, 'etiqueta' => $c->etiqueta, 'patron' => ltrim((string) parse_url((string) $c->url, PHP_URL_PATH), '/') ?: '/', 'grupo' => null, 'nueva' => (bool) $c->nueva_pestana, 'orden' => $c->orden];
+            $out[] = ['url' => str_starts_with((string) $c->url, '/') ? url($c->url) : (string) $c->url, 'etiqueta' => $c->etiqueta, 'patron' => ltrim((string) parse_url((string) $c->url, PHP_URL_PATH), '/') ?: '/', 'clave' => null, 'icono' => 'external', 'descripcion' => '', 'grupo' => null, 'nueva' => (bool) $c->nueva_pestana, 'orden' => $c->orden];
         }
         usort($out, fn ($a, $b) => [$a['orden'], $a['etiqueta']] <=> [$b['orden'], $b['etiqueta']]);
 

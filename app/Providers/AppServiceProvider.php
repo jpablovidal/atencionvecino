@@ -118,7 +118,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->afterResolving('mail.manager', fn ($m) => $m->extend('gmail_api', fn () => new GmailApiTransport(config('sgd.google'))));
 
         // Marca (colores, encabezado, pie, logo) y menú configurables: datos para el layout, tolerantes a BD sin migrar.
-        View::composer('layouts.app', function ($view) {
+        View::composer(['layouts.app', 'partials.accesos'], function ($view) {
             try {
                 $u = auth()->user();
                 $area = $u ? 'app' : (session('ciudadano') ? 'ciudadano' : 'publico');

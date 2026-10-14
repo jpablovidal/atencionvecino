@@ -16,6 +16,10 @@ Su **RUN, nombres y apellidos** vienen de ClaveÚnica y **no se pueden modificar
 
 Por seguridad la sesión se cierra sola tras **30 minutos sin actividad** (y como máximo a las 8 horas). Use siempre **Cerrar sesión** al terminar, sobre todo en computadores compartidos.
 
+## Su página de inicio
+
+Al ingresar verá **Mis solicitudes**: tres tarjetas con cuántas solicitudes están *en trámite*, *devueltas* (requieren su respuesta, con aviso destacado) y *finalizadas*; **Trámites rápidos** con un buscador y botón *Realizar trámite*; y el **historial**. El menú lateral (☰ en el celular) tiene íconos y le lleva al catálogo, a los documentos públicos y a la validación de documentos.
+
 ## 2. Presentar una solicitud
 
 0. Si aún no sabe qué necesita, revise el **catálogo público** en *Trámites y servicios* (menú superior): puede buscarlo sin iniciar sesión y ver sus requisitos antes de ingresar; al presionar *Realizar este trámite en línea* e ingresar con ClaveÚnica, volverá directo al formulario de ese trámite.

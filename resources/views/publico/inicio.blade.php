@@ -11,5 +11,15 @@
   <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h2 class="h5">Validar un documento</h2><p>Compruebe la autenticidad con el código SDD.</p><a class="btn btn-outline-primary" href="{{ route('validar.form') }}">Validar</a></div></div></div>
   <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body"><h2 class="h5">Documentos públicos</h2><p>Decretos, ordenanzas y otros.</p><a class="btn btn-outline-primary" href="{{ route('publico.listado') }}">Ver listado</a></div></div></div>
 </div>
-<p class="mt-3"><a href="{{ route('ingreso.via','funcionario') }}">Acceso funcionarios</a></p>
+@if($destacados->isNotEmpty())
+<h2 class="seccion mt-4">Trámites y servicios</h2>
+<div class="dash-destacados">
+@foreach($destacados as $t)
+  <a class="destacado" href="{{ route('catalogo.ficha', [$t->id, \Illuminate\Support\Str::slug($t->nombre)]) }}"><span class="acceso-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-clipboard"/></svg></span>
+    <span><strong>{{ $t->nombre }}</strong><small>{{ $t->propietaria?->nombre }}</small></span></a>
+@endforeach
+</div>
+<p class="small mt-2"><a href="{{ route('catalogo') }}">Ver todos los trámites y servicios</a></p>
+@endif
+<p class="mt-4"><a href="{{ route('ingreso.via','funcionario') }}">Acceso funcionarios</a></p>
 @endsection

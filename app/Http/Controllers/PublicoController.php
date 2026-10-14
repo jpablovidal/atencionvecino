@@ -6,6 +6,7 @@ use App\Models\Archivo;
 use App\Models\Documento;
 use App\Models\Solicitud;
 use App\Models\TipoDocumento;
+use App\Models\Tramite;
 use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
 use App\Services\SolicitudService;
@@ -17,7 +18,7 @@ class PublicoController extends Controller
 
     public function inicio()
     {
-        return view('publico.inicio');
+        return view('publico.inicio', ['destacados' => Tramite::query()->publicados()->with('propietaria:id,nombre')->orderByDesc('publicado_en')->orderByDesc('id')->limit(6)->get()]);
     }
 
     /** Listado público: solo vigentes marcados públicos y no sensibles. */

@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\FlujoException;
 use App\Models\Archivo;
+use App\Models\AuditLog;
 use App\Models\Documento;
 use App\Models\DocumentoPaso;
 use App\Models\Expediente;
 use App\Models\Solicitud;
+use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
 use App\Services\Firma\ArchivoFirmaService;
+use App\Services\TramiteService;
 use Illuminate\Http\Request;
 
 class FuncionarioController extends Controller
@@ -21,9 +24,6 @@ class FuncionarioController extends Controller
     public function bandeja(Request $r)
     {
         $u = $r->user();
-        if ($u->rolBase() === 'admin') {
-            return redirect()->route('app.admin.index', 'usuarios');
-        }
         $entrantes = collect();
         $mios = Expediente::query()->with('solicitud.tramite')->orderByDesc('id');
         $pasos = collect();
@@ -40,7 +40,29 @@ class FuncionarioController extends Controller
                 ->filter(fn ($p) => ! DocumentoPaso::query()->where('documento_id', $p->documento_id)->where('estado', 'pendiente')->where('orden', '<', $p->orden)->exists());
         }
 
-        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $mios->limit(100)->get(), 'pasos' => $pasos, 'porAsignar' => $porAsignar]);
+        $expedientes = $mios->limit(100)->get();
+        $kpis = [];
+        if ($u->operaExpedientes()) {
+            $kpis[] = ['icono' => 'pen', 'valor' => $pasos->count(), 'etiqueta' => 'Visaciones y firmas pendientes', 'nivel' => $pasos->isNotEmpty() ? 'aviso' : 'ok'];
+            $kpis[] = ['icono' => 'inbox', 'valor' => $entrantes->count(), 'etiqueta' => 'Solicitudes por asignar', 'nivel' => $entrantes->isNotEmpty() ? 'info' : 'ok'];
+            if ($porAsignar->isNotEmpty() || $u->tienePermiso('comunicaciones.ver')) {
+                $kpis[] = ['icono' => 'mail', 'valor' => $porAsignar->count(), 'etiqueta' => 'Comunicaciones por gestionar', 'nivel' => $porAsignar->isNotEmpty() ? 'info' : 'ok'];
+            }
+            $kpis[] = ['icono' => 'folder', 'valor' => $expedientes->where('estado', 'abierto')->count(), 'etiqueta' => 'Expedientes abiertos', 'nivel' => 'ok'];
+        }
+        if ($u->tienePermiso('tramites.gestionar')) {
+            $t = app(TramiteService::class)->gestionables($u);
+            $kpis[] = ['icono' => 'clipboard', 'valor' => (clone $t)->where('estado', 'publicado')->count(), 'etiqueta' => 'Trámites publicados', 'nivel' => 'ok', 'url' => route('app.tramites.index', ['estado' => 'publicado'])];
+            $kpis[] = ['icono' => 'file-text', 'valor' => (clone $t)->where('estado', 'borrador')->count(), 'etiqueta' => 'Trámites en borrador', 'nivel' => 'info', 'url' => route('app.tramites.index', ['estado' => 'borrador'])];
+        }
+        if ($u->rolBase() === 'admin') {
+            $kpis[] = ['icono' => 'users', 'valor' => Usuario::query()->where('activo', true)->count(), 'etiqueta' => 'Usuarios activos', 'nivel' => 'ok', 'url' => route('app.admin.index', 'usuarios')];
+        }
+        if ($u->tienePermiso('seguridad.ver') || $u->tienePermiso('logs.ver')) {
+            $kpis[] = ['icono' => 'activity', 'valor' => AuditLog::query()->where('ts', '>=', now()->subDay())->count(), 'etiqueta' => 'Eventos de auditoría (24 h)', 'nivel' => 'ok', 'url' => route('app.logs')];
+        }
+
+        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'pasos' => $pasos, 'porAsignar' => $porAsignar, 'kpis' => $kpis, 'u' => $u]);
     }
 
     private function solicitudDeMiUnidad(Request $r, string $folio): Solicitud

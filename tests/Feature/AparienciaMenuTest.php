@@ -233,7 +233,7 @@ class AparienciaMenuTest extends TestCase
         $this->assertSame(['Inicio', 'Trámites y servicios', 'Documentos públicos', 'Validar documento', 'Ayuda'], $this->etiquetas('publico'));
         $this->assertSame(['Inicio', 'Trámites y servicios', 'Documentos públicos', 'Validar documento', 'Mis solicitudes', 'Ayuda'], $this->etiquetas('ciudadano'));
         $f = $this->etiquetas('app', $this->usuario('funcionario'));
-        $this->assertSame(['Bandeja', 'Documentos vigentes', 'Formatos y plantillas', 'Comunicaciones oficiales', 'Ayuda'], $f);
+        $this->assertSame(['Inicio', 'Documentos vigentes', 'Formatos y plantillas', 'Comunicaciones oficiales', 'Ayuda'], $f);
         $a = $this->etiquetas('app', $this->usuario('admin'));
         foreach (['Usuarios', 'Folios', 'Estilo y posición de firmas', 'APIs e integraciones', 'Repositorio', 'Apariencia', 'Barra de menú', 'Diagnóstico'] as $e) {
             $this->assertContains($e, $a);
@@ -251,13 +251,13 @@ class AparienciaMenuTest extends TestCase
         $this->assertMatchesRegularExpression('#<details class="sgd-nav-grupo"><summary>Administración</summary>#', $html);
         $this->assertStringContainsString('<summary>Seguridad y operación</summary>', $html);
         $this->assertSame(2, substr_count($html, '<details class="sgd-nav-grupo">'));
-        $this->assertStringContainsString('aria-current="page"', $html); // Bandeja
+        $this->assertStringContainsString('aria-current="page"', $html); // Inicio
     }
 
     public function test_renombrar_reordenar_ocultar_y_restablecer(): void
     {
         $this->admin()->post('/app/admin/menu/sistema/vigentes', ['etiqueta' => 'Documentos firmados', 'orden' => 5, 'activo' => 1])->assertSessionHas('ok');
-        $this->assertSame(['Documentos firmados', 'Bandeja'], array_slice($this->etiquetas('app', $this->usuario('funcionario')), 0, 2));
+        $this->assertSame(['Documentos firmados', 'Inicio'], array_slice($this->etiquetas('app', $this->usuario('funcionario')), 0, 2));
         $this->admin()->post('/app/admin/menu/sistema/comunicaciones', ['etiqueta' => 'Comunicaciones', 'orden' => 30])->assertSessionHas('ok'); // sin "activo" = oculto
         $this->assertNotContains('Comunicaciones', $this->etiquetas('app', $this->usuario('funcionario')));
         // los protegidos no se ocultan

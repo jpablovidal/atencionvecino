@@ -6,7 +6,7 @@ Para personas con rol **funcionario** (también aplica, con las particularidades
 
 ## 1. Ingreso y bandeja
 
-Después de ingresar verá su **Bandeja**:
+Después de ingresar verá su **Inicio** (menú lateral con íconos y un panel con indicadores): arriba, **tarjetas con sus pendientes** (visaciones y firmas, solicitudes por asignar, comunicaciones por gestionar, expedientes abiertos y, si su rol lo permite, trámites publicados y en borrador); luego **Requieren su atención** (cada tarea es una tarjeta que lleva directo al documento o la solicitud), **Accesos rápidos** a los módulos que su rol permite y su lista de expedientes. En el celular el menú se abre con el botón ☰. Contenido del Inicio:
 
 - **Mis visaciones y firmas pendientes:** documentos donde es su turno.
 - **Solicitudes de mi unidad por asignar:** solicitudes ciudadanas dirigidas a su unidad.

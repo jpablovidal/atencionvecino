@@ -35,7 +35,8 @@ class CiudadanoController extends Controller
 
         return view('ciudadano.index', [
             'c' => $c,
-            'solicitudes' => Solicitud::query()->with('tramite')->where('run', $c['run'])->orderByDesc('id')->get(),
+            'solicitudes' => $sol = Solicitud::query()->with('tramite')->where('run', $c['run'])->orderByDesc('id')->get(),
+            'resumen' => ['devuelta' => $sol->where('estado', 'devuelta')->count(), 'finalizada' => $sol->whereIn('estado', ['finalizada', 'cerrada'])->count(), 'curso' => $sol->whereNotIn('estado', ['devuelta', 'finalizada', 'cerrada'])->count()],
             'tramites' => Tramite::query()->publicados()->with('propietaria')->orderBy('nombre')->get()->groupBy(fn ($t) => $t->propietaria?->nombre ?? 'Municipalidad'),
         ]);
     }

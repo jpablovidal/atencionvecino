@@ -6,14 +6,15 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="robots" content="noindex">
 <title>@yield('titulo', 'Inicio') · SGD Santo Domingo</title>
-<link rel="stylesheet" href="{{ asset('assets/css/sgd-fonts.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/gob.cl.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/css/sgd.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/sgd-fonts.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/sgd-fonts.css')), 0, 8) }}">
+<link rel="stylesheet" href="{{ asset('assets/css/gob.cl.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/gob.cl.css')), 0, 8) }}">
+<link rel="stylesheet" href="{{ asset('assets/css/sgd.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/sgd.css')), 0, 8) }}">
 <link rel="stylesheet" href="{{ route('marca.css', ['v' => $marca['version']]) }}">
-<script src="{{ asset('assets/js/a11y-init.js') }}"></script>
+<script src="{{ asset('assets/js/a11y-init.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/a11y-init.js')), 0, 8) }}"></script>
 </head>
 <body>
 @if(\App\Support\Ambiente::esPruebas())<div class="banner-pruebas" role="note"><strong>AMBIENTE DE PRUEBAS</strong> — firmas y comunicaciones simuladas, sin validez legal.@if(\App\Support\Ambiente::pruebasHasta()) Acceso de pruebas hasta el {{ \App\Support\Ambiente::pruebasHasta()->format('d-m-Y') }}.@endif</div>@endif
+@include('partials.iconos')
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
 <a class="skip-link skip-link-2" href="#navegacion">Saltar a la navegación</a>
 <div id="a11y-anuncio" class="sr-anuncio" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -63,14 +64,15 @@
         @unless(isset($abiertos[$it['grupo']]))
           @php $abiertos[$it['grupo']] = true; @endphp
           <details class="sgd-nav-grupo"><summary>{{ $it['grupo'] }}</summary>
-            <ul class="list-unstyled">@foreach($menuItems as $g)@if($g['grupo'] === $it['grupo'])<li><a href="{{ $g['url'] }}" @if(request()->is($g['patron'])) aria-current="page" @endif>{{ $g['etiqueta'] }}</a></li>@endif @endforeach</ul>
+            <ul class="list-unstyled">@foreach($menuItems as $g)@if($g['grupo'] === $it['grupo'])<li><a href="{{ $g['url'] }}" @if(request()->is($g['patron'])) aria-current="page" @endif>@if($lateral)<svg class="sgd-ico" aria-hidden="true" focusable="false"><use href="#i-{{ $g['icono'] }}"/></svg>@endif<span>{{ $g['etiqueta'] }}</span></a></li>@endif @endforeach</ul>
           </details>
         @endunless
       @else
-        <a href="{{ $it['url'] }}" @if(request()->is($it['patron'])) aria-current="page" @endif @if($it['nueva']) target="_blank" rel="noopener noreferrer" @endif>{{ $it['etiqueta'] }}@if($it['nueva'])<span class="sr-only"> (se abre en una pestaña nueva)</span>@endif</a>
+        <a href="{{ $it['url'] }}" @if(request()->is($it['patron'])) aria-current="page" @endif @if($it['nueva']) target="_blank" rel="noopener noreferrer" @endif>@if($lateral)<svg class="sgd-ico" aria-hidden="true" focusable="false"><use href="#i-{{ $it['icono'] }}"/></svg>@endif<span>{{ $it['etiqueta'] }}</span>@if($it['nueva'])<span class="sr-only"> (se abre en una pestaña nueva)</span>@endif</a>
       @endif
     @endforeach
   </div></nav>
+<div class="sgd-backdrop" id="sgd-backdrop" hidden></div>
 <div class="sgd-main">
 @endif
 <main id="contenido" class="{{ $esLogin ? 'sgd-login-card' : 'sgd-content' }}" tabindex="-1">
@@ -99,7 +101,7 @@
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 @stack('scripts')
-<script src="{{ asset('assets/js/sgd.js') }}"></script>
-<script src="{{ asset('assets/js/a11y.js') }}"></script>
+<script src="{{ asset('assets/js/sgd.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/sgd.js')), 0, 8) }}"></script>
+<script src="{{ asset('assets/js/a11y.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/a11y.js')), 0, 8) }}"></script>
 </body>
 </html>
