@@ -132,6 +132,10 @@ if [ "$ACTUALIZACION" = 0 ]; then
   "$PHP" artisan pruebas:credenciales --demo
 else
   "$PHP" artisan view:clear >/dev/null; "$PHP" artisan cache:clear >/dev/null 2>&1 || true
+  if grep -q "^SGD_AMBIENTE=pruebas" .env; then
+    echo; echo "Archivo municipal: creando (solo si faltan) su unidad, roles y cuentas de prueba (contraseñas aleatorias, se muestran una sola vez):"
+    "$PHP" artisan pruebas:archivo || true
+  fi
   echo "Actualización aplicada. Para ver/rotar cuentas de prueba: php artisan pruebas:credenciales --rotar"
 fi
 
