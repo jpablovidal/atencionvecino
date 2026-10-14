@@ -17,40 +17,46 @@
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
 <a class="skip-link skip-link-2" href="#navegacion">Saltar a la navegación</a>
 <div id="a11y-anuncio" class="sr-anuncio" role="status" aria-live="polite" aria-atomic="true"></div>
-<div class="a11y-bar" role="region" aria-label="Opciones de accesibilidad"><div class="container">
-  <span class="grupo" role="group" aria-label="Tamaño del texto">Texto:
-    <button type="button" data-a11y-size="down">Reducir texto</button>
-    <button type="button" data-a11y-size="reset">Texto normal</button>
-    <button type="button" data-a11y-size="up">Aumentar texto</button>
-    <span id="a11y-tamano">100%</span></span>
-  <span class="grupo" role="group" aria-label="Visualización">
-    <button type="button" data-a11y-toggle="contrast" data-nombre="Alto contraste" aria-pressed="false">Alto contraste</button>
-    <button type="button" data-a11y-toggle="legible" data-nombre="Fuente y espaciado legibles" aria-pressed="false">Texto legible</button>
-    <button type="button" data-a11y-toggle="links" data-nombre="Enlaces subrayados" aria-pressed="false">Subrayar enlaces</button>
-    <button type="button" data-a11y-toggle="motion" data-nombre="Sin animaciones" aria-pressed="false">Sin animaciones</button>
-    <button type="button" id="a11y-reset">Restablecer</button></span>
-  <span class="grupo"><a href="{{ route('accesibilidad') }}">Declaración de accesibilidad</a><a href="{{ route('ayuda') }}">Ayuda y manuales</a></span>
-</div></div>
+@php
+  $lateral = (bool) (session('ciudadano') || auth()->check());
+  $esLogin = $__env->hasSection('login');
+  $logoSrc = ($marca['header']['mostrar_logo'] && $marca['logo']) ? route('marca.logo', ['v' => substr($marca['logo']['sha256'], 0, 10)]) : null;
+@endphp
+@if($esLogin)
+<div class="sgd-login-wrap">
+  <header>
+  <p class="sgd-login-titulo">{{ $marca['header']['subtitulo'] !== '' ? $marca['header']['subtitulo'] : $marca['header']['titulo'] }}</p>
+  @include('partials.a11y')
+  </header>
+  <nav id="navegacion" class="sgd-login-nav" aria-label="Navegación principal" tabindex="-1"><a href="{{ route('inicio') }}">Inicio</a><a href="{{ route('catalogo') }}">Trámites y servicios</a><a href="{{ route('ayuda') }}">Ayuda</a></nav>
+@else
 <header class="sgd-header">
-  <div class="container d-flex flex-wrap justify-content-between align-items-center py-3">
+  <div class="sgd-topbar">
+    @if($lateral)<button type="button" class="sgd-burger" id="sgd-burger" aria-controls="navegacion" aria-expanded="true" title="Mostrar u ocultar el menú"><span aria-hidden="true">☰</span><span class="sr-only">Mostrar u ocultar el menú</span></button>@endif
     <a href="{{ route('inicio') }}" class="titulo text-decoration-none d-inline-flex align-items-center">
-      @if($marca['header']['mostrar_logo'] && $marca['logo'])<img class="sgd-logo" src="{{ route('marca.logo', ['v' => substr($marca['logo']['sha256'], 0, 10)]) }}" alt="{{ $marca['header']['logo_alt'] }}" width="{{ (int) round($marca['header']['logo_alto_px'] * $marca['logo']['ancho'] / max(1, $marca['logo']['alto'])) }}" height="{{ $marca['header']['logo_alto_px'] }}">@endif
-      <span>{{ $marca['header']['titulo'] }}@if($marca['header']['subtitulo'] !== '')<br><small>{{ $marca['header']['subtitulo'] }}</small>@endif</span>
+      @if($logoSrc)<img class="sgd-logo" src="{{ $logoSrc }}" alt="{{ $marca['header']['logo_alt'] }}" width="{{ (int) round($marca['header']['logo_alto_px'] * $marca['logo']['ancho'] / max(1, $marca['logo']['alto'])) }}" height="{{ $marca['header']['logo_alto_px'] }}">
+      @elseif($marca['header']['mostrar_logo'])<img class="sgd-logo-defecto" src="{{ asset('assets/img/logo-santo-domingo.png') }}" alt="{{ $marca['header']['logo_alt'] }}" width="28" height="44">@endif
+      <span class="sgd-marca">{{ $marca['header']['titulo'] }}@if($marca['header']['subtitulo'] !== '')<small>{{ $marca['header']['subtitulo'] }}</small>@endif</span>
     </a>
-    <div class="text-right">
+    @include('partials.a11y')
+    <div class="sgd-topbar-der">
       @if(session('ciudadano'))
-        <span>{{ session('ciudadano.nombres') }} {{ session('ciudadano.apellidos') }} · {{ session('ciudadano.run') }}</span>
+        <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ session('ciudadano.nombres') }} {{ session('ciudadano.apellidos') }}</span></summary>
+          <div class="sgd-user-panel"><p class="mb-1">RUN {{ session('ciudadano.run') }}</p><p class="small mb-2">Ciudadano(a)</p>
+            <form method="post" action="{{ route('salir') }}">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @elseif(auth()->check())
-        <span>{{ auth()->user()->nombreCompleto() }} · {{ auth()->user()->rol }}</span>
-      @endif
-      @if(session('ciudadano') || auth()->check())
-        <form method="post" action="{{ route('salir') }}" class="d-inline ml-2">@csrf<button class="btn btn-sm btn-outline-light">Cerrar sesión</button></form>
+        <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ auth()->user()->nombreCompleto() }}</span></summary>
+          <div class="sgd-user-panel"><p class="mb-1">{{ auth()->user()->rol }}@if(auth()->user()->cargo) · {{ auth()->user()->cargo }}@endif</p>
+            <form method="post" action="{{ route('salir') }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @else
         <a class="btn btn-sm btn-light" href="{{ route('ingreso') }}">Ingresar con ClaveÚnica</a>
       @endif
     </div>
   </div>
-  <nav id="navegacion" class="sgd-nav" aria-label="Navegación principal" tabindex="-1"><div class="container">
+</header>
+<div class="sgd-layout{{ $lateral ? ' con-lateral' : '' }}">
+  <nav id="navegacion" class="sgd-nav{{ $lateral ? ' sgd-sidebar' : '' }}" aria-label="Navegación principal" tabindex="-1"><div class="sgd-nav-inner">
+    @if($lateral)<p class="sgd-nav-titulo">{{ auth()->check() ? 'Mi trabajo' : 'Mis trámites' }}</p>@endif
     @php $abiertos = []; @endphp
     @foreach($menuItems as $it)
       @if($it['grupo'])
@@ -65,14 +71,16 @@
       @endif
     @endforeach
   </div></nav>
-</header>
-<main id="contenido" class="container py-4" tabindex="-1">
+<div class="sgd-main">
+@endif
+<main id="contenido" class="{{ $esLogin ? 'sgd-login-card' : 'sgd-content' }}" tabindex="-1">
   @foreach(['ok'=>'success','error'=>'danger','aviso'=>'warning'] as $k=>$cls)
     @if(session($k))<div class="alert alert-{{ $cls }}" role="{{ $k==='error'?'alert':'status' }}">{{ session($k) }}</div>@endif
   @endforeach
   @if(isset($errors) && $errors->any())<div class="alert alert-danger" role="alert" tabindex="-1" id="resumen-errores" data-campos="{{ implode(',', $errors->keys()) }}"><strong>Revise el formulario ({{ $errors->count() }} {{ $errors->count() === 1 ? 'error' : 'errores' }}):</strong><ul class="mb-0">@foreach($errors->keys() as $k)@foreach($errors->get($k) as $m)<li><a href="#{{ $k }}">{{ $m }}</a></li>@endforeach @endforeach</ul></div>@endif
   @yield('contenido')
 </main>
+@if($esLogin)</div>@endif
 <footer class="sgd-footer"><div class="container">
   @if($marca['footer']['texto'] !== '')<p class="mb-2">{{ $marca['footer']['texto'] }}</p>@endif
   <ul class="list-inline mb-0">
@@ -87,6 +95,7 @@
   </ul>
   @if($marca['footer']['texto_legal'] !== '')<p class="small mt-2 mb-0">{{ $marca['footer']['texto_legal'] }}</p>@endif
 </div></footer>
+@unless($esLogin)</div></div>@endunless
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 @stack('scripts')

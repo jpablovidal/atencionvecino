@@ -1,27 +1,20 @@
 @extends('layouts.app')
 @section('titulo', 'Ingreso')
+@section('login', '1')
 @section('contenido')
+<img class="sgd-login-logo" src="{{ asset('assets/img/logo-santo-domingo.png') }}" alt="Logo de la Municipalidad de Santo Domingo" width="57" height="92">
+<h1>Iniciar sesión</h1>
 @if($claveunica)
-<h1>Ingreso con ClaveÚnica</h1>
-<p>El acceso al sistema se realiza únicamente con ClaveÚnica. Su RUN y nombre se obtienen de ClaveÚnica y no pueden modificarse.</p>
-<div class="row">
-  <div class="col-md-6 mb-3"><div class="card h-100"><div class="card-body">
-    <h2 class="h4">Soy vecino(a)</h2><p>Ingrese solicitudes y revise su estado.</p>
-    <a class="btn btn-primary" href="{{ route('ingreso.via','ciudadano') }}">Ingresar como ciudadano(a)</a>
-  </div></div></div>
-  <div class="col-md-6 mb-3"><div class="card h-100"><div class="card-body">
-    <h2 class="h4">Soy funcionario(a)</h2><p>Su RUN debe estar habilitado en el sistema.</p>
-    <a class="btn btn-outline-primary" href="{{ route('ingreso.via','funcionario') }}">Ingresar como funcionario(a)</a>
-  </div></div></div>
-</div>
-@else
-<h1>Ingreso</h1>
+<p class="text-center small text-muted">El acceso se realiza únicamente con ClaveÚnica. Su RUN y nombre se obtienen de ClaveÚnica y no pueden modificarse.</p>
+<a class="btn btn-primary btn-block mb-2" href="{{ route('ingreso.via','ciudadano') }}">Ingresar como vecino(a)</a>
+<a class="btn btn-outline-primary btn-block mb-2" href="{{ route('ingreso.via','funcionario') }}">Ingresar como funcionario(a)</a>
 @endif
 @if($pruebas)
-<div class="card border-warning mt-3"><div class="card-body">
-  <h2 class="h4">Ingreso de pruebas</h2>
-  <p>Ambiente de pruebas: ingrese con el usuario y la contraseña entregados por el equipo del proyecto.</p>
-  <a class="btn btn-warning" href="{{ route('ingreso.pruebas') }}">Ingresar con usuario y contraseña</a>
-</div></div>
+<div class="border-top pt-3 mt-3">
+  <h2 class="h6">Ingreso de pruebas</h2>
+  <p class="small text-muted">Ambiente de pruebas: ingrese con el usuario y la contraseña entregados por el equipo del proyecto.</p>
+  <a class="btn btn-warning btn-block" href="{{ route('ingreso.pruebas') }}">Ingresar con usuario y contraseña</a>
+</div>
 @endif
+<p class="text-center small mt-3 mb-0"><a href="{{ route('inicio') }}">Volver al inicio</a></p>
 @endsection

@@ -21,9 +21,9 @@ class AparienciaService
     public const DEFECTO = [
         'colores' => [
             'primario' => '#006fb3', 'titulo' => '#0a2e4d',
-            'header_fondo' => '#006fb3', 'header_texto' => '#ffffff',
-            'nav_fondo' => '#0a2e4d', 'nav_texto' => '#ffffff',
-            'footer_fondo' => '#0a2e4d', 'footer_texto' => '#ffffff', 'footer_enlace' => '#cfe6f7',
+            'header_fondo' => '#0a132d', 'header_texto' => '#ffffff',
+            'nav_fondo' => '#ffffff', 'nav_texto' => '#0a2e4d',
+            'footer_fondo' => '#0a132d', 'footer_texto' => '#ffffff', 'footer_enlace' => '#cfe6f7',
         ],
         'header' => ['titulo' => 'I. Municipalidad de Santo Domingo', 'subtitulo' => 'Sistema de Gestión Documental', 'mostrar_logo' => true, 'logo_alt' => 'Logo de la Municipalidad de Santo Domingo', 'logo_alto_px' => 48],
         'footer' => ['texto' => 'I. Municipalidad de Santo Domingo · Ley 21.180 de Transformación Digital del Estado', 'texto_legal' => '', 'enlaces' => []],

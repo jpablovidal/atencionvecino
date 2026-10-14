@@ -231,7 +231,7 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 
 | Módulo | Ruta | Qué permite |
 |---|---|---|
-| Apariencia | `/app/admin/apariencia` | Logo (PNG/JPG/WebP re-codificado; sin SVG), colores con **validación de contraste WCAG ≥ 4,5:1**, encabezado y pie (textos y enlaces https/internos). |
+| Apariencia | `/app/admin/apariencia` | Diseño tipo intranet (barra superior oscura, menú lateral, ingreso centrado) sobre el Framework kit de Gobierno. Logo (PNG/JPG/WebP re-codificado; sin SVG; por defecto el escudo municipal), colores con **validación de contraste WCAG ≥ 4,5:1**, encabezado y pie (textos y enlaces https/internos). |
 | Barra de menú | `/app/admin/menu` | Renombrar, reordenar u ocultar ítems del sistema (los protegidos no se ocultan) y agregar enlaces propios por área/rol. El menú **no concede ni quita permisos**. |
 | APIs e integraciones | `/app/admin/api` | Ver estado, editar URL/modo, probar conexión y volver a `.env` para ClaveÚnica, FirmaGob, casilla, Gmail, DocDigital, PISEE, Codificador, LLM y repositorio. Los secretos **no se muestran**; solo se guardan en BD si `SGD_API_SECRETOS_EN_BD=1`. |
 | Folios | `/app/admin/folios` | Formato (`{PREFIJO} {TIPO} {N} {AAAA} {AA}`), dígitos, reinicio anual o continuo y número inicial por tipo de documento. |

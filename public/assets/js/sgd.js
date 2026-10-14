@@ -166,3 +166,34 @@
     });
   }
 })();
+
+/* Menú lateral y desplegables de la barra superior (sin scripts en línea). */
+(function () {
+  'use strict';
+  var layout = document.querySelector('.sgd-layout.con-lateral');
+  var burger = document.getElementById('sgd-burger');
+  if (layout) {
+    document.querySelectorAll('.sgd-sidebar details.sgd-nav-grupo').forEach(function (d) { d.open = true; });
+    var K = 'sgd_lateral';
+    var oculto = false;
+    try { oculto = window.localStorage.getItem(K) === '0' && window.innerWidth >= 992; } catch (e) { oculto = false; }
+    var aplicar = function () {
+      layout.classList.toggle('lateral-oculto', oculto);
+      if (burger) { burger.setAttribute('aria-expanded', oculto ? 'false' : 'true'); }
+    };
+    aplicar();
+    if (burger) {
+      burger.addEventListener('click', function () {
+        oculto = !oculto; aplicar();
+        try { window.localStorage.setItem(K, oculto ? '0' : '1'); } catch (e) { /* sin almacenamiento */ }
+      });
+    }
+  }
+  var desplegables = document.querySelectorAll('details.a11y-mas, details.sgd-user');
+  document.addEventListener('click', function (e) {
+    desplegables.forEach(function (d) { if (d.open && !d.contains(e.target)) { d.open = false; } });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { desplegables.forEach(function (d) { if (d.open) { d.open = false; var s = d.querySelector('summary'); if (s) { s.focus(); } } }); }
+  });
+})();

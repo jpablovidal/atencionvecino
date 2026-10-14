@@ -105,7 +105,7 @@ class AparienciaMenuTest extends TestCase
 
     public function test_css_dinamico_con_colores_validados_sin_inyeccion(): void
     {
-        $this->admin()->post('/app/admin/apariencia', $this->form(['colores' => ['header_fondo' => '#7a1f1f', 'primario' => '#7a1f1f', 'nav_fondo' => '#1b1b3a']]))->assertSessionHas('ok');
+        $this->admin()->post('/app/admin/apariencia', $this->form(['colores' => ['header_fondo' => '#7a1f1f', 'primario' => '#7a1f1f', 'nav_fondo' => '#1b1b3a', 'nav_texto' => '#ffffff']]))->assertSessionHas('ok');
         $r = $this->get('/marca/estilo.css');
         $r->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->assertStringContainsString('text/css', $r->headers->get('Content-Type'));
@@ -130,7 +130,7 @@ class AparienciaMenuTest extends TestCase
         $this->admin()->post('/app/admin/apariencia', $this->form(['colores' => ['header_fondo' => '#7a1f1f']]))->assertSessionHas('ok');
         $this->admin()->post('/app/admin/apariencia/restablecer')->assertSessionHas('ok');
         $d = app(AparienciaService::class)->datos();
-        $this->assertSame('#006fb3', $d['colores']['header_fondo']);
+        $this->assertSame('#0a132d', $d['colores']['header_fondo']);
         $this->assertNotNull($d['logo']);
     }
 
