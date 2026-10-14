@@ -70,3 +70,10 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Sin extensión `sodium`:** se usa la alternativa con OpenSSL (misma salida que libsodium). Requiere OpenSSL ≥ 1.1 con `chacha20-poly1305`; el rendimiento es similar. La interoperabilidad se verificó contra libsodium en las pruebas, pero la alternativa no pasó por una auditoría criptográfica independiente.
 - **Capturas de los manuales:** las imágenes de `public/assets/manual` corresponden al diseño anterior; el texto de los manuales está actualizado, pero las capturas deben regenerarse. El inicio no tiene los bloques «Noticias», «Cumpleaños» ni «Alertas normativas» de la intranet de referencia (no hay fuente de datos para ellos).
 
+## Archivo municipal (microformas)
+- **No sustituye la certificación legal.** El acta se adjunta como PDF; el sistema solo informa si detecta firma electrónica y **no** valida quién firmó ni su competencia. La normativa aplicable está en `docs/NORMATIVA.md` §7 (**A VALIDAR**).
+- La disposición de originales (eliminación o transferencia) **solo se registra**; el sistema no ejecuta nada sobre documentos físicos.
+- Una microforma certificada **no se puede anular ni modificar**; una corrección requiere registrar una nueva microforma (o intervención técnica documentada en base de datos).
+- Los archivos maestros tienen el límite de 10 MB por archivo (PDF, JPG, PNG, TIFF) y 300 por microforma; no se procesan rollos de microfilm ni se hace OCR. No hay catálogo de series, tabla de retención ni préstamo de soportes físicos.
+- El acceso es por permisos (no por unidad): quien tiene `archivo.ver` ve todas las microformas.
+

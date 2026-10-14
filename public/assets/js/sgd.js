@@ -218,3 +218,24 @@
     if (e.key === 'Escape') { desplegables.forEach(function (d) { if (d.open) { d.open = false; var s = d.querySelector('summary'); if (s) { s.focus(); } } }); }
   });
 })();
+
+/* Tablas con desplazamiento horizontal: deben poder recorrerse con el teclado (región enfocable con nombre). */
+(function () {
+  'use strict';
+  function revisar() {
+    document.querySelectorAll('.table-responsive').forEach(function (c) {
+      var desborda = c.scrollWidth > c.clientWidth + 1;
+      if (desborda) {
+        var cap = c.querySelector('caption');
+        c.setAttribute('tabindex', '0');
+        c.setAttribute('role', 'region');
+        c.setAttribute('aria-label', (cap ? cap.textContent.trim() : 'Tabla') + ' (desplazable)');
+      } else if (c.getAttribute('data-sgd-scroll') === '1') {
+        c.removeAttribute('tabindex'); c.removeAttribute('role'); c.removeAttribute('aria-label');
+      }
+      c.setAttribute('data-sgd-scroll', desborda ? '1' : '0');
+    });
+  }
+  revisar();
+  window.addEventListener('resize', revisar);
+})();

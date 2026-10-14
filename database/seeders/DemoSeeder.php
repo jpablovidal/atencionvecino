@@ -27,6 +27,7 @@ class DemoSeeder extends Seeder
             ['id' => 2, 'codigo' => 'SECMUN', 'nombre' => 'Secretaría Municipal', 'activo' => 1] + $t,
             ['id' => 3, 'codigo' => 'DOM', 'nombre' => 'Dirección de Obras Municipales', 'activo' => 1] + $t,
             ['id' => 4, 'codigo' => 'DIDECO', 'nombre' => 'Dirección de Desarrollo Comunitario', 'activo' => 1] + $t,
+            ['id' => 5, 'codigo' => 'ARCH', 'nombre' => 'Archivo Municipal', 'activo' => 1] + $t,
         ]);
 
         $u = fn (int $id, int $cuerpo, string $nom, string $ape, string $rol, ?int $unidad, bool $firma, string $cargo) => [
@@ -39,10 +40,13 @@ class DemoSeeder extends Seeder
         foreach ([
             ['dir_tramites', 'Director(a) de trámites', 'Crea, edita, publica y deshabilita los trámites de su dirección.', ['tramites.gestionar', 'tramites.publicar']],
             ['edit_tramites', 'Redactor(a) de trámites', 'Crea y edita borradores de trámites de su dirección; no puede publicarlos.', ['tramites.gestionar']],
-        ] as $i => [$clave, $nombre, $desc, $extra]) {
+            ['arch_gestion', 'Encargado(a) de archivo', 'Registra microformas, carga sus archivos e índice y gestiona la disposición de originales.', ['archivo.ver', 'archivo.gestionar'], 'funcionario'],
+            ['arch_cert', 'Ministro(a) de fe del archivo', 'Certifica microformas (acta) y autoriza la disposición de originales.', ['archivo.ver', 'archivo.certificar', 'archivo.disposicion'], 'secretario'],
+        ] as $i => $fila) {
+            [$clave, $nombre, $desc, $extra, $base] = array_pad($fila, 5, 'funcionario');
             $rid = 6 + $i; // los 5 roles del sistema ocupan 1-5; id explícito para que 02_seed_demo.sql sea generable
-            DB::table('roles')->insert(['id' => $rid, 'clave' => $clave, 'nombre' => $nombre, 'descripcion' => $desc, 'rol_base' => 'funcionario', 'sistema' => 0, 'activo' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
-            foreach (array_unique([...Permisos::deBase('funcionario'), ...$extra]) as $perm) {
+            DB::table('roles')->insert(['id' => $rid, 'clave' => $clave, 'nombre' => $nombre, 'descripcion' => $desc, 'rol_base' => $base, 'sistema' => 0, 'activo' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
+            foreach (array_unique([...Permisos::deBase($base), ...$extra]) as $perm) {
                 DB::table('rol_permisos')->insert(['rol_id' => $rid, 'permiso' => $perm]);
             }
         }
@@ -57,6 +61,8 @@ class DemoSeeder extends Seeder
             $u(8, 10000008, 'Daniel', 'Director DOM', 'funcionario', 3, true, 'Director de Obras'),
             $u(9, 10000009, 'Elena', 'Directora DIDECO', 'dir_tramites', 4, false, 'Directora de Desarrollo Comunitario'),
             $u(10, 10000010, 'Mario', 'Redactor DOM', 'edit_tramites', 3, false, 'Redactor de trámites DOM'),
+            $u(11, 10000011, 'Ximena', 'Archivista Municipal', 'arch_gestion', 5, false, 'Encargada del Archivo Municipal'),
+            $u(12, 10000012, 'Tomás', 'Ministro de Fe', 'arch_cert', 2, false, 'Ministro de fe (Secretaría Municipal)'),
         ]);
 
         DB::table('tramites')->insert([

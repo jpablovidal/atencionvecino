@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Usuario;
+use App\Services\ArchivoMunicipalService;
 use App\Services\ExpedienteService;
 use App\Support\ManualRenderer;
 use DOMDocument;
@@ -29,6 +31,8 @@ class AccesibilidadTest extends TestCase
         $e = app(ExpedienteService::class)->crearDesdeSolicitud($s, $dom);
         $doc = $this->documentoVigente($e, $dom);
         $doc->forceFill(['nivel_acceso' => 'publico'])->save();
+        $archivista = Usuario::query()->where('rol', 'arch_gestion')->firstOrFail();
+        $micro = app(ArchivoMunicipalService::class)->crear($archivista, ['titulo' => 'Decretos 2020', 'tipo_soporte' => 'digital']);
         $h = [
             'inicio' => $this->get('/'), 'ingreso' => $this->get('/ingreso'), 'publico' => $this->get('/publico'), 'catalogo' => $this->get('/tramites'), 'catalogo-ficha' => $this->get('/tramites/1/permiso-de-edificacion'), 'validar-form' => $this->get('/validar'),
             'validar' => $this->get('/validar/'.$doc->codigo_validacion), 'accesibilidad' => $this->get('/accesibilidad'), 'ayuda' => $this->get('/ayuda'),
@@ -36,6 +40,7 @@ class AccesibilidadTest extends TestCase
             'bandeja' => $this->comoFuncionario($dom)->get('/app'), 'expediente' => $this->comoFuncionario($dom)->get("/app/expedientes/{$e->id}"),
             'documento' => $this->comoFuncionario($dom)->get("/app/documentos/{$doc->id}"), 'vigentes' => $this->comoFuncionario($dom)->get('/app/vigentes'),
             'comunicaciones' => $this->comoFuncionario($dom)->get('/app/comunicaciones'),
+            'archivo' => $this->comoFuncionario($archivista)->get('/app/archivo'), 'archivo-nueva' => $this->comoFuncionario($archivista)->get('/app/archivo/nueva'), 'archivo-ver' => $this->comoFuncionario($archivista)->get("/app/archivo/{$micro->id}"),
             'admin-usuarios' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/usuarios'), 'admin-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/tramites/1'),
             'admin-plantilla' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/plantillas/1'), 'codificador' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/codificador'),
             'diagnostico' => $this->comoFuncionario($this->usuario('admin'))->get('/app/diagnostico'), 'seguridad' => $this->comoFuncionario($this->usuario('auditor'))->get('/app/seguridad'),

@@ -143,5 +143,5 @@ return [
     ],
 
     // Validación pública
-    'validar_rate_per_minute' => 30,
+    'validar_rate_per_minute' => (int) env('SGD_PUBLICO_RATE_POR_MINUTO', 30),
 ];

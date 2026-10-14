@@ -136,6 +136,20 @@ Si el administrador le asignó un rol con **Trámites y servicios**, verá ese �
 
 > Si no tiene permiso de publicación, puede crear y editar borradores, pero no publicarlos ni modificar uno ya publicado (sí puede deshabilitarlo). Los textos se guardan como texto plano: no use HTML ni enlaces.
 
+## Archivo municipal: microformas (si su rol lo permite)
+
+El menú **Archivo municipal** aparece solo si su rol tiene permisos `archivo.*`. Hay cuatro funciones, que el administrador asigna con roles personalizados: **ver** (consultar), **gestionar** (registrar y cargar), **certificar** (ministro de fe) y **autorizar disposición**.
+
+1. **Registrar** (gestionar): *Registrar microforma* → título, soporte (microfilm 16/35 mm, microficha o digital), unidad productora, serie, extremos, cantidades y ubicación física. Queda en **borrador** con un código `MF-AAAA-NNNNNN`.
+2. **Cargar archivos maestros**: PDF, JPG, PNG o TIFF (máx. 10 MB c/u, hasta 40 por vez). Se cifran y se calcula su **SHA-256**. Si algo falla, no queda nada cargado.
+3. **Indexar documentos**: referencia, descripción, fecha, fojas y posición (fotograma) de cada documento contenido.
+4. **Enviar a revisión**: fija el conjunto de archivos y lo pasa al ministro de fe.
+5. **Certificar** (certificar): verifica la integridad de todos los archivos, pide el **número de acta** y el **acta en PDF** (se informa si trae firma electrónica) y deja la microforma **certificada e inmutable** con el hash del conjunto. **Quien registró la microforma no puede certificarla.** También puede **devolverla a borrador** con un motivo.
+6. **Verificar integridad**, **descargar** un archivo y emitir la **constancia de registro (PDF)**: lo puede hacer quien tenga permiso de ver. Cada consulta queda en la **cadena de custodia**.
+7. **Disposición de originales** (solo microformas certificadas): quien gestiona la **solicita** con su fundamento (eliminación o transferencia); **otra persona** con permiso de disposición la **autoriza** (con el N.º del acto administrativo) o la rechaza; luego se **registra la ejecución**. El sistema solo registra: no elimina ni traslada nada.
+
+> **Importante:** la constancia del sistema **no reemplaza el certificado legal** de la microforma. La normativa aplicable debe ser validada por la asesoría jurídica (`docs/NORMATIVA.md` §7).
+
 ## Firmas electrónicas en los archivos
 
 Junto a cada PDF verá si trae **firma electrónica**: «Firmado electrónicamente», «Sin firma electrónica», «Firmado, con cambios posteriores» o «Firma inválida o documento alterado» (en este caso no confíe en el documento y avise al administrador). *Ver firmas* muestra quién firmó, el emisor del certificado y la fecha. El sistema guarda el archivo tal como llegó, para no invalidar la firma.

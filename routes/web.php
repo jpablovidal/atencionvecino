@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
+use App\Http\Controllers\ArchivoMunicipalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CatalogoTramitesController;
@@ -157,6 +158,35 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::post('/{id}/publicar', [TramitesController::class, 'publicar'])->whereNumber('id')->name('publicar');
         Route::post('/{id}/deshabilitar', [TramitesController::class, 'deshabilitar'])->whereNumber('id')->name('deshabilitar');
         Route::post('/{id}/duplicar', [TramitesController::class, 'duplicar'])->whereNumber('id')->name('duplicar');
+    });
+
+    // ---- Archivo municipal (microformas): permisos por ruta y de nuevo en el servicio
+    Route::prefix('archivo')->name('archivo.')->group(function () {
+        Route::middleware('permiso:archivo.ver')->group(function () {
+            Route::get('/', [ArchivoMunicipalController::class, 'index'])->name('index');
+            Route::get('/{id}', [ArchivoMunicipalController::class, 'ver'])->whereNumber('id')->name('ver');
+            Route::get('/{id}/archivo/{archivo}', [ArchivoMunicipalController::class, 'archivo'])->whereNumber(['id', 'archivo'])->middleware('throttle:60,1')->name('archivo');
+            Route::get('/{id}/constancia', [ArchivoMunicipalController::class, 'constancia'])->whereNumber('id')->middleware('throttle:20,1')->name('constancia');
+            Route::post('/{id}/verificar', [ArchivoMunicipalController::class, 'verificar'])->whereNumber('id')->middleware('throttle:20,1')->name('verificar');
+        });
+        Route::middleware('permiso:archivo.gestionar')->group(function () {
+            Route::get('/nueva', [ArchivoMunicipalController::class, 'crear'])->name('crear');
+            Route::post('/', [ArchivoMunicipalController::class, 'guardar'])->name('guardar');
+            Route::post('/{id}', [ArchivoMunicipalController::class, 'actualizar'])->whereNumber('id')->name('actualizar');
+            Route::post('/{id}/subir', [ArchivoMunicipalController::class, 'subir'])->whereNumber('id')->middleware('throttle:30,1')->name('subir');
+            Route::post('/{id}/archivo/{archivo}/quitar', [ArchivoMunicipalController::class, 'quitar'])->whereNumber(['id', 'archivo'])->name('quitar');
+            Route::post('/{id}/indice', [ArchivoMunicipalController::class, 'itemAgregar'])->whereNumber('id')->name('item.agregar');
+            Route::post('/{id}/indice/{item}/quitar', [ArchivoMunicipalController::class, 'itemQuitar'])->whereNumber(['id', 'item'])->name('item.quitar');
+            Route::post('/{id}/enviar', [ArchivoMunicipalController::class, 'enviar'])->whereNumber('id')->name('enviar');
+            Route::post('/{id}/anular', [ArchivoMunicipalController::class, 'anular'])->whereNumber('id')->name('anular');
+            Route::post('/{id}/disposicion', [ArchivoMunicipalController::class, 'disposicionSolicitar'])->whereNumber('id')->name('disposicion.solicitar');
+            Route::post('/{id}/disposicion/ejecutar', [ArchivoMunicipalController::class, 'disposicionEjecutar'])->whereNumber('id')->name('disposicion.ejecutar');
+        });
+        Route::middleware('permiso:archivo.certificar')->group(function () {
+            Route::post('/{id}/certificar', [ArchivoMunicipalController::class, 'certificar'])->whereNumber('id')->middleware('throttle:20,1')->name('certificar');
+            Route::post('/{id}/devolver', [ArchivoMunicipalController::class, 'devolver'])->whereNumber('id')->name('devolver');
+        });
+        Route::post('/{id}/disposicion/resolver', [ArchivoMunicipalController::class, 'disposicionResolver'])->whereNumber('id')->middleware('permiso:archivo.disposicion')->name('disposicion.resolver');
     });
 
     // ---- Administración (módulos específicos ANTES del mantenedor genérico /{entidad})

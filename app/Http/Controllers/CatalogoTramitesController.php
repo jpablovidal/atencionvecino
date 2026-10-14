@@ -40,6 +40,9 @@ class CatalogoTramitesController extends Controller
     public function iniciar(Request $request, int $id)
     {
         $t = Tramite::query()->publicados()->findOrFail($id);
+        if ($request->user()) { // personal municipal con sesión: los trámites se solicitan como vecino(a)
+            return redirect()->route('catalogo.ficha', [$t->id, Str::slug($t->nombre)])->with('aviso', 'Los trámites se solicitan como vecino(a), con ClaveÚnica. Cierre su sesión de funcionario para continuar.');
+        }
         if ($request->session()->has('ciudadano')) {
             return redirect()->route('ciudadano.nueva', $t);
         }

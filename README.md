@@ -239,6 +239,7 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 | Repositorio | `/app/admin/repositorio` | Local o **unidad compartida de Google Drive**: probar, migrar archivos existentes y verificar integridad. |
 | Roles y permisos | `/app/admin/roles` | Roles personalizados con permisos acotados por su rol base. |
 | **Trámites y servicios** | `/app/tramites` | Cada **dirección municipal** crea, edita, publica y deshabilita sus trámites (descripción, instrucciones, plazo y **documentos requeridos**). Borrador → publicado ↔ deshabilitado; el ciudadano lo solicita adjuntando todo y se genera el expediente. **Catálogo público** `/tramites` (sin sesión, buscador, filtro por dirección y ficha con requisitos; solo publicados). Permisos `tramites.gestionar` / `tramites.publicar` (solo administrador por defecto; se entregan con roles personalizados), alcance limitado a la dirección propia, versiones inmutables y auditoría. |
+| **Archivo municipal** | `/app/archivo` | Gestión de **microformas**: registro (soporte, serie, extremos, ubicación), archivos maestros cifrados con SHA-256, índice de documentos, envío a revisión, **certificación** con acta (separación de funciones), verificación de integridad, constancia PDF, **disposición de originales con doble control** y cadena de custodia. Permisos `archivo.*` (opcionales; el administrador no los admite). No reemplaza la certificación legal (ver `docs/NORMATIVA.md` §7, A VALIDAR). |
 | Usuarios | `/app/admin/usuarios` | Alta/edición con roles dinámicos, búsqueda y resguardos (no desactivarse; siempre un administrador activo). |
 | Plantillas y formatos | `/app/admin/plantillas` | Editor TinyMCE completo (tablas, imágenes, colores, tipografías, saltos de página, variables), visibilidad por unidad (toda la municipalidad o direcciones como Salud/Educación) e historial de versiones. Catálogo para todo el personal en `/app/formatos`. |
 | Conexiones y mapa | `/app/sistema/conexiones` | **Mapa del mundo** con el origen de las conexiones al sistema (y el destino de las que hace hacia ClaveÚnica, FirmaGob, Google, etc.), **ranking de las IP con más conexiones**, errores por IP (posible escaneo), evolución y tipo de uso. Solo contadores por hora: no guarda URL ni contenido; retención 90 días. |
@@ -275,7 +276,7 @@ composer install
 cp .env.example .env   # y ajustar: APP_ENV=local, DB sqlite, CLAVEUNICA_MODE=mock, FIRMAGOB_MODE=mock (SOLO desarrollo)
 php artisan key:generate && php artisan migrate --seed
 php artisan serve
-vendor/bin/phpunit            # 652 pruebas
+vendor/bin/phpunit            # 670 pruebas
 vendor/bin/pint --test        # estilo
 composer audit                # dependencias
 ```

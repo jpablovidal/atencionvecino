@@ -368,4 +368,50 @@ alter table `tramite_versiones` add constraint `tramite_versiones_creado_por_for
 
 alter table `tramite_versiones` add index `tramite_versiones_tramite_id_version_index`(`tramite_id`, `version`);
 
+create table `archivo_microformas` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(20) null, `titulo` varchar(190) not null, `descripcion` text null, `tipo_soporte` varchar(20) not null, `unidad_id` bigint unsigned null, `serie` varchar(120) null, `fecha_desde` date null, `fecha_hasta` date null, `n_documentos` int unsigned not null default '0', `n_imagenes` int unsigned not null default '0', `ubicacion` varchar(190) null, `nivel_acceso` varchar(15) not null default 'reservado', `estado` varchar(20) not null default 'borrador', `expediente_id` bigint unsigned null, `creado_por` bigint unsigned not null, `certificada_por` bigint unsigned null, `certificada_en` timestamp null, `acta_numero` varchar(60) null, `acta_archivo_id` bigint unsigned null, `sha256_conjunto` varchar(64) null, `disposicion` varchar(12) not null default 'conservar', `disposicion_estado` varchar(12) not null default 'no_aplica', `disposicion_motivo` text null, `disposicion_solicitada_por` bigint unsigned null, `disposicion_autorizada_por` bigint unsigned null, `disposicion_acta` varchar(60) null, `disposicion_en` timestamp null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `archivo_microformas` add constraint `archivo_microformas_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`);
+
+alter table `archivo_microformas` add constraint `archivo_microformas_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`);
+
+alter table `archivo_microformas` add constraint `archivo_microformas_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `archivo_microformas` add constraint `archivo_microformas_certificada_por_foreign` foreign key (`certificada_por`) references `usuarios` (`id`);
+
+alter table `archivo_microformas` add constraint `archivo_microformas_acta_archivo_id_foreign` foreign key (`acta_archivo_id`) references `archivos` (`id`);
+
+alter table `archivo_microformas` add constraint `archivo_microformas_disposicion_solicitada_por_foreign` foreign key (`disposicion_solicitada_por`) references `usuarios` (`id`);
+
+alter table `archivo_microformas` add constraint `archivo_microformas_disposicion_autorizada_por_foreign` foreign key (`disposicion_autorizada_por`) references `usuarios` (`id`);
+
+alter table `archivo_microformas` add index `archivo_microformas_estado_index`(`estado`);
+
+alter table `archivo_microformas` add index `archivo_microformas_tipo_soporte_index`(`tipo_soporte`);
+
+alter table `archivo_microformas` add unique `archivo_microformas_codigo_unique`(`codigo`);
+
+create table `archivo_microforma_archivos` (`id` bigint unsigned not null auto_increment primary key, `microforma_id` bigint unsigned not null, `archivo_id` bigint unsigned not null, `orden` int unsigned not null default '0') default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `archivo_microforma_archivos` add constraint `archivo_microforma_archivos_microforma_id_foreign` foreign key (`microforma_id`) references `archivo_microformas` (`id`);
+
+alter table `archivo_microforma_archivos` add constraint `archivo_microforma_archivos_archivo_id_foreign` foreign key (`archivo_id`) references `archivos` (`id`);
+
+alter table `archivo_microforma_archivos` add unique `archivo_microforma_archivos_archivo_id_unique`(`archivo_id`);
+
+alter table `archivo_microforma_archivos` add index `archivo_microforma_archivos_microforma_id_orden_index`(`microforma_id`, `orden`);
+
+create table `archivo_microforma_items` (`id` bigint unsigned not null auto_increment primary key, `microforma_id` bigint unsigned not null, `orden` int unsigned not null default '0', `referencia` varchar(120) not null, `descripcion` varchar(255) null, `fojas` varchar(30) null, `posicion` varchar(30) null, `fecha_documento` date null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `archivo_microforma_items` add constraint `archivo_microforma_items_microforma_id_foreign` foreign key (`microforma_id`) references `archivo_microformas` (`id`);
+
+alter table `archivo_microforma_items` add index `archivo_microforma_items_microforma_id_orden_index`(`microforma_id`, `orden`);
+
+create table `archivo_eventos` (`id` bigint unsigned not null auto_increment primary key, `microforma_id` bigint unsigned not null, `tipo` varchar(30) not null, `detalle` text null, `usuario_id` bigint unsigned null, `created_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `archivo_eventos` add constraint `archivo_eventos_microforma_id_foreign` foreign key (`microforma_id`) references `archivo_microformas` (`id`);
+
+alter table `archivo_eventos` add constraint `archivo_eventos_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`);
+
+alter table `archivo_eventos` add index `archivo_eventos_microforma_id_id_index`(`microforma_id`, `id`);
+
 SET FOREIGN_KEY_CHECKS = 1;

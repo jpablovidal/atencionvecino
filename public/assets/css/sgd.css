@@ -337,3 +337,4 @@ html.a11y-contrast .sgd-sidebar{background:#000}
   .sgd-user-nombre{max-width:4.2rem}
   .a11y-icon{min-width:2.1rem;min-height:2.1rem}
 }
+.estado-certificada{background:#d9f0dc;color:#0b4a1c}.estado-en_revision{background:#fff1cc;color:#5c4200}.estado-anulada{background:#fde0e0;color:#7a1010}html.a11y-contrast .estado-certificada,html.a11y-contrast .estado-en_revision,html.a11y-contrast .estado-anulada{background:#000;color:#fff}

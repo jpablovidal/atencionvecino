@@ -17,7 +17,7 @@ cPanel → **Terminal**. Pegue y presione Enter; cuando lo pida, escriba la **co
 ```bash
 cd ~ && sha256sum sgd-release.zip && unzip -q -o sgd-release.zip && rm -f sgd-release.zip && bash ~/sgd/scripts/instalar-cpanel.sh
 ```
-(Compare el SHA-256 que imprime con el de esta guía.) El instalador hace, en orden: comprueba PHP y extensiones → comprueba la conexión a la base → crea el subdominio `gestor.santodomingo.cl` con raíz `sgd/public`, PHP 8.3 y solicita el certificado AutoSSL → carpetas y permisos → `.env` con claves únicas → tablas y datos de demostración → **muestra una tabla con las 12 cuentas de prueba y sus contraseñas aleatorias (se muestran una sola vez: anótelas)** → cron → verificación.
+(Compare el SHA-256 que imprime con el de esta guía.) El instalador hace, en orden: comprueba PHP y extensiones → comprueba la conexión a la base → crea el subdominio `gestor.santodomingo.cl` con raíz `sgd/public`, PHP 8.3 y solicita el certificado AutoSSL → carpetas y permisos → `.env` con claves únicas → tablas y datos de demostración → **muestra una tabla con las 14 cuentas de prueba y sus contraseñas aleatorias (se muestran una sola vez: anótelas)** → cron → verificación.
 
 Si el subdominio `gestor` ya existía con otra raíz, en cPanel → **Dominios** deje su raíz del documento en `sgd/public`. Si el certificado no se emite solo, cPanel → **SSL/TLS Status** → *Run AutoSSL* (hasta 15 minutos).
 
@@ -35,9 +35,11 @@ Abra **https://gestor.santodomingo.cl** (verá el aviso amarillo «AMBIENTE DE P
 | Director de Obras | `10000008-3` | Funcionario con firma |
 | **Directora DIDECO** | `10000009-1` | Crea, publica y deshabilita trámites de su dirección |
 | **Redactor DOM** | `10000010-5` | Crea borradores de trámites; no publica |
+| **Encargada del Archivo** | `10000011-3` | Registra microformas, carga archivos, indexa, solicita disposición de originales |
+| **Ministro de Fe** | `10000012-1` | Certifica microformas con acta y autoriza la disposición |
 | Vecina/o 1 y 2 | `20000001-3` / `20000002-1` | Catálogo público, solicitar trámites con adjuntos |
 
-Flujo sugerido: (1) como **Directora DIDECO**: *Trámites y servicios* → *Nuevo trámite* → guardar borrador → *Vista previa* → *Publicar*. (2) Sin iniciar sesión: **/tramites** muestra el catálogo con buscador y filtro; abra el trámite y presione *Realizar este trámite en línea* → ingrese como **Vecina 1** y volverá directo al formulario; adjunte los documentos y envíe (recibe folio y comprobante). (3) **Funcionario DIDECO** la ve en su bandeja y se la asigna (se crea el expediente); redacta un oficio con el editor, la **Secretaria** lo firma (FirmaGob simulado, OTP de 6 dígitos) y se valida públicamente con el código SDD. (4) **Auditoría** revisa la bitácora y su cadena HMAC.
+Flujo sugerido: (1) como **Directora DIDECO**: *Trámites y servicios* → *Nuevo trámite* → guardar borrador → *Vista previa* → *Publicar*. (2) Sin iniciar sesión: **/tramites** muestra el catálogo con buscador y filtro; abra el trámite y presione *Realizar este trámite en línea* → ingrese como **Vecina 1** y volverá directo al formulario; adjunte los documentos y envíe (recibe folio y comprobante). (3) **Funcionario DIDECO** la ve en su bandeja y se la asigna (se crea el expediente); redacta un oficio con el editor, la **Secretaria** lo firma (FirmaGob simulado, OTP de 6 dígitos) y se valida públicamente con el código SDD. (4) **Auditoría** revisa la bitácora y su cadena HMAC. (5) **Archivo municipal** (menú lateral): como **Encargada del Archivo** registre una microforma, cargue un PDF, indexe un documento y envíela a revisión; como **Ministro de Fe** (otra persona: quien registra no puede certificar) certifíquela con un N.º de acta y un PDF; como **Auditoría** verifique la integridad, descargue y emita la constancia. La constancia **no reemplaza el certificado legal** (ver `docs/NORMATIVA.md` §7, A VALIDAR).
 
 ## Actualizar a una versión nueva (mismo procedimiento)
 Suba el nuevo ZIP a `~/` y pegue **el mismo comando del Paso 2**. Si detecta `~/sgd/.env`, entra en modo **actualización**: conserva `.env`, archivos y datos, aplica solo las migraciones nuevas y limpia cachés (no pide contraseña ni vuelve a cargar datos de demostración).
