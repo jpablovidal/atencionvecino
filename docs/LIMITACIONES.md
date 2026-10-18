@@ -146,3 +146,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 ## ClaveÚnica en la consulta de proveedores
 - **Persona, no empresa:** ClaveÚnica acredita la identidad de una persona natural; **no acredita que sea representante o dependiente de la empresa** cuyo RUT ingresa. El sistema no consulta poderes ni el SII. La barrera sigue siendo conocer los tres datos de la factura; la identificación solo agrega **trazabilidad** (queda registrado el RUN de quien consultó) y un freno por persona. Si la municipalidad exige verificar la relación con la empresa (Clave Tributaria, mandatos, registro de proveedores), es una integración futura (**A VALIDAR**).
 - Un proveedor extranjero o sin ClaveÚnica no puede consultar por esta vía: debe preguntar en la Dirección de Administración y Finanzas.
+
+## Panel de Alcaldía
+- Las **firmas delegadas** (cuando firma un delegado vigente) aparecen en el panel de quien firma y en «quién tiene hoy los documentos»; el alcalde no ve un listado aparte de lo que firmaron sus delegados.
+- Los montos y proveedores de los pagos son visibles para el alcalde (`decretopago.ver`); si la institución prefiere solo totales, se le puede quitar ese permiso en el rol.
+- El panel se calcula al abrirlo (instantánea de ese momento): no hay histórico ni alertas por correo.

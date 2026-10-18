@@ -133,4 +133,12 @@ class FuncionarioController extends Controller
 
         return view('app.vigentes', ['docs' => $docs, 'ocultos' => $ocultos]);
     }
+
+    /** Panel de Alcaldía: firmas pendientes, pagos y solicitudes de toda la municipalidad. */
+    public function alcaldia(Request $r)
+    {
+        $this->audit->registrar('alcaldia.panel', null, null, [], false);
+
+        return view('app.alcaldia', ['panel' => app(DashboardService::class)->para($r->user())]);
+    }
 }

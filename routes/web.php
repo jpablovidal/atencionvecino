@@ -100,6 +100,7 @@ Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadan
 Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->group(function () {
     Route::get('/', [FuncionarioController::class, 'bandeja'])->name('bandeja');
     Route::get('/vigentes', [FuncionarioController::class, 'vigentes'])->name('vigentes');
+    Route::get('/alcaldia', [FuncionarioController::class, 'alcaldia'])->middleware('permiso:alcaldia.panel')->name('alcaldia');
     Route::get('/formatos', [PlantillasController::class, 'catalogo'])->name('formatos');
     Route::get('/formatos/{plantilla}', [PlantillasController::class, 'ver'])->whereNumber('plantilla')->name('formato');
     Route::get('/formatos/{plantilla}/pdf', [PlantillasController::class, 'pdf'])->whereNumber('plantilla')->name('formato.pdf');

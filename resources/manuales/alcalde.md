@@ -54,3 +54,12 @@ Si el municipio recibe comunicaciones oficiales, la **unidad receptora** (normal
 | OTP inválido | Genere uno nuevo; tras 5 intentos fallidos FirmaGob bloquea temporalmente. |
 | Mi delegado no puede firmar | Verifique que la delegación esté **activa**, dentro de la **vigencia** y para el **tipo** correcto. |
 | Quiero cambiar quién firma | Rechace/devuelva a borrador y que el redactor reinicie el flujo. |
+
+## Panel de Alcaldía
+En **Panel de Alcaldía** (y en su Inicio) ve, de un vistazo:
+- **Sus firmas y visaciones pendientes**: los documentos que le toca firmar ahora y los que aún esperan a otra persona, con los días de espera (alerta desde 3 días). Haga clic en el documento para abrirlo y firmar.
+- **Decretos de pago por firmar** y todos los decretos de pago en visación y firma, con la persona a quien le toca.
+- **Quién tiene hoy los documentos** en visación y firma, para detectar cuellos de botella.
+- **Solicitudes** de toda la municipalidad: activas, con plazo vencido, por vencer, terminadas, por etapa, por dirección y por mes (cada indicador lleva al seguimiento detallado).
+- **Pagos**: decretos por estado, antigüedad de lo por pagar (alerta de 30 días, referencial), lo que falta por egresar y los egresos del mes.
+Usted solo consulta los pagos: no crea decretos ni egresos.

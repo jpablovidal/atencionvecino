@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `4e203a2f6b20a959b49a02c8d172cdc5d829d9ae24ff230d03d07691bc7248d9`).
+- Archivo **`sgd-release.zip`** (SHA-256 `873d3742466194d48835176d94a524e30aac101f369e8de9d03e6d5f13a04b0c`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -109,6 +109,12 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 - **Importante para que funcione**: el decreto de pago ahora pide la **fecha de la factura** (junto con RUT y número). Los decretos creados antes de esta versión no la tienen: complétela en el decreto (mientras sea borrador) o no aparecerá en la consulta pública. Los datos de demostración de los decretos de ejemplo no incluyen proveedor.
 - Si quiere publicar el enlace en el sitio web municipal, use la dirección anterior; también aparece en el menú del portal («Pago a proveedores»).
 - La tabla nueva no se crea: solo se agrega una columna (`factura_fecha`) al repetir el comando del Paso 2.
+
+## Novedades: panel de Alcaldía
+- El alcalde (`10000002-4` en pruebas) tiene el menú **Panel de Alcaldía** y su Inicio muestra: **firmas y visaciones pendientes** (con su turno y los días de espera), **decretos de pago por firmar**, **quién tiene hoy los documentos** en visación y firma, las **solicitudes** de toda la municipalidad (etapas, plazos, por dirección) y los **pagos** (estado, antigüedad, por egresar, egresos del mes).
+- Se le agregó, por defecto, el permiso de **solo lectura** de pagos (`decretopago.ver`). Si no desea que vea montos y proveedores, quítelo en *Administración → Roles* (el rol «alcalde» es del sistema: cree un rol personalizado con base alcalde sin ese permiso).
+- Para entregar el panel al secretario municipal u otra persona de apoyo, asigne el permiso `alcaldia.panel` en un rol personalizado.
+- No hay pasos manuales al actualizar (no hay cambios de base de datos).
 
 ## Operación
 ```bash

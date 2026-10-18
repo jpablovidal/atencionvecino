@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Models\AuditLog;
+use App\Models\DecretoPago;
+use App\Models\Documento;
+use App\Models\DocumentoPaso;
 use App\Models\Incidente;
 use App\Models\Rol;
 use App\Models\Solicitud;
@@ -32,6 +35,11 @@ class DashboardService
             return $snap ??= $this->seg->instantanea();
         };
 
+        if ($u->tienePermiso('alcaldia.panel')) { // las firmas pendientes y los decretos por firmar van primero
+            [$k, $b] = $this->alcaldia($u);
+            $kpis = array_merge($kpis, $k);
+            $bloques = array_merge($bloques, $b);
+        }
         if ($u->tienePermiso('seguimiento.consultar')) {
             [$k, $b] = $this->autoridad($instantanea());
             $kpis = array_merge($kpis, $k);
@@ -58,7 +66,7 @@ class DashboardService
             $kpis = array_merge($kpis, $p['kpis']);
             $bloques = array_merge($bloques, array_slice($p['bloques'], 0, 2), array_slice($p['bloques'], 4, 1));
         }
-        if ($u->operaExpedientes()) {
+        if ($u->operaExpedientes() && ! $u->tienePermiso('alcaldia.panel')) { // la Alcaldía no tiene «dirección» ni expedientes propios que resumir
             $b = $this->operador($u, $instantanea());
             $bloques = array_merge($bloques, $b);
         }
@@ -160,6 +168,52 @@ class DashboardService
             $this->barras('Requerimientos pendientes por dirección', $porDir),
             $this->barras('Transparencia activa (periodo vigente)', $estadosActiva),
         ]];
+    }
+
+    /**
+     * Panel de Alcaldía: sus firmas y visaciones pendientes (con su turno y los días de espera), los decretos de pago en firma y quién tiene
+     * hoy los documentos en flujo. Complementa los bloques de solicitudes (seguimiento) y de pagos.
+     */
+    private function alcaldia(Usuario $u): array
+    {
+        $ahora = now(Plazos::TZ);
+        $mios = DocumentoPaso::query()->with('documento.tipo', 'documento.expediente:id,codigo')->where('usuario_id', $u->id)->where('estado', 'pendiente')
+            ->whereHas('documento', fn ($d) => $d->where('estado', 'en_flujo'))->orderBy('created_at')->get()
+            ->map(function (DocumentoPaso $p) use ($ahora) {
+                $turno = ! DocumentoPaso::query()->where('documento_id', $p->documento_id)->where('estado', 'pendiente')->where('orden', '<', $p->orden)->exists();
+
+                return ['paso' => $p, 'turno' => $turno, 'dias' => (int) $p->created_at->setTimezone(Plazos::TZ)->startOfDay()->diffInDays($ahora->copy()->startOfDay(), false)];
+            });
+        $ahoraFirmo = $mios->where('turno', true);
+        $decretosMios = $ahoraFirmo->filter(fn ($f) => $f['paso']->documento->tipo?->codigo === 'DECRETO_PAGO');
+        $enFlujo = DocumentoPaso::query()->with('usuario:id,nombres,apellidos')->where('estado', 'pendiente')->whereHas('documento', fn ($d) => $d->where('estado', 'en_flujo'))->get()
+            ->filter(fn (DocumentoPaso $p) => ! DocumentoPaso::query()->where('documento_id', $p->documento_id)->where('estado', 'pendiente')->where('orden', '<', $p->orden)->exists());
+        $porPersona = $enFlujo->groupBy('usuario_id')->map(fn ($g) => [$g->first()->usuario?->nombreCompleto() ?? 'Sin asignar', $g->count(), null])->sortByDesc(1)->values()->take(8)->all();
+        $decretosFirma = [];
+        if ($u->tienePermiso('decretopago.ver')) {
+            $decretosFirma = DecretoPago::query()->with('documento.pasos.usuario')->where('estado', 'abierto')->whereHas('documento', fn ($d) => $d->where('estado', 'en_flujo'))->get()->map(function (DecretoPago $d) {
+                $sig = $d->documento->pasos->where('estado', 'pendiente')->sortBy('orden')->first();
+
+                return [[$d->proveedor_nombre, route('app.pagos.ver', $d)], '$'.number_format($d->monto, 0, ',', '.'), $sig ? ($sig->tipo === 'firma' ? 'Firma' : 'Visación').': '.$sig->usuario?->nombreCompleto() : '—'];
+            })->take(10)->values()->all();
+        }
+        $kpis = [
+            ['icono' => 'pen', 'valor' => $ahoraFirmo->count(), 'etiqueta' => 'Documentos por firmar o visar (su turno)', 'nivel' => $ahoraFirmo->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.bandeja')],
+            ['icono' => 'file-check', 'valor' => $decretosMios->count(), 'etiqueta' => 'Decretos de pago por firmar', 'nivel' => $decretosMios->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.bandeja')],
+            ['icono' => 'clock', 'valor' => $mios->where('turno', true)->where('dias', '>', 3)->count(), 'etiqueta' => 'Esperando su firma hace más de 3 días', 'nivel' => $mios->where('turno', true)->where('dias', '>', 3)->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.bandeja')],
+            ['icono' => 'file-text', 'valor' => Documento::query()->where('estado', 'en_flujo')->count(), 'etiqueta' => 'Documentos en visación y firma en la institución', 'nivel' => 'info', 'url' => null],
+        ];
+        $bloques = [
+            ['tipo' => 'tabla', 'titulo' => 'Mis firmas y visaciones pendientes', 'cabeceras' => ['Documento', 'Tipo', 'Expediente', 'Paso', 'Espera'], 'vacio' => 'No tiene firmas ni visaciones pendientes.',
+                'filas' => $mios->sortByDesc(fn ($f) => $f['turno'] ? $f['dias'] + 1000 : $f['dias'])->take(10)->map(fn ($f) => [[$f['paso']->documento->titulo, route('app.documento', $f['paso']->documento)], $f['paso']->documento->tipo?->nombre ?? '—', $f['paso']->documento->expediente?->codigo ?? '—',
+                    ($f['paso']->tipo === 'firma' ? 'Firma' : 'Visación').($f['turno'] ? '' : ' (aún no es su turno)'), $f['dias'].' d'.($f['turno'] && $f['dias'] > 3 ? ' ⚠' : '')])->values()->all()],
+            $this->barras('Quién tiene hoy los documentos en visación y firma', $porPersona, 'Cada documento se cuenta en la persona a quien le toca el turno.'),
+        ];
+        if ($u->tienePermiso('decretopago.ver')) {
+            $bloques[] = ['tipo' => 'tabla', 'titulo' => 'Decretos de pago en visación y firma', 'cabeceras' => ['Proveedor', 'Monto', 'Le toca a'], 'vacio' => 'No hay decretos de pago en firma.', 'filas' => $decretosFirma];
+        }
+
+        return [$kpis, $bloques];
     }
 
     private function operador(Usuario $u, $snap): array
