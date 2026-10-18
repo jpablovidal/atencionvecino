@@ -57,6 +57,7 @@ class MenuService
             'roles' => $i('Roles y permisos', 'app.admin.roles', 'app/admin/roles*', ['app'], 'roles.gestionar', $a, 115),
             'tramites' => $i('Trámites y servicios', 'app.tramites.index', 'app/tramites*', ['app'], 'tramites.gestionar', $a, 120),
             'restringidos' => $i('Accesos a restringidos', 'app.restringidos', 'app/restringidos*', ['app'], 'restringidos.auditar', $s, 305),
+            'anuncios' => $i('Anuncios', 'app.anuncios', 'app/anuncios*', ['app'], 'anuncios.gestionar', $a, 136),
             'feriados' => $i('Feriados', 'app.feriados', 'app/feriados*', ['app'], 'feriados.gestionar', $a, 135),
             'tipos' => $i('Tipos de documento', 'app.admin.index:tipos', 'app/admin/tipos*', ['app'], 'mantenedores.gestionar', $a, 130),
             'plantillas' => $i('Plantillas', 'app.admin.plantillas', 'app/admin/plantillas*', ['app'], 'plantillas.gestionar', $a, 140),
@@ -93,7 +94,7 @@ class MenuService
 
     /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
     public const ICONOS = [
-        'espacio' => 'switch', 'seguimiento' => 'search', 'feriados' => 'clock', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
+        'espacio' => 'switch', 'seguimiento' => 'search', 'feriados' => 'clock', 'anuncios' => 'bell', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
@@ -104,6 +105,7 @@ class MenuService
         'seguimiento' => 'Consulte por RUN, fechas, dirección, etapa o trámite: en qué está, quién la tiene y si terminó.', 'oirs' => 'Solicitudes, responsables y plazos vencidos o por vencer.',
         'transparencia' => 'Consultas de acceso a la información: gestión, plazos, prórrogas y derivaciones.', 'transp_activa' => 'Calendario mensual de publicaciones obligatorias.', 'transp_plazos' => 'Feriados y parámetros de los plazos de transparencia.', 'transp_reportes' => 'Reportes de transparencia pasiva y activa, exportables.', 'transp_req' => 'Requerimientos de información dirigidos a su dirección.',
         'restringidos' => 'Quién vio o intentó ver expedientes, documentos y archivos restringidos.',
+        'anuncios' => 'Anuncios con título, descripción, imagen o video que se muestran en un modal al cargar el sitio.',
         'feriados' => 'Feriados y días no laborables que no cuentan como días administrativos en los plazos.',
         'espacio' => 'Elija si trabaja como funcionario(a) o realiza trámites como vecino(a).',
         'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'casilla' => 'Notificaciones a la ciudadanía por Casilla Única: pendientes, evidencia y reintentos.', 'docdigital' => 'Estado de la conexión, comunicaciones recibidas y enviadas, sincronización y reintentos.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',

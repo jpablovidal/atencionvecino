@@ -221,3 +221,12 @@ El sistema **no ejecuta código** que alguien pegue en una plantilla, un documen
 | Notificaciones por correo "fallidas" | Cron activo, cola, credenciales Google, delegación de dominio. |
 | No llegan comunicaciones de DocDigital | Modo API, credenciales, unidad receptora, cron. |
 | Alerta de cadena rota | Plan de incidentes: preservar evidencia, no modificar. |
+
+## Feriados (días que no cuentan en los plazos)
+En **Feriados** registre los feriados y días no laborables de cada año (uno a uno o pegando una lista `AAAA-MM-DD;Nombre;tipo`). Esos días **no se cuentan como días administrativos** en los plazos de los trámites y servicios, además de sábados y domingos. Al agregar o quitar un feriado, los plazos de las solicitudes en curso se recalculan. Use el **simulador** para comprobar una fecha de vencimiento. Los feriados no vienen precargados: ingréselos según el calendario oficial.
+
+## Anuncios del sitio (modal de bienvenida)
+En **Anuncios** cree avisos con título, descripción, imagen o video y un enlace opcional. Elija a quién se muestran (vecinos, funcionarios o todos) y las fechas de vigencia. Se muestran en una ventana al cargar el sitio, una vez por visita. Describa siempre la imagen o el video (texto alternativo). Imágenes PNG o JPG hasta 2 MB; videos MP4 o WebM hasta 20 MB (el servidor puede limitarlos más). No publique datos personales.
+
+## Accesos a expedientes restringidos
+En **Accesos a restringidos** ve quién vio —o intentó ver— expedientes, documentos o archivos restringidos (nombre, cargo, RUN parcial, resultado y expediente). **Usted no puede ver el contenido restringido** ni ser autorizado(a) a verlo. La consulta queda registrada.

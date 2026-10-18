@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnunciosController;
 use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ArchivoMunicipalController;
@@ -52,6 +53,7 @@ Route::middleware('throttle:publico')->group(function () {
 });
 
 // ---- Marca (públicas): CSS de colores y logo
+Route::get('/anuncios/{anuncio}/medio', [AnunciosController::class, 'medio'])->whereNumber('anuncio')->middleware('throttle:120,1')->name('anuncios.medio');
 Route::get('/marca/estilo.css', [MarcaController::class, 'css'])->name('marca.css');
 Route::get('/marca/logo', [MarcaController::class, 'logo'])->name('marca.logo');
 
@@ -184,6 +186,17 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/seguimiento', [SeguimientoController::class, 'index'])->middleware('permiso:seguimiento.consultar')->name('seguimiento');
         Route::get('/oirs', [SeguimientoController::class, 'oirs'])->middleware('permiso:oirs.ver')->name('oirs');
         Route::get('/seguimiento/{folio}', [SeguimientoController::class, 'detalle'])->middleware('permiso:seguimiento.consultar,oirs.ver')->where('folio', '[A-Za-z0-9\-]{5,30}')->name('seguimiento.detalle');
+    });
+
+    // ---- Anuncios del modal de bienvenida
+    Route::middleware(['permiso:anuncios.gestionar', 'throttle:60,1'])->prefix('anuncios')->group(function () {
+        Route::get('/', [AnunciosController::class, 'index'])->name('anuncios');
+        Route::get('/nuevo', [AnunciosController::class, 'nuevo'])->name('anuncios.nuevo');
+        Route::post('/', [AnunciosController::class, 'guardar'])->name('anuncios.crear');
+        Route::get('/{anuncio}/editar', [AnunciosController::class, 'editar'])->whereNumber('anuncio')->name('anuncios.editar');
+        Route::post('/{anuncio}', [AnunciosController::class, 'guardar'])->whereNumber('anuncio')->name('anuncios.actualizar');
+        Route::post('/{anuncio}/alternar', [AnunciosController::class, 'alternar'])->whereNumber('anuncio')->name('anuncios.alternar');
+        Route::post('/{anuncio}/eliminar', [AnunciosController::class, 'eliminar'])->whereNumber('anuncio')->name('anuncios.eliminar');
     });
 
     // ---- Restricciones de acceso (protección de datos personales)

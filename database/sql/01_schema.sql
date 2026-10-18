@@ -546,4 +546,8 @@ alter table `acceso_restringido` add index `acceso_restringido_usuario_id_expedi
 
 alter table `acceso_restringido` add index `acceso_restringido_expediente_id_revocado_en_index`(`expediente_id`, `revocado_en`);
 
+create table `anuncios` (`id` bigint unsigned not null auto_increment primary key, `titulo` varchar(160) not null, `descripcion` text null, `audiencia` varchar(20) not null default 'vecinos', `medio_tipo` varchar(10) null, `medio_mime` varchar(60) null, `medio_ruta` varchar(200) null, `medio_sha256` varchar(64) null, `medio_tamano` bigint unsigned null, `medio_alt` varchar(200) null, `enlace_url` varchar(300) null, `enlace_texto` varchar(60) null, `inicia_en` timestamp null, `termina_en` timestamp null, `activo` tinyint(1) not null default '1', `orden` smallint unsigned not null default '10', `creado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `anuncios` add index `anuncios_activo_audiencia_index`(`activo`, `audiencia`);
+
 SET FOREIGN_KEY_CHECKS = 1;

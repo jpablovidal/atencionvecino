@@ -95,3 +95,6 @@ Todo documento firmado tiene un **código de validación** `SDD-XXXX-XXXX-XXXX` 
 **Me equivoqué en el correo o en el detalle.** Escriba o acuda a la oficina indicando su folio; el funcionario puede devolver la solicitud para que complete la información.
 
 **¿Quién ve mis datos?** Solo los funcionarios de la unidad que atiende su trámite (o a quienes ellos deriven). El administrador del sistema no puede leer los expedientes. Todos los accesos quedan registrados.
+
+## Avisos del sitio
+Al entrar al sitio puede aparecer una ventana con un aviso del municipio (por ejemplo, cierres por feriado o nuevos trámites). Puede cerrarla con el botón **Cerrar** o la tecla Esc, y marcar «No volver a mostrar este anuncio». Los plazos de respuesta se cuentan en **días administrativos** (lunes a viernes, sin feriados).

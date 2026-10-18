@@ -192,3 +192,12 @@ Junto a cada PDF verá si trae **firma electrónica**: «Firmado electrónicamen
 ## Asistente de redacción (IA) y contenido seguro
 
 Si su institución habilita el asistente, la IA solo propone **texto**: usted decide qué insertar y **debe revisarlo** (normas, nombres, cifras). Si aparece la advertencia «contenía marcado, enlaces o direcciones», revise con especial cuidado: el sistema ya eliminó todo lo ejecutable, pero el texto podría ser engañoso. Lo mismo vale para el contenido que pegue desde otros programas: el sistema elimina scripts, imágenes externas y caracteres invisibles al guardar.
+
+## Plazos en días administrativos
+Los plazos de los trámites se cuentan en **días administrativos**: lunes a viernes, sin los feriados que registra la administración. La fecha de vencimiento que ve en las bandejas ya los descuenta.
+
+## Plantillas por secciones
+Al crear una plantilla (si su rol lo permite) la redacta en partes: **materia, vistos, considerando, cuerpo** (decreto, reglamento, ordenanza, instructivo u oficio), **firmas** y **cadena de responsabilidad** (cargos que deben visar el documento). Al crear un documento con ella, las **iniciales** de quienes visan y de quien elabora se insertan al pie y el flujo de visación se sugiere con esos cargos. Hay ejemplos de decreto, reglamento, ordenanza, instructivo y oficio para partir (su texto es referencial: valídelo con jurídica).
+
+## Expedientes, documentos y archivos restringidos
+Si un expediente contiene datos personales o sensibles, puede **restringirlo** (o solo un documento o archivo) indicando el motivo. Las personas que no estén autorizadas verán «archivo restringido» y no podrán abrirlo; cada intento queda registrado. Autorice solo a quien **necesita conocerlo**, con motivo y, si corresponde, fecha de vencimiento (máximo 1 año), y revoque la autorización cuando deje de ser necesaria. Solo una persona autorizada puede cambiar o levantar la restricción. Administración del sistema no ve el contenido.

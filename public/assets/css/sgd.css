@@ -478,3 +478,8 @@ html.a11y-contrast .portal-hero{background:#000;border-bottom:2px solid #fff}
 html.a11y-contrast .portal-tarjeta,html.a11y-contrast .portal-direcciones a,html.a11y-contrast .portal-servicios a,html.a11y-contrast .portal-filtros,html.a11y-contrast .portal-resultado,html.a11y-contrast .portal-lateral,html.a11y-contrast .portal-pasos li,html.a11y-contrast .buscador-lista{background:#000;color:#fff;border:2px solid #fff}
 html.a11y-contrast .portal-busqueda{background:#000}
 html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#fff;border:1px solid #fff}
+
+/* Anuncios (modal de bienvenida) */
+.sgd-anuncio-medio{display:block;max-width:100%;height:auto;max-height:60vh;margin:0 auto 1rem}
+.sgd-anuncio-texto{white-space:normal;overflow-wrap:anywhere}
+.sgd-anuncio-item + .sgd-anuncio-item{border-top:1px solid #d9d9d9;margin-top:1rem;padding-top:1rem}

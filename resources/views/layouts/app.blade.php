@@ -111,9 +111,11 @@
   @if($marca['footer']['texto_legal'] !== '')<p class="small mt-2 mb-0">{{ $marca['footer']['texto_legal'] }}</p>@endif
 </div></footer>
 @unless($esLogin)</div></div>@endunless
+@include('partials.anuncios')
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 @stack('scripts')
+<script src="{{ asset('assets/js/anuncios.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/anuncios.js')), 0, 8) }}" defer></script>
 <script src="{{ asset('assets/js/sgd.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/sgd.js')), 0, 8) }}"></script>
 <script src="{{ asset('assets/js/buscador.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/buscador.js')), 0, 8) }}"></script>
 <script src="{{ asset('assets/js/progreso.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/progreso.js')), 0, 8) }}"></script>

@@ -55,3 +55,6 @@ Barra superior con tamaño de texto, alto contraste, texto legible, subrayado de
 **No veo un expediente.** El auditor ve todos; si falta alguno, verifique que no sea un error de búsqueda y avise al administrador.
 
 **¿Puedo exportar los metadatos?** Sí: en el expediente, **Exportar metadatos (JSON)**; la exportación queda auditada.
+
+## Accesos a contenido restringido
+Si su rol lo incluye, **Accesos a restringidos** lista los accesos permitidos y los intentos denegados a expedientes, documentos y archivos restringidos, con filtros por persona, expediente, resultado y fechas. Úselo para detectar consultas indebidas. Los datos personales se muestran minimizados (RUN parcial, sin IP).

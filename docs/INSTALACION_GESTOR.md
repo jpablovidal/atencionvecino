@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 el indicado junto con la entrega).
+- Archivo **`sgd-release.zip`** (SHA-256 `dfb902fa6aad0416c6133b0ee88025522aa04a3be42efa254cc722034d7d499b`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -32,9 +32,9 @@ Abra **https://gestor.santodomingo.cl** (verá el aviso amarillo «AMBIENTE DE P
 | Funcionario DOM / Revisora DOM | `10000004-0` / `10000005-9` | Bandeja de Obras, expedientes, documentos |
 | Funcionario DIDECO | `10000006-7` | Bandeja de Desarrollo Comunitario |
 | Auditoría | `10000007-5` | Solo lectura, bitácora, seguridad |
-| **Autoridad** | `10000013-K` ver tabla de claves | Seguimiento de solicitudes por RUN, fechas, dirección, etapa o trámite (solo lectura) |
-| **Transparencia activa y pasiva** | `10000015-6` ver tabla de claves | Consultas de acceso a la información, requerimientos, plazos, transparencia activa y reportes |
-| **OIRS** | `10000014-8` ver tabla de claves | Solicitudes, responsables, plazos vencidos y por vencer (solo lectura) |
+| **Autoridad** | `10000013-K` | Seguimiento de solicitudes: por RUN, fechas, dirección, etapa o trámite (solo lectura) |
+| **Transparencia activa y pasiva** | `10000015-6` | Consultas de acceso a la información, expedientes, requerimientos, plazos, transparencia activa y reportes |
+| **OIRS** | `10000014-8` | Solicitudes, responsables, plazos vencidos y por vencer (solo lectura) |
 | Director de Obras | `10000008-3` | Funcionario con firma |
 | **Directora DIDECO** | `10000009-1` | Crea, publica y deshabilita trámites de su dirección |
 | **Redactor DOM** | `10000010-5` | Crea borradores de trámites; no publica |
@@ -57,6 +57,34 @@ DOCDIGITAL_CLIENT_SECRET='%s'
 Luego, en el sitio: **Administración → APIs e integraciones → DocDigital**: indique la **URL del servidor** (DemoDoc o producción), la **URL para obtener el token OAuth2**, las **rutas** de enviar / recibidos / acuse y el **modo** (`demo` o `prod`). Esos datos están en la especificación (https://api-doc.digital.gob.cl/api/swagger-ui/index.html) y **el sistema aún no los trae validados** (ver `docs/LIMITACIONES.md`). Después abra **DocDigital** en el menú lateral y use **Probar conexión**.
 
 > Si compartió el Client Secret por chat o correo, considérelo expuesto: pida a DocDigital que lo **rote** cuando termine las pruebas. No use credenciales de producción para pruebas con envíos reales.
+
+## Novedades de esta versión: Casilla Única e inicio dual
+- **Casilla Única** (menú lateral, para quien puede notificar): estado de la conexión, notificaciones pendientes/fallidas de su unidad, registro de la evidencia (ID) y reintentos. Los permisos se ven en *Administración → Roles y permisos* (nuevo `casilla.gestionar`: Secretaria y administración por defecto; ya aplica a los roles existentes sin hacer nada).
+- **Inicio dual**: al ingresar como funcionario(a) aparece una página con dos tarjetas, *Espacio funcionario* y *Espacio vecino(a)*; se cambia con **Cambiar de espacio**. Pruébelo ingresando como **Funcionario DOM**. Quien presentó un trámite como vecino(a) no puede tramitarlo como funcionario(a). Se desactiva con `SGD_ESPACIO_DUAL=false` en `~/sgd/.env`.
+- **Conectar Casilla Única (credenciales)**: la guía de integración (https://wikiguias.digital.gob.cl/es/Manuales/integracion-casillaunica) **no fue accesible desde el entorno de construcción**, así que el contrato de la API **no está validado** y el modo por defecto sigue siendo **Outbox** (nada se envía sin evidencia manual). Cuando tenga las credenciales: ingréselas con el mismo método seguro, cambiando los nombres de variable:
+```bash
+cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || command -v php) && read -rp "Client ID: " CID && read -rsp "Client Secret: " CSEC && echo && grep -v '^CASILLA_CLIENT_' .env > .env.nuevo && printf "CASILLA_CLIENT_ID='%s'\nCASILLA_CLIENT_SECRET='%s'\n" "$CID" "$CSEC" >> .env.nuevo && chmod 600 .env.nuevo && mv .env.nuevo .env && unset CID CSEC && $PHP artisan config:clear && echo "Credenciales guardadas"
+```
+  y complete en *Administración → APIs e integraciones → Casilla Única / Notificador* la URL, la URL del token y el modo `API`; luego use **Probar conexión** en el menú *Casilla Única*.
+
+## Novedades: roles Autoridad y OIRS, y tablero por rol
+- Dos roles nuevos de **solo lectura**: **Autoridad** (menú *Seguimiento de solicitudes*: filtros por RUN, fechas, dirección, etapa y trámite; muestra etapa, estado, quién la tiene y si terminó) y **OIRS** (menú *Panel OIRS*: solicitudes, responsables, plazos vencidos y por vencer). No ven documentos ni firman.
+- Cada persona ve su **tablero** al ingresar (autoridad, OIRS, funcionario, secretaría, alcalde, auditoría, administración).
+- **Al actualizar un sitio de pruebas** el instalador crea (solo si faltan) las cuentas `10000013-K` (Autoridad) y `10000014-8` (OIRS) con contraseña aleatoria que se muestra **una sola vez**: anótelas (o use `pruebas:credenciales --rotar`). En instalaciones nuevas aparecen con las demás cuentas.
+- Para generar datos de ejemplo de plazos: ingrese solicitudes como vecino y asígnelas como funcionario; los plazos salen del plazo en días de cada trámite y se cuentan en **días administrativos** (lunes a viernes, sin feriados; ver `docs/NORMATIVA.md` §8, **A VALIDAR**).
+
+## Novedades: rol Transparencia activa y pasiva
+- Rol nuevo **Transparencia activa y pasiva** (cuenta `10000015-6`): menú *Transparencia* (consultas de acceso a la información con su plazo), *Requerimientos*, *Transparencia activa*, *Plazos y feriados* y *Reportes*. En el expediente de una solicitud de acceso aparece el cuadro **Transparencia pasiva (Ley 20.285)** para prorrogar el plazo (una vez), requerir información a una dirección y derivar a otro órgano.
+- Las demás direcciones ven el menú **Requerimientos de transparencia** para responder lo que se les pide (solo ven los de su dirección, sin datos del solicitante).
+- **Al actualizar un sitio de pruebas** el instalador crea (solo si faltan) la unidad *Unidad de Transparencia*, el trámite *Solicitud de acceso a la información pública (Ley 20.285)* (20 días hábiles) y la cuenta del rol, con contraseña aleatoria que se muestra **una sola vez**: anótela.
+- **Importante:** los **feriados no vienen precargados**. Ingréselos en *Plazos y feriados* (Transparencia) para que los 20 días hábiles los excluyan. Los plazos legales son **A VALIDAR** (`docs/NORMATIVA.md` §9).
+
+## Novedades: feriados, plantillas por secciones, restringidos y anuncios
+- **Feriados** (menú *Feriados*, administración y Transparencia): los días registrados **no cuentan como días administrativos** en los plazos de **todos** los trámites y servicios (ahora lunes a viernes sin feriados es el valor por defecto; la casilla «días administrativos» del trámite lo controla). Al agregar o quitar un feriado se recalculan los plazos en curso. **Los feriados no vienen precargados**: ingréselos (uno a uno o pegando `AAAA-MM-DD;Nombre;tipo`) y use el simulador para comprobar.
+- **Anuncios** (menú *Anuncios*, administración y OIRS): título, descripción, imagen (PNG/JPG hasta 2 MB) o video (MP4/WebM hasta 20 MB), enlace opcional, vigencia y audiencia (vecinos, funcionarios o todos). Se muestran en un **modal al cargar el sitio**, una vez por visita. El tamaño real de un video lo limita PHP: si necesita videos grandes, cPanel → *MultiPHP INI Editor* → suba `upload_max_filesize` y `post_max_size` (p. ej. 32M).
+- **Expedientes y archivos restringidos**: quien opera el expediente puede restringirlo (o un documento/archivo), con motivo, y autorizar solo a quien necesita conocerlo (con vencimiento de hasta 1 año). Quien no está autorizado ve «archivo restringido». **Administración del sistema nunca ve el contenido**, pero en *Accesos a restringidos* (administración y auditoría) ve **quién vio o intentó ver** esos archivos (nombre, cargo, RUN parcial, sin IP). Enfoque de protección de datos personales (Ley 19.628 / 21.719: **A VALIDAR**).
+- **Plantillas por secciones**: materia, vistos, considerando, cuerpo (decreto, reglamento, ordenanza, instructivo u oficio), firmas y **cadena de responsabilidad** (cargos que visan; sus iniciales se insertan al pie). Al actualizar, el instalador crea (solo si faltan) las plantillas de ejemplo de decreto, reglamento, ordenanza, instructivo y oficio (`php artisan plantillas:ejemplos`). Su texto es referencial: valídelo con jurídica.
+- Las tablas nuevas se crean solas al repetir el comando del Paso 2 (modo actualización); no hay pasos manuales.
 
 ## Operación
 ```bash

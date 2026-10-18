@@ -41,6 +41,7 @@ class Permisos
             'transparencia.responder' => ['Responder los requerimientos de transparencia que recibe su dirección', 'Transparencia', [...self::OP], false, ['funcionario', 'alcalde', 'secretario', 'transparencia']],
             'transparencia.reportes' => ['Generar y exportar los reportes de transparencia', 'Transparencia', ['transparencia', 'auditor'], false, ['transparencia']],
             'feriados.gestionar' => ['Administrar los feriados y días no laborables que no cuentan como días administrativos en los plazos', 'Administración', ['admin', 'transparencia'], false, ['admin', 'transparencia']],
+            'anuncios.gestionar' => ['Administrar los anuncios que se muestran en un modal al cargar el sitio (título, descripción, imagen o video)', 'Administración', ['admin', 'oirs', 'transparencia', 'secretario', 'alcalde'], false, ['admin', 'oirs']],
             'restringidos.gestionar' => ['Marcar expedientes, documentos y archivos como restringidos y administrar quién puede verlos', 'Protección de datos', [...self::OP], false, [...self::OP]],
             'restringidos.auditar' => ['Ver quiénes vieron o intentaron ver expedientes, documentos y archivos restringidos', 'Protección de datos', ['admin', 'auditor'], false, ['admin', 'auditor']],
             'casilla.gestionar' => ['Gestionar el notificador de Casilla Única (probar conexión y reintentar envíos fallidos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
