@@ -135,3 +135,10 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Firma simple:** acredita la voluntad de una persona autenticada en el sistema; no usa certificado. La reautenticación se aproxima con «ingreso en los últimos 30 minutos».
 - **Montos:** solo pesos chilenos enteros; no hay multimoneda ni retenciones, impuestos o descuentos.
 - **Decreto cargado:** su firma se reconoce, pero la validez de una firma externa no se verifica contra una autoridad certificadora (ver «Reconocimiento de firma electrónica en archivos»).
+
+## Tablero de pagos y consulta de proveedores
+- La consulta pública solo encuentra decretos con **RUT, número y fecha de factura** registrados; si Finanzas no los ingresó o los digitó distinto (p. ej. otro formato de número), el proveedor verá «sin información» aunque el pago exista. La fecha de la factura debe coincidir exactamente.
+- El estado que ve el proveedor refleja el **sistema municipal** (decreto y egreso), no el banco: «Pagada» significa que existe un egreso firmado; el abono efectivo en su cuenta depende del banco.
+- La consulta pública es un servicio sin autenticación: aunque exige tres datos y está limitada por tasa, quien conozca los tres datos de una factura ajena puede consultarla. No muestra cuentas bancarias ni datos personales; si la institución exige más garantías (clave del proveedor, ClaveÚnica de empresa), es una decisión posterior.
+- El plazo de 30 días (Ley 21.131) se calcula en **días corridos desde la fecha de la factura** (no desde su recepción conforme): referencial, **A VALIDAR** con Jurídica y Finanzas. Sin fecha de factura se usa la fecha del decreto.
+- El tablero no distingue facturas con pago retenido por reclamo, multas o retenciones; no hay multimoneda.

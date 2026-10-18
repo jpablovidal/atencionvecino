@@ -71,8 +71,30 @@ class DecretoPagoService
             }
         }
 
-        return ['proveedor_nombre' => $t('proveedor_nombre', 3, 160, 'El nombre del proveedor'), 'proveedor_run' => $run, 'concepto' => $t('concepto', 10, 500, 'El concepto del pago'), 'monto' => (int) $monto,
+        $fechaFactura = null;
+        if (! empty($x['factura_fecha'])) {
+            $fechaFactura = $this->fechaReal((string) $x['factura_fecha'], 'La fecha de la factura');
+            if ($fechaFactura > now('America/Santiago')->addDay()->format('Y-m-d')) {
+                throw new FlujoException('La fecha de la factura no puede ser futura.');
+            }
+        }
+
+        return ['factura_fecha' => $fechaFactura, 'proveedor_nombre' => $t('proveedor_nombre', 3, 160, 'El nombre del proveedor'), 'proveedor_run' => $run, 'concepto' => $t('concepto', 10, 500, 'El concepto del pago'), 'monto' => (int) $monto,
             'imputacion' => $opc('imputacion', 160), 'orden_compra' => $opc('orden_compra', 60), 'factura' => $opc('factura', 60), 'fecha' => $fecha];
+    }
+
+    private function fechaReal(string $v, string $et): string
+    {
+        try {
+            $f = Carbon::createFromFormat('Y-m-d', $v);
+        } catch (\Throwable) {
+            throw new FlujoException("$et es inválida.");
+        }
+        if (! $f || $f->format('Y-m-d') !== $v) {
+            throw new FlujoException("$et es inválida.");
+        }
+
+        return $v;
     }
 
     /** @param array<string,mixed> $x */
@@ -123,7 +145,7 @@ class DecretoPagoService
         $nada = '—';
 
         return ['proveedor_nombre' => $d->proveedor_nombre, 'proveedor_run' => $d->proveedor_run ?: $nada, 'concepto' => $d->concepto, 'monto' => '$'.number_format($d->monto, 0, ',', '.'),
-            'monto_letras' => MontoEnLetras::pesos($d->monto), 'imputacion' => $d->imputacion ?: $nada, 'orden_compra' => $d->orden_compra ?: $nada, 'factura' => $d->factura ?: $nada,
+            'monto_letras' => MontoEnLetras::pesos($d->monto), 'imputacion' => $d->imputacion ?: $nada, 'orden_compra' => $d->orden_compra ?: $nada, 'factura' => $d->factura ?: $nada, 'fecha_factura' => $d->factura_fecha?->format('d-m-Y') ?: $nada,
             'expediente_compra' => $d->compra?->codigo ?: $nada, 'fecha_pago' => $d->fecha?->format('d-m-Y') ?: $nada];
     }
 

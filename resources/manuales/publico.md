@@ -56,3 +56,6 @@ La barra superior permite cambiar el **tamaño del texto**, activar **alto contr
 **¿Mi documento aparece como "no corresponde a un documento vigente"?** Puede estar mal escrito el código, o el documento puede no estar vigente o anularse. Contacte a la Municipalidad.
 
 **¿Qué es la huella (SHA-256)?** Es una "firma digital del contenido": si alguien cambia una sola letra del documento, la huella cambia. Sirve para comprobar que su copia es idéntica a la original.
+
+## Proveedores: consulta de pago de una factura
+Si usted es proveedor de la municipalidad, en **Pago a proveedores** (menú del portal) ingrese el **RUT de su empresa**, el **número** y la **fecha de la factura**. Los tres datos deben coincidir. Verá en qué etapa está el pago (revisión, firma del decreto, decreto emitido, pagada) y, si ya se pagó, la fecha, el medio de pago, el monto y el número de transferencia o cheque. No se muestran datos bancarios. Si aparece «no encontramos información», revise los datos o consulte en la Dirección de Administración y Finanzas.

@@ -8,7 +8,7 @@
  <dt class="col-sm-3">Proveedor</dt><dd class="col-sm-9">{{ $d->proveedor_nombre }}@if($d->proveedor_run) · RUT {{ $d->proveedor_run }}@endif</dd>
  <dt class="col-sm-3">Concepto</dt><dd class="col-sm-9">{{ $d->concepto }}</dd>
  <dt class="col-sm-3">Monto</dt><dd class="col-sm-9">${{ number_format($d->monto, 0, ',', '.') }} <small>({{ \App\Support\MontoEnLetras::pesos($d->monto) }})</small> · egresado ${{ number_format($d->egresado(), 0, ',', '.') }} · saldo por egresar ${{ number_format(max(0, $saldo), 0, ',', '.') }}</dd>
- <dt class="col-sm-3">Respaldos</dt><dd class="col-sm-9">OC {{ $d->orden_compra ?: '—' }} · Factura {{ $d->factura ?: '—' }} · Imputación {{ $d->imputacion ?: '—' }}@if($d->fecha) · Fecha de pago {{ $d->fecha->format('d-m-Y') }}@endif</dd>
+ <dt class="col-sm-3">Respaldos</dt><dd class="col-sm-9">OC {{ $d->orden_compra ?: '—' }} · Factura {{ $d->factura ?: '—' }}@if($d->factura_fecha) del {{ $d->factura_fecha->format('d-m-Y') }}@endif · Imputación {{ $d->imputacion ?: '—' }}@if($d->fecha) · Fecha de pago {{ $d->fecha->format('d-m-Y') }}@endif</dd>
  <dt class="col-sm-3">Expediente de pago</dt><dd class="col-sm-9">{{ $d->expediente->codigo }} · {{ $d->expediente->unidad?->nombre }} @if($indicePago !== null)· <a href="{{ route('app.expediente', $d->expediente) }}">abrir</a>@endif</dd>
  <dt class="col-sm-3">Proceso de compra</dt><dd class="col-sm-9">@if($d->compra){{ $d->compra->codigo }}@if($indiceCompra !== null) · <a href="{{ route('app.expediente', $d->compra) }}">abrir</a>@endif @else No asociado @endif</dd>
 </dl>

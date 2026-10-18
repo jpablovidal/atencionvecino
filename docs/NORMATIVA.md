@@ -99,3 +99,7 @@ Toda comunicación recibida genera un expediente electrónico con metadatos MGDE
 - El **decreto de pago** y el **egreso** son documentos del sistema con folio propio. La estructura de vistos y considerandos del ejemplo (Ley 18.695; Ley 19.886 y su reglamento) es referencial: la **Dirección de Control, Jurídica y Finanzas deben validarla**.
 - **Firma electrónica simple y avanzada** (Ley 19.799): el egreso admite ambas; el decreto de pago solo avanzada. El valor probatorio de la firma simple para comprobantes de egreso es **A VALIDAR** con las normas de contabilidad gubernamental y el criterio de la Contraloría.
 - La **trazabilidad** (quién creó, generó, visó, firmó, anuló y consultó) queda en la cadena de auditoría; el sistema no reemplaza el sistema contable municipal ni el pago bancario.
+
+## 12. Pago a proveedores (A VALIDAR)
+- **Ley 21.131** (pago a 30 días): el tablero de Tesorería advierte los decretos con más de 30 días desde la fecha de la factura. El cómputo exacto (desde la recepción conforme, días corridos) y las excepciones deben validarlos Jurídica y Finanzas.
+- La **consulta pública** informa el estado del proceso de pago y datos del pago al proveedor que acredita la factura; es información de su propio trámite (Ley 19.880, derecho a conocer el estado del procedimiento) y no expone datos de terceros ni bancarios (Ley 19.628/21.719: A VALIDAR con el encargado de protección de datos).

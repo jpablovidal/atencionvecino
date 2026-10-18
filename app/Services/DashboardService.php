@@ -53,6 +53,11 @@ class DashboardService
                 $kpis[] = ['icono' => 'send', 'valor' => $n, 'etiqueta' => 'Requerimientos de transparencia por responder'.($venc ? " ($venc vencidos)" : ''), 'nivel' => $venc ? 'aviso' : 'info', 'url' => route('app.transparencia.requerimientos', ['estado' => 'pendiente'])];
             }
         }
+        if ($u->tienePermiso('decretopago.ver')) {
+            $p = app(PagosTableroService::class)->datos();
+            $kpis = array_merge($kpis, $p['kpis']);
+            $bloques = array_merge($bloques, array_slice($p['bloques'], 0, 2), array_slice($p['bloques'], 4, 1));
+        }
         if ($u->operaExpedientes()) {
             $b = $this->operador($u, $instantanea());
             $bloques = array_merge($bloques, $b);

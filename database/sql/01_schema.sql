@@ -640,4 +640,8 @@ insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `siste
 
 select `id` from `roles` where `clave` = 'contabilidad' limit 1;
 
+alter table `decretos_pago` add `factura_fecha` date null;
+
+alter table `decretos_pago` add index `decretos_pago_proveedor_run_factura_fecha_index`(`proveedor_run`, `factura_fecha`);
+
 SET FOREIGN_KEY_CHECKS = 1;

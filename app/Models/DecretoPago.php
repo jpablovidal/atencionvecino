@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $imputacion
  * @property string|null $orden_compra
  * @property string|null $factura
+ * @property Carbon|null $factura_fecha
  * @property Carbon|null $fecha
  * @property string $estado abierto|anulado
  * @property string|null $origen generado|cargado
@@ -37,7 +38,7 @@ class DecretoPago extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['fecha' => 'date', 'monto' => 'integer'];
+    protected $casts = ['fecha' => 'date', 'factura_fecha' => 'date', 'monto' => 'integer'];
 
     /** @return BelongsTo<Expediente, $this> */
     public function expediente(): BelongsTo

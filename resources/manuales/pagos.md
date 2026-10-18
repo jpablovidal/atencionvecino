@@ -21,3 +21,6 @@ La lista y el detalle muestran el estado (borrador, en visación y firma, emitid
 ## 4. Plantillas, correlativo y firmantes
 
 La plantilla se crea o ajusta en **Plantillas** (tipo «Decreto de pago»; hay un ejemplo). El **correlativo** y los **firmantes** los configura quien tenga el permiso de configuración (normalmente la administración).
+
+## Datos de la factura para la consulta de proveedores
+Al crear el decreto ingrese el **RUT del proveedor**, el **número de factura** y la **fecha de la factura**: con esos tres datos el proveedor consulta su situación de pago en el portal. Un RUT o un número mal digitado impide que la consulta encuentre el pago.

@@ -19,6 +19,7 @@ use App\Services\ExpedienteService;
 use App\Services\FileVault;
 use App\Services\FolioService;
 use App\Services\PagoConfigService;
+use App\Services\PagosTableroService;
 use Illuminate\Http\Request;
 
 /** Módulo Decreto de pago: expediente de pago + proceso de compra, decreto (generado o cargado), egreso de Tesorería y configuración. */
@@ -57,6 +58,24 @@ class PagosController extends Controller
         return view('app.pagos.index', ['lista' => $lista->take(100), 'porFase' => $porFase, 'f' => ['fase' => $f['fase'] ?? '', 'q' => $f['q'] ?? ''], 'fases' => DecretoPago::FASES]);
     }
 
+    /** Tablero de pagos de Tesorería. */
+    public function tablero(Request $r)
+    {
+        $f = $r->validate(['mes' => ['nullable', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/']]);
+        $datos = app(PagosTableroService::class)->datos($f['mes'] ?? null);
+        $this->audit->registrar('pago.tablero', null, null, [], false);
+
+        return view('app.pagos.tablero', ['panel' => ['titulo' => 'Pagos · '.$datos['mesEtiqueta'], 'kpis' => $datos['kpis'], 'bloques' => $datos['bloques']], 'mes' => $datos['mes'],
+            'puedeG' => $r->user()->tienePermiso('decretopago.gestionar') || $r->user()->tienePermiso('egresos.gestionar')]);
+    }
+
+    public function tableroCsv(Request $r)
+    {
+        $this->audit->registrar('pago.exportar', null, null, [], true);
+
+        return response(app(PagosTableroService::class)->csv(), 200, ['Content-Type' => 'text/csv; charset=UTF-8', 'Content-Disposition' => 'attachment; filename="decretos-por-egresar-'.now('America/Santiago')->format('Y-m-d').'.csv"', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'no-store']);
+    }
+
     public function nuevo(Request $r)
     {
         $u = $r->user();
@@ -70,7 +89,7 @@ class PagosController extends Controller
     private function reglasDatos(): array
     {
         return ['proveedor_nombre' => 'required|string|max:200', 'proveedor_run' => 'nullable|string|max:14', 'concepto' => 'required|string|max:600', 'monto' => 'required|string|max:14', 'imputacion' => 'nullable|string|max:200',
-            'orden_compra' => 'nullable|string|max:80', 'factura' => 'nullable|string|max:80', 'fecha' => 'nullable|date_format:Y-m-d'];
+            'orden_compra' => 'nullable|string|max:80', 'factura' => 'nullable|string|max:80', 'factura_fecha' => 'nullable|date_format:Y-m-d', 'fecha' => 'nullable|date_format:Y-m-d'];
     }
 
     public function crear(Request $r)

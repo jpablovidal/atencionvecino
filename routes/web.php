@@ -24,6 +24,7 @@ use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\PlantillasController;
+use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RecursosController;
 use App\Http\Controllers\RepositorioController;
@@ -48,6 +49,8 @@ Route::middleware('throttle:publico')->group(function () {
     Route::get('/tramites/sugerencias', [CatalogoTramitesController::class, 'sugerencias'])->name('catalogo.sugerencias');
     Route::get('/tramites/{id}/iniciar', [CatalogoTramitesController::class, 'iniciar'])->whereNumber('id')->name('catalogo.iniciar');
     Route::get('/tramites/{id}/{slug?}', [CatalogoTramitesController::class, 'ficha'])->whereNumber('id')->where('slug', '[a-z0-9\-]+')->name('catalogo.ficha');
+    Route::get('/pagos-proveedores', [ProveedoresController::class, 'form'])->name('proveedores.pagos');
+    Route::post('/pagos-proveedores', [ProveedoresController::class, 'consultar'])->middleware('throttle:12,1')->name('proveedores.pagos.consultar');
     Route::get('/validar', [PublicoController::class, 'formValidar'])->name('validar.form');
     Route::post('/validar', [PublicoController::class, 'buscarValidar'])->name('validar.buscar');
     Route::get('/validar/{codigo}', [PublicoController::class, 'validar'])->name('validar')->where('codigo', 'SDD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}');
@@ -204,6 +207,8 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     // ---- Decreto de pago y egreso de Tesorería
     Route::middleware('throttle:60,1')->prefix('pagos')->group(function () {
         Route::get('/', [PagosController::class, 'index'])->middleware('permiso:decretopago.ver')->name('pagos');
+        Route::get('/tablero', [PagosController::class, 'tablero'])->middleware('permiso:decretopago.ver')->name('pagos.tablero');
+        Route::get('/tablero/exportar', [PagosController::class, 'tableroCsv'])->middleware(['permiso:decretopago.ver', 'throttle:10,1'])->name('pagos.tablero.csv');
         Route::get('/nuevo', [PagosController::class, 'nuevo'])->middleware('permiso:decretopago.gestionar')->name('pagos.nuevo');
         Route::post('/', [PagosController::class, 'crear'])->middleware('permiso:decretopago.gestionar')->name('pagos.crear');
         Route::middleware('permiso:decretopago.configurar')->prefix('configuracion')->group(function () {

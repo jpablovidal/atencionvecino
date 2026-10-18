@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `b634fbe91ed093eb8e2675019dbc301d4b4425d19a5223b49388bf52bd2ef723`).
+- Archivo **`sgd-release.zip`** (SHA-256 `4aab6a2b890020037605897d3e83ff2ae08d87fca8d65f121284afc4fc06ee50`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -102,6 +102,13 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 - **Configuración** (menú *Decreto de pago: correlativo y firmantes*, administración): correlativo propio del decreto y del egreso, y firmantes en orden. **Debe revisarla** antes de usar el módulo con datos reales: cantidad de firmantes (1 o 2 firmas por tipo), cargos y tipo de firma. El valor legal de la firma simple para egresos es **A VALIDAR**.
 - **Cuentas de prueba nuevas** al actualizar: `10000017-2` (Encargado de pagos) y `10000018-0` (Tesorera). El instalador las crea (solo si faltan), crea los firmantes de demostración y muestra las contraseñas **una sola vez**: anótelas (o `php artisan pruebas:credenciales --rotar`). La plantilla de ejemplo se crea con `plantillas:ejemplos` (ya lo ejecuta el instalador).
 - Las tablas y roles nuevos (Tesorero(a) municipal y Encargado(a) de pagos) se crean solos al repetir el comando del Paso 2.
+
+## Novedades: tablero de pagos y consulta de proveedores
+- **Tablero de pagos** (menú *Tablero de pagos* y bloque en el *Inicio* del tesorero): decretos por egresar y su saldo, facturas con más de 30 días (alerta referencial, **A VALIDAR** con Jurídica), egresos en firma y del mes, por medio de pago, antigüedad y proveedores con más saldo; exporta la lista a CSV.
+- **Consulta pública para proveedores**: `https://gestor.santodomingo.cl/pagos-proveedores` (sin clave). El proveedor ingresa **RUT de su empresa, número y fecha de la factura**; los tres deben coincidir con lo registrado. No muestra datos bancarios; limitada a 12 consultas por minuto por IP.
+- **Importante para que funcione**: el decreto de pago ahora pide la **fecha de la factura** (junto con RUT y número). Los decretos creados antes de esta versión no la tienen: complétela en el decreto (mientras sea borrador) o no aparecerá en la consulta pública. Los datos de demostración de los decretos de ejemplo no incluyen proveedor.
+- Si quiere publicar el enlace en el sitio web municipal, use la dirección anterior; también aparece en el menú del portal («Pago a proveedores»).
+- La tabla nueva no se crea: solo se agrega una columna (`factura_fecha`) al repetir el comando del Paso 2.
 
 ## Operación
 ```bash
