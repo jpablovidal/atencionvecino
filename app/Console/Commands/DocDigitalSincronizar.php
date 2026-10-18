@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Services\Interop\ComunicacionService;
+use App\Services\Interop\DocDigital\DocDigitalException;
+use App\Services\Interop\DocDigitalEstado;
 use Illuminate\Console\Command;
 
 class DocDigitalSincronizar extends Command
@@ -22,6 +24,7 @@ class DocDigitalSincronizar extends Command
             $r = $svc->sincronizarRecibidos();
         } catch (\Throwable $e) {
             report($e);
+            DocDigitalEstado::registrar(null, $e instanceof DocDigitalException ? $e->getMessage() : 'Error inesperado al sincronizar (vea el registro de la aplicación).');
             $this->error('No fue posible sincronizar con DocDigital.');
 
             return self::FAILURE;

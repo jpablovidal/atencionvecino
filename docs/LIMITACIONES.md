@@ -77,3 +77,9 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Los archivos maestros tienen el límite de 10 MB por archivo (PDF, JPG, PNG, TIFF) y 300 por microforma; no se procesan rollos de microfilm ni se hace OCR. No hay catálogo de series, tabla de retención ni préstamo de soportes físicos.
 - El acceso es por permisos (no por unidad): quien tiene `archivo.ver` ve todas las microformas.
 
+## Panel DocDigital
+- **Contrato sin validar:** la especificación (api-doc.digital.gob.cl, Swagger) no fue accesible desde el entorno de construcción. La URL del token OAuth2, las rutas (`DOCDIGITAL_PATH_*`) y las formas JSON de enviar, recibidos y acuse son una propuesta mínima y **deben ajustarse a la especificación y probarse en DemoDoc** antes de usar el modo Producción. El panel solo gestiona esas tres operaciones (enviar, recibidos, acuse); otras funciones de la API (consultas de estado, anulaciones, etc.) no están implementadas.
+- «Probar conexión» obtiene el token y consulta la ruta de recibidos solo para leer el código HTTP; un resultado correcto no garantiza que el formato de los documentos coincida con lo esperado.
+- DocDigital exige PDF con firma electrónica avanzada y un Administrador Principal registrado; el sistema no lo verifica contra DocDigital.
+- Las credenciales entregadas por la institución son de **producción**: no las use desde el ambiente de pruebas con envíos reales; use DemoDoc si existe.
+

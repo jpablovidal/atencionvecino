@@ -7,6 +7,17 @@ use RuntimeException;
 /** En producción la aplicación FALLA CERRADA si la configuración es insegura. */
 class ProductionGuard
 {
+    /** DocDigital en producción exige URL y credenciales (token fijo, o client id + secret + URL del token). */
+    public static function docdigitalProblema(): ?string
+    {
+        $c = config('sgd.docdigital');
+        if ($c['mode'] === 'prod' && (! $c['url_prod'] || ! ($c['api_token'] || ($c['client_id'] && $c['client_secret'] && $c['token_url'])))) {
+            return 'DocDigital prod sin URL ni credenciales (token o client id/secret + URL de token)';
+        }
+
+        return null;
+    }
+
     public static function verificar(): void
     {
         if (! app()->isProduction() || app()->runningInConsole() && ! app()->runningUnitTests() && in_array($_SERVER['argv'][1] ?? '', ['list', 'help', 'about'], true)) {
@@ -47,8 +58,8 @@ class ProductionGuard
         if (! $pruebas && in_array(config('sgd.docdigital.mode'), ['mock', 'demo'], true)) {
             $e[] = 'DOCDIGITAL_MODE mock/demo está prohibido';
         }
-        if (config('sgd.docdigital.mode') === 'prod' && (! config('sgd.docdigital.url_prod') || ! config('sgd.docdigital.api_token'))) {
-            $e[] = 'DocDigital prod sin URL/token';
+        if ($p = self::docdigitalProblema()) {
+            $e[] = $p;
         }
         if (! $pruebas && config('sgd.pisee.mode') === 'mock') {
             $e[] = 'PISEE_MODE=mock está prohibido';

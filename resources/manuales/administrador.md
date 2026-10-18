@@ -39,6 +39,8 @@ La solicitud llega a la bandeja de **todas** las direcciones responsables; la pr
 
 > **Archivo municipal (microformas):** sus cuatro permisos (`archivo.ver`, `archivo.gestionar`, `archivo.certificar`, `archivo.disposicion`) **no están disponibles para el rol administrador** (no lee el contenido del archivo). Cree roles personalizados con base funcionario, secretario o alcalde (la autorización de disposición solo admite secretario o alcalde) y asígnelos; para separar funciones use al menos un rol que registra y otro que certifica. La auditoría puede *ver* por defecto. El módulo guarda archivos cifrados, hash de conjunto y cadena de custodia; no reemplaza la certificación legal.
 
+> **DocDigital:** las credenciales (Client ID y Client Secret entregados por la institución), la URL del servidor, la URL para obtener el token y las rutas de la API se configuran en *APIs e integraciones → DocDigital* (o en el `.env`). El secreto se guarda cifrado si la opción de secretos en BD está activa, o solo en el `.env`; **no se vuelve a mostrar**. Después use *DocDigital → Probar conexión*. Las credenciales de producción no deben usarse desde el ambiente de pruebas con envíos reales; si comparte credenciales por chat o correo, **rótelas** al terminar.
+
 ## 5. Tipos de documento y reglas de firma
 
 Cada tipo define: código, nombre, prefijo de numeración, **si la primera firma es del alcalde/delegado**, **firmas del flujo ágil** y **firmas del flujo clásico**. Ajuste las reglas según la normativa del municipio (por defecto 1 y 2). Puede crear tipos nuevos (por ejemplo "Resolución").

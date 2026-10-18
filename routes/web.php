@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CatalogoTramitesController;
 use App\Http\Controllers\CiudadanoController;
+use App\Http\Controllers\DocDigitalController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\FirmasController;
@@ -158,6 +159,14 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::post('/{id}/publicar', [TramitesController::class, 'publicar'])->whereNumber('id')->name('publicar');
         Route::post('/{id}/deshabilitar', [TramitesController::class, 'deshabilitar'])->whereNumber('id')->name('deshabilitar');
         Route::post('/{id}/duplicar', [TramitesController::class, 'duplicar'])->whereNumber('id')->name('duplicar');
+    });
+
+    // ---- DocDigital: panel de gestión (ver = comunicaciones.ver; probar/sincronizar/reintentar = docdigital.gestionar)
+    Route::get('/docdigital', [DocDigitalController::class, 'index'])->middleware('permiso:comunicaciones.ver,docdigital.gestionar')->name('docdigital');
+    Route::middleware('permiso:docdigital.gestionar')->group(function () {
+        Route::post('/docdigital/diagnosticar', [DocDigitalController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('docdigital.diagnosticar');
+        Route::post('/docdigital/sincronizar', [DocDigitalController::class, 'sincronizar'])->middleware('throttle:6,1')->name('docdigital.sincronizar');
+        Route::post('/docdigital/reintentar', [DocDigitalController::class, 'reintentar'])->middleware('throttle:6,1')->name('docdigital.reintentar');
     });
 
     // ---- Archivo municipal (microformas): permisos por ruta y de nuevo en el servicio

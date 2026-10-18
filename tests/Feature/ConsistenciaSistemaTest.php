@@ -82,7 +82,9 @@ class ConsistenciaSistemaTest extends TestCase
             [$ruta] = explode(':', $d['ruta']);
             $this->assertTrue(Route::has($ruta), "ítem de menú «{$clave}» apunta a una ruta inexistente: $ruta");
             if ($d['permiso']) {
-                $this->assertContains($d['permiso'], $cat, "ítem «{$clave}» exige un permiso inexistente");
+                foreach (explode(',', $d['permiso']) as $p) {
+                    $this->assertContains($p, $cat, "ítem «{$clave}» exige un permiso inexistente");
+                }
             }
         }
     }

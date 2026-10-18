@@ -136,6 +136,16 @@ Si el administrador le asignó un rol con **Trámites y servicios**, verá ese �
 
 > Si no tiene permiso de publicación, puede crear y editar borradores, pero no publicarlos ni modificar uno ya publicado (sí puede deshabilitarlo). Los textos se guardan como texto plano: no use HTML ni enlaces.
 
+## DocDigital (comunicaciones oficiales)
+
+El menú **DocDigital** muestra el estado de la conexión con DocDigital y las comunicaciones oficiales de su unidad.
+
+- **Estado:** modo (Outbox, DemoDoc, Producción), servidor, tipo de credenciales (sus valores nunca se muestran) y el resultado de la última sincronización.
+- **Recibidas y enviadas:** las últimas 15 de su unidad, con el estado del acuse, los intentos y el último error; cada una lleva a su expediente. La auditoría ve las de todas las unidades.
+- **Quien tiene el permiso de gestión** (por defecto, el/la Secretario(a) Municipal y el administrador) puede **Probar conexión** (obtiene el token y consulta la ruta de recibidos, sin leer documentos), **Sincronizar ahora** (descarga lo recibido y crea un expediente por cada comunicación) y **Reintentar envíos fallidos** (hasta 20). El administrador no ve el contenido de las comunicaciones.
+- Para **enviar** una comunicación abra el expediente, elija un documento vigente y use *Comunicar por DocDigital*. DocDigital exige un PDF con firma electrónica avanzada.
+- Si el modo es **Outbox**, el sistema no se conecta: el envío y el acuse se hacen en DocDigital y aquí se registra la evidencia.
+
 ## Archivo municipal: microformas (si su rol lo permite)
 
 El menú **Archivo municipal** aparece solo si su rol tiene permisos `archivo.*`. Hay cuatro funciones, que el administrador asigna con roles personalizados: **ver** (consultar), **gestionar** (registrar y cargar), **certificar** (ministro de fe) y **autorizar disposición**.

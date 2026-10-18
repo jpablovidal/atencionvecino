@@ -41,6 +41,7 @@ class MenuService
             'formatos' => $i('Formatos y plantillas', 'app.formatos', 'app/formatos*', ['app'], 'plantillas.ver', null, 25),
             'comunicaciones' => $i('Comunicaciones oficiales', 'app.comunicaciones', 'app/comunicaciones*', ['app'], 'comunicaciones.ver', null, 30),
             'archivo' => $i('Archivo municipal', 'app.archivo.index', 'app/archivo*', ['app'], 'archivo.ver', null, 45),
+            'docdigital' => $i('DocDigital', 'app.docdigital', 'app/docdigital*', ['app'], 'comunicaciones.ver,docdigital.gestionar', null, 32),
             'delegaciones' => $i('Delegaciones de firma', 'app.delegaciones', 'app/delegaciones*', ['app'], 'delegaciones.ver', null, 40),
             'unidades' => $i('Unidades', 'app.admin.index:unidades', 'app/admin/unidades*', ['app'], 'mantenedores.gestionar', $a, 100),
             'usuarios' => $i('Usuarios', 'app.admin.index:usuarios', 'app/admin/usuarios*', ['app'], 'mantenedores.gestionar', $a, 110),
@@ -82,13 +83,13 @@ class MenuService
     public const ICONOS = [
         'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
-        'roles' => 'shield', 'archivo' => 'archive', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
+        'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
         'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help',
     ];
 
     public const DESCRIPCIONES = [
-        'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
+        'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'docdigital' => 'Estado de la conexión, comunicaciones recibidas y enviadas, sincronización y reintentos.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
         'comunicaciones' => 'Comunicaciones oficiales recibidas y enviadas por DocDigital.', 'delegaciones' => 'Delegaciones de firma del alcalde.',
         'tramites' => 'Cree y publique los trámites y servicios de su dirección.', 'usuarios' => 'Altas, roles y direcciones de las personas usuarias.',
         'roles' => 'Roles personalizados y permisos.', 'plantillas' => 'Editor de plantillas con visibilidad por dirección.', 'apariencia' => 'Logo, colores, encabezado y pie.',
@@ -120,7 +121,7 @@ class MenuService
         $por = $filas->whereNotNull('clave')->keyBy('clave');
         $out = [];
         foreach ($this->sistema() as $clave => $d) {
-            if (! in_array($area, $d['areas'], true) || ($d['permiso'] && ! ($u && $u->tienePermiso($d['permiso'])))) {
+            if (! in_array($area, $d['areas'], true) || ($d['permiso'] && ! ($u && collect(explode(',', $d['permiso']))->contains(fn ($p) => $u->tienePermiso($p))))) {
                 continue;
             }
             $o = $por->get($clave);

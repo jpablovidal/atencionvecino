@@ -3,6 +3,7 @@
 namespace App\Services\Interop\DocDigital;
 
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -21,16 +22,91 @@ class HttpDocDigitalClient implements DocDigitalClient
     private function base(): string
     {
         $u = (string) ($this->ambiente === 'prod' ? $this->cfg['url_prod'] : $this->cfg['url_demo']);
-        if (! str_starts_with($u, 'https://') || ! $this->cfg['api_token']) {
-            throw new DocDigitalException('DocDigital no está configurado (URL https y token).');
+        if (! str_starts_with($u, 'https://') || ! $this->tieneCredenciales()) {
+            throw new DocDigitalException('DocDigital no está configurado (URL https y credenciales).');
         }
 
         return rtrim($u, '/');
     }
 
+    public function tieneCredenciales(): bool
+    {
+        return $this->usaOauth() || (bool) ($this->cfg['api_token'] ?? null);
+    }
+
+    private function usaOauth(): bool
+    {
+        return ! empty($this->cfg['client_id']) && ! empty($this->cfg['client_secret']) && str_starts_with((string) ($this->cfg['token_url'] ?? ''), 'https://');
+    }
+
+    /**
+     * Token de acceso. OAuth2 «client credentials» (RFC 6749 §4.4, autenticación HTTP Basic del cliente; A VALIDAR con la especificación)
+     * o token fijo. El token se cachea hasta poco antes de vencer y nunca se escribe en registros ni en mensajes de error.
+     */
+    public function token(): string
+    {
+        if (! $this->usaOauth()) {
+            return (string) $this->cfg['api_token'];
+        }
+        $clave = 'docdigital_token_'.hash('sha256', $this->cfg['token_url'].'|'.$this->cfg['client_id'].'|'.$this->cfg['client_secret']);
+        $t = Cache::get($clave);
+        if (is_string($t) && $t !== '') {
+            return $t;
+        }
+        try {
+            $datos = ['grant_type' => 'client_credentials'] + (! empty($this->cfg['scope']) ? ['scope' => (string) $this->cfg['scope']] : []);
+            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()
+                ->withBasicAuth((string) $this->cfg['client_id'], (string) $this->cfg['client_secret'])->asForm()->post((string) $this->cfg['token_url'], $datos);
+        } catch (\Throwable) {
+            throw new DocDigitalException('No fue posible contactar el servicio de autorización de DocDigital.');
+        }
+        $tok = $r->successful() ? $r->json('access_token') : null;
+        if (! is_string($tok) || $tok === '') {
+            throw new DocDigitalException('DocDigital no entregó un token de acceso (HTTP '.$r->status().'): revise el Client ID, el Client Secret y la URL del token.');
+        }
+        $ttl = max(30, min(3600, (int) ($r->json('expires_in') ?: 300) - 60));
+        Cache::put($clave, $tok, $ttl);
+
+        return $tok;
+    }
+
+    /**
+     * Diagnóstico sin datos: obtiene el token y consulta la ruta de recibidos solo para leer el código HTTP.
+     *
+     * @return array<int,array{0:string,1:bool,2:string}>
+     */
+    public function diagnosticar(): array
+    {
+        $out = [];
+        $u = (string) ($this->ambiente === 'prod' ? $this->cfg['url_prod'] : $this->cfg['url_demo']);
+        $out[] = ['URL base (https)', str_starts_with($u, 'https://'), str_starts_with($u, 'https://') ? (string) parse_url($u, PHP_URL_HOST) : 'sin definir o no es https'];
+        $out[] = ['Credenciales', $this->tieneCredenciales(), $this->usaOauth() ? 'OAuth2 (client id + secret)' : ($this->cfg['api_token'] ? 'token fijo' : 'sin definir')];
+        if (! str_starts_with($u, 'https://') || ! $this->tieneCredenciales()) {
+            return $out;
+        }
+        try {
+            $this->token();
+            $out[] = ['Autorización (token)', true, 'token obtenido'];
+        } catch (DocDigitalException $e) {
+            $out[] = ['Autorización (token)', false, $e->getMessage()];
+
+            return $out;
+        }
+        try {
+            $r = $this->http()->get($this->base().$this->ruta('path_recibidos'));
+            $out[] = ['Consulta de recibidos', $r->successful(), 'HTTP '.$r->status()];
+        } catch (DocDigitalException $e) {
+            $out[] = ['Consulta de recibidos', false, $e->getMessage()];
+        } catch (\Throwable) {
+            $out[] = ['Consulta de recibidos', false, 'sin respuesta de DocDigital'];
+        }
+
+        return $out;
+    }
+
     private function http(): PendingRequest
     {
-        return Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()->withToken((string) $this->cfg['api_token']);
+        return Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()->withToken($this->token());
     }
 
     private function ruta(string $k): string
@@ -55,6 +131,8 @@ class HttpDocDigitalClient implements DocDigitalClient
                 'numero' => $meta['numero'], 'tipo_documento' => $meta['tipo'], 'referencia' => $meta['referencia'] ?? null,
                 'archivo' => ['nombre' => $nombre, 'content-type' => 'application/pdf', 'content' => base64_encode($pdf), 'checksum' => hash('sha256', $pdf)],
             ]);
+        } catch (DocDigitalException $e) {
+            throw $e; // p. ej. falla de autorización: conserva su mensaje (sin secretos)
         } catch (\Throwable) {
             throw new DocDigitalException('No fue posible contactar DocDigital.');
         }
@@ -71,6 +149,8 @@ class HttpDocDigitalClient implements DocDigitalClient
         $url = $this->base().$this->ruta('path_acuse');
         try {
             $r = $this->http()->asJson()->post($url, ['id' => $id]); // forma A VALIDAR
+        } catch (DocDigitalException $e) {
+            throw $e; // p. ej. falla de autorización: conserva su mensaje (sin secretos)
         } catch (\Throwable) {
             throw new DocDigitalException('No fue posible contactar DocDigital.');
         }
@@ -87,6 +167,8 @@ class HttpDocDigitalClient implements DocDigitalClient
         $url = $this->base().$this->ruta('path_recibidos');
         try {
             $r = $this->http()->get($url);
+        } catch (DocDigitalException $e) {
+            throw $e; // p. ej. falla de autorización: conserva su mensaje (sin secretos)
         } catch (\Throwable) {
             throw new DocDigitalException('No fue posible contactar DocDigital.');
         }

@@ -134,6 +134,11 @@ return [
         'url_demo' => env('DOCDIGITAL_URL_DEMO'),
         'url_prod' => env('DOCDIGITAL_URL_PROD'),
         'api_token' => env('DOCDIGITAL_API_TOKEN'),
+        // OAuth2 «client credentials» (A VALIDAR con la especificación): si hay client_id/secret y token_url se obtiene un token y se cachea hasta su vencimiento
+        'client_id' => env('DOCDIGITAL_CLIENT_ID'),
+        'client_secret' => env('DOCDIGITAL_CLIENT_SECRET'),
+        'token_url' => env('DOCDIGITAL_TOKEN_URL'),
+        'scope' => env('DOCDIGITAL_SCOPE'),
         'path_enviar' => env('DOCDIGITAL_PATH_ENVIAR'), // A VALIDAR con la guía de integración API MW V2
         'path_recibidos' => env('DOCDIGITAL_PATH_RECIBIDOS'),
         'path_acuse' => env('DOCDIGITAL_PATH_ACUSE'), // acuse de recibo (A VALIDAR)

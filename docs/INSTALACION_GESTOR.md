@@ -44,6 +44,17 @@ Flujo sugerido: (1) como **Directora DIDECO**: *Trámites y servicios* → *Nuev
 ## Actualizar a una versión nueva (mismo procedimiento)
 Suba el nuevo ZIP a `~/` y pegue **el mismo comando del Paso 2**. Si detecta `~/sgd/.env`, entra en modo **actualización**: conserva `.env`, archivos y datos, aplica solo las migraciones nuevas y limpia cachés (no pide contraseña ni vuelve a cargar datos de demostración). **Si su sitio es de pruebas y aún no tiene el módulo de archivo, al actualizar el instalador crea además (solo si faltan) la unidad «Archivo Municipal», los roles y las 2 cuentas del archivo (`10000011-3` Encargada del Archivo y `10000012-1` Ministro de Fe) y muestra sus contraseñas una sola vez: anótelas.** No toca las demás cuentas.
 
+## Conectar DocDigital (credenciales)
+Las credenciales **no vienen en el ZIP ni en el repositorio**. Ingréselas una sola vez, en la Terminal de cPanel (el secreto no se muestra al escribirlo ni queda en el historial):
+```bash
+cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || command -v php) && read -rp "Client ID: " CID && read -rsp "Client Secret: " CSEC && echo && grep -v '^DOCDIGITAL_CLIENT_' .env > .env.nuevo && printf "DOCDIGITAL_CLIENT_ID='%s'
+DOCDIGITAL_CLIENT_SECRET='%s'
+" "$CID" "$CSEC" >> .env.nuevo && chmod 600 .env.nuevo && mv .env.nuevo .env && unset CID CSEC && $PHP artisan config:clear && echo "Credenciales guardadas"
+```
+Luego, en el sitio: **Administración → APIs e integraciones → DocDigital**: indique la **URL del servidor** (DemoDoc o producción), la **URL para obtener el token OAuth2**, las **rutas** de enviar / recibidos / acuse y el **modo** (`demo` o `prod`). Esos datos están en la especificación (https://api-doc.digital.gob.cl/api/swagger-ui/index.html) y **el sistema aún no los trae validados** (ver `docs/LIMITACIONES.md`). Después abra **DocDigital** en el menú lateral y use **Probar conexión**.
+
+> Si compartió el Client Secret por chat o correo, considérelo expuesto: pida a DocDigital que lo **rote** cuando termine las pruebas. No use credenciales de producción para pruebas con envíos reales.
+
 ## Operación
 ```bash
 PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || command -v php)

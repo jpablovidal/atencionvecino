@@ -168,6 +168,7 @@ class ComunicacionService
             }
         }
         $this->audit->registrar('docdigital.sincronizar', null, null, $res, false, ['run' => null, 'rol' => 'sistema']);
+        DocDigitalEstado::registrar($res);
 
         return $res;
     }
