@@ -244,7 +244,7 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 | **Feriados** | `/app/feriados` | Administrador de feriados: los días registrados no cuentan como días administrativos en los plazos de los trámites y servicios; simulador y carga masiva. |
 | **Decretos de pago** | `/app/pagos` | Expediente de pago + proceso de compra, decreto de pago (generado con plantilla o cargado), egreso de Tesorería con firma simple o avanzada; correlativo y firmantes configurables (`/app/pagos/configuracion`). |
 | **Tablero de pagos** | `/app/pagos/tablero` | Tablero de Tesorería: decretos por egresar, facturas con más de 30 días, egresos en firma y del mes, por medio de pago; exportación CSV. |
-| **Pago a proveedores** | `/pagos-proveedores` | Consulta pública: el proveedor ingresa RUT de su empresa, número y fecha de la factura y ve su situación de pago (sin datos bancarios). |
+| **Pago a proveedores** | `/pagos-proveedores` | Consulta con ClaveÚnica: el proveedor ingresa RUT de su empresa, número y fecha de la factura y ve su situación de pago (sin datos bancarios); queda registrado quién consulta. |
 | **Asociar expedientes y microformas** | `/app/expedientes/{id}/asociar` | Buscar otros expedientes (que usted puede ver) y microformas, asociarlos con su motivo e incorporar copias de su contenido, con origen y huella. |
 | **Respuestas finales** | `/app/respuestas` | Bandeja de **Oficina de Partes**: respuestas finales instruidas por quienes gestionaron los expedientes (qué responder y con qué documentos); despacho por Casilla Única con copia al correo, o entrega física con acta. |
 | **Anuncios** | `/app/anuncios` | Anuncios con título, descripción, imagen o video que se muestran en un modal al cargar el sitio (vigencia y audiencia). |

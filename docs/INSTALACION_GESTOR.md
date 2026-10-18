@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `4aab6a2b890020037605897d3e83ff2ae08d87fca8d65f121284afc4fc06ee50`).
+- Archivo **`sgd-release.zip`** (SHA-256 `4e203a2f6b20a959b49a02c8d172cdc5d829d9ae24ff230d03d07691bc7248d9`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -105,7 +105,7 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 
 ## Novedades: tablero de pagos y consulta de proveedores
 - **Tablero de pagos** (menú *Tablero de pagos* y bloque en el *Inicio* del tesorero): decretos por egresar y su saldo, facturas con más de 30 días (alerta referencial, **A VALIDAR** con Jurídica), egresos en firma y del mes, por medio de pago, antigüedad y proveedores con más saldo; exporta la lista a CSV.
-- **Consulta pública para proveedores**: `https://gestor.santodomingo.cl/pagos-proveedores` (sin clave). El proveedor ingresa **RUT de su empresa, número y fecha de la factura**; los tres deben coincidir con lo registrado. No muestra datos bancarios; limitada a 12 consultas por minuto por IP.
+- **Consulta pública para proveedores**: `https://gestor.santodomingo.cl/pagos-proveedores`. La persona **ingresa con ClaveÚnica** (queda registrado su RUN) y luego indica **RUT de su empresa, número y fecha de la factura**; los tres deben coincidir con lo registrado. No muestra datos bancarios; límites: 12 consultas por minuto por IP y 30 por hora por persona. **Ojo:** ClaveÚnica identifica a la persona, no acredita que represente a la empresa (ver `docs/LIMITACIONES.md`). En el ambiente de pruebas el ingreso con ClaveÚnica es el simulado; en producción requiere `CLAVEUNICA_MODE=real` con las credenciales de ClaveÚnica.
 - **Importante para que funcione**: el decreto de pago ahora pide la **fecha de la factura** (junto con RUT y número). Los decretos creados antes de esta versión no la tienen: complétela en el decreto (mientras sea borrador) o no aparecerá en la consulta pública. Los datos de demostración de los decretos de ejemplo no incluyen proveedor.
 - Si quiere publicar el enlace en el sitio web municipal, use la dirección anterior; también aparece en el menú del portal («Pago a proveedores»).
 - La tabla nueva no se crea: solo se agrega una columna (`factura_fecha`) al repetir el comando del Paso 2.

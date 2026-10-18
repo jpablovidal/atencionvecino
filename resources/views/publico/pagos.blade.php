@@ -2,13 +2,20 @@
 @section('titulo', 'Pago a proveedores')
 @section('contenido')
 <h1>Consulta de pago a proveedores</h1>
-<p class="lead-sub">Conozca la situación de pago de su factura en la I. Municipalidad de Santo Domingo. Ingrese el <strong>RUT de su empresa</strong>, el <strong>número</strong> y la <strong>fecha</strong> de la factura: los tres datos deben coincidir.</p>
+<p class="lead-sub">Conozca la situación de pago de su factura en la I. Municipalidad de Santo Domingo. Ingrese con ClaveÚnica y luego el <strong>RUT de su empresa</strong>, el <strong>número</strong> y la <strong>fecha</strong> de la factura: los tres datos deben coincidir.</p>
+@if(! $persona)
+<div class="card card-body mb-4"><h2 class="h5">Primero, ingrese con ClaveÚnica</h2>
+ <p>Para proteger la información de pago, la consulta exige identificarse con <strong>ClaveÚnica</strong>. Usted ingresa como persona (quien consulta queda registrada); luego indica el RUT de la empresa y los datos de la factura.</p>
+ <p><a class="btn btn-primary" href="{{ route('proveedores.pagos.ingresar') }}">Ingresar con ClaveÚnica</a></p></div>
+@else
+<p class="small mb-2">Consulta como <strong>{{ $persona['nombre'] }}</strong> (RUN {{ $persona['run'] }}).</p>
 <form method="post" action="{{ route('proveedores.pagos.consultar') }}" class="card card-body mb-4" novalidate>@csrf
  <div class="form-row">
   <div class="form-group col-md-4"><label for="rut">RUT de la empresa</label><input class="form-control" id="rut" name="rut" required maxlength="14" autocomplete="off" inputmode="text" placeholder="76.123.456-7" value="{{ $entrada['rut'] }}" aria-describedby="rut-ayuda"><small id="rut-ayuda" class="form-text text-muted">Con dígito verificador.</small></div>
   <div class="form-group col-md-4"><label for="factura">Número de factura</label><input class="form-control" id="factura" name="factura" required maxlength="40" autocomplete="off" value="{{ $entrada['factura'] }}"></div>
   <div class="form-group col-md-4"><label for="fecha">Fecha de la factura</label><input class="form-control" type="date" id="fecha" name="fecha" required max="{{ now('America/Santiago')->format('Y-m-d') }}" value="{{ $entrada['fecha'] }}"></div></div>
  <div><button class="btn btn-primary">Consultar</button></div></form>
+@endif
 @if($error)<div class="alert alert-danger" role="alert" tabindex="-1" id="resultado-pago">{{ $error }}</div>@endif
 @if($resultado !== null)
  <section aria-labelledby="res-t" id="resultado-pago" tabindex="-1"><h2 class="h4" id="res-t">Resultado</h2>
@@ -31,5 +38,5 @@
   <div class="alert alert-info" role="status">No encontramos información de pago con esos datos. Revise el RUT, el número y la fecha de la factura. Si los datos son correctos, es posible que la factura aún no haya sido ingresada al proceso de pago: consulte en la Dirección de Administración y Finanzas.</div>
  @endforelse
  </section>@endif
-<p class="small text-muted">Esta información es referencial y refleja el estado del proceso de pago en el sistema municipal. Por seguridad, la consulta exige los tres datos de la factura y no muestra datos bancarios.</p>
+<p class="small text-muted">Esta información es referencial y refleja el estado del proceso de pago en el sistema municipal. Por seguridad, la consulta exige ClaveÚnica y los tres datos de la factura, registra quién consulta y no muestra datos bancarios.</p>
 @endsection

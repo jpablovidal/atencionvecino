@@ -50,6 +50,7 @@ Route::middleware('throttle:publico')->group(function () {
     Route::get('/tramites/{id}/iniciar', [CatalogoTramitesController::class, 'iniciar'])->whereNumber('id')->name('catalogo.iniciar');
     Route::get('/tramites/{id}/{slug?}', [CatalogoTramitesController::class, 'ficha'])->whereNumber('id')->where('slug', '[a-z0-9\-]+')->name('catalogo.ficha');
     Route::get('/pagos-proveedores', [ProveedoresController::class, 'form'])->name('proveedores.pagos');
+    Route::get('/pagos-proveedores/ingresar', [ProveedoresController::class, 'ingresar'])->middleware('throttle:login')->name('proveedores.pagos.ingresar');
     Route::post('/pagos-proveedores', [ProveedoresController::class, 'consultar'])->middleware('throttle:12,1')->name('proveedores.pagos.consultar');
     Route::get('/validar', [PublicoController::class, 'formValidar'])->name('validar.form');
     Route::post('/validar', [PublicoController::class, 'buscarValidar'])->name('validar.buscar');

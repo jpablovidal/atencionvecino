@@ -142,3 +142,7 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La consulta pública es un servicio sin autenticación: aunque exige tres datos y está limitada por tasa, quien conozca los tres datos de una factura ajena puede consultarla. No muestra cuentas bancarias ni datos personales; si la institución exige más garantías (clave del proveedor, ClaveÚnica de empresa), es una decisión posterior.
 - El plazo de 30 días (Ley 21.131) se calcula en **días corridos desde la fecha de la factura** (no desde su recepción conforme): referencial, **A VALIDAR** con Jurídica y Finanzas. Sin fecha de factura se usa la fecha del decreto.
 - El tablero no distingue facturas con pago retenido por reclamo, multas o retenciones; no hay multimoneda.
+
+## ClaveÚnica en la consulta de proveedores
+- **Persona, no empresa:** ClaveÚnica acredita la identidad de una persona natural; **no acredita que sea representante o dependiente de la empresa** cuyo RUT ingresa. El sistema no consulta poderes ni el SII. La barrera sigue siendo conocer los tres datos de la factura; la identificación solo agrega **trazabilidad** (queda registrado el RUN de quien consultó) y un freno por persona. Si la municipalidad exige verificar la relación con la empresa (Clave Tributaria, mandatos, registro de proveedores), es una integración futura (**A VALIDAR**).
+- Un proveedor extranjero o sin ClaveÚnica no puede consultar por esta vía: debe preguntar en la Dirección de Administración y Finanzas.

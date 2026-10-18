@@ -106,6 +106,7 @@ class AuthController extends Controller
             }
         }
         $pendiente = $request->session()->get('tramite_pendiente'); // se conserva solo para ciudadanos (ver abajo)
+        $retornoPago = $request->session()->get('retorno_pago'); // idem: vuelve a la consulta de pago a proveedores
         $request->session()->invalidate(); // sesión nueva (anti fijación)
         $request->session()->regenerateToken();
         $request->session()->put(['login_at' => time(), 'last_seen' => time()]);
@@ -124,6 +125,10 @@ class AuthController extends Controller
         }
         $request->session()->put('ciudadano', $id);
         $this->audit->registrar('auth.login', null, null, ['via' => 'ciudadano'], false, ['run' => $id['run'], 'rol' => 'ciudadano']);
+
+        if (is_array($retornoPago) && ($retornoPago['exp'] ?? 0) >= time()) { // vuelve a la consulta de pago a proveedores (destino fijo, no elegido por quien llama)
+            return redirect()->route('proveedores.pagos');
+        }
 
         // retoma el trámite elegido en el catálogo: solo un id entero vigente, de un solo uso, y solo si sigue publicado
         if (is_array($pendiente) && ($pendiente['exp'] ?? 0) >= time()) {
