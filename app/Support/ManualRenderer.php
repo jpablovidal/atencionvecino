@@ -25,6 +25,7 @@ class ManualRenderer
         'autoridad' => ['Autoridad', 'Consultar el seguimiento de las solicitudes: etapa, estado, quién la tiene y si terminó.'],
         'transparencia' => ['Transparencia activa y pasiva', 'Gestionar consultas de acceso a la información, expedientes, requerimientos, plazos, transparencia activa y reportes.'],
         'oirs' => ['OIRS', 'Visualizar solicitudes, su estado, responsables y plazos vencidos o por vencer.'],
+        'oficina-partes' => ['Oficina de Partes', 'Recibir las respuestas finales instruidas y notificarlas al solicitante por Casilla Única con copia al correo, o registrar la entrega física.'],
         'publico' => ['Público general', 'Validar documentos, consultar documentos públicos y usar las opciones de accesibilidad.'],
     ];
 

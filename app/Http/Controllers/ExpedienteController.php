@@ -22,6 +22,7 @@ use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
 use App\Services\Firma\ArchivoFirmaService;
+use App\Services\MovimientoService;
 use App\Services\NotificacionService;
 use App\Services\SolicitudService;
 use App\Services\TransparenciaService;
@@ -37,7 +38,7 @@ class ExpedienteController extends Controller
     {
         $this->authorize('ver', $expediente);
         $expediente->archivos()->whereNull('firma_estado')->limit(10)->get()->each(fn ($a) => $firmas->reanalizar($a)); // archivos anteriores al reconocimiento de firmas
-        $expediente->load(['solicitud.tramite', 'solicitud.devoluciones', 'documentos.tipo', 'documentos.pasos.usuario', 'archivos', 'comentarios.usuario', 'derivaciones.de', 'derivaciones.a', 'notificaciones.documento', 'responsable', 'unidad']);
+        $expediente->load(['solicitud.tramite', 'solicitud.devoluciones', 'documentos.tipo', 'documentos.pasos.usuario', 'archivos', 'comentarios.usuario', 'derivaciones.de', 'derivaciones.a', 'notificaciones.documento', 'notificaciones.archivo', 'respuestas.items.documento', 'respuestas.items.archivo', 'respuestas.notificaciones', 'respuestas.instructor', 'responsable', 'unidad']);
         $this->audit->registrar('expediente.ver', 'expediente', $expediente->id, [], true);
 
         return view('app.expediente', [
@@ -141,6 +142,9 @@ class ExpedienteController extends Controller
         abort_unless($dest->operaExpedientes(), 422);
         Derivacion::query()->create(['expediente_id' => $expediente->id, 'de_usuario_id' => $r->user()->id, 'a_usuario_id' => $dest->id, 'motivo' => $d['motivo']]);
         $this->audit->registrar('expediente.derivar', 'expediente', $expediente->id, ['a' => $dest->id]);
+        if ($expediente->solicitud) {
+            app(MovimientoService::class)->registrar($expediente->solicitud, 'derivada', 'Su solicitud fue derivada a '.($dest->unidad?->nombre ?? 'otra dirección municipal').' para continuar su gestión.', $dest->unidad_id);
+        }
 
         return back()->with('ok', 'Expediente derivado a '.$dest->nombreCompleto().'.');
     }

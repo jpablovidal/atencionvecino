@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\FlujoException;
+use App\Jobs\EnviarAvisoMovimiento;
+use App\Models\AvisoMovimiento;
 use App\Models\Notificacion;
 use App\Services\AuditoriaService;
 use App\Services\Casilla\CasillaAdapter;
@@ -40,6 +42,8 @@ class CasillaController extends Controller
             'credenciales' => $this->casilla->usaOauth() ? 'OAuth2 (Client ID y Client Secret)' : ($cfg['api_token'] ? 'Token fijo' : null),
             'puedeGestionar' => $u->tienePermiso('casilla.gestionar'), 'puedeEvidencia' => $u->tienePermiso('notificaciones.gestionar') && $u->operaExpedientes(),
             'kpis' => $kpis, 'diagnostico' => session('diagnostico'),
+            'avisos' => AvisoMovimiento::query()->where('canal', 'casilla_unica')->whereIn('estado', ['pendiente', 'fallida'])->with('movimiento.unidad')->orderBy('id')->limit(30)->get(),
+            'avisosTotal' => AvisoMovimiento::query()->where('canal', 'casilla_unica')->whereIn('estado', ['pendiente', 'fallida'])->count(),
             'pendientes' => $base()->whereIn('estado', ['pendiente', 'fallida'])->with('expediente:id,codigo,unidad_id', 'documento:id,titulo')->orderBy('id')->limit(50)->get(),
             'recientes' => $base()->where('estado', 'enviada')->with('expediente:id,codigo', 'documento:id,titulo')->orderByDesc('id')->limit(15)->get(),
         ]);
@@ -53,6 +57,17 @@ class CasillaController extends Controller
         return back()->with('diagnostico', $res);
     }
 
+    /** Registra el acuse de Casilla Única de un aviso de movimiento (modo outbox). */
+    public function avisoEvidencia(Request $r, AvisoMovimiento $aviso)
+    {
+        $d = $r->validate(['valor' => 'required|string|max:250']);
+        abort_unless($aviso->canal === 'casilla_unica' && $aviso->estado !== 'enviada', 404);
+        $aviso->forceFill(['estado' => 'enviada', 'evidencia_tipo' => 'id_casilla_unica', 'evidencia' => trim($d['valor']), 'evidencia_en' => now(), 'ultimo_error' => null])->save();
+        $this->audit->registrar('aviso.evidencia', 'aviso', $aviso->id, ['canal' => 'casilla_unica']);
+
+        return back()->with('ok', 'Evidencia registrada.');
+    }
+
     public function reintentar(Request $r, NotificacionService $svc)
     {
         if (! $this->casilla->modoApi()) {
@@ -60,6 +75,13 @@ class CasillaController extends Controller
         }
         $ok = 0;
         $mal = 0;
+        foreach (AvisoMovimiento::query()->where('canal', 'casilla_unica')->whereIn('estado', ['pendiente', 'fallida'])->orderBy('id')->limit(20)->pluck('id') as $id) {
+            try {
+                EnviarAvisoMovimiento::dispatch($id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
         foreach ($this->alcance($r)->whereIn('estado', ['pendiente', 'fallida'])->orderBy('id')->limit(20)->get() as $n) {
             try {
                 $svc->reintentarCasilla($n) ? $ok++ : $mal++;

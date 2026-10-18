@@ -106,6 +106,7 @@ class TransparenciaService
             $motivo = $this->texto($motivo, 10, 1000, 'El motivo de la prórroga');
             $s->forceFill(['prorroga_dias' => $this->param('prorroga_dias'), 'prorroga_motivo' => $motivo, 'prorrogada_en' => now(), 'prorrogada_por' => $u->id])->save();
             $this->audit->registrar('transparencia.prorroga', 'solicitud', $s->folio, ['dias' => $s->prorroga_dias]);
+            app(MovimientoService::class)->registrar($s, 'prorroga', 'El plazo de respuesta de su solicitud se prorrogó '.$s->prorroga_dias.' días hábiles (Ley 20.285).');
 
             return $s;
         });

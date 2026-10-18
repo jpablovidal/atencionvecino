@@ -56,7 +56,7 @@ class NotificacionService
         return $out;
     }
 
-    private function intentarCasilla(Notificacion $n): void
+    public function intentarCasilla(Notificacion $n): void
     {
         try {
             $ev = $this->casilla->enviar($n);

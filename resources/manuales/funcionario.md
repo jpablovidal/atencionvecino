@@ -201,3 +201,9 @@ Al crear una plantilla (si su rol lo permite) la redacta en partes: **materia, v
 
 ## Expedientes, documentos y archivos restringidos
 Si un expediente contiene datos personales o sensibles, puede **restringirlo** (o solo un documento o archivo) indicando el motivo. Las personas que no estén autorizadas verán «archivo restringido» y no podrán abrirlo; cada intento queda registrado. Autorice solo a quien **necesita conocerlo**, con motivo y, si corresponde, fecha de vencimiento (máximo 1 año), y revoque la autorización cuando deje de ser necesaria. Solo una persona autorizada puede cambiar o levantar la restricción. Administración del sistema no ve el contenido.
+
+## Respuesta final al solicitante
+Cuando termine la gestión de una solicitud, en el expediente (sección **Respuesta final al solicitante**) siga tres pasos: (1) elija **uno o más documentos vigentes y archivos** del expediente que se entregarán; (2) elija cómo se notificará —**Casilla Única con copia al correo** (lo normal) o **entrega física** (excepcional, con motivo)—; (3) agregue indicaciones y **confirme que enviará la respuesta final de notificación**. Quien responde (por ejemplo, Oficina de Partes) la ve en su bandeja, sabe qué responder y con qué documentos, y la despacha cuando el expediente está **cerrado**. Puede anular su instrucción mientras no se haya despachado. Los documentos restringidos solo se pueden elegir si usted está autorizado(a).
+
+## Avisos al vecino
+El vecino recibe un aviso (Casilla Única y copia al correo) **por cada movimiento** de su solicitud: ingreso, apertura del expediente, derivación, devolución y su respuesta, prórroga, término de la gestión, reapertura, respuesta final en preparación y despachada. Los textos son simples y no incluyen datos internos.

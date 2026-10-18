@@ -550,4 +550,40 @@ create table `anuncios` (`id` bigint unsigned not null auto_increment primary ke
 
 alter table `anuncios` add index `anuncios_activo_audiencia_index`(`activo`, `audiencia`);
 
+create table `solicitud_movimientos` (`id` bigint unsigned not null auto_increment primary key, `solicitud_id` bigint unsigned not null, `expediente_id` bigint unsigned null, `tipo` varchar(24) not null, `descripcion` varchar(240) not null, `unidad_id` bigint unsigned null, `created_at` timestamp not null default CURRENT_TIMESTAMP) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `solicitud_movimientos` add constraint `solicitud_movimientos_solicitud_id_foreign` foreign key (`solicitud_id`) references `solicitudes` (`id`);
+
+alter table `solicitud_movimientos` add index `solicitud_movimientos_solicitud_id_id_index`(`solicitud_id`, `id`);
+
+create table `avisos_movimiento` (`id` bigint unsigned not null auto_increment primary key, `movimiento_id` bigint unsigned not null, `canal` varchar(15) not null, `estado` varchar(12) not null default 'pendiente', `evidencia_tipo` varchar(30) null, `evidencia` varchar(255) null, `evidencia_en` timestamp null, `intentos` tinyint unsigned not null default '0', `ultimo_error` varchar(120) null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `avisos_movimiento` add constraint `avisos_movimiento_movimiento_id_foreign` foreign key (`movimiento_id`) references `solicitud_movimientos` (`id`);
+
+alter table `avisos_movimiento` add unique `avisos_movimiento_movimiento_id_canal_unique`(`movimiento_id`, `canal`);
+
+create table `respuestas_finales` (`id` bigint unsigned not null auto_increment primary key, `expediente_id` bigint unsigned not null, `solicitud_id` bigint unsigned not null, `estado` varchar(12) not null default 'instruida', `canal` varchar(15) not null default 'casilla_unica', `motivo_presencial` varchar(300) null, `instruccion` varchar(600) null, `instruida_por` bigint unsigned not null, `despachada_por` bigint unsigned null, `despachada_en` timestamp null, `anulada_motivo` varchar(300) null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `respuestas_finales` add constraint `respuestas_finales_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`);
+
+alter table `respuestas_finales` add constraint `respuestas_finales_solicitud_id_foreign` foreign key (`solicitud_id`) references `solicitudes` (`id`);
+
+alter table `respuestas_finales` add constraint `respuestas_finales_instruida_por_foreign` foreign key (`instruida_por`) references `usuarios` (`id`);
+
+alter table `respuestas_finales` add index `respuestas_finales_estado_id_index`(`estado`, `id`);
+
+create table `respuesta_final_items` (`id` bigint unsigned not null auto_increment primary key, `respuesta_id` bigint unsigned not null, `documento_id` bigint unsigned null, `archivo_id` bigint unsigned null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `respuesta_final_items` add constraint `respuesta_final_items_respuesta_id_foreign` foreign key (`respuesta_id`) references `respuestas_finales` (`id`);
+
+alter table `respuesta_final_items` add index `respuesta_final_items_respuesta_id_index`(`respuesta_id`);
+
+alter table `notificaciones` add `archivo_id` bigint unsigned null;
+
+alter table `notificaciones` add `respuesta_id` bigint unsigned null;
+
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('oficina_partes', 'Oficina de Partes', 'Recibe las respuestas finales instruidas por quienes gestionaron los expedientes y las notifica al solicitante (Casilla Única con copia por correo; excepcionalmente entrega física).', 'funcionario', 1, 1, '2026-12-02 00:00:00', '2026-12-02 00:00:00');
+
+select `id` from `roles` where `clave` = 'oficina_partes' limit 1;
+
 SET FOREIGN_KEY_CHECKS = 1;

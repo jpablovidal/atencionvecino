@@ -67,7 +67,27 @@ class CasillaAdapter
             throw new \RuntimeException('La URL de Casilla Única debe ser https.');
         }
         $resp = Http::timeout(15)->connectTimeout(5)->withoutRedirecting()->withToken($this->token())
-            ->post((string) $this->cfg['api_url'], ['run' => $n->destinatario_run, 'folio' => $n->solicitud_id, 'documento' => $n->documento_id]);
+            ->post((string) $this->cfg['api_url'], ['run' => $n->destinatario_run, 'folio' => $n->solicitud_id, 'documento' => $n->documento_id] + ($n->archivo_id ? ['archivo' => $n->archivo_id] : []));
+        $id = $resp->successful() ? $resp->json('id') : null;
+        if (! is_string($id) || $id === '') {
+            throw new \RuntimeException('Casilla Única no confirmó el envío.');
+        }
+
+        return ['evidencia_tipo' => 'id_casilla_unica', 'evidencia' => $id];
+    }
+
+    /**
+     * Aviso de un movimiento de la solicitud (sin documentos). El contrato del mensaje (campos asunto y mensaje) es A VALIDAR con la guía de integración.
+     *
+     * @return array{evidencia_tipo:string,evidencia:string}
+     */
+    public function enviarAviso(string $run, string $folio, string $asunto, string $mensaje): array
+    {
+        if (! str_starts_with((string) ($this->cfg['api_url'] ?? ''), 'https://')) {
+            throw new \RuntimeException('La URL de Casilla Única debe ser https.');
+        }
+        $resp = Http::timeout(15)->connectTimeout(5)->withoutRedirecting()->withToken($this->token())
+            ->post((string) $this->cfg['api_url'], ['run' => $run, 'folio' => $folio, 'asunto' => $asunto, 'mensaje' => $mensaje]);
         $id = $resp->successful() ? $resp->json('id') : null;
         if (! is_string($id) || $id === '') {
             throw new \RuntimeException('Casilla Única no confirmó el envío.');

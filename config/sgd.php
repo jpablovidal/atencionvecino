@@ -82,6 +82,11 @@ return [
     ],
 
     // Casilla Única
+    // Avisos al ciudadano por cada movimiento de su solicitud (Casilla Única + copia por correo)
+    'avisos' => [
+        'movimientos' => (bool) env('SGD_AVISOS_MOVIMIENTOS', true),
+    ],
+
     'casilla' => [
         'mode' => env('CASILLA_MODE', 'outbox'), // outbox|api
         'api_url' => env('CASILLA_API_URL'),

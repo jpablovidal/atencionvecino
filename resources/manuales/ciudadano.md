@@ -98,3 +98,6 @@ Todo documento firmado tiene un **código de validación** `SDD-XXXX-XXXX-XXXX` 
 
 ## Avisos del sitio
 Al entrar al sitio puede aparecer una ventana con un aviso del municipio (por ejemplo, cierres por feriado o nuevos trámites). Puede cerrarla con el botón **Cerrar** o la tecla Esc, y marcar «No volver a mostrar este anuncio». Los plazos de respuesta se cuentan en **días administrativos** (lunes a viernes, sin feriados).
+
+## Estado de su solicitud y avisos
+En **Mis solicitudes** y en el detalle de cada solicitud ve el **número de solicitud**, el **número de expediente**, la **dirección municipal responsable** y la **fecha de cada movimiento**. Le avisamos de **cada movimiento** a su **Casilla Única**, con **copia a su correo electrónico**. La respuesta final llega por esos mismos medios; los documentos se descargan desde el detalle de la solicitud. Excepcionalmente la municipalidad puede entregarle los documentos en forma física.

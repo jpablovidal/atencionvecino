@@ -31,6 +31,7 @@ class DemoSeeder extends Seeder
             ['id' => 4, 'codigo' => 'DIDECO', 'nombre' => 'Dirección de Desarrollo Comunitario', 'activo' => 1] + $t,
             ['id' => 5, 'codigo' => 'ARCH', 'nombre' => 'Archivo Municipal', 'activo' => 1] + $t,
             ['id' => 6, 'codigo' => 'TRANSP', 'nombre' => 'Unidad de Transparencia', 'activo' => 1] + $t,
+            ['id' => 7, 'codigo' => 'OPARTES', 'nombre' => 'Oficina de Partes', 'activo' => 1] + $t,
         ]);
 
         $u = fn (int $id, int $cuerpo, string $nom, string $ape, string $rol, ?int $unidad, bool $firma, string $cargo) => [
@@ -47,7 +48,7 @@ class DemoSeeder extends Seeder
             ['arch_cert', 'Ministro(a) de fe del archivo', 'Certifica microformas (acta) y autoriza la disposición de originales.', ['archivo.ver', 'archivo.certificar', 'archivo.disposicion'], 'secretario'],
         ] as $i => $fila) {
             [$clave, $nombre, $desc, $extra, $base] = array_pad($fila, 5, 'funcionario');
-            $rid = 9 + $i; // los 8 roles del sistema ocupan 1-8; id explícito para que 02_seed_demo.sql sea generable
+            $rid = 10 + $i; // los 9 roles del sistema ocupan 1-9; id explícito para que 02_seed_demo.sql sea generable
             DB::table('roles')->insert(['id' => $rid, 'clave' => $clave, 'nombre' => $nombre, 'descripcion' => $desc, 'rol_base' => $base, 'sistema' => 0, 'activo' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
             foreach (array_unique([...Permisos::deBase($base), ...$extra]) as $perm) {
                 DB::table('rol_permisos')->insert(['rol_id' => $rid, 'permiso' => $perm]);
@@ -69,6 +70,7 @@ class DemoSeeder extends Seeder
             $u(13, 10000013, 'Alicia', 'Autoridad Demo', 'autoridad', null, false, 'Autoridad municipal'),
             $u(14, 10000014, 'Omar', 'OIRS Demo', 'oirs', null, false, 'Encargado OIRS'),
             $u(15, 10000015, 'Teresa', 'Transparencia Demo', 'transparencia', 6, false, 'Encargada de Transparencia'),
+            $u(16, 10000016, 'Patricia', 'Oficina de Partes Demo', 'oficina_partes', 7, false, 'Encargada de Oficina de Partes'),
         ]);
 
         DB::table('tramites')->insert([

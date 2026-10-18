@@ -11,6 +11,7 @@ use App\Models\Tramite;
 use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
 use App\Services\FileVault;
+use App\Services\MovimientoService;
 use App\Services\SolicitudService;
 use Illuminate\Http\Request;
 
@@ -35,7 +36,7 @@ class CiudadanoController extends Controller
 
         return view('ciudadano.index', [
             'c' => $c,
-            'solicitudes' => $sol = Solicitud::query()->with('tramite')->where('run', $c['run'])->orderByDesc('id')->get(),
+            'solicitudes' => $sol = Solicitud::query()->with('tramite', 'expediente:id,codigo')->where('run', $c['run'])->orderByDesc('id')->get(),
             'resumen' => ['devuelta' => $sol->where('estado', 'devuelta')->count(), 'finalizada' => $sol->whereIn('estado', ['finalizada', 'cerrada'])->count(), 'curso' => $sol->whereNotIn('estado', ['devuelta', 'finalizada', 'cerrada'])->count()],
             'tramites' => Tramite::query()->publicados()->with('propietaria')->orderBy('nombre')->get()->groupBy(fn ($t) => $t->propietaria?->nombre ?? 'Municipalidad'),
         ]);
@@ -77,10 +78,12 @@ class CiudadanoController extends Controller
 
     public function solicitud(Request $r, string $folio)
     {
-        $s = $this->propia($r, $folio)->load('tramite', 'devoluciones');
-        $docs = Notificacion::query()->with('documento.tipo')->where('solicitud_id', $s->id)->where('estado', 'enviada')->get()->pluck('documento')->filter()->unique('id');
+        $s = $this->propia($r, $folio)->load('tramite', 'devoluciones', 'expediente.unidad');
+        $env = Notificacion::query()->with('documento.tipo', 'archivo')->where('solicitud_id', $s->id)->where('estado', 'enviada')->get();
+        $mov = app(MovimientoService::class);
 
-        return view('ciudadano.solicitud', ['s' => $s, 'docs' => $docs, 'pendiente' => $s->devolucionPendiente()]);
+        return view('ciudadano.solicitud', ['s' => $s, 'docs' => $env->pluck('documento')->filter()->unique('id'), 'archivos' => $env->pluck('archivo')->filter()->unique('id'), 'pendiente' => $s->devolucionPendiente(),
+            'linea' => $mov->linea($s), 'direccion' => $mov->direccion($s)]);
     }
 
     public function responder(Request $r, string $folio, SolicitudService $svc)
@@ -103,6 +106,17 @@ class CiudadanoController extends Controller
         $this->audit->registrar('solicitud.comprobante', 'solicitud', $s->folio);
 
         return descarga($vault->get($a->ruta, $a->sha256), $a->nombre_original, 'application/pdf');
+    }
+
+    /** Solo archivos efectivamente notificados (evidencia registrada) a ESTE ciudadano. */
+    public function archivoRespuesta(Request $r, string $folio, Archivo $archivo, FileVault $vault)
+    {
+        $s = $this->propia($r, $folio);
+        $ok = Notificacion::query()->where('solicitud_id', $s->id)->where('archivo_id', $archivo->id)->where('estado', 'enviada')->exists();
+        abort_unless($ok, 404);
+        $this->audit->registrar('archivo.descarga_ciudadano', 'archivo', $archivo->id, [], $archivo->sensible, ['run' => $s->run, 'rol' => 'ciudadano']);
+
+        return descarga($vault->get($archivo->ruta, $archivo->sha256), $archivo->nombre_original, $archivo->mime);
     }
 
     /** Solo documentos efectivamente notificados (evidencia registrada) a ESTE ciudadano. */

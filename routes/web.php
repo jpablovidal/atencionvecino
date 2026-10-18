@@ -26,6 +26,7 @@ use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RecursosController;
 use App\Http\Controllers\RepositorioController;
+use App\Http\Controllers\RespuestasController;
 use App\Http\Controllers\RestringidosController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SeguimientoController;
@@ -86,6 +87,7 @@ Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadan
     Route::post('/solicitudes/{folio}/responder', [CiudadanoController::class, 'responder'])->middleware('throttle:envio')->name('responder');
     Route::get('/solicitudes/{folio}/comprobante', [CiudadanoController::class, 'comprobante'])->name('comprobante');
     Route::get('/solicitudes/{folio}/documentos/{documento}', [CiudadanoController::class, 'documento'])->name('documento');
+    Route::get('/solicitudes/{folio}/archivos/{archivo}', [CiudadanoController::class, 'archivoRespuesta'])->whereNumber('archivo')->name('archivo');
 });
 
 // ---- Funcionarios
@@ -188,6 +190,20 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/seguimiento/{folio}', [SeguimientoController::class, 'detalle'])->middleware('permiso:seguimiento.consultar,oirs.ver')->where('folio', '[A-Za-z0-9\-]{5,30}')->name('seguimiento.detalle');
     });
 
+    // ---- Respuesta final de notificación: instruir (gestión del expediente) y despachar (Oficina de Partes)
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::post('/expedientes/{expediente}/respuesta-final', [RespuestasController::class, 'instruir'])->middleware('permiso:respuestas.instruir')->name('respuestas.instruir');
+        Route::post('/respuestas/{respuesta}/anular', [RespuestasController::class, 'anular'])->middleware('permiso:respuestas.instruir,respuestas.despachar')->whereNumber('respuesta')->name('respuestas.anular');
+        Route::middleware('permiso:respuestas.despachar')->prefix('respuestas')->group(function () {
+            Route::get('/', [RespuestasController::class, 'bandeja'])->name('respuestas');
+            Route::get('/{respuesta}', [RespuestasController::class, 'ver'])->whereNumber('respuesta')->name('respuestas.ver');
+            Route::post('/{respuesta}/despachar', [RespuestasController::class, 'despachar'])->whereNumber('respuesta')->name('respuestas.despachar');
+            Route::post('/{respuesta}/reintentar', [RespuestasController::class, 'reintentar'])->whereNumber('respuesta')->name('respuestas.reintentar');
+            Route::post('/{respuesta}/evidencia/{notificacion}', [RespuestasController::class, 'evidencia'])->whereNumber(['respuesta', 'notificacion'])->name('respuestas.evidencia');
+            Route::get('/{respuesta}/items/{item}', [RespuestasController::class, 'item'])->whereNumber(['respuesta', 'item'])->name('respuestas.item');
+        });
+    });
+
     // ---- Anuncios del modal de bienvenida
     Route::middleware(['permiso:anuncios.gestionar', 'throttle:60,1'])->prefix('anuncios')->group(function () {
         Route::get('/', [AnunciosController::class, 'index'])->name('anuncios');
@@ -243,6 +259,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::get('/casilla', [CasillaController::class, 'index'])->middleware('permiso:notificaciones.gestionar,casilla.gestionar')->name('casilla');
     Route::middleware('permiso:casilla.gestionar')->group(function () {
         Route::post('/casilla/diagnosticar', [CasillaController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('casilla.diagnosticar');
+        Route::post('/casilla/avisos/{aviso}/evidencia', [CasillaController::class, 'avisoEvidencia'])->whereNumber('aviso')->name('casilla.aviso_evidencia');
         Route::post('/casilla/reintentar', [CasillaController::class, 'reintentar'])->middleware('throttle:6,1')->name('casilla.reintentar');
     });
 

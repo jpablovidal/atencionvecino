@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class SolicitudService
 {
-    public function __construct(private readonly FileVault $vault, private readonly PdfService $pdf, private readonly AuditoriaService $audit, private readonly ArchivoFirmaService $firmas) {}
+    public function __construct(private readonly FileVault $vault, private readonly PdfService $pdf, private readonly AuditoriaService $audit, private readonly ArchivoFirmaService $firmas, private readonly MovimientoService $mov) {}
 
     /**
      * @param  array{run:string,nombres:string,apellidos:string}  $ciudadano  (de ClaveÚnica, no editable)
@@ -75,6 +75,7 @@ class SolicitudService
                     'subido_por' => $ciudadano['run'], 'nivel_acceso' => 'reservado',
                 ]);
                 $this->audit->registrar('solicitud.ingreso', 'solicitud', $s->folio, ['tramite' => $tramite->codigo_interno, 'anexos' => count($info)], false, ['run' => $ciudadano['run'], 'rol' => 'ciudadano']);
+                $this->mov->registrar($s, 'ingreso', 'Su solicitud fue ingresada. Quedó a cargo de la dirección municipal responsable del trámite.');
 
                 return $s;
             });
@@ -144,6 +145,7 @@ class SolicitudService
             $d = Devolucion::query()->create(['solicitud_id' => $s->id, 'creado_por' => $u->id, 'observacion' => $observacion, 'plazo_dias' => $dias, 'vence_en' => Plazos::vencimiento(now('America/Santiago'), $dias, true)]);
             $s->forceFill(['estado' => 'devuelta'])->save();
             $this->audit->registrar('solicitud.devolver', 'solicitud', $s->folio, ['dias' => $dias]);
+            $this->mov->registrar($s, 'devuelta', 'Su solicitud fue devuelta con observaciones: tiene '.$dias.' días para responder desde su sección «Mis solicitudes».');
 
             return $d;
         });
@@ -180,6 +182,7 @@ class SolicitudService
                 $dev->forceFill(['respuesta' => $respuesta, 'respondida_en' => now()])->save();
                 $s->forceFill(['estado' => 'en_tramite'])->save();
                 $this->audit->registrar('solicitud.responder', 'solicitud', $s->folio, [], false, ['run' => $s->run, 'rol' => 'ciudadano']);
+                $this->mov->registrar($s, 'respondida', 'Recibimos su respuesta a las observaciones; su solicitud continúa en trámite.');
             });
         } catch (\Throwable $e) {
             foreach ($creados as $r) {

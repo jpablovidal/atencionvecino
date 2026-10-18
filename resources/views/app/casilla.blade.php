@@ -32,9 +32,16 @@
 <td>@if($puedeEvidencia)<form method="post" action="{{ route('app.notificacion.evidencia',$n) }}" class="form-inline">@csrf<input type="hidden" name="tipo" value="id_casilla_unica"><label class="sr-only" for="ev{{ $n->id }}">ID de Casilla Única de la notificación {{ $n->id }}</label><input id="ev{{ $n->id }}" name="valor" class="form-control form-control-sm mr-1" maxlength="250" required placeholder="ID de Casilla Única"><button class="btn btn-sm btn-outline-primary">Registrar</button></form>@endif</td></tr>
 @empty<tr><td colspan="6">No hay notificaciones pendientes.</td></tr>@endforelse</tbody></table></div>
 
+<h2 class="seccion">Avisos de movimientos por enviar ({{ $avisosTotal }}@if($avisosTotal > 30), se muestran 30 @endif)</h2>
+<p class="small text-muted">Cada movimiento de una solicitud genera un aviso a la Casilla Única del solicitante, con copia por correo (el correo sale solo por Gmail API). En modo outbox, registre aquí el ID del aviso cuando exista el acuse.</p>
+<div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Avisos de movimientos pendientes</caption><thead><tr><th scope="col">Fecha</th><th scope="col">Movimiento</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead><tbody>
+@forelse($avisos as $a)<tr><td class="text-nowrap">{{ \Illuminate\Support\Carbon::parse($a->movimiento->created_at)->setTimezone('America/Santiago')->format('d-m-Y H:i') }}</td><td>{{ $a->movimiento->descripcion }}</td><td><span class="estado estado-{{ $a->estado }}">{{ $a->estado }}</span> @if($a->ultimo_error)<small>{{ $a->ultimo_error }}</small>@endif</td>
+<td>@if($puedeGestionar)<form method="post" action="{{ route('app.casilla.aviso_evidencia',$a) }}" class="form-inline">@csrf<label class="sr-only" for="av{{ $a->id }}">ID del aviso en Casilla Única</label><input class="form-control form-control-sm mr-1" id="av{{ $a->id }}" name="valor" required maxlength="250" placeholder="ID en Casilla Única"><button class="btn btn-sm btn-primary">Registrar</button></form>@else —@endif</td></tr>
+@empty<tr><td colspan="4">No hay avisos pendientes.</td></tr>@endforelse</tbody></table></div>
+
 <h2 class="seccion">Enviadas recientemente (últimas 15)</h2>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Notificaciones enviadas</caption><thead><tr><th scope="col">Fecha</th><th scope="col">Expediente</th><th scope="col">Documento</th><th scope="col">Evidencia</th></tr></thead><tbody>
 @forelse($recientes as $n)<tr><td class="text-nowrap">{{ $n->evidencia_en?->format('d-m-Y H:i') }}</td><td><a href="{{ route('app.expediente',$n->expediente_id) }}">{{ $n->expediente?->codigo }}</a></td><td>{{ $n->documento?->titulo }}</td><td><code>{{ $n->evidencia }}</code></td></tr>
 @empty<tr><td colspan="4">Aún no hay notificaciones enviadas.</td></tr>@endforelse</tbody></table></div>
-<p class="small text-muted">Para notificar, cierre el expediente y use «Notificar al ciudadano» eligiendo el canal Casilla Única.</p>
+<p class="small text-muted">Para responder a un solicitante, quien gestionó el expediente indica la respuesta final y Oficina de Partes la despacha por Casilla Única (con copia al correo) desde «Respuestas finales».</p>
 @endsection

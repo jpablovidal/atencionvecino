@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class ExpedienteService
 {
-    public function __construct(private readonly AuditoriaService $audit) {}
+    public function __construct(private readonly AuditoriaService $audit, private readonly MovimientoService $mov) {}
 
     public function crearDesdeSolicitud(Solicitud $s, Usuario $u): Expediente
     {
@@ -33,6 +33,7 @@ class ExpedienteService
             $s->forceFill(['expediente_id' => $exp->id, 'estado' => 'en_tramite'])->save();
             $s->archivos()->update(['expediente_id' => $exp->id]);
             $this->audit->registrar('expediente.crear', 'expediente', $exp->id, ['folio' => $s->folio]);
+            $this->mov->registrar($s->refresh(), 'expediente', 'Se abrió el expediente N° '.$exp->codigo.' y su solicitud pasó a gestión.', $exp->unidad_id);
 
             return $exp;
         });
@@ -173,6 +174,9 @@ class ExpedienteService
             $e->forceFill(['estado' => 'cerrado', 'cerrado_en' => now(), 'metadatos' => $m])->save();
             $e->solicitud?->forceFill(['estado' => 'finalizada'])->save();
             $this->audit->registrar('expediente.cerrar', 'expediente', $e->id);
+            if ($e->solicitud) {
+                $this->mov->registrar($e->solicitud, 'resuelta', 'La gestión de su solicitud terminó. Se le notificará la respuesta final.', $e->unidad_id);
+            }
 
             return $e;
         });
@@ -188,6 +192,9 @@ class ExpedienteService
         $e->forceFill(['estado' => 'abierto', 'cerrado_en' => null, 'motivo_reapertura' => $motivo, 'metadatos' => $m])->save();
         $e->solicitud?->forceFill(['estado' => 'en_tramite'])->save();
         $this->audit->registrar('expediente.reabrir', 'expediente', $e->id, ['motivo' => $motivo]);
+        if ($e->solicitud) {
+            $this->mov->registrar($e->solicitud, 'reabierta', 'La gestión de su solicitud se reabrió para completar antecedentes.', $e->unidad_id);
+        }
 
         return $e;
     }

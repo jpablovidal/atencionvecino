@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `dfb902fa6aad0416c6133b0ee88025522aa04a3be42efa254cc722034d7d499b`).
+- Archivo **`sgd-release.zip`** (SHA-256 `09c8b54af9787da7b49de33038b33f2a6cbb6d2a7fc4c2759a62ca2ecc083251`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -85,6 +85,13 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 - **Expedientes y archivos restringidos**: quien opera el expediente puede restringirlo (o un documento/archivo), con motivo, y autorizar solo a quien necesita conocerlo (con vencimiento de hasta 1 año). Quien no está autorizado ve «archivo restringido». **Administración del sistema nunca ve el contenido**, pero en *Accesos a restringidos* (administración y auditoría) ve **quién vio o intentó ver** esos archivos (nombre, cargo, RUN parcial, sin IP). Enfoque de protección de datos personales (Ley 19.628 / 21.719: **A VALIDAR**).
 - **Plantillas por secciones**: materia, vistos, considerando, cuerpo (decreto, reglamento, ordenanza, instructivo u oficio), firmas y **cadena de responsabilidad** (cargos que visan; sus iniciales se insertan al pie). Al actualizar, el instalador crea (solo si faltan) las plantillas de ejemplo de decreto, reglamento, ordenanza, instructivo y oficio (`php artisan plantillas:ejemplos`). Su texto es referencial: valídelo con jurídica.
 - Las tablas nuevas se crean solas al repetir el comando del Paso 2 (modo actualización); no hay pasos manuales.
+
+## Novedades: respuesta final de notificación y avisos por movimiento
+- **Respuesta final**: en el expediente, quien gestionó indica *Respuesta final al solicitante* (elige uno o más documentos y archivos del expediente, el canal y confirma que enviará la respuesta). Quien responde (rol nuevo **Oficina de Partes**, menú *Respuestas finales*) ve qué responder y con qué documentos y lo **despacha por Casilla Única (notificador) con copia al correo**; excepcionalmente registra una **entrega física con acta**. Requiere el expediente **cerrado**.
+- **Avisos por cada movimiento**: el vecino recibe un aviso (Casilla Única + copia por correo) cuando su solicitud ingresa, se abre el expediente, se deriva, se devuelve, se prorroga, termina la gestión o se despacha la respuesta. En *Mis solicitudes* ve **número de solicitud, número de expediente, dirección municipal responsable y fecha de cada movimiento**.
+- **Cuenta de prueba nueva** al actualizar: `10000016-4` (Oficina de Partes); el instalador la crea (solo si falta) y muestra su contraseña **una sola vez**: anótela (o `php artisan pruebas:credenciales --rotar`). Para dar el rol a una persona real: *Administración → Usuarios* → rol **Oficina de Partes**.
+- **Correo con Google Workspace**: los avisos salen por la **Gmail API** con la cuenta de servicio y delegación de todo el dominio (README §10: habilitar Gmail API, delegar el scope `https://www.googleapis.com/auth/gmail.send` al ID de cliente de la cuenta de servicio, subir el JSON a `~/sgd_secrets/gmail-sa.json` con permisos 600 y fijar `MAIL_MAILER=gmail_api`, `GOOGLE_MAIL_SENDER=no-responder@santodomingo.cl` en `~/sgd/.env`). Sin esa configuración el correo queda «fallido» y se reintenta; los demás pasos funcionan. La cola se procesa con el cron (`schedule:run`) que ya instala el comando.
+- **Casilla Única**: mientras la conexión esté en modo *outbox* (valor por defecto) los avisos y notificaciones quedan **pendientes** hasta registrar el acuse (panel *Casilla Única* o la pantalla de la respuesta). El formato del mensaje de aviso es **A VALIDAR** con la guía oficial. Si el volumen es alto, puede desactivar solo los avisos de movimiento con `SGD_AVISOS_MOVIMIENTOS=false` en `.env` (el correo de la respuesta final se mantiene).
 
 ## Operación
 ```bash

@@ -72,6 +72,12 @@ class Expediente extends Model
         return $this->hasMany(Derivacion::class)->orderBy('id');
     }
 
+    /** @return HasMany<RespuestaFinal, $this> */
+    public function respuestas(): HasMany
+    {
+        return $this->hasMany(RespuestaFinal::class)->orderBy('id');
+    }
+
     /** @return HasMany<Notificacion, $this> */
     public function notificaciones(): HasMany
     {

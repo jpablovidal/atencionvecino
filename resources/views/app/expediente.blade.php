@@ -132,17 +132,33 @@
 <td>@if($c->archivo_id)<a href="{{ route('app.expediente.archivo',[$e,$c->archivo_id]) }}">Ver resultado (JSON)</a>@else<span class="estado estado-fallida">{{ $c->error }}</span>@endif</td></tr>@empty<tr><td colspan="5">Sin consultas.</td></tr>@endforelse</tbody></table>
 @endif
 
-@if($e->estado==='cerrado' && $s)
-<h2 class="h4 mt-4">Notificación al ciudadano</h2>
-<p class="small text-muted">Las notificaciones quedan <strong>pendientes</strong> hasta registrar evidencia real de envío. El sistema no afirma haber enviado nada sin evidencia.</p>
-@if($puedeOperar)
-<form method="post" action="{{ route('app.expediente.notificar',$e) }}" class="card card-body mb-3">@csrf
-<fieldset><legend class="h6">Documentos a notificar</legend>
-@foreach($e->documentos->where('estado','vigente')->reject(fn ($dd) => in_array($dd->id, $ocultos['documentos'], true)) as $d)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="n_{{ $d->id }}" name="documentos[]" value="{{ $d->id }}"><label class="custom-control-label" for="n_{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</label></div>@endforeach</fieldset>
-<div class="form-group mt-2"><label for="n_canal">Canal</label><select class="form-control col-md-4" id="n_canal" name="canal">@foreach(['casilla_unica'=>'Casilla Única','correo'=>'Correo (aviso con enlace)','presencial'=>'Soporte físico / presencial'] as $v=>$l)<option value="{{ $v }}" @selected($s->canal_notificacion===$v)>{{ $l }}</option>@endforeach</select></div>
-<div><button class="btn btn-primary">Crear notificaciones</button></div></form>@endif
+@if($s)
+<h2 class="h4 mt-4" id="respuesta-final">Respuesta final al solicitante</h2>
+<p class="small text-muted">Quien gestionó la solicitud indica <strong>qué documentos y archivos del expediente</strong> se entregan; la persona encargada de responder (p. ej. Oficina de Partes) los notifica por <strong>Casilla Única con copia al correo</strong> o, excepcionalmente, con entrega física. El sistema no afirma haber enviado nada sin evidencia.</p>
+@foreach($e->respuestas as $rf)<div class="card card-body mb-2"><div><strong>Respuesta #{{ $rf->id }}</strong> · <span class="estado estado-{{ $rf->estado }}">{{ $rf->estado }}</span> · {{ \App\Services\RespuestaFinalService::CANALES[$rf->canal] ?? $rf->canal }} · instruida el {{ $rf->created_at->setTimezone('America/Santiago')->format('d-m-Y H:i') }} por {{ $rf->instructor?->nombreCompleto() }}
+@if($rf->estado==='despachada') · entrega: <strong>{{ str_replace('_',' ',$rf->entrega()) }}</strong>@endif @if($rf->estado==='anulada') · {{ $rf->anulada_motivo }}@endif</div>
+<ul class="mb-1">@foreach($rf->items as $it)<li>@if($it->documento){{ $it->documento->numeroFormateado() }} — {{ $it->documento->titulo }}@elseif($it->archivo)Archivo: {{ $it->archivo->titulo ?: $it->archivo->nombre_original }}@endif</li>@endforeach</ul>
+@if($rf->instruccion)<div class="small">Indicaciones: {{ $rf->instruccion }}</div>@endif
+@if($rf->estado==='instruida' && $puedeOperar && auth()->user()->tienePermiso('respuestas.instruir'))<form method="post" action="{{ route('app.respuestas.anular',$rf) }}" class="form-inline mt-2">@csrf<label class="sr-only" for="an{{ $rf->id }}">Motivo de la anulación</label><input class="form-control form-control-sm mr-2" id="an{{ $rf->id }}" name="motivo" required maxlength="300" placeholder="Motivo de la anulación"><button class="btn btn-sm btn-outline-secondary">Anular instrucción</button></form>@endif</div>@endforeach
+@if($puedeOperar && auth()->user()->tienePermiso('respuestas.instruir') && ! $e->respuestas->contains('estado','instruida'))
+@php $entregables = $e->archivos->whereIn('ambito', \App\Services\RespuestaFinalService::AMBITOS)->reject(fn ($aa) => in_array($aa->id, $ocultos['archivos'], true)); @endphp
+<form method="post" action="{{ route('app.respuestas.instruir',$e) }}" class="card card-body mb-3" data-pasos>@csrf
+<fieldset data-paso="Documentos"><legend class="h6">1. Documentos y archivos que se entregarán al solicitante</legend>
+@foreach($e->documentos->where('estado','vigente')->reject(fn ($dd) => in_array($dd->id, $ocultos['documentos'], true)) as $d)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="rd_{{ $d->id }}" name="documentos[]" value="{{ $d->id }}"><label class="custom-control-label" for="rd_{{ $d->id }}">Documento {{ $d->numeroFormateado() }} — {{ $d->titulo }}</label></div>@endforeach
+@foreach($entregables as $aa)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="ra_{{ $aa->id }}" name="archivos[]" value="{{ $aa->id }}"><label class="custom-control-label" for="ra_{{ $aa->id }}">Archivo: {{ $aa->titulo ?: $aa->nombre_original }} <small>({{ $aa->ambito }})</small></label></div>@endforeach
+@if($e->documentos->where('estado','vigente')->isEmpty() && $entregables->isEmpty())<p class="mb-0">Aún no hay documentos vigentes ni archivos entregables en el expediente.</p>@endif</fieldset>
+<fieldset data-paso="Canal de notificación"><legend class="h6">2. Cómo se notificará</legend>
+<div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="rc_cu" name="canal" value="casilla_unica" checked><label class="custom-control-label" for="rc_cu">Casilla Única (notificador), con copia al correo {{ $s->correo }}</label></div>
+<div class="custom-control custom-radio"><input class="custom-control-input" type="radio" id="rc_pr" name="canal" value="presencial"><label class="custom-control-label" for="rc_pr">Entrega física de los documentos (excepcional)</label></div>
+<div class="form-group mt-2"><label for="rc_mot">Si es entrega física, motivo de la excepción</label><input class="form-control" id="rc_mot" name="motivo_presencial" maxlength="300"></div></fieldset>
+<fieldset data-paso="Confirmación"><legend class="h6">3. Indicaciones y confirmación</legend>
+<div class="form-group"><label for="rc_ins">Indicaciones para quien responde (opcional)</label><textarea class="form-control" id="rc_ins" name="instruccion" rows="2" maxlength="600"></textarea></div>
+<div class="custom-control custom-checkbox mb-2"><input class="custom-control-input" type="checkbox" id="rc_ok" name="confirmo" value="1" required><label class="custom-control-label" for="rc_ok">Confirmo que enviaré la respuesta final de notificación de esta solicitud con los documentos indicados.</label></div>
+</fieldset>
+<button class="btn btn-primary">Indicar respuesta final</button></form>
+@elseif($e->respuestas->isEmpty())<p class="small text-muted">Aún no se ha indicado la respuesta final.</p>@endif
 <table class="table table-sm"><thead><tr><th scope="col">Documento</th><th scope="col">Canal</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead><tbody>
-@foreach($e->notificaciones as $n)<tr><td>{{ $n->documento?->numeroFormateado() }}</td><td>{{ str_replace('_',' ',$n->canal) }}</td><td><span class="estado estado-{{ $n->estado }}">{{ $n->estado }}</span> @if($n->ultimo_error)<small>{{ $n->ultimo_error }}</small>@endif</td>
+@foreach($e->notificaciones as $n)<tr><td>@if($n->documento){{ $n->documento->numeroFormateado() }}@elseif($n->archivo){{ $n->archivo->titulo ?: $n->archivo->nombre_original }}@else Aviso por correo @endif</td><td>{{ str_replace('_',' ',$n->canal) }}</td><td><span class="estado estado-{{ $n->estado }}">{{ $n->estado }}</span> @if($n->ultimo_error)<small>{{ $n->ultimo_error }}</small>@endif</td>
 <td>@if($n->evidencia){{ $n->evidencia_tipo }}: <span class="hash">{{ $n->evidencia }}</span>@elseif($puedeOperar && $n->canal!=='correo' && $n->estado!=='enviada')
 <form method="post" action="{{ route('app.notificacion.evidencia',$n) }}" class="form-inline">@csrf<label class="sr-only" for="ev{{ $n->id }}">Evidencia</label>
 <select class="form-control form-control-sm mr-1" name="tipo" aria-label="Tipo de evidencia"><option value="id_casilla_unica">ID Casilla Única</option><option value="acta_presencial">Acta presencial</option></select>

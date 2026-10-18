@@ -10,6 +10,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $expediente_id
  * @property int|null $documento_id
+ * @property int|null $archivo_id
+ * @property int|null $respuesta_id
  * @property int $solicitud_id
  * @property string $canal
  * @property string $estado
@@ -36,6 +38,12 @@ class Notificacion extends Model
     public function documento(): BelongsTo
     {
         return $this->belongsTo(Documento::class);
+    }
+
+    /** @return BelongsTo<Archivo, $this> */
+    public function archivo(): BelongsTo
+    {
+        return $this->belongsTo(Archivo::class);
     }
 
     /** @return BelongsTo<Expediente, $this> */
