@@ -87,3 +87,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Contrato sin validar:** la guía https://wikiguias.digital.gob.cl/es/Manuales/integracion-casillaunica no fue accesible desde el entorno de construcción. La URL, la autenticación (token u OAuth2) y el JSON de envío/confirmación son una propuesta mínima; hasta validarlos, mantenga el modo **outbox** (evidencia manual). «Probar conexión» solo obtiene el token: no envía notificaciones.
 - El inicio dual asume que ingresar como funcionario(a) con ClaveÚnica acredita también su identidad de vecino(a) (mismo RUN). En el acceso de **pruebas** (usuario y contraseña) la identidad la declara la cuenta de prueba.
 - El conflicto de interés se controla por **RUN**: no detecta parentesco ni solicitudes presentadas por terceros en nombre del funcionario.
+
+## Progreso y pasos
+- La barra de carga de vistas es **aproximada** (no mide bytes de la página): avanza por fases y se completa al terminar la carga. La barra de la **subida de archivos sí es real** (bytes enviados al servidor); la fase posterior de verificación y cifrado en el servidor no tiene porcentaje (se muestra como paso en curso).
+- Tras una subida, la URL puede quedar en la de la acción si el servidor responde sin redirección (p. ej. error 419); recargar vuelve a la vista anterior.
+- Los pasos se aplican a la solicitud del vecino, el trámite y la microforma; los demás formularios (breves) se envían de una vez.

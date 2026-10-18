@@ -18,6 +18,12 @@ Por seguridad la sesión se cierra sola tras **30 minutos sin actividad** (y com
 
 > **Si usted es funcionario(a) municipal:** al ingresar como funcionario(a) verá un inicio con dos espacios. Elija **Espacio vecino(a)** para hacer sus propios trámites; no podrá tramitarlos usted mismo(a) como funcionario(a).
 
+## Cómo se ve el avance de lo que usted hace
+
+- **Barra de carga:** una barra delgada en el borde superior indica que la página se está cargando.
+- **Formularios por pasos:** la solicitud de un trámite se hace en pasos (*Sus datos y solicitud → Documentos → Notificación → Revisar y enviar*). Al avanzar se revisa lo que falta; en el último paso ve un **resumen** de todo lo que ingresó y de los archivos que adjuntó. Puede volver con **Atrás** o con los números de arriba sin perder lo escrito.
+- **Subida de archivos:** al enviar, aparece una ventana con el **porcentaje y los MB enviados** y tres pasos (*Subiendo → Verificando y protegiendo → Listo*). Puede **Cancelar** y volver a intentarlo. Si se corta la conexión se le avisa y sus datos no se pierden.
+
 ## Su página de inicio
 
 Al ingresar verá **Mis solicitudes**: tres tarjetas con cuántas solicitudes están *en trámite*, *devueltas* (requieren su respuesta, con aviso destacado) y *finalizadas*; **Trámites rápidos** con un buscador y botón *Realizar trámite*; y el **historial**. El menú lateral (☰ en el celular) tiene íconos y le lleva al catálogo, a los documentos públicos y a la validación de documentos.

@@ -146,6 +146,10 @@ El menú **DocDigital** muestra el estado de la conexión con DocDigital y las c
 - Para **enviar** una comunicación abra el expediente, elija un documento vigente y use *Comunicar por DocDigital*. DocDigital exige un PDF con firma electrónica avanzada.
 - Si el modo es **Outbox**, el sistema no se conecta: el envío y el acuse se hacen en DocDigital y aquí se registra la evidencia.
 
+## Pasos, barra de carga y subida de archivos
+
+Los formularios largos (nuevo trámite, registrar microforma) se completan **por pasos**, con revisión final antes de guardar. Toda carga de página muestra una **barra de progreso** superior, y cada subida de archivos (expediente, archivo municipal, comunicaciones) muestra una ventana con el **avance real**, los pasos *Subiendo → Verificando y protegiendo → Listo* y el botón **Cancelar**.
+
 ## Casilla Única (notificaciones a la ciudadanía)
 
 El menú **Casilla Única** (si su rol puede notificar) muestra las notificaciones por Casilla Única de los expedientes de su unidad.

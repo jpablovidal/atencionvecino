@@ -347,3 +347,44 @@ html.a11y-contrast .sgd-sidebar{background:#000}
 .espacio-ico .sgd-ico{width:1.5rem;height:1.5rem}
 .espacio-datos{margin:.75rem 0 1rem}.espacio-datos li{padding:.15rem 0}
 html.a11y-contrast .espacio-card{background:#000;color:#fff;border:2px solid #fff}
+
+/* Progreso de carga de vistas, subida de archivos y formularios por pasos */
+.sgd-carga{position:fixed;top:0;left:0;right:0;height:4px;z-index:2000;background:rgba(10,19,45,.12);pointer-events:none}
+.sgd-carga[hidden]{display:none}
+html.sgd-cargando .sgd-carga[hidden]{display:block}
+.sgd-carga-barra{display:block;height:100%;width:0;background:#e8a400;transition:width .25s ease,opacity .3s ease}
+html.sgd-cargando .sgd-carga .sgd-carga-barra{animation:sgd-carga-ini 2.5s ease-out forwards}
+.sgd-carga-fin .sgd-carga-barra{opacity:0}
+@keyframes sgd-carga-ini{from{width:5%}to{width:85%}}
+html.a11y-motion .sgd-carga-barra,html.a11y-motion .sgd-carga .sgd-carga-barra{animation:none;transition:none}
+@media (prefers-reduced-motion:reduce){.sgd-carga-barra,html.sgd-cargando .sgd-carga .sgd-carga-barra{animation:none;transition:none}}
+.sgd-subida-fondo{position:fixed;inset:0;z-index:2100;background:rgba(10,19,45,.65);display:flex;align-items:center;justify-content:center;padding:1rem}
+.sgd-subida{background:#fff;color:#14232e;border-radius:6px;padding:1.4rem;width:100%;max-width:460px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.sgd-subida-pasos{list-style:none;padding:0;margin:0 0 .8rem}
+.sgd-subida-pasos li{padding:.15rem 0 .15rem 1.6rem;position:relative;color:#4a5864}
+.sgd-subida-pasos li::before{content:"○";position:absolute;left:0;color:#4a5864}
+.sgd-subida-pasos li.actual{color:#0a132d;font-weight:700}.sgd-subida-pasos li.actual::before{content:"●";color:#006fb3}
+.sgd-subida-pasos li.hecho{color:#1b6b32}.sgd-subida-pasos li.hecho::before{content:"✓";color:#1b6b32}
+.sgd-subida-prog{width:100%;height:1.1rem;accent-color:#006fb3}
+.sgd-subida-pct{margin:.4rem 0 .8rem;font-size:.9rem}
+html.a11y-contrast .sgd-subida{background:#000;color:#fff;border:2px solid #fff}
+html.a11y-contrast .sgd-subida-pasos li,html.a11y-contrast .sgd-subida-pasos li.actual,html.a11y-contrast .sgd-subida-pasos li.hecho{color:#fff}
+
+.sgd-pasos{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem;padding:0;margin:0 0 1.2rem;counter-reset:none}
+.sgd-pasos li{flex:1 1 9rem;min-width:0}
+.sgd-paso-btn{display:flex;align-items:center;gap:.5rem;width:100%;background:#fff;color:#33414d;border:1px solid #c5d0d8;border-bottom:4px solid #c5d0d8;border-radius:4px;padding:.5rem .6rem;text-align:left;font:inherit}
+.sgd-paso-btn:disabled{cursor:default;opacity:1}
+.sgd-paso-num{flex:0 0 1.7rem;height:1.7rem;border-radius:50%;background:#e6edf2;color:#0a2e4d;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.sgd-paso-txt{font-size:.9rem;line-height:1.2}
+.sgd-pasos li.actual .sgd-paso-btn{border-bottom-color:#006fb3;color:#0a132d;font-weight:700}
+.sgd-pasos li.actual .sgd-paso-num{background:#006fb3;color:#fff}
+.sgd-pasos li.hecho .sgd-paso-btn{border-bottom-color:#1b6b32;color:#14232e;cursor:pointer}
+.sgd-pasos li.hecho .sgd-paso-num{background:#1b6b32;color:#fff}
+.sgd-pasos-nav{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
+.sgd-pasos-cont{margin-left:auto;font-size:.85rem;color:#33414d}
+.sgd-revision{background:#f4f7fa;border:1px solid #d6dee5;border-radius:4px;padding:1rem;margin-bottom:1rem;color:#14232e}
+.sgd-revision-lista{display:grid;grid-template-columns:minmax(8rem,14rem) 1fr;gap:.3rem 1rem;margin:0 0 .6rem}
+.sgd-revision-lista dt{font-weight:700}.sgd-revision-lista dd{margin:0;overflow-wrap:anywhere}
+.sgd-pasos-acciones[hidden],.sgd-revision[hidden],.sgd-pasos-nav [hidden]{display:none}
+@media (max-width:575.98px){.sgd-pasos{flex-wrap:nowrap;gap:.3rem}.sgd-pasos li{flex:1 1 0}.sgd-pasos li.actual{flex:3 1 0}.sgd-pasos li:not(.actual) .sgd-paso-txt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.sgd-paso-btn{padding:.4rem;justify-content:center}.sgd-pasos li.actual .sgd-paso-btn{justify-content:flex-start}.sgd-revision-lista{grid-template-columns:1fr}.sgd-pasos-cont{margin-left:0;width:100%}}
+html.a11y-contrast .sgd-paso-btn,html.a11y-contrast .sgd-revision{background:#000;color:#fff;border-color:#fff}

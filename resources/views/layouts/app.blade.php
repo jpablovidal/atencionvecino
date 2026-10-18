@@ -5,14 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="robots" content="noindex">
+<meta name="sgd-max-subida" content="{{ \App\Support\Subidas::maximoBytes() }}">
 <title>@yield('titulo', 'Inicio') · SGD Santo Domingo</title>
 <link rel="stylesheet" href="{{ asset('assets/css/sgd-fonts.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/sgd-fonts.css')), 0, 8) }}">
 <link rel="stylesheet" href="{{ asset('assets/css/gob.cl.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/gob.cl.css')), 0, 8) }}">
 <link rel="stylesheet" href="{{ asset('assets/css/sgd.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/sgd.css')), 0, 8) }}">
 <link rel="stylesheet" href="{{ route('marca.css', ['v' => $marca['version']]) }}">
+<script src="{{ asset('assets/js/carga-init.js') }}"></script>
 <script src="{{ asset('assets/js/a11y-init.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/a11y-init.js')), 0, 8) }}"></script>
 </head>
 <body>
+<div id="sgd-carga" class="sgd-carga" role="progressbar" aria-label="Cargando la página" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span class="sgd-carga-barra"></span></div>
 @if(\App\Support\Ambiente::esPruebas())<div class="banner-pruebas" role="note"><strong>AMBIENTE DE PRUEBAS</strong> — firmas y comunicaciones simuladas, sin validez legal.@if(\App\Support\Ambiente::pruebasHasta()) Acceso de pruebas hasta el {{ \App\Support\Ambiente::pruebasHasta()->format('d-m-Y') }}.@endif</div>@endif
 @include('partials.iconos')
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -105,6 +108,7 @@
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 @stack('scripts')
 <script src="{{ asset('assets/js/sgd.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/sgd.js')), 0, 8) }}"></script>
+<script src="{{ asset('assets/js/progreso.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/progreso.js')), 0, 8) }}"></script>
 <script src="{{ asset('assets/js/a11y.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/a11y.js')), 0, 8) }}"></script>
 </body>
 </html>
