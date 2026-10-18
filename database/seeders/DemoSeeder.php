@@ -28,6 +28,7 @@ class DemoSeeder extends Seeder
             ['id' => 3, 'codigo' => 'DOM', 'nombre' => 'Dirección de Obras Municipales', 'activo' => 1] + $t,
             ['id' => 4, 'codigo' => 'DIDECO', 'nombre' => 'Dirección de Desarrollo Comunitario', 'activo' => 1] + $t,
             ['id' => 5, 'codigo' => 'ARCH', 'nombre' => 'Archivo Municipal', 'activo' => 1] + $t,
+            ['id' => 6, 'codigo' => 'TRANSP', 'nombre' => 'Unidad de Transparencia', 'activo' => 1] + $t,
         ]);
 
         $u = fn (int $id, int $cuerpo, string $nom, string $ape, string $rol, ?int $unidad, bool $firma, string $cargo) => [
@@ -44,7 +45,7 @@ class DemoSeeder extends Seeder
             ['arch_cert', 'Ministro(a) de fe del archivo', 'Certifica microformas (acta) y autoriza la disposición de originales.', ['archivo.ver', 'archivo.certificar', 'archivo.disposicion'], 'secretario'],
         ] as $i => $fila) {
             [$clave, $nombre, $desc, $extra, $base] = array_pad($fila, 5, 'funcionario');
-            $rid = 8 + $i; // los 7 roles del sistema ocupan 1-7; id explícito para que 02_seed_demo.sql sea generable
+            $rid = 9 + $i; // los 8 roles del sistema ocupan 1-8; id explícito para que 02_seed_demo.sql sea generable
             DB::table('roles')->insert(['id' => $rid, 'clave' => $clave, 'nombre' => $nombre, 'descripcion' => $desc, 'rol_base' => $base, 'sistema' => 0, 'activo' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
             foreach (array_unique([...Permisos::deBase($base), ...$extra]) as $perm) {
                 DB::table('rol_permisos')->insert(['rol_id' => $rid, 'permiso' => $perm]);
@@ -65,6 +66,7 @@ class DemoSeeder extends Seeder
             $u(12, 10000012, 'Tomás', 'Ministro de Fe', 'arch_cert', 2, false, 'Ministro de fe (Secretaría Municipal)'),
             $u(13, 10000013, 'Alicia', 'Autoridad Demo', 'autoridad', null, false, 'Autoridad municipal'),
             $u(14, 10000014, 'Omar', 'OIRS Demo', 'oirs', null, false, 'Encargado OIRS'),
+            $u(15, 10000015, 'Teresa', 'Transparencia Demo', 'transparencia', 6, false, 'Encargada de Transparencia'),
         ]);
 
         DB::table('tramites')->insert([
@@ -82,9 +84,12 @@ class DemoSeeder extends Seeder
             ['codigo' => 'DEMO-PROC-EDIF', 'nombre' => 'Permisos de edificación (EJEMPLO)', 'institucion_codigo' => 'DEMO-MUN-SD', 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
             ['codigo' => 'DEMO-PROC-CERT', 'nombre' => 'Certificados municipales (EJEMPLO)', 'institucion_codigo' => 'DEMO-MUN-SD', 'activo' => 1, 'origen' => 'manual', 'sincronizado_en' => null] + $t,
         ]);
+        DB::table('tramites')->insert([
+            ['id' => 5, 'codigo_interno' => 'TRANSP-SAI', 'nombre' => 'Solicitud de acceso a la información pública (Ley 20.285)', 'descripcion' => 'Solicite información que obre en poder de la municipalidad. Se responde en 20 días hábiles (prorrogables una vez).', 'codigo_cpat' => null, 'plazo_dias' => 20, 'activo' => 1, 'es_transparencia' => 1, 'plazo_habiles' => 1] + $t,
+        ]);
         DB::table('tramites')->where('id', 1)->update(['proceso_codigo' => 'DEMO-PROC-EDIF']);
         // los trámites de demostración nacen publicados; la dirección propietaria es la primera responsable
-        foreach ([1 => 3, 2 => 3, 3 => 4, 4 => 1] as $tid => $uid) {
+        foreach ([1 => 3, 2 => 3, 3 => 4, 4 => 1, 5 => 6] as $tid => $uid) {
             DB::table('tramites')->where('id', $tid)->update(['estado' => 'publicado', 'activo' => 1, 'unidad_propietaria_id' => $uid, 'publicado_en' => now(), 'version' => 0]);
         }
         DB::table('pisee_servicios')->insert([
@@ -92,7 +97,7 @@ class DemoSeeder extends Seeder
         ]);
         DB::table('tramite_unidad')->insert([
             ['tramite_id' => 1, 'unidad_id' => 3], ['tramite_id' => 2, 'unidad_id' => 3], ['tramite_id' => 3, 'unidad_id' => 4],
-            ['tramite_id' => 4, 'unidad_id' => 1], ['tramite_id' => 4, 'unidad_id' => 2],
+            ['tramite_id' => 4, 'unidad_id' => 1], ['tramite_id' => 4, 'unidad_id' => 2], ['tramite_id' => 5, 'unidad_id' => 6],
         ]);
         DB::table('tramite_anexos')->insert([
             ['id' => 1, 'tramite_id' => 1, 'nombre' => 'Planos de arquitectura', 'obligatorio' => 1, 'activo' => 1],

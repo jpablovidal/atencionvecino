@@ -53,7 +53,7 @@ class CasillaPanelTest extends TestCase
     public function test_permiso_y_roles_por_defecto(): void
     {
         $c = Permisos::catalogo()['casilla.gestionar'];
-        $this->assertEqualsCanonicalizing(['funcionario', 'alcalde', 'secretario', 'admin'], $c[2]);
+        $this->assertEqualsCanonicalizing(['funcionario', 'alcalde', 'secretario', 'transparencia', 'admin'], $c[2]);
         $this->assertEqualsCanonicalizing(['secretario', 'admin'], $c[4]);
         $this->assertTrue($this->usuario('secretario')->tienePermiso('casilla.gestionar'));
         $this->assertFalse($this->usuario('funcionario')->tienePermiso('casilla.gestionar'));

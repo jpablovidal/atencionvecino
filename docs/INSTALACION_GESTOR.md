@@ -33,6 +33,7 @@ Abra **https://gestor.santodomingo.cl** (verá el aviso amarillo «AMBIENTE DE P
 | Funcionario DIDECO | `10000006-7` | Bandeja de Desarrollo Comunitario |
 | Auditoría | `10000007-5` | Solo lectura, bitácora, seguridad |
 | **Autoridad** | `10000013-K` ver tabla de claves | Seguimiento de solicitudes por RUN, fechas, dirección, etapa o trámite (solo lectura) |
+| **Transparencia activa y pasiva** | `10000015-6` ver tabla de claves | Consultas de acceso a la información, requerimientos, plazos, transparencia activa y reportes |
 | **OIRS** | `10000014-8` ver tabla de claves | Solicitudes, responsables, plazos vencidos y por vencer (solo lectura) |
 | Director de Obras | `10000008-3` | Funcionario con firma |
 | **Directora DIDECO** | `10000009-1` | Crea, publica y deshabilita trámites de su dirección |

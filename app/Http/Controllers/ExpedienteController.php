@@ -14,6 +14,7 @@ use App\Models\PiseeConsulta;
 use App\Models\PiseeServicio;
 use App\Models\Plantilla;
 use App\Models\TipoDocumento;
+use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
@@ -21,6 +22,8 @@ use App\Services\FileVault;
 use App\Services\Firma\ArchivoFirmaService;
 use App\Services\NotificacionService;
 use App\Services\SolicitudService;
+use App\Services\TransparenciaService;
+use App\Support\Plazos;
 use App\Support\UploadValidator;
 use Illuminate\Http\Request;
 
@@ -50,7 +53,24 @@ class ExpedienteController extends Controller
             'docModo' => config('sgd.docdigital.mode'),
             'entrante' => $expediente->origen === 'docdigital' ? ComunicacionOficial::query()->find($expediente->comunicacion_id) : null,
             'origenCodigo' => $expediente->metadatos['relaciones']['institucion_origen_codigo'] ?? null,
+            'transp' => $this->datosTransparencia($r->user(), $expediente),
         ]);
+    }
+
+    /** Ficha de transparencia (plazo, prórroga, requerimientos y derivación) cuando la solicitud es de acceso a la información. */
+    private function datosTransparencia(Usuario $u, Expediente $e): ?array
+    {
+        $s = $e->solicitud;
+        if (! $s || ! $s->tramite->es_transparencia || ! $u->tienePermiso('transparencia.ver')) {
+            return null;
+        }
+        $vence = Plazos::deSolicitud($s);
+        $svc = app(TransparenciaService::class);
+
+        return ['s' => $s, 'vence' => $vence, 'situacion' => Plazos::situacion($vence), 'dias' => Plazos::diasRestantes($vence), 'habiles' => $s->tramite->plazo_habiles,
+            'requerimientos' => $s->requerimientos()->with('unidad:id,nombre')->get(), 'derivaciones' => $s->derivacionesOrgano()->get(), 'puede' => $u->tienePermiso('transparencia.gestionar') && $e->estado === 'abierto',
+            'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(['id', 'nombre']), 'prorrogaDias' => $svc->param('prorroga_dias'), 'reqDias' => $svc->param('requerimiento_dias'),
+            'canales' => TransparenciaService::CANALES, 'terminada' => in_array($s->estado, ['finalizada', 'cerrada'], true)];
     }
 
     private function operar(Expediente $e): void

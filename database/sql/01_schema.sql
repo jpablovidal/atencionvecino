@@ -418,4 +418,82 @@ insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `siste
 
 insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('oirs', 'OIRS', 'Visualiza solicitudes, su estado, responsables y plazos vencidos o por vencer. Solo lectura; no ve documentos.', 'oirs', 1, 1, '2026-10-01 00:00:00', '2026-10-01 00:00:00');
 
+alter table `tramites` add `es_transparencia` tinyint(1) not null default '0';
+
+alter table `tramites` add `plazo_habiles` tinyint(1) not null default '0';
+
+alter table `solicitudes` add `prorroga_dias` tinyint unsigned null;
+
+alter table `solicitudes` add `prorroga_motivo` text null;
+
+alter table `solicitudes` add `prorrogada_en` timestamp null;
+
+alter table `solicitudes` add `prorrogada_por` bigint unsigned null;
+
+create table `transparencia_requerimientos` (`id` bigint unsigned not null auto_increment primary key, `solicitud_id` bigint unsigned not null, `unidad_id` bigint unsigned not null, `instruccion` text not null, `plazo_dias` tinyint unsigned not null, `vence_en` timestamp not null, `estado` varchar(12) not null default 'pendiente', `respuesta` text null, `respondido_por` bigint unsigned null, `respondido_en` timestamp null, `creado_por` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `transparencia_requerimientos` add constraint `transparencia_requerimientos_solicitud_id_foreign` foreign key (`solicitud_id`) references `solicitudes` (`id`);
+
+alter table `transparencia_requerimientos` add constraint `transparencia_requerimientos_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`);
+
+alter table `transparencia_requerimientos` add constraint `transparencia_requerimientos_respondido_por_foreign` foreign key (`respondido_por`) references `usuarios` (`id`);
+
+alter table `transparencia_requerimientos` add constraint `transparencia_requerimientos_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `transparencia_requerimientos` add index `transparencia_requerimientos_unidad_id_estado_index`(`unidad_id`, `estado`);
+
+alter table `transparencia_requerimientos` add index `transparencia_requerimientos_solicitud_id_index`(`solicitud_id`);
+
+create table `transparencia_derivaciones` (`id` bigint unsigned not null auto_increment primary key, `solicitud_id` bigint unsigned not null, `organo` varchar(190) not null, `motivo` text not null, `fecha` date not null, `canal` varchar(15) not null, `referencia` varchar(120) null, `creado_por` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `transparencia_derivaciones` add constraint `transparencia_derivaciones_solicitud_id_foreign` foreign key (`solicitud_id`) references `solicitudes` (`id`);
+
+alter table `transparencia_derivaciones` add constraint `transparencia_derivaciones_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `transparencia_derivaciones` add index `transparencia_derivaciones_solicitud_id_index`(`solicitud_id`);
+
+create table `transparencia_feriados` (`id` bigint unsigned not null auto_increment primary key, `fecha` date not null, `nombre` varchar(120) not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `transparencia_feriados` add unique `transparencia_feriados_fecha_unique`(`fecha`);
+
+create table `transparencia_activa_items` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(30) not null, `nombre` varchar(190) not null, `unidad_id` bigint unsigned null, `dia_limite` tinyint unsigned not null default '10', `url_publicacion` varchar(300) null, `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `transparencia_activa_items` add constraint `transparencia_activa_items_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`);
+
+alter table `transparencia_activa_items` add unique `transparencia_activa_items_codigo_unique`(`codigo`);
+
+create table `transparencia_activa_registros` (`id` bigint unsigned not null auto_increment primary key, `item_id` bigint unsigned not null, `periodo` char(7) not null, `publicado_en` date not null, `url` varchar(300) null, `observacion` varchar(300) null, `registrado_por` bigint unsigned not null, `created_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `transparencia_activa_registros` add constraint `transparencia_activa_registros_item_id_foreign` foreign key (`item_id`) references `transparencia_activa_items` (`id`);
+
+alter table `transparencia_activa_registros` add constraint `transparencia_activa_registros_registrado_por_foreign` foreign key (`registrado_por`) references `usuarios` (`id`);
+
+alter table `transparencia_activa_registros` add index `transparencia_activa_registros_item_id_periodo_index`(`item_id`, `periodo`);
+
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('transparencia', 'Transparencia activa y pasiva', 'Administra las solicitudes de acceso a la información, sus expedientes, requerimientos a las direcciones, plazos, la publicación de transparencia activa y los reportes.', 'transparencia', 1, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('MARCO', 'Marco normativo aplicable', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('ESTRUCTURA', 'Estructura orgánica, facultades y funciones', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('PERSONAL', 'Personal de planta, contrata y honorarios, con sus remuneraciones', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('CONTRATACIONES', 'Contrataciones para el suministro de bienes y servicios', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('TRANSFERENCIAS', 'Transferencias de fondos públicos', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('ACTOS', 'Actos y resoluciones con efectos sobre terceros', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('TRAMITES', 'Trámites y requisitos que debe cumplir el interesado', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('SUBSIDIOS', 'Programas de subsidios y otros beneficios', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('PARTICIPACION', 'Mecanismos de participación ciudadana', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('PRESUPUESTO', 'Presupuesto asignado e informes de ejecución', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('AUDITORIAS', 'Resultados de auditorías', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
+insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('ENTIDADES', 'Entidades en que tiene participación, representación o intervención', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
+
 SET FOREIGN_KEY_CHECKS = 1;

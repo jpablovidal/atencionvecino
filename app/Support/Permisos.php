@@ -8,7 +8,7 @@ namespace App\Support;
  */
 class Permisos
 {
-    private const OP = ['funcionario', 'alcalde', 'secretario'];
+    private const OP = ['funcionario', 'alcalde', 'secretario', 'transparencia'];
 
     /** @return array<string,array{0:string,1:string,2:array<int,string>,3?:bool,4?:array<int,string>}> clave => [etiqueta, grupo, bases (techo), solo_sistema, bases que lo reciben por defecto (omitido = las mismas)] */
     public static function catalogo(): array
@@ -36,6 +36,10 @@ class Permisos
             'docdigital.gestionar' => ['Gestionar la conexión con DocDigital (probar, sincronizar ahora y reintentar envíos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
             'seguimiento.consultar' => ['Consultar el seguimiento de solicitudes (por RUN, fechas, dirección, etapa o trámite): estado, etapa, quién la tiene y si terminó', 'Seguimiento de solicitudes', ['autoridad', 'alcalde', 'auditor'], false, ['autoridad', 'alcalde', 'auditor']],
             'oirs.ver' => ['Panel OIRS: solicitudes, estado, responsables, plazos vencidos y por vencer', 'Seguimiento de solicitudes', ['oirs', 'auditor'], false, ['oirs']],
+            'transparencia.ver' => ['Ver el panel de transparencia: consultas (solicitudes de acceso a la información), plazos y transparencia activa', 'Transparencia', ['transparencia', 'auditor'], false, ['transparencia']],
+            'transparencia.gestionar' => ['Gestionar transparencia: prorrogar plazos, requerir a las direcciones, derivar a otro órgano, administrar feriados y registrar la transparencia activa', 'Transparencia', ['transparencia'], false, ['transparencia']],
+            'transparencia.responder' => ['Responder los requerimientos de transparencia que recibe su dirección', 'Transparencia', [...self::OP], false, ['funcionario', 'alcalde', 'secretario', 'transparencia']],
+            'transparencia.reportes' => ['Generar y exportar los reportes de transparencia', 'Transparencia', ['transparencia', 'auditor'], false, ['transparencia']],
             'casilla.gestionar' => ['Gestionar el notificador de Casilla Única (probar conexión y reintentar envíos fallidos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
             'archivo.ver' => ['Ver y consultar las microformas del archivo municipal', 'Archivo municipal', $opa, false, ['auditor']],
             'archivo.gestionar' => ['Registrar y editar microformas, cargar sus archivos y su índice', 'Archivo municipal', $op, false, []],

@@ -87,7 +87,7 @@ class EsquemaSqlTest extends TestCase
                 DB::unprepared($stmt);
             }
         }
-        $this->assertSame(14, DB::table('usuarios')->count());
+        $this->assertSame(15, DB::table('usuarios')->count());
         $this->assertSame(6, DB::table('tipos_documento')->count());
         $this->assertSame([], DB::select('PRAGMA foreign_key_check'));
     }

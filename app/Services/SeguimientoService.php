@@ -38,6 +38,9 @@ class SeguimientoService
         if (! empty($f['run'])) {
             $q->where('run', $f['run']);
         }
+        if (! empty($f['transparencia'])) {
+            $q->whereHas('tramite', fn ($t) => $t->where('es_transparencia', true));
+        }
         if (! empty($f['folio'])) {
             $q->where('folio', $f['folio']);
         }
@@ -83,9 +86,9 @@ class SeguimientoService
     {
         $ahora = now(Plazos::TZ);
 
-        return Solicitud::query()->with('tramite:id,plazo_dias')->whereNotIn('estado', [...self::ESTADOS_FIN, 'devuelta'])
-            ->get(['id', 'created_at', 'tramite_id'])
-            ->filter(fn ($s) => Plazos::situacion(Plazos::vencimiento($s->created_at, (int) $s->tramite->plazo_dias), $ahora) === $situacion)
+        return Solicitud::query()->with('tramite:id,plazo_dias,plazo_habiles')->whereNotIn('estado', [...self::ESTADOS_FIN, 'devuelta'])
+            ->get(['id', 'created_at', 'tramite_id', 'prorroga_dias'])
+            ->filter(fn ($s) => Plazos::situacion(Plazos::deSolicitud($s), $ahora) === $situacion)
             ->pluck('id')->all();
     }
 
@@ -129,7 +132,7 @@ class SeguimientoService
         $e = $s->expediente;
         $t = $s->tramite;
         $ahora = now(Plazos::TZ);
-        $vence = Plazos::vencimiento($s->created_at, (int) $t->plazo_dias);
+        $vence = Plazos::deSolicitud($s, $t);
         $ultimaDeriv = $e?->derivaciones->last();
         $resp = $ultimaDeriv?->a ?? $e?->responsable;
         $tiene = match ($etapa) {
@@ -192,12 +195,12 @@ class SeguimientoService
         $enFlujo = Documento::query()->where('estado', 'en_flujo')->pluck('expediente_id')->flip();
         $borrador = Documento::query()->where('estado', 'borrador')->pluck('expediente_id')->flip();
         $exp = Expediente::query()->whereNotNull('solicitud_id')->get(['id', 'solicitud_id', 'unidad_id', 'responsable_id', 'estado', 'cerrado_en'])->keyBy('solicitud_id');
-        $tr = Tramite::query()->get(['id', 'plazo_dias', 'unidad_propietaria_id'])->keyBy('id');
+        $tr = Tramite::query()->get(['id', 'plazo_dias', 'plazo_habiles', 'unidad_propietaria_id'])->keyBy('id');
 
-        return Solicitud::query()->get(['id', 'estado', 'created_at', 'updated_at', 'tramite_id', 'expediente_id'])->map(function ($s) use ($exp, $tr, $enFlujo, $borrador, $ahora) {
+        return Solicitud::query()->get(['id', 'estado', 'created_at', 'updated_at', 'tramite_id', 'expediente_id', 'prorroga_dias'])->map(function ($s) use ($exp, $tr, $enFlujo, $borrador, $ahora) {
             $e = $exp->get($s->id);
             $t = $tr->get($s->tramite_id);
-            $vence = Plazos::vencimiento($s->created_at, (int) ($t->plazo_dias ?? 15));
+            $vence = $t ? Plazos::deSolicitud($s, $t) : Plazos::vencimiento($s->created_at, 15);
             if (in_array($s->estado, self::ESTADOS_FIN, true) || $e?->estado === 'cerrado') {
                 $etapa = 'terminada';
             } elseif ($s->estado === 'devuelta') {

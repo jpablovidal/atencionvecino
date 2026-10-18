@@ -137,6 +137,8 @@ else
     "$PHP" artisan pruebas:archivo || true
     echo; echo "Roles Autoridad y OIRS: creando (solo si faltan) sus cuentas de prueba (contraseñas aleatorias, se muestran una sola vez):"
     "$PHP" artisan pruebas:seguimiento || true
+    echo; echo "Transparencia: creando (solo si faltan) su unidad, el trámite de acceso a la información y su cuenta de prueba (contraseña aleatoria, se muestra una sola vez):"
+    "$PHP" artisan pruebas:transparencia || true
   fi
   echo "Actualización aplicada. Para ver/rotar cuentas de prueba: php artisan pruebas:credenciales --rotar"
 fi

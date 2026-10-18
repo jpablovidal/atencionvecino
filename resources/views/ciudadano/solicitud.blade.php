@@ -4,6 +4,7 @@
 <h1>Solicitud {{ $s->folio }}</h1>
 <p><span class="estado estado-{{ $s->estado }}">{{ str_replace('_',' ',$s->estado) }}</span> · {{ $s->tramite->nombre }} · ingresada el {{ $s->created_at->format('d-m-Y H:i') }}</p>
 <p>{{ $s->detalle }}</p>
+@if($s->prorroga_dias)<div class="alert alert-info" role="status"><strong>Plazo ampliado.</strong> La municipalidad prorrogó el plazo de respuesta {{ $s->prorroga_dias }} días el {{ $s->prorrogada_en?->setTimezone('America/Santiago')->format('d-m-Y') }}. Motivo: {{ $s->prorroga_motivo }}</div>@endif
 <p><a class="btn btn-outline-primary" href="{{ route('ciudadano.comprobante',$s->folio) }}">Descargar comprobante de ingreso (PDF)</a></p>
 @if($pendiente)
 <div class="card border-warning mb-4"><div class="card-body">

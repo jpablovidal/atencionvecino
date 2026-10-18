@@ -30,6 +30,7 @@ use App\Http\Controllers\SeguridadController;
 use App\Http\Controllers\SesionesController;
 use App\Http\Controllers\SistemaController;
 use App\Http\Controllers\TramitesController;
+use App\Http\Controllers\TransparenciaController;
 use App\Http\Controllers\UsuariosController;
 use Illuminate\Support\Facades\Route;
 
@@ -180,6 +181,28 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/seguimiento', [SeguimientoController::class, 'index'])->middleware('permiso:seguimiento.consultar')->name('seguimiento');
         Route::get('/oirs', [SeguimientoController::class, 'oirs'])->middleware('permiso:oirs.ver')->name('oirs');
         Route::get('/seguimiento/{folio}', [SeguimientoController::class, 'detalle'])->middleware('permiso:seguimiento.consultar,oirs.ver')->where('folio', '[A-Za-z0-9\-]{5,30}')->name('seguimiento.detalle');
+    });
+
+    // ---- Transparencia activa y pasiva (Ley 20.285): cada ruta exige su permiso
+    Route::middleware('throttle:60,1')->group(function () {
+        $folio = '[A-Za-z0-9\-]{5,30}';
+        Route::get('/transparencia', [TransparenciaController::class, 'panel'])->middleware('permiso:transparencia.ver')->name('transparencia');
+        Route::get('/transparencia/requerimientos', [TransparenciaController::class, 'requerimientos'])->middleware('permiso:transparencia.ver,transparencia.responder')->name('transparencia.requerimientos');
+        Route::post('/transparencia/requerimientos/{requerimiento}/responder', [TransparenciaController::class, 'responder'])->middleware('permiso:transparencia.responder')->whereNumber('requerimiento')->name('transparencia.responder');
+        Route::get('/transparencia/activa', [TransparenciaController::class, 'activa'])->middleware('permiso:transparencia.ver')->name('transparencia.activa');
+        Route::get('/transparencia/plazos', [TransparenciaController::class, 'plazos'])->middleware('permiso:transparencia.ver')->name('transparencia.plazos');
+        Route::get('/transparencia/reportes', [TransparenciaController::class, 'reportes'])->middleware('permiso:transparencia.reportes')->name('transparencia.reportes');
+        Route::middleware('permiso:transparencia.gestionar')->group(function () use ($folio) {
+            Route::post('/transparencia/solicitudes/{folio}/prorroga', [TransparenciaController::class, 'prorrogar'])->where('folio', $folio)->name('transparencia.prorroga');
+            Route::post('/transparencia/solicitudes/{folio}/requerimientos', [TransparenciaController::class, 'requerir'])->where('folio', $folio)->name('transparencia.requerir');
+            Route::post('/transparencia/solicitudes/{folio}/derivar-organo', [TransparenciaController::class, 'derivarOrgano'])->where('folio', $folio)->name('transparencia.derivar_organo');
+            Route::post('/transparencia/activa', [TransparenciaController::class, 'activaGuardar'])->name('transparencia.activa.crear');
+            Route::post('/transparencia/activa/{item}', [TransparenciaController::class, 'activaGuardar'])->whereNumber('item')->name('transparencia.activa.guardar');
+            Route::post('/transparencia/activa/{item}/registrar', [TransparenciaController::class, 'activaRegistrar'])->whereNumber('item')->name('transparencia.activa.registrar');
+            Route::post('/transparencia/plazos', [TransparenciaController::class, 'guardarParametros'])->name('transparencia.plazos.guardar');
+            Route::post('/transparencia/feriados', [TransparenciaController::class, 'feriadoAgregar'])->name('transparencia.feriados.agregar');
+            Route::post('/transparencia/feriados/{feriado}/quitar', [TransparenciaController::class, 'feriadoQuitar'])->whereNumber('feriado')->name('transparencia.feriados.quitar');
+        });
     });
 
     // ---- Casilla Única: panel de notificaciones (ver = notificaciones.gestionar o casilla.gestionar; probar/reintentar = casilla.gestionar)

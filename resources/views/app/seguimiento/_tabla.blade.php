@@ -3,7 +3,7 @@
 <thead><tr><th scope="col">Folio</th><th scope="col">Solicitante</th><th scope="col">Trámite</th><th scope="col">Dirección</th><th scope="col">Ingreso</th><th scope="col">Etapa y estado</th><th scope="col">Quién la tiene</th><th scope="col">Plazo</th></tr></thead><tbody>
 @forelse($filas as $x)
 <tr>
-  <td class="text-nowrap"><a href="{{ route('app.seguimiento.detalle', $x['folio']) }}">{{ $x['folio'] }}</a></td>
+  <td class="text-nowrap"><a href="{{ ($modo ?? '') === 'transparencia' ? ($x['s']->expediente_id ? route('app.expediente', $x['s']->expediente_id) : route('app.solicitud', $x['folio'])) : route('app.seguimiento.detalle', $x['folio']) }}">{{ $x['folio'] }}</a></td>
   <td>{{ $x['solicitante'] }}<br><small class="text-muted">{{ $x['run'] }}</small></td>
   <td>{{ $x['tramite'] }}</td><td>{{ $x['direccion'] }}</td>
   <td class="text-nowrap">{{ $x['ingreso']->format('d-m-Y') }}</td>

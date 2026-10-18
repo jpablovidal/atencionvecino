@@ -105,6 +105,7 @@ class TramiteService
             $t = Tramite::query()->create($campos + [
                 'codigo_interno' => $this->codigo($unidad, $admin ? ($d['codigo_interno'] ?? null) : null), 'estado' => 'borrador', 'activo' => false, 'unidad_propietaria_id' => $unidad->id,
                 'codigo_cpat' => $admin ? ($d['codigo_cpat'] ?? null) : null, 'proceso_codigo' => $admin ? ($d['proceso_codigo'] ?? null) : null, 'actualizado_por' => $u->id, 'version' => 0,
+                'es_transparencia' => $admin && ! empty($d['es_transparencia']), 'plazo_habiles' => $admin && ! empty($d['plazo_habiles']),
             ]);
             $t->unidades()->sync($unidades);
             $this->guardarAnexos($t, $anexos);
@@ -130,7 +131,7 @@ class TramiteService
             $t = Tramite::query()->lockForUpdate()->findOrFail($t->id);
             $extra = ['actualizado_por' => $u->id];
             if ($admin) {
-                $extra += ['codigo_cpat' => $d['codigo_cpat'] ?? null, 'proceso_codigo' => $d['proceso_codigo'] ?? null];
+                $extra += ['codigo_cpat' => $d['codigo_cpat'] ?? null, 'proceso_codigo' => $d['proceso_codigo'] ?? null, 'es_transparencia' => ! empty($d['es_transparencia']), 'plazo_habiles' => ! empty($d['plazo_habiles'])];
                 if (! empty($d['unidad_propietaria_id']) && Unidad::query()->where('activo', true)->whereKey((int) $d['unidad_propietaria_id'])->exists()) {
                     $extra['unidad_propietaria_id'] = (int) $d['unidad_propietaria_id'];
                 }
@@ -339,7 +340,7 @@ class TramiteService
         $n = $t->version + 1;
         $t->forceFill(['version' => $n])->save();
         TramiteVersion::query()->create(['tramite_id' => $t->id, 'version' => $n, 'estado' => $t->estado, 'evento' => $evento, 'creado_por' => $u->id, 'created_at' => now(), 'datos' => (string) json_encode([
-            'nombre' => $t->nombre, 'descripcion' => $t->descripcion, 'instrucciones' => $t->instrucciones, 'plazo_dias' => $t->plazo_dias, 'estado' => $t->estado,
+            'nombre' => $t->nombre, 'descripcion' => $t->descripcion, 'instrucciones' => $t->instrucciones, 'plazo_dias' => $t->plazo_dias, 'plazo_habiles' => $t->plazo_habiles, 'es_transparencia' => $t->es_transparencia, 'estado' => $t->estado,
             'unidad_propietaria_id' => $t->unidad_propietaria_id, 'unidades' => $t->unidades()->pluck('unidades.id')->all(),
             'anexos' => $t->anexos()->get()->map(fn ($a) => ['nombre' => $a->nombre, 'obligatorio' => $a->obligatorio, 'descripcion' => $a->descripcion])->all(),
         ], JSON_UNESCAPED_UNICODE)]);

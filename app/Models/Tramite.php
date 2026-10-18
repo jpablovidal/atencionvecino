@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $descripcion
  * @property string|null $codigo_cpat
  * @property int $plazo_dias
+ * @property bool $es_transparencia
+ * @property bool $plazo_habiles
  * @property bool $activo
  * @property string $estado
  * @property int|null $unidad_propietaria_id
@@ -31,7 +33,7 @@ class Tramite extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['activo' => 'boolean', 'publicado_en' => 'datetime'];
+    protected $casts = ['activo' => 'boolean', 'publicado_en' => 'datetime', 'es_transparencia' => 'boolean', 'plazo_habiles' => 'boolean'];
 
     /** Disponibles para la ciudadanía: publicados (activo y publicado van siempre juntos). */
     public function scopePublicados($q)

@@ -24,6 +24,7 @@
 @if($puedeOperar && ! $e->responsable_id)<form method="post" action="{{ route('app.expediente.asignarme',$e) }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-primary">Asignarme este expediente</button></form>@endif
 </div></div>
 @endif
+@if(!empty($transp))@include('app.transparencia._expediente', ['t' => $transp])@endif
 <div class="card mb-3"><div class="card-body"><h2 class="h5">Metadatos MGDEE</h2>
 <dl class="row mb-0">
 <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">{{ $m['identificacion']['nombre'] ?? '' }}</dd>

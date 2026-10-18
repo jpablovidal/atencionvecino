@@ -99,3 +99,11 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Los tableros calculan sobre **todas** las solicitudes en el servidor: con decenas de miles de registros convendrá agregar tablas de resumen.
 - Autoridad y OIRS ven **nombre y RUN** del solicitante (necesario para la consulta); cada acceso queda auditado con el RUN enmascarado. No hay exportación a CSV/Excel en esta versión.
 - Las instalaciones existentes reciben los roles al ejecutar las migraciones; las **cuentas de prueba** se crean con `pruebas:seguimiento` (el instalador lo hace al actualizar un sitio de pruebas). Si ya existía un rol personalizado con clave `autoridad` u `oirs`, la migración no lo reemplaza: renómbrelo antes.
+
+## Rol Transparencia (activa y pasiva)
+- **Plazos y reglas A VALIDAR:** 20 días hábiles de respuesta, prórroga de 10 días hábiles, derivación por incompetencia y suspensión por antecedentes son criterios de la Ley 20.285 tal como se entienden hoy; el sistema **no** modela la notificación y oposición de terceros, los plazos de amparo ante el Consejo para la Transparencia ni los plazos de derivación (2 días) como alertas automáticas. Valide con la asesoría jurídica.
+- **Feriados:** no vienen precargados; mientras no se registren, los días hábiles cuentan de lunes a viernes.
+- El **catálogo de transparencia activa** es referencial; la publicación en el portal de transparencia es **externa**: el sistema solo registra que se publicó (fecha y enlace), no publica ni verifica el enlace.
+- La respuesta de una dirección a un requerimiento es **texto**; los documentos que deban entregarse se agregan al expediente por Transparencia. No hay recordatorios por correo de requerimientos próximos a vencer (se ven en el tablero).
+- La derivación a otro órgano **no envía** el oficio: registra que se envió por DocDigital, oficio o correo y cierra el expediente; notifique al solicitante con el documento de derivación.
+- Los reportes son un instrumento interno: **no reemplazan** el formato de reporte que exija el Consejo para la Transparencia.

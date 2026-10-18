@@ -84,3 +84,8 @@ Toda comunicación recibida genera un expediente electrónico con metadatos MGDE
 ## 8. Plazos de respuesta y seguimiento (A VALIDAR)
 - El seguimiento de solicitudes (roles Autoridad y OIRS) calcula el vencimiento como el ingreso más el `plazo_dias` de cada trámite, en **días corridos** (configurable a lunes-viernes). La Ley 19.880 y la normativa de transparencia usan **días hábiles** y feriados que el sistema no modela: **A VALIDAR** con la asesoría jurídica antes de usar estos indicadores como respaldo de incumplimiento.
 - La suspensión del plazo mientras el solicitante responde una devolución es una decisión de diseño pendiente de validar.
+
+## 9. Transparencia activa y pasiva — Ley 20.285 (A VALIDAR)
+- **Pasiva:** el sistema usa por defecto **20 días hábiles** para responder una solicitud de acceso a la información, **una prórroga única de 10 días hábiles** decidida antes del vencimiento y con motivo, y la derivación al órgano competente cuando hay incompetencia. Estos valores y la suspensión del plazo al pedir antecedentes al solicitante deben **validarse con la asesoría jurídica** (texto vigente de la ley y su reglamento). No se modelan la oposición de terceros ni el amparo.
+- **Activa:** el catálogo de ítems (marco normativo, estructura, personal y remuneraciones, contrataciones, transferencias, actos y resoluciones, trámites, subsidios, participación, presupuesto, auditorías, entidades) y la actualización **mensual con día límite 10** son **referenciales**: valide con las instrucciones generales del Consejo para la Transparencia.
+- Los días hábiles no incluyen feriados mientras no se registren en *Plazos y feriados*.

@@ -126,11 +126,11 @@ class TramitesController extends Controller
             'nombre' => 'required|string|max:300', 'descripcion' => 'nullable|string|max:5000', 'instrucciones' => 'nullable|string|max:8000', 'plazo_dias' => 'required|integer',
             'anexos' => 'nullable|array|max:40', 'anexos.*.nombre' => 'nullable|string|max:300', 'anexos.*.descripcion' => 'nullable|string|max:600', 'anexos.*.id' => 'nullable|integer', 'anexos.*.obligatorio' => 'nullable',
             'unidad_propietaria_id' => 'nullable|integer', 'unidades' => 'nullable|array', 'unidades.*' => 'integer', 'codigo_interno' => 'nullable|string|max:40',
-            'codigo_cpat' => ['nullable', 'regex:'.MantenedorController::CPAT], 'proceso_codigo' => 'nullable|string|max:40|exists:procesos_codificador,codigo',
+            'es_transparencia' => 'nullable|boolean', 'plazo_habiles' => 'nullable|boolean', 'codigo_cpat' => ['nullable', 'regex:'.MantenedorController::CPAT], 'proceso_codigo' => 'nullable|string|max:40|exists:procesos_codificador,codigo',
         ]);
         // los campos de administración solo se aceptan si el usuario ve todas las direcciones
         if (! TramiteService::veTodas($r->user())) {
-            unset($d['unidad_propietaria_id'], $d['unidades'], $d['codigo_interno'], $d['codigo_cpat'], $d['proceso_codigo']);
+            unset($d['unidad_propietaria_id'], $d['unidades'], $d['codigo_interno'], $d['codigo_cpat'], $d['proceso_codigo'], $d['es_transparencia'], $d['plazo_habiles']);
         }
 
         return $d;

@@ -23,6 +23,7 @@ class ManualRenderer
         'administrador' => ['Administrador(a) del sistema', 'Mantenedores, Codificador, PISEE, DocDigital, seguridad y diagnóstico.'],
         'auditor' => ['Auditor(a)', 'Consulta de solo lectura, verificación de la cadena de auditoría e incidentes.'],
         'autoridad' => ['Autoridad', 'Consultar el seguimiento de las solicitudes: etapa, estado, quién la tiene y si terminó.'],
+        'transparencia' => ['Transparencia activa y pasiva', 'Gestionar consultas de acceso a la información, expedientes, requerimientos, plazos, transparencia activa y reportes.'],
         'oirs' => ['OIRS', 'Visualizar solicitudes, su estado, responsables y plazos vencidos o por vencer.'],
         'publico' => ['Público general', 'Validar documentos, consultar documentos públicos y usar las opciones de accesibilidad.'],
     ];

@@ -6,6 +6,8 @@ use App\Models\AuditLog;
 use App\Models\Incidente;
 use App\Models\Rol;
 use App\Models\Solicitud;
+use App\Models\Tramite;
+use App\Models\TransparenciaRequerimiento;
 use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Support\Plazos;
@@ -39,6 +41,17 @@ class DashboardService
             [$k, $b] = $this->oirs($instantanea());
             $kpis = array_merge($kpis, $k);
             $bloques = array_merge($bloques, $b);
+        }
+        if ($u->tienePermiso('transparencia.ver')) {
+            [$k, $b] = $this->transparencia();
+            $kpis = array_merge($kpis, $k);
+            $bloques = array_merge($bloques, $b);
+        } elseif ($u->tienePermiso('transparencia.responder') && $u->unidad_id) {
+            $n = TransparenciaRequerimiento::query()->where('unidad_id', $u->unidad_id)->where('estado', 'pendiente')->count();
+            if ($n > 0) {
+                $venc = TransparenciaRequerimiento::query()->where('unidad_id', $u->unidad_id)->where('estado', 'pendiente')->where('vence_en', '<', now())->count();
+                $kpis[] = ['icono' => 'send', 'valor' => $n, 'etiqueta' => 'Requerimientos de transparencia por responder'.($venc ? " ($venc vencidos)" : ''), 'nivel' => $venc ? 'aviso' : 'info', 'url' => route('app.transparencia.requerimientos', ['estado' => 'pendiente'])];
+            }
         }
         if ($u->operaExpedientes()) {
             $b = $this->operador($u, $instantanea());
@@ -110,6 +123,37 @@ class DashboardService
             $this->barras('Vencidas y por vencer, por dirección', $porDir),
             ['tipo' => 'tabla', 'titulo' => 'Las 10 solicitudes más urgentes', 'cabeceras' => ['Folio', 'Trámite', 'Responsable', 'Vence', 'Plazo'], 'vacio' => 'No hay plazos vencidos ni por vencer.',
                 'filas' => $filas->map(fn ($f) => [[$f['folio'], route('app.seguimiento.detalle', $f['folio'])], $f['tramite'], $f['tiene'] ?? $f['responsable'] ?? 'Sin asignar', $f['vence']->format('d-m-Y'), $f['plazo'] === 'vencido' ? 'Vencido' : 'Por vencer'])->all()],
+        ]];
+    }
+
+    /** @return array{0:array<int,array<string,mixed>>,1:array<int,array<string,mixed>>} */
+    private function transparencia(): array
+    {
+        $ids = Tramite::query()->where('es_transparencia', true)->pluck('id');
+        $snap = $this->seg->instantanea()->whereIn('tramite_id', $ids);
+        $activas = $snap->where('etapa', '!=', 'terminada');
+        $req = TransparenciaRequerimiento::query()->with('unidad:id,nombre')->where('estado', 'pendiente')->get();
+        $activa = collect(app(TransparenciaReporte::class)->activa());
+        $kpis = [
+            ['icono' => 'folder', 'valor' => $activas->count(), 'etiqueta' => 'Consultas abiertas', 'nivel' => 'ok', 'url' => route('app.transparencia')],
+            ['icono' => 'alert', 'valor' => $snap->where('plazo', 'vencido')->count(), 'etiqueta' => 'Consultas con plazo vencido', 'nivel' => $snap->where('plazo', 'vencido')->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.transparencia', ['plazo' => 'vencido'])],
+            ['icono' => 'clock', 'valor' => $snap->where('plazo', 'por_vencer')->count(), 'etiqueta' => 'Por vencer', 'nivel' => 'info', 'url' => route('app.transparencia', ['plazo' => 'por_vencer'])],
+            ['icono' => 'send', 'valor' => $req->count(), 'etiqueta' => 'Requerimientos pendientes', 'nivel' => $req->isNotEmpty() ? 'info' : 'ok', 'url' => route('app.transparencia.requerimientos', ['estado' => 'pendiente'])],
+        ];
+        $porEtapa = [];
+        foreach (SeguimientoService::ETAPAS as $k => $v) {
+            $porEtapa[] = [$v, $snap->where('etapa', $k)->count(), route('app.transparencia', ['etapa' => $k])];
+        }
+        $plazos = [['Plazo vencido', $snap->where('plazo', 'vencido')->count(), null], ['Por vencer', $snap->where('plazo', 'por_vencer')->count(), null], ['En plazo', $snap->where('plazo', 'en_plazo')->count(), null],
+            ['Suspendidas (devueltas)', $snap->where('plazo', 'suspendido')->count(), null], ['Terminadas en plazo', $snap->where('plazo', 'cumplido')->count(), null], ['Terminadas fuera de plazo', $snap->where('plazo', 'fuera_de_plazo')->count(), null]];
+        $porDir = $req->groupBy('unidad_id')->map(fn ($g) => [(string) $g->first()->unidad?->nombre, $g->count(), null])->sortByDesc(1)->values()->take(10)->all();
+        $estadosActiva = [['Al día', $activa->where('estado', 'al_dia')->count(), route('app.transparencia.activa')], ['Pendientes', $activa->whereIn('estado', ['pendiente', 'por_vencer'])->count(), route('app.transparencia.activa')], ['Vencidas', $activa->where('estado', 'vencida')->count(), route('app.transparencia.activa')]];
+
+        return [$kpis, [
+            $this->barras('Consultas por etapa', $porEtapa),
+            $this->barras('Plazos de las consultas', $plazos),
+            $this->barras('Requerimientos pendientes por dirección', $porDir),
+            $this->barras('Transparencia activa (periodo vigente)', $estadosActiva),
         ]];
     }
 

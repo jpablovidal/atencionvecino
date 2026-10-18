@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $canal_notificacion
  * @property string $estado
  * @property int|null $expediente_id
+ * @property int|null $prorroga_dias
+ * @property string|null $prorroga_motivo
  * @property string|null $created_at
  * @property string|null $updated_at
  */
@@ -26,6 +28,8 @@ class Solicitud extends Model
     protected $table = 'solicitudes';
 
     protected $guarded = ['id'];
+
+    protected $casts = ['prorrogada_en' => 'datetime'];
 
     /** @return BelongsTo<Tramite, $this> */
     public function tramite(): BelongsTo
@@ -46,6 +50,18 @@ class Solicitud extends Model
     }
 
     /** @return HasMany<Devolucion, $this> */
+    /** @return HasMany<TransparenciaRequerimiento, $this> */
+    public function requerimientos(): HasMany
+    {
+        return $this->hasMany(TransparenciaRequerimiento::class)->orderBy('id');
+    }
+
+    /** @return HasMany<TransparenciaDerivacion, $this> */
+    public function derivacionesOrgano(): HasMany
+    {
+        return $this->hasMany(TransparenciaDerivacion::class)->orderBy('id');
+    }
+
     public function devoluciones(): HasMany
     {
         return $this->hasMany(Devolucion::class)->orderBy('id');

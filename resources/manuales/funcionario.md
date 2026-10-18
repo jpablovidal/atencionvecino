@@ -146,6 +146,10 @@ El menú **DocDigital** muestra el estado de la conexión con DocDigital y las c
 - Para **enviar** una comunicación abra el expediente, elija un documento vigente y use *Comunicar por DocDigital*. DocDigital exige un PDF con firma electrónica avanzada.
 - Si el modo es **Outbox**, el sistema no se conecta: el envío y el acuse se hacen en DocDigital y aquí se registra la evidencia.
 
+## Requerimientos de transparencia
+
+Si la unidad de Transparencia requiere información a su dirección para responder una solicitud de acceso a la información, verá un aviso en su tablero y el menú **Requerimientos de transparencia**. Cada requerimiento muestra la consulta original (sin datos del solicitante), la instrucción y el plazo. Escriba su **respuesta** (texto plano); si debe entregar documentos, hágalos llegar a Transparencia por los canales institucionales.
+
 ## Su tablero de inicio
 
 Al ingresar, **Inicio** muestra su **tablero**: indicadores, sus solicitudes a cargo por etapa (barras) y los plazos de su dirección (vencidas, por vencer y en plazo), además de lo que requiere su atención.

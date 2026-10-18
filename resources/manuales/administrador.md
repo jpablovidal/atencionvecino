@@ -84,6 +84,12 @@ Las instituciones del catálogo son las opciones de **destinatario** al despacha
 - **Plazos:** días corridos por defecto; `SGD_PLAZOS_HABILES=true` cuenta lunes a viernes (sin feriados) y `SGD_PLAZOS_AVISO_DIAS` define «por vencer» (3). Ver `docs/NORMATIVA.md` §8 (A VALIDAR).
 - Todo acceso queda en la bitácora con el RUN enmascarado.
 
+## 7 quater. Transparencia activa y pasiva
+
+- **Rol «Transparencia activa y pasiva»:** opera expedientes y gestiona las consultas de acceso a la información (Ley 20.285). Créele personas en *Usuarios* con ese rol y la unidad de Transparencia.
+- **Trámite de acceso a la información:** en *Trámites y servicios* (solo la administración) marque **solicitud de acceso a la información pública** y **plazo en días hábiles**; la unidad de Transparencia debe ser su dirección responsable. Quien tiene el rol gestiona feriados, parámetros, la publicación de transparencia activa y los reportes.
+- Permisos: `transparencia.ver`, `.gestionar`, `.reportes` (rol Transparencia) y `.responder` (también funcionario, alcalde y secretario, para responder requerimientos). El administrador no los recibe.
+
 ## 8. DocDigital
 
 Todo se configura en el `.env` (ver README): `DOCDIGITAL_MODE` (`outbox` por defecto; `demo` para DemoDoc; `prod`), URL, token y rutas de la guía API MW V2, y `DOCDIGITAL_UNIDAD_RECEPCION` (unidad que recibe lo entrante).
