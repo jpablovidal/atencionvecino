@@ -7,7 +7,7 @@
 |---|---|---|
 | **ClaveÚnica** | Implementado (OIDC) y probado con simulación (`/dev/login`, `ClaveUnicaService` sin prueba HTTP real). | `client_id/secret`, URL de retorno registrada; validar formato de `userinfo`. |
 | **FirmaGob v2** | `HttpFirmaClient` probado con `Http::fake` (JWT HS256, OTP, checksum, 5 MB, sin redirecciones). | Credenciales y ambiente `test`; **validar URLs de prod/test, nombres de claims y de la respuesta (A VALIDAR)**; verificar firma atendida con OTP real; lógica de reintentos ante 429. |
-| **Casilla Única / Notificador** | Modo `outbox` (operativo, sin envío real); modo `api` genérico no basado en contrato oficial. | Contrato y credenciales (A VALIDAR). |
+| **Casilla Única / Notificador** | Modo `outbox` (operativo, sin envío real) y panel de gestión; modo `api` genérico (token fijo u OAuth2) **no basado en el contrato oficial**: la guía de integración no fue accesible desde el entorno. | Contrato y credenciales (A VALIDAR). |
 | **Gmail API (cuenta de servicio)** | Transporte probado con cliente HTTP simulado: JWT RS256, único scope, `sub`=buzón, éxito, fallo, reintento, cuota, inyección de cabeceras. | JSON real, delegación de dominio autorizada, envío real. |
 | **LLM** | Probado con respuestas simuladas; apagado por defecto. | Clave de API y revisión de la política de uso de IA del municipio. |
 | **Códigos CPAT/OAE** | El seed usa **ejemplos** con el formato `PA-UNI00002-00001`. | Cargar los códigos reales del catálogo CPAT. |
@@ -83,3 +83,7 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - DocDigital exige PDF con firma electrónica avanzada y un Administrador Principal registrado; el sistema no lo verifica contra DocDigital.
 - Las credenciales entregadas por la institución son de **producción**: no las use desde el ambiente de pruebas con envíos reales; use DemoDoc si existe.
 
+## Casilla Única e inicio dual
+- **Contrato sin validar:** la guía https://wikiguias.digital.gob.cl/es/Manuales/integracion-casillaunica no fue accesible desde el entorno de construcción. La URL, la autenticación (token u OAuth2) y el JSON de envío/confirmación son una propuesta mínima; hasta validarlos, mantenga el modo **outbox** (evidencia manual). «Probar conexión» solo obtiene el token: no envía notificaciones.
+- El inicio dual asume que ingresar como funcionario(a) con ClaveÚnica acredita también su identidad de vecino(a) (mismo RUN). En el acceso de **pruebas** (usuario y contraseña) la identidad la declara la cuenta de prueba.
+- El conflicto de interés se controla por **RUN**: no detecta parentesco ni solicitudes presentadas por terceros en nombre del funcionario.

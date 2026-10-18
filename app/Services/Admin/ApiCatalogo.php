@@ -35,7 +35,11 @@ class ApiCatalogo
             'casilla' => ['etiqueta' => 'Casilla Única / Notificador', 'descripcion' => 'Modo outbox: nada se envía hasta registrar evidencia. Contrato de API A VALIDAR.', 'campos' => [
                 'mode' => ['Modo', 'select', 'sgd.casilla.mode', ['opciones' => ['outbox' => 'Outbox (manual)', 'api' => 'API']]],
                 'api_url' => ['URL de la API', 'url', 'sgd.casilla.api_url'],
-                'api_token' => ['Token de la API', 'text', 'sgd.casilla.api_token', ['secreto' => true]],
+                'api_token' => ['Token fijo de la API (alternativa a OAuth2)', 'text', 'sgd.casilla.api_token', ['secreto' => true]],
+                'client_id' => ['Client ID (OAuth2)', 'text', 'sgd.casilla.client_id'],
+                'client_secret' => ['Client Secret (OAuth2)', 'text', 'sgd.casilla.client_secret', ['secreto' => true]],
+                'token_url' => ['URL del token (https)', 'url', 'sgd.casilla.token_url'],
+                'scope' => ['Scope (opcional)', 'text', 'sgd.casilla.scope'],
             ]],
             'google_mail' => ['etiqueta' => 'Correo institucional (Gmail API)', 'descripcion' => 'Cuenta de servicio con delegación de dominio (alcance gmail.send).', 'campos' => [
                 'sender' => ['Buzón remitente', 'text', 'sgd.google.sender', ['ayuda' => 'p. ej. no-responder@santodomingo.cl']],

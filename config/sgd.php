@@ -72,11 +72,18 @@ return [
         'timeout' => 20,
     ],
 
+    // Funcionario que también es vecino: sesión dual (inicio con elección de espacio). false = sesiones separadas.
+    'espacio_dual' => (bool) env('SGD_ESPACIO_DUAL', true),
+
     // Casilla Única
     'casilla' => [
         'mode' => env('CASILLA_MODE', 'outbox'), // outbox|api
         'api_url' => env('CASILLA_API_URL'),
         'api_token' => env('CASILLA_API_TOKEN'),
+        'client_id' => env('CASILLA_CLIENT_ID'),
+        'client_secret' => env('CASILLA_CLIENT_SECRET'),
+        'token_url' => env('CASILLA_TOKEN_URL'),
+        'scope' => env('CASILLA_SCOPE'),
     ],
 
     // Google Workspace / Gmail API (cuenta de servicio con delegación de dominio)

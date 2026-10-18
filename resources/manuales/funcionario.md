@@ -146,6 +146,19 @@ El menú **DocDigital** muestra el estado de la conexión con DocDigital y las c
 - Para **enviar** una comunicación abra el expediente, elija un documento vigente y use *Comunicar por DocDigital*. DocDigital exige un PDF con firma electrónica avanzada.
 - Si el modo es **Outbox**, el sistema no se conecta: el envío y el acuse se hacen en DocDigital y aquí se registra la evidencia.
 
+## Casilla Única (notificaciones a la ciudadanía)
+
+El menú **Casilla Única** (si su rol puede notificar) muestra las notificaciones por Casilla Única de los expedientes de su unidad.
+
+- **Estado:** modo (Outbox o API) y tipo de credenciales; los valores nunca se muestran.
+- **Pendientes y fallidas:** en modo **Outbox** el sistema no envía nada: haga el envío en Casilla Única y registre aquí el **ID** como evidencia. La notificación queda «enviada» solo con esa evidencia.
+- **Probar conexión** y **Reintentar envíos** (hasta 20) los hace quien tiene el permiso de gestión (por defecto, Secretario(a) Municipal y administrador).
+- Para notificar: cierre el expediente y use *Notificar al ciudadano* con el canal Casilla Única.
+
+## Si usted también es vecino(a): inicio dual
+
+Al ingresar como funcionario(a) verá el **inicio dual** con dos espacios: **Espacio funcionario** (su trabajo) y **Espacio vecino(a)** (sus propios trámites, con su mismo RUN). Cambie de espacio con **Cambiar de espacio** en el menú o con el botón de su nombre. Para evitar conflictos de interés, **no puede tramitar como funcionario(a) una solicitud que usted presentó como vecino(a)**: la sigue solo desde *Mis solicitudes*; otra persona de la unidad la atiende.
+
 ## Archivo municipal: microformas (si su rol lo permite)
 
 El menú **Archivo municipal** aparece solo si su rol tiene permisos `archivo.*`. Hay cuatro funciones, que el administrador asigna con roles personalizados: **ver** (consultar), **gestionar** (registrar y cargar), **certificar** (ministro de fe) y **autorizar disposición**.

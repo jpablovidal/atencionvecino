@@ -5,10 +5,12 @@ use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ArchivoMunicipalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
+use App\Http\Controllers\CasillaController;
 use App\Http\Controllers\CatalogoTramitesController;
 use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocDigitalController;
 use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\EspacioController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\FirmasController;
 use App\Http\Controllers\FoliosController;
@@ -64,6 +66,9 @@ if (config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'te
     Route::get('/dev/login', [AuthController::class, 'devForm'])->name('dev.login');
     Route::post('/dev/login', [AuthController::class, 'devLogin'])->middleware('throttle:login');
 }
+
+// ---- Inicio dual (funcionario que también es vecino)
+Route::get('/espacio', [EspacioController::class, 'inicio'])->middleware('nostore')->name('espacio');
 
 // ---- Ciudadano
 Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadano.')->group(function () {
@@ -167,6 +172,13 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::post('/docdigital/diagnosticar', [DocDigitalController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('docdigital.diagnosticar');
         Route::post('/docdigital/sincronizar', [DocDigitalController::class, 'sincronizar'])->middleware('throttle:6,1')->name('docdigital.sincronizar');
         Route::post('/docdigital/reintentar', [DocDigitalController::class, 'reintentar'])->middleware('throttle:6,1')->name('docdigital.reintentar');
+    });
+
+    // ---- Casilla Única: panel de notificaciones (ver = notificaciones.gestionar o casilla.gestionar; probar/reintentar = casilla.gestionar)
+    Route::get('/casilla', [CasillaController::class, 'index'])->middleware('permiso:notificaciones.gestionar,casilla.gestionar')->name('casilla');
+    Route::middleware('permiso:casilla.gestionar')->group(function () {
+        Route::post('/casilla/diagnosticar', [CasillaController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('casilla.diagnosticar');
+        Route::post('/casilla/reintentar', [CasillaController::class, 'reintentar'])->middleware('throttle:6,1')->name('casilla.reintentar');
     });
 
     // ---- Archivo municipal (microformas): permisos por ruta y de nuevo en el servicio

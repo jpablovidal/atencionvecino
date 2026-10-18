@@ -115,6 +115,6 @@ class CatalogoPublicoTramitesTest extends TestCase
         $req->session()->put('tramite_pendiente', ['id' => 1, 'exp' => time() + 600]);
         $f = $this->usuario('funcionario');
         $resp = $m->invoke($r, $req, 'funcionario', ['run' => $f->run, 'nombres' => 'x', 'apellidos' => 'y']);
-        $this->assertStringEndsWith('/app', $resp->getTargetUrl());
+        $this->assertStringEndsWith('/espacio', $resp->getTargetUrl());
     }
 }

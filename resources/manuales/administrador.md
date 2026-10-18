@@ -72,6 +72,11 @@ Menú **Codificador**:
 
 Las instituciones del catálogo son las opciones de **destinatario** al despachar por DocDigital.
 
+## 7 bis. Casilla Única e inicio dual
+
+- **Casilla Única:** se configura en *Administración → APIs e integraciones → Casilla Única / Notificador* (modo, URL, token u OAuth2 Client ID/Secret/URL del token, solo https). El contrato de la API está **A VALIDAR**; mantenga **Outbox** hasta validarlo. Los funcionarios gestionan las notificaciones en el menú **Casilla Única**; el permiso `casilla.gestionar` (probar conexión y reintentar) se asigna en *Roles y permisos* (por defecto, secretario y admin).
+- **Inicio dual:** los funcionarios que también son vecinos eligen su espacio al ingresar. Se desactiva con `SGD_ESPACIO_DUAL=false` en `.env`.
+
 ## 8. DocDigital
 
 Todo se configura en el `.env` (ver README): `DOCDIGITAL_MODE` (`outbox` por defecto; `demo` para DemoDoc; `prod`), URL, token y rutas de la guía API MW V2, y `DOCDIGITAL_UNIDAD_RECEPCION` (unidad que recibe lo entrante).

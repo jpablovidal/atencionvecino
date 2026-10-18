@@ -217,7 +217,7 @@ class SeguridadHttpTest extends TestCase
     public function test_funcionario_debe_existir_y_estar_activo(): void
     {
         $dom = $this->usuario('funcionario', 1);
-        $this->loginDev('funcionario', $dom->run)->assertRedirect('/app');
+        $this->loginDev('funcionario', $dom->run)->assertRedirect('/espacio');
         $this->assertAuthenticatedAs($dom);
         $dom->forceFill(['activo' => false])->save();
         $this->app['auth']->forgetGuards();

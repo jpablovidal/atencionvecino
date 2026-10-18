@@ -25,7 +25,7 @@ class ConsistenciaSistemaTest extends TestCase
             }
         }
         sort($publicas);
-        $esperadas = ['GET /', 'GET /accesibilidad', 'GET /ayuda', 'GET /ayuda/{perfil}', 'GET /claveunica/callback', 'GET /dev/login', 'GET /ingreso', 'GET /ingreso/pruebas', 'GET /ingreso/{via}',
+        $esperadas = ['GET /', 'GET /accesibilidad', 'GET /ayuda', 'GET /ayuda/{perfil}', 'GET /claveunica/callback', 'GET /dev/login', 'GET /espacio', 'GET /ingreso', 'GET /ingreso/pruebas', 'GET /ingreso/{via}',
             'GET /marca/estilo.css', 'GET /marca/logo', 'GET /publico', 'GET /publico/{codigo}', 'GET /tramites', 'GET /tramites/{id}/iniciar', 'GET /tramites/{id}/{slug?}', 'GET /validar', 'GET /validar-comprobante/{folio}/{codigo}', 'GET /validar/{codigo}', 'GET /validar/{codigo}/copia', 'POST /validar', 'POST /dev/login',
             'POST /ingreso/pruebas', 'POST /salir'];
         $inesperadas = array_diff($publicas, $esperadas);
@@ -83,6 +83,9 @@ class ConsistenciaSistemaTest extends TestCase
             $this->assertTrue(Route::has($ruta), "ítem de menú «{$clave}» apunta a una ruta inexistente: $ruta");
             if ($d['permiso']) {
                 foreach (explode(',', $d['permiso']) as $p) {
+                    if ($p === 'dual') { // seudopermiso: sesión de funcionario con identidad ciudadana
+                        continue;
+                    }
                     $this->assertContains($p, $cat, "ítem «{$clave}» exige un permiso inexistente");
                 }
             }

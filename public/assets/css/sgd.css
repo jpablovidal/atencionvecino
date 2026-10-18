@@ -338,3 +338,12 @@ html.a11y-contrast .sgd-sidebar{background:#000}
   .a11y-icon{min-width:2.1rem;min-height:2.1rem}
 }
 .estado-certificada{background:#d9f0dc;color:#0b4a1c}.estado-en_revision{background:#fff1cc;color:#5c4200}.estado-anulada{background:#fde0e0;color:#7a1010}html.a11y-contrast .estado-certificada,html.a11y-contrast .estado-en_revision,html.a11y-contrast .estado-anulada{background:#000;color:#fff}
+
+/* Inicio dual: funcionario(a) que también es vecino(a) */
+.espacios{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem}
+.espacio-card{background:#fff;color:#14232e;border:1px solid #d6dee5;border-top:5px solid #006fb3;border-radius:4px;padding:1.4rem;box-shadow:0 1px 2px rgba(10,19,45,.06)}
+.espacio-card:nth-child(2){border-top-color:#1b6b32}
+.espacio-ico{display:inline-flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:50%;background:#e6f0f8;color:#0a2e4d;margin-bottom:.6rem}
+.espacio-ico .sgd-ico{width:1.5rem;height:1.5rem}
+.espacio-datos{margin:.75rem 0 1rem}.espacio-datos li{padding:.15rem 0}
+html.a11y-contrast .espacio-card{background:#000;color:#fff;border:2px solid #fff}

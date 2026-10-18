@@ -17,12 +17,18 @@ class ExpedientePolicy
             return true;
         }
 
-        return $u->operaExpedientes() && $this->participa($u, $e);
+        return $u->operaExpedientes() && ! $this->esSuyo($u, $e) && $this->participa($u, $e);
     }
 
     public function operar(Usuario $u, Expediente $e): bool
     {
-        return $u->activo && $u->operaExpedientes() && $this->participa($u, $e);
+        return $u->activo && $u->operaExpedientes() && ! $this->esSuyo($u, $e) && $this->participa($u, $e);
+    }
+
+    /** Conflicto de interés: quien solicitó el trámite como vecino(a) no lo tramita como funcionario(a) (lo ve en «Mis solicitudes»). */
+    private function esSuyo(Usuario $u, Expediente $e): bool
+    {
+        return $e->solicitud !== null && $e->solicitud->run === $u->run;
     }
 
     private function participa(Usuario $u, Expediente $e): bool

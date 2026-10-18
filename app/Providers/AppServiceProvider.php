@@ -21,6 +21,7 @@ use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Interop\DocDigital\MockDocDigitalClient;
 use App\Services\Sistema\ConexionesService;
+use App\Support\Espacio;
 use App\Support\HashedDatabaseSessionHandler;
 use App\Support\ProductionGuard;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -121,14 +122,16 @@ class AppServiceProvider extends ServiceProvider
         View::composer(['layouts.app', 'partials.accesos'], function ($view) {
             try {
                 $u = auth()->user();
-                $area = $u ? 'app' : (session('ciudadano') ? 'ciudadano' : 'publico');
+                $espacio = Espacio::activo();
+                $area = Espacio::dual() ? ($espacio ?? 'publico') : ($u ? 'app' : (session('ciudadano') ? 'ciudadano' : 'publico'));
                 $marca = app(AparienciaService::class)->datos();
                 $menu = app(MenuService::class)->items($area, $u);
             } catch (\Throwable) {
                 $marca = AparienciaService::DEFECTO + ['version' => '0'];
                 $menu = [];
+                $espacio = null;
             }
-            $view->with(['marca' => $marca, 'menuItems' => $menu]);
+            $view->with(['marca' => $marca, 'menuItems' => $menu, 'espacio' => $espacio, 'dual' => Espacio::dual()]);
         });
         View::composer(['pdf.documento', 'pdf.comprobante'], function ($view) {
             try {

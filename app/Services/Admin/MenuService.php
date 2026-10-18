@@ -6,6 +6,7 @@ use App\Exceptions\FlujoException;
 use App\Models\MenuItem;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
+use App\Support\Espacio;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,7 @@ class MenuService
             'vigentes' => $i('Documentos vigentes', 'app.vigentes', 'app/vigentes', ['app'], 'vigentes.ver', null, 20),
             'formatos' => $i('Formatos y plantillas', 'app.formatos', 'app/formatos*', ['app'], 'plantillas.ver', null, 25),
             'comunicaciones' => $i('Comunicaciones oficiales', 'app.comunicaciones', 'app/comunicaciones*', ['app'], 'comunicaciones.ver', null, 30),
+            'casilla' => $i('Casilla Única', 'app.casilla', 'app/casilla*', ['app'], 'notificaciones.gestionar,casilla.gestionar', null, 33),
             'archivo' => $i('Archivo municipal', 'app.archivo.index', 'app/archivo*', ['app'], 'archivo.ver', null, 45),
             'docdigital' => $i('DocDigital', 'app.docdigital', 'app/docdigital*', ['app'], 'comunicaciones.ver,docdigital.gestionar', null, 32),
             'delegaciones' => $i('Delegaciones de firma', 'app.delegaciones', 'app/delegaciones*', ['app'], 'delegaciones.ver', null, 40),
@@ -66,6 +68,7 @@ class MenuService
             'recursos' => $i('Recursos del servidor', 'app.sistema.recursos', 'app/sistema/recursos*', ['app'], 'recursos.ver', $s, 325),
             'componentes' => $i('Componentes y librerías', 'app.sistema.componentes', 'app/sistema/componentes*', ['app'], 'componentes.ver', $s, 328),
             'diagnostico' => $i('Diagnóstico', 'app.diagnostico', 'app/diagnostico', ['app'], 'diagnostico.ver', $s, 330),
+            'espacio' => $i('Cambiar de espacio', 'espacio', 'espacio', ['app', 'ciudadano'], 'dual', null, 5),
             'ayuda' => $i('Ayuda', 'ayuda', 'ayuda*', ['publico', 'ciudadano', 'app'], null, null, 900, true),
         ];
     }
@@ -81,15 +84,16 @@ class MenuService
 
     /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
     public const ICONOS = [
-        'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
+        'espacio' => 'switch', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
-        'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
+        'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
         'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help',
     ];
 
     public const DESCRIPCIONES = [
-        'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'docdigital' => 'Estado de la conexión, comunicaciones recibidas y enviadas, sincronización y reintentos.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
+        'espacio' => 'Elija si trabaja como funcionario(a) o realiza trámites como vecino(a).',
+        'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'casilla' => 'Notificaciones a la ciudadanía por Casilla Única: pendientes, evidencia y reintentos.', 'docdigital' => 'Estado de la conexión, comunicaciones recibidas y enviadas, sincronización y reintentos.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
         'comunicaciones' => 'Comunicaciones oficiales recibidas y enviadas por DocDigital.', 'delegaciones' => 'Delegaciones de firma del alcalde.',
         'tramites' => 'Cree y publique los trámites y servicios de su dirección.', 'usuarios' => 'Altas, roles y direcciones de las personas usuarias.',
         'roles' => 'Roles personalizados y permisos.', 'plantillas' => 'Editor de plantillas con visibilidad por dirección.', 'apariencia' => 'Logo, colores, encabezado y pie.',
@@ -121,7 +125,7 @@ class MenuService
         $por = $filas->whereNotNull('clave')->keyBy('clave');
         $out = [];
         foreach ($this->sistema() as $clave => $d) {
-            if (! in_array($area, $d['areas'], true) || ($d['permiso'] && ! ($u && collect(explode(',', $d['permiso']))->contains(fn ($p) => $u->tienePermiso($p))))) {
+            if (! in_array($area, $d['areas'], true) || ($d['permiso'] && ! ($u && collect(explode(',', $d['permiso']))->contains(fn ($p) => $p === 'dual' ? Espacio::dual() : $u->tienePermiso($p))))) {
                 continue;
             }
             $o = $por->get($clave);

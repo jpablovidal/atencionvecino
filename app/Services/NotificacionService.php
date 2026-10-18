@@ -70,6 +70,25 @@ class NotificacionService
         } // outbox: permanece "pendiente" hasta registrar evidencia
     }
 
+    /**
+     * Reintenta el envío de una notificación por Casilla Única (solo canal casilla_unica, estados pendiente/fallida, modo API).
+     *
+     * @return bool true si quedó enviada
+     */
+    public function reintentarCasilla(Notificacion $n): bool
+    {
+        if ($n->canal !== 'casilla_unica' || ! in_array($n->estado, ['pendiente', 'fallida'], true)) {
+            throw new FlujoException('Solo se reintentan notificaciones de Casilla Única pendientes o fallidas.');
+        }
+        if (! $this->casilla->modoApi()) {
+            throw new FlujoException('Casilla Única está en modo outbox: registre la evidencia manualmente.');
+        }
+        $this->intentarCasilla($n);
+        $this->audit->registrar('notificacion.reintento', 'notificacion', $n->id, ['canal' => 'casilla_unica']);
+
+        return $n->refresh()->estado === 'enviada';
+    }
+
     /** Un funcionario registra la evidencia real (acuse de Casilla Única o acta de entrega presencial). */
     public function registrarEvidencia(Notificacion $n, string $tipo, string $valor): Notificacion
     {

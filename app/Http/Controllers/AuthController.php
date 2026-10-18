@@ -8,6 +8,7 @@ use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
 use App\Support\Ambiente;
+use App\Support\Espacio;
 use App\Support\Run;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -112,6 +113,12 @@ class AuthController extends Controller
             Auth::login($u);
             $u->forceFill(['ultimo_acceso' => now()])->save();
             $this->audit->registrar('auth.login', 'usuario', $u->id, ['via' => 'funcionario'], false, ['run' => $u->run, 'rol' => $u->rol]);
+
+            if (Espacio::habilitado()) { // también es vecino(a): misma identidad acreditada, se elige el espacio en el inicio dual
+                $request->session()->put('ciudadano', ['run' => $u->run, 'nombres' => $id['nombres'], 'apellidos' => $id['apellidos']]);
+
+                return redirect()->route('espacio');
+            }
 
             return redirect()->route('app.bandeja');
         }

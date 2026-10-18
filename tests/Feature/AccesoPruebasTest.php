@@ -51,7 +51,7 @@ class AccesoPruebasTest extends TestCase
         $this->cuenta('20000001-3', 'ciudadano');
         $this->get('/ingreso')->assertSee('Ingreso de pruebas');
         $this->get('/ingreso/pruebas')->assertOk()->assertSee('Contraseña');
-        $this->post('/ingreso/pruebas', ['run' => $adm->run, 'password' => self::PW])->assertRedirect(route('app.bandeja'));
+        $this->post('/ingreso/pruebas', ['run' => $adm->run, 'password' => self::PW])->assertRedirect(route('espacio'));
         $this->get('/app/admin/usuarios')->assertOk();
         $this->assertDatabaseHas('audit_log', ['accion' => 'auth.login']);
         $this->post('/salir');

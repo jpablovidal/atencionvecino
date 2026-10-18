@@ -19,7 +19,8 @@
 <a class="skip-link skip-link-2" href="#navegacion">Saltar a la navegación</a>
 <div id="a11y-anuncio" class="sr-anuncio" role="status" aria-live="polite" aria-atomic="true"></div>
 @php
-  $lateral = (bool) (session('ciudadano') || auth()->check());
+  $lateral = (bool) (session('ciudadano') || auth()->check()) && ! $__env->hasSection('sinlateral');
+  $vecino = ($espacio ?? null) === 'ciudadano' || (! auth()->check() && session('ciudadano'));
   $esLogin = $__env->hasSection('login');
   $logoSrc = ($marca['header']['mostrar_logo'] && $marca['logo']) ? route('marca.logo', ['v' => substr($marca['logo']['sha256'], 0, 10)]) : null;
 @endphp
@@ -41,13 +42,15 @@
     </a>
     @include('partials.a11y')
     <div class="sgd-topbar-der">
-      @if(session('ciudadano'))
+      @if($vecino)
         <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ session('ciudadano.nombres') }} {{ session('ciudadano.apellidos') }}</span></summary>
-          <div class="sgd-user-panel"><p class="mb-1">RUN {{ session('ciudadano.run') }}</p><p class="small mb-2">Ciudadano(a)</p>
+          <div class="sgd-user-panel"><p class="mb-1">RUN {{ session('ciudadano.run') }}</p><p class="small mb-2">Ciudadano(a)@if($dual ?? false) · espacio vecino(a)@endif</p>
+            @if($dual ?? false)<p class="mb-2"><a class="btn btn-sm btn-primary btn-block" href="{{ route('app.bandeja') }}">Ir a mi trabajo (funcionario)</a></p>@endif
             <form method="post" action="{{ route('salir') }}">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @elseif(auth()->check())
         <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ auth()->user()->nombreCompleto() }}</span></summary>
           <div class="sgd-user-panel"><p class="mb-1">{{ auth()->user()->rol }}@if(auth()->user()->cargo) · {{ auth()->user()->cargo }}@endif</p>
+            @if($dual ?? false)<p class="mb-1"><a class="btn btn-sm btn-primary btn-block" href="{{ route('ciudadano.index') }}">Ir a mis trámites (vecino/a)</a></p>@endif
             <form method="post" action="{{ route('salir') }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @else
         <a class="btn btn-sm btn-light" href="{{ route('ingreso') }}">Ingresar con ClaveÚnica</a>
@@ -57,7 +60,7 @@
 </header>
 <div class="sgd-layout{{ $lateral ? ' con-lateral' : '' }}">
   <nav id="navegacion" class="sgd-nav{{ $lateral ? ' sgd-sidebar' : '' }}" aria-label="Navegación principal" tabindex="-1"><div class="sgd-nav-inner">
-    @if($lateral)<p class="sgd-nav-titulo">{{ auth()->check() ? 'Mi trabajo' : 'Mis trámites' }}</p>@endif
+    @if($lateral)<p class="sgd-nav-titulo">{{ $vecino ? 'Mis trámites' : 'Mi trabajo' }}</p>@endif
     @php $abiertos = []; @endphp
     @foreach($menuItems as $it)
       @if($it['grupo'])

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Espacio;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,8 @@ class EnsureFuncionario
 
             return redirect()->route('ingreso');
         }
+
+        Espacio::fijar(Espacio::APP);
 
         return $next($request);
     }

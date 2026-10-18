@@ -18,6 +18,17 @@ class ProductionGuard
         return null;
     }
 
+    /** Casilla Única en modo API exige URL https y credenciales (token fijo, o client id + secret + URL del token https). */
+    public static function casillaProblema(): ?string
+    {
+        $c = config('sgd.casilla');
+        if (($c['mode'] ?? 'outbox') === 'api' && (! str_starts_with((string) $c['api_url'], 'https://') || ! ($c['api_token'] || ($c['client_id'] && $c['client_secret'] && str_starts_with((string) $c['token_url'], 'https://'))))) {
+            return 'CASILLA_MODE=api sin URL https ni credenciales (token o client id/secret + URL de token https)';
+        }
+
+        return null;
+    }
+
     public static function verificar(): void
     {
         if (! app()->isProduction() || app()->runningInConsole() && ! app()->runningUnitTests() && in_array($_SERVER['argv'][1] ?? '', ['list', 'help', 'about'], true)) {
@@ -59,6 +70,9 @@ class ProductionGuard
             $e[] = 'DOCDIGITAL_MODE mock/demo está prohibido';
         }
         if ($p = self::docdigitalProblema()) {
+            $e[] = $p;
+        }
+        if ($p = self::casillaProblema()) {
             $e[] = $p;
         }
         if (! $pruebas && config('sgd.pisee.mode') === 'mock') {

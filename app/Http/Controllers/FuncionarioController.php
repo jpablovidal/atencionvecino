@@ -29,10 +29,10 @@ class FuncionarioController extends Controller
         $pasos = collect();
         $porAsignar = collect();
         if ($u->operaExpedientes()) {
-            $entrantes = Solicitud::query()->with('tramite')->where('estado', 'ingresada')->whereNull('expediente_id')
+            $entrantes = Solicitud::query()->with('tramite')->where('estado', 'ingresada')->whereNull('expediente_id')->where('run', '!=', $u->run)
                 ->whereHas('tramite.unidades', fn ($q) => $q->where('unidades.id', $u->unidad_id))->orderBy('id')->get();
             $porAsignar = Expediente::query()->where('origen', 'docdigital')->whereNull('responsable_id')->where('estado', 'abierto')->where('unidad_id', $u->unidad_id)->orderBy('id')->get();
-            $mios->where(fn ($q) => $q->where('unidad_id', $u->unidad_id)->orWhere('responsable_id', $u->id)
+            $mios->whereDoesntHave('solicitud', fn ($s) => $s->where('run', $u->run))->where(fn ($q) => $q->where('unidad_id', $u->unidad_id)->orWhere('responsable_id', $u->id)
                 ->orWhereHas('derivaciones', fn ($d) => $d->where('a_usuario_id', $u->id))
                 ->orWhereHas('documentos.pasos', fn ($p) => $p->where('usuario_id', $u->id)));
             $pasos = DocumentoPaso::query()->with('documento.expediente')->where('usuario_id', $u->id)->where('estado', 'pendiente')
@@ -69,7 +69,7 @@ class FuncionarioController extends Controller
     {
         $u = $r->user();
         $s = Solicitud::query()->with('tramite.unidades', 'archivos')->where('folio', $folio)->firstOrFail();
-        abort_unless($u->operaExpedientes() && $s->tramite->unidades->contains('id', $u->unidad_id), 403);
+        abort_unless($u->operaExpedientes() && $s->run !== $u->run && $s->tramite->unidades->contains('id', $u->unidad_id), 403); // sin conflicto de interés: no tramita lo propio
 
         return $s;
     }
