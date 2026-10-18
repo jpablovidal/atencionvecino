@@ -15,8 +15,8 @@ Cree las unidades municipales (código y nombre). Las unidades responsables de c
 ## 3. Usuarios
 
 1. **Nuevo**: ingrese **RUN** (con dígito verificador; se valida), nombres, apellidos, correo, cargo, **rol** y **unidad**.
-2. Roles: los del sistema (`admin`, `funcionario`, `alcalde`, `secretario`, `auditor`) y los **personalizados** que cree en *Roles y permisos* (§17). Use el buscador y los filtros de rol/estado para ubicar personas.
-3. **Habilitado para firmar**: solo para funcionario, alcalde y secretario. Admin y auditor **nunca** firman.
+2. Roles: los del sistema (`admin`, `funcionario`, `alcalde`, `secretario`, `auditor`, `autoridad`, `oirs`) y los **personalizados** que cree en *Roles y permisos* (§17). Use el buscador y los filtros de rol/estado para ubicar personas.
+3. **Habilitado para firmar**: solo para funcionario, alcalde y secretario. Admin, auditor, autoridad y OIRS **nunca** firman.
 4. **Desactivar** quita el acceso en la siguiente petición y **cierra sus sesiones abiertas**. Cambiar el rol de alguien también cierra sus sesiones (el nuevo rol rige desde el siguiente ingreso).
 5. Resguardos: no puede desactivar **su propia** cuenta y siempre debe quedar **al menos un administrador activo**.
 6. La columna *Último acceso* muestra el último ingreso con ClaveÚnica.
@@ -77,6 +77,13 @@ Las instituciones del catálogo son las opciones de **destinatario** al despacha
 - **Casilla Única:** se configura en *Administración → APIs e integraciones → Casilla Única / Notificador* (modo, URL, token u OAuth2 Client ID/Secret/URL del token, solo https). El contrato de la API está **A VALIDAR**; mantenga **Outbox** hasta validarlo. Los funcionarios gestionan las notificaciones en el menú **Casilla Única**; el permiso `casilla.gestionar` (probar conexión y reintentar) se asigna en *Roles y permisos* (por defecto, secretario y admin).
 - **Inicio dual:** los funcionarios que también son vecinos eligen su espacio al ingresar. Se desactiva con `SGD_ESPACIO_DUAL=false` en `.env`.
 
+## 7 ter. Roles Autoridad y OIRS
+
+- **Autoridad:** consulta el *Seguimiento de solicitudes* (por RUN, fechas, dirección, etapa o trámite). **OIRS:** usa el *Panel OIRS* (estado, responsables, plazos vencidos y por vencer). Ambos son **solo lectura**: no operan expedientes, no firman y no ven documentos.
+- Cree las personas en *Usuarios* con ese rol y sin unidad. Permisos: `seguimiento.consultar` (autoridad, alcalde y auditor por defecto) y `oirs.ver` (OIRS). El administrador no los recibe.
+- **Plazos:** días corridos por defecto; `SGD_PLAZOS_HABILES=true` cuenta lunes a viernes (sin feriados) y `SGD_PLAZOS_AVISO_DIAS` define «por vencer» (3). Ver `docs/NORMATIVA.md` §8 (A VALIDAR).
+- Todo acceso queda en la bitácora con el RUN enmascarado.
+
 ## 8. DocDigital
 
 Todo se configura en el `.env` (ver README): `DOCDIGITAL_MODE` (`outbox` por defecto; `demo` para DemoDoc; `prod`), URL, token y rutas de la guía API MW V2, y `DOCDIGITAL_UNIDAD_RECEPCION` (unidad que recibe lo entrante).
@@ -132,7 +139,7 @@ Puede cambiar `SGD_ACCESIBILIDAD_CONTACTO` (correo que aparece en la declaració
 
 ## 17. Roles y permisos
 
-**Administración → Roles y permisos.** Los 5 roles del sistema son de solo lectura (puede ver sus permisos). Para crear un rol:
+**Administración → Roles y permisos.** Los 7 roles del sistema son de solo lectura (puede ver sus permisos). Para crear un rol:
 
 1. **Nuevo rol**: clave (minúsculas, números y `_`), nombre y **rol base**. El rol base fija las reglas de negocio (quién puede firmar, ser asignado a expedientes, etc.) y el **techo** de permisos.
 2. Marque los permisos necesarios. Los no admitidos por el rol base aparecen deshabilitados; `roles.gestionar` y `delegaciones.crear` están reservados a los roles del sistema.

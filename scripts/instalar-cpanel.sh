@@ -135,6 +135,8 @@ else
   if grep -q "^SGD_AMBIENTE=pruebas" .env; then
     echo; echo "Archivo municipal: creando (solo si faltan) su unidad, roles y cuentas de prueba (contraseñas aleatorias, se muestran una sola vez):"
     "$PHP" artisan pruebas:archivo || true
+    echo; echo "Roles Autoridad y OIRS: creando (solo si faltan) sus cuentas de prueba (contraseñas aleatorias, se muestran una sola vez):"
+    "$PHP" artisan pruebas:seguimiento || true
   fi
   echo "Actualización aplicada. Para ver/rotar cuentas de prueba: php artisan pruebas:credenciales --rotar"
 fi

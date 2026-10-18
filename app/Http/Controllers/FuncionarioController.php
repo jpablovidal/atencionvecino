@@ -11,6 +11,7 @@ use App\Models\Expediente;
 use App\Models\Solicitud;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
+use App\Services\DashboardService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
 use App\Services\Firma\ArchivoFirmaService;
@@ -62,7 +63,7 @@ class FuncionarioController extends Controller
             $kpis[] = ['icono' => 'activity', 'valor' => AuditLog::query()->where('ts', '>=', now()->subDay())->count(), 'etiqueta' => 'Eventos de auditoría (24 h)', 'nivel' => 'ok', 'url' => route('app.logs')];
         }
 
-        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'pasos' => $pasos, 'porAsignar' => $porAsignar, 'kpis' => $kpis, 'u' => $u]);
+        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'pasos' => $pasos, 'porAsignar' => $porAsignar, 'kpis' => $kpis, 'u' => $u, 'panel' => app(DashboardService::class)->para($u)]);
     }
 
     private function solicitudDeMiUnidad(Request $r, string $folio): Solicitud

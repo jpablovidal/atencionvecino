@@ -41,7 +41,7 @@ class RolesController extends Controller
     private function datos(?Rol $rol): array
     {
         $ceil = [];
-        foreach (['admin', 'funcionario', 'alcalde', 'secretario', 'auditor'] as $b) {
+        foreach (Usuario::ROLES as $b) {
             $ceil[$b] = array_values(array_filter(Permisos::techo($b), fn ($p) => empty(Permisos::catalogo()[$p][3])));
         }
 

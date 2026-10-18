@@ -75,6 +75,12 @@ return [
     // Funcionario que también es vecino: sesión dual (inicio con elección de espacio). false = sesiones separadas.
     'espacio_dual' => (bool) env('SGD_ESPACIO_DUAL', true),
 
+    // Plazos de respuesta de los trámites (A VALIDAR: Ley 19.880 cuenta días hábiles; los feriados no están modelados)
+    'plazos' => [
+        'habiles' => (bool) env('SGD_PLAZOS_HABILES', false), // false = días corridos; true = lunes a viernes, sin feriados
+        'aviso_dias' => (int) env('SGD_PLAZOS_AVISO_DIAS', 3), // «por vencer»: faltan este número de días o menos
+    ],
+
     // Casilla Única
     'casilla' => [
         'mode' => env('CASILLA_MODE', 'outbox'), // outbox|api

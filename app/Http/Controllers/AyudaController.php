@@ -10,7 +10,7 @@ class AyudaController extends Controller
     {
         // Sugerencia: el manual del perfil de la persona que inició sesión.
         $u = auth()->user();
-        $mio = session('ciudadano') ? 'ciudadano' : ($u ? ['funcionario' => 'funcionario', 'secretario' => 'secretario', 'alcalde' => 'alcalde', 'admin' => 'administrador', 'auditor' => 'auditor'][$u->rolBase()] ?? null : null);
+        $mio = session('ciudadano') ? 'ciudadano' : ($u ? ['funcionario' => 'funcionario', 'secretario' => 'secretario', 'alcalde' => 'alcalde', 'admin' => 'administrador', 'auditor' => 'auditor', 'autoridad' => 'autoridad', 'oirs' => 'oirs'][$u->rolBase()] ?? null : null);
 
         return view('ayuda.indice', ['perfiles' => ManualRenderer::PERFILES, 'mio' => $mio]);
     }

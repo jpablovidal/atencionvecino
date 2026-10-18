@@ -4,6 +4,7 @@
 <h1>Inicio</h1>
 <p class="lead-sub">Bienvenido(a), <strong>{{ $u->nombreCompleto() }}</strong>@if($u->cargo) · {{ $u->cargo }}@endif.</p>
 @include('partials.kpis', ['kpis' => $kpis])
+@include('partials.panel', ['panel' => $panel])
 
 @if($pasos->isNotEmpty() || $entrantes->isNotEmpty() || $porAsignar->isNotEmpty())
 <h2 class="seccion">Requieren su atención</h2>

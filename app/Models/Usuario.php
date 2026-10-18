@@ -28,7 +28,7 @@ class Usuario extends Model implements AuthenticatableContract
 {
     use Authenticatable, Authorizable;
 
-    public const ROLES = ['admin', 'funcionario', 'alcalde', 'secretario', 'auditor'];
+    public const ROLES = ['admin', 'funcionario', 'alcalde', 'secretario', 'auditor', 'autoridad', 'oirs'];
 
     protected $table = 'usuarios';
 
@@ -52,7 +52,7 @@ class Usuario extends Model implements AuthenticatableContract
     /** @var array<int,string>|null */
     private ?array $permisosCache = null;
 
-    /** Rol base (admin|funcionario|alcalde|secretario|auditor): los roles personalizados heredan las invariantes de su base. */
+    /** Rol base (admin|funcionario|alcalde|secretario|auditor|autoridad|oirs): los roles personalizados heredan las invariantes de su base. */
     public function rolBase(): string
     {
         if ($this->rolBaseCache !== null) {

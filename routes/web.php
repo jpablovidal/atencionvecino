@@ -25,6 +25,7 @@ use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RecursosController;
 use App\Http\Controllers\RepositorioController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\SeguimientoController;
 use App\Http\Controllers\SeguridadController;
 use App\Http\Controllers\SesionesController;
 use App\Http\Controllers\SistemaController;
@@ -172,6 +173,13 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::post('/docdigital/diagnosticar', [DocDigitalController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('docdigital.diagnosticar');
         Route::post('/docdigital/sincronizar', [DocDigitalController::class, 'sincronizar'])->middleware('throttle:6,1')->name('docdigital.sincronizar');
         Route::post('/docdigital/reintentar', [DocDigitalController::class, 'reintentar'])->middleware('throttle:6,1')->name('docdigital.reintentar');
+    });
+
+    // ---- Seguimiento de solicitudes (solo lectura): autoridad y OIRS; cada ruta valida su permiso en el controlador
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::get('/seguimiento', [SeguimientoController::class, 'index'])->middleware('permiso:seguimiento.consultar')->name('seguimiento');
+        Route::get('/oirs', [SeguimientoController::class, 'oirs'])->middleware('permiso:oirs.ver')->name('oirs');
+        Route::get('/seguimiento/{folio}', [SeguimientoController::class, 'detalle'])->middleware('permiso:seguimiento.consultar,oirs.ver')->where('folio', '[A-Za-z0-9\-]{5,30}')->name('seguimiento.detalle');
     });
 
     // ---- Casilla Única: panel de notificaciones (ver = notificaciones.gestionar o casilla.gestionar; probar/reintentar = casilla.gestionar)

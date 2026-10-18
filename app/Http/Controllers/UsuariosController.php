@@ -73,7 +73,7 @@ class UsuariosController extends Controller
         if ($base === 'admin' && ! $actor->tienePermiso('roles.gestionar') && (! $usuario || $usuario->rol !== $d['rol'])) {
             return back()->withInput()->with('error', 'Solo quien administra roles puede asignar un rol de administración.');
         }
-        $d['puede_firmar'] = in_array($base, ['admin', 'auditor'], true) ? false : (bool) ($d['puede_firmar'] ?? false);
+        $d['puede_firmar'] = in_array($base, ['admin', 'auditor', 'autoridad', 'oirs'], true) ? false : (bool) ($d['puede_firmar'] ?? false);
         if ($usuario && $usuario->activo && ! $this->quedaAdmin($usuario, $base, true)) {
             return back()->withInput()->with('error', 'Debe existir al menos un administrador activo: no puede cambiar el rol del último.');
         }

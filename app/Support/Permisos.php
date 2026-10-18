@@ -34,6 +34,8 @@ class Permisos
             'tramites.gestionar' => ['Crear, editar y deshabilitar los trámites y servicios de su dirección municipal', 'Trámites y servicios', [...self::OP, 'admin'], false, ['admin']],
             'tramites.publicar' => ['Publicar y reactivar trámites de su dirección (los pone a disposición de la ciudadanía)', 'Trámites y servicios', [...self::OP, 'admin'], false, ['admin']],
             'docdigital.gestionar' => ['Gestionar la conexión con DocDigital (probar, sincronizar ahora y reintentar envíos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
+            'seguimiento.consultar' => ['Consultar el seguimiento de solicitudes (por RUN, fechas, dirección, etapa o trámite): estado, etapa, quién la tiene y si terminó', 'Seguimiento de solicitudes', ['autoridad', 'alcalde', 'auditor'], false, ['autoridad', 'alcalde', 'auditor']],
+            'oirs.ver' => ['Panel OIRS: solicitudes, estado, responsables, plazos vencidos y por vencer', 'Seguimiento de solicitudes', ['oirs', 'auditor'], false, ['oirs']],
             'casilla.gestionar' => ['Gestionar el notificador de Casilla Única (probar conexión y reintentar envíos fallidos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
             'archivo.ver' => ['Ver y consultar las microformas del archivo municipal', 'Archivo municipal', $opa, false, ['auditor']],
             'archivo.gestionar' => ['Registrar y editar microformas, cargar sus archivos y su índice', 'Archivo municipal', $op, false, []],

@@ -41,6 +41,8 @@ class MenuService
             'vigentes' => $i('Documentos vigentes', 'app.vigentes', 'app/vigentes', ['app'], 'vigentes.ver', null, 20),
             'formatos' => $i('Formatos y plantillas', 'app.formatos', 'app/formatos*', ['app'], 'plantillas.ver', null, 25),
             'comunicaciones' => $i('Comunicaciones oficiales', 'app.comunicaciones', 'app/comunicaciones*', ['app'], 'comunicaciones.ver', null, 30),
+            'seguimiento' => $i('Seguimiento de solicitudes', 'app.seguimiento', 'app/seguimiento*', ['app'], 'seguimiento.consultar', null, 22),
+            'oirs' => $i('Panel OIRS', 'app.oirs', 'app/oirs*', ['app'], 'oirs.ver', null, 23),
             'casilla' => $i('Casilla Única', 'app.casilla', 'app/casilla*', ['app'], 'notificaciones.gestionar,casilla.gestionar', null, 33),
             'archivo' => $i('Archivo municipal', 'app.archivo.index', 'app/archivo*', ['app'], 'archivo.ver', null, 45),
             'docdigital' => $i('DocDigital', 'app.docdigital', 'app/docdigital*', ['app'], 'comunicaciones.ver,docdigital.gestionar', null, 32),
@@ -84,7 +86,7 @@ class MenuService
 
     /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
     public const ICONOS = [
-        'espacio' => 'switch', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
+        'espacio' => 'switch', 'seguimiento' => 'search', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
@@ -92,6 +94,7 @@ class MenuService
     ];
 
     public const DESCRIPCIONES = [
+        'seguimiento' => 'Consulte por RUN, fechas, dirección, etapa o trámite: en qué está, quién la tiene y si terminó.', 'oirs' => 'Solicitudes, responsables y plazos vencidos o por vencer.',
         'espacio' => 'Elija si trabaja como funcionario(a) o realiza trámites como vecino(a).',
         'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'casilla' => 'Notificaciones a la ciudadanía por Casilla Única: pendientes, evidencia y reintentos.', 'docdigital' => 'Estado de la conexión, comunicaciones recibidas y enviadas, sincronización y reintentos.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
         'comunicaciones' => 'Comunicaciones oficiales recibidas y enviadas por DocDigital.', 'delegaciones' => 'Delegaciones de firma del alcalde.',

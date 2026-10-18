@@ -92,3 +92,10 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La barra de carga de vistas es **aproximada** (no mide bytes de la página): avanza por fases y se completa al terminar la carga. La barra de la **subida de archivos sí es real** (bytes enviados al servidor); la fase posterior de verificación y cifrado en el servidor no tiene porcentaje (se muestra como paso en curso).
 - Tras una subida, la URL puede quedar en la de la acción si el servidor responde sin redirección (p. ej. error 419); recargar vuelve a la vista anterior.
 - Los pasos se aplican a la solicitud del vecino, el trámite y la microforma; los demás formularios (breves) se envían de una vez.
+
+## Roles Autoridad y OIRS, plazos y tableros
+- **Plazos A VALIDAR:** la Ley 19.880 cuenta días **hábiles** y existen feriados y suspensiones de plazo; el sistema cuenta días corridos por defecto (o lunes a viernes con `SGD_PLAZOS_HABILES=true`) y **no modela feriados**. El criterio de suspensión mientras el solicitante responde una devolución es una decisión de diseño pendiente de validar con la asesoría jurídica.
+- La **etapa** es una derivación del estado de la solicitud, el expediente y sus documentos; no distingue la sub-etapa dentro de la visación (solo quién debe visar o firmar a continuación).
+- Los tableros calculan sobre **todas** las solicitudes en el servidor: con decenas de miles de registros convendrá agregar tablas de resumen.
+- Autoridad y OIRS ven **nombre y RUN** del solicitante (necesario para la consulta); cada acceso queda auditado con el RUN enmascarado. No hay exportación a CSV/Excel en esta versión.
+- Las instalaciones existentes reciben los roles al ejecutar las migraciones; las **cuentas de prueba** se crean con `pruebas:seguimiento` (el instalador lo hace al actualizar un sitio de pruebas). Si ya existía un rol personalizado con clave `autoridad` u `oirs`, la migración no lo reemplaza: renómbrelo antes.

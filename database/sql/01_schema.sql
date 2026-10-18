@@ -414,4 +414,8 @@ alter table `archivo_eventos` add constraint `archivo_eventos_usuario_id_foreign
 
 alter table `archivo_eventos` add index `archivo_eventos_microforma_id_id_index`(`microforma_id`, `id`);
 
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('autoridad', 'Autoridad', 'Consulta el seguimiento de las solicitudes: etapa, estado, quién la tiene y si terminó. Solo lectura; no ve documentos.', 'autoridad', 1, 1, '2026-10-01 00:00:00', '2026-10-01 00:00:00');
+
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('oirs', 'OIRS', 'Visualiza solicitudes, su estado, responsables y plazos vencidos o por vencer. Solo lectura; no ve documentos.', 'oirs', 1, 1, '2026-10-01 00:00:00', '2026-10-01 00:00:00');
+
 SET FOREIGN_KEY_CHECKS = 1;
