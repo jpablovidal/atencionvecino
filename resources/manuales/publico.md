@@ -2,6 +2,10 @@
 
 No necesita iniciar sesión para **consultar los trámites y servicios** de la Municipalidad, **validar un documento** ni **consultar los documentos públicos**.
 
+## Buscar trámites y servicios
+
+La página de inicio es un portal de trámites en línea con **buscador** (con sugerencias), los **trámites más solicitados** y la exploración por **dirección municipal**. Desde el catálogo puede ver los requisitos de cada trámite sin ingresar; para realizarlo se pide ClaveÚnica.
+
 ## 0. Trámites y servicios
 
 En **Trámites y servicios** (menú superior, o el buscador de la página de inicio) encontrará todos los trámites que la Municipalidad tiene disponibles. Solo aparecen los que las direcciones municipales **publicaron**.

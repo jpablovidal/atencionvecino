@@ -39,6 +39,7 @@ Route::get('/', [PublicoController::class, 'inicio'])->name('inicio');
 Route::middleware('throttle:publico')->group(function () {
     Route::get('/publico', [PublicoController::class, 'listado'])->name('publico.listado');
     Route::get('/tramites', [CatalogoTramitesController::class, 'index'])->name('catalogo');
+    Route::get('/tramites/sugerencias', [CatalogoTramitesController::class, 'sugerencias'])->name('catalogo.sugerencias');
     Route::get('/tramites/{id}/iniciar', [CatalogoTramitesController::class, 'iniciar'])->whereNumber('id')->name('catalogo.iniciar');
     Route::get('/tramites/{id}/{slug?}', [CatalogoTramitesController::class, 'ficha'])->whereNumber('id')->where('slug', '[a-z0-9\-]+')->name('catalogo.ficha');
     Route::get('/validar', [PublicoController::class, 'formValidar'])->name('validar.form');

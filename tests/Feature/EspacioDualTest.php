@@ -77,11 +77,13 @@ class EspacioDualTest extends TestCase
         $app = $t->get('/app')->assertOk()->getContent();
         $this->assertSame('app', session('espacio'));
         $this->assertStringContainsString('Mi trabajo', $app);
+        $this->assertStringContainsString('sgd-sidebar', $app);
         $this->assertStringContainsString('Cambiar de espacio', $app);
         $this->assertStringContainsString('Ir a mis trámites', $app);
         $ciu = $this->get('/ciudadano')->assertOk()->getContent();
         $this->assertSame('ciudadano', session('espacio'));
-        $this->assertStringContainsString('Mis trámites', $ciu);
+        $this->assertStringNotContainsString('sgd-sidebar', $ciu, 'el espacio vecino usa el portal, sin menú lateral');
+        $this->assertStringContainsString('portal-hero', $ciu);
         $this->assertStringContainsString('Mis solicitudes', $ciu);
         $this->assertStringNotContainsString('Documentos vigentes', $ciu);
         $this->assertStringContainsString('Cambiar de espacio', $ciu);

@@ -107,3 +107,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La respuesta de una dirección a un requerimiento es **texto**; los documentos que deban entregarse se agregan al expediente por Transparencia. No hay recordatorios por correo de requerimientos próximos a vencer (se ven en el tablero).
 - La derivación a otro órgano **no envía** el oficio: registra que se envió por DocDigital, oficio o correo y cierra el expediente; notifique al solicitante con el documento de derivación.
 - Los reportes son un instrumento interno: **no reemplazan** el formato de reporte que exija el Consejo para la Transparencia.
+
+## Portal del vecino
+- **Diseño de referencia no verificado:** `tramites.santodomingo.cl` y ChileAtiende no fueron accesibles desde el entorno de construcción (política de red). El portal replica el patrón habitual de estos sitios (buscador destacado, más solicitados, exploración por dirección, ficha con requisitos), no su apariencia exacta. Si desea una réplica más fiel, adjunte capturas de las pantallas.
+- La búsqueda es textual simple (nombre, descripción e instrucciones): no corrige errores de tipeo ni usa sinónimos. «Más solicitados» y «Más buscados» salen del número de solicitudes por trámite, no de las búsquedas.
+- No hay categorías temáticas (p. ej. «vivienda», «salud») ni costos/arancel del trámite: no existen como datos; se explora por dirección municipal.

@@ -7,6 +7,7 @@ use App\Models\Documento;
 use App\Models\Solicitud;
 use App\Models\TipoDocumento;
 use App\Models\Tramite;
+use App\Models\Unidad;
 use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
 use App\Services\SolicitudService;
@@ -18,7 +19,11 @@ class PublicoController extends Controller
 
     public function inicio()
     {
-        return view('publico.inicio', ['destacados' => Tramite::query()->publicados()->with('propietaria:id,nombre')->orderByDesc('publicado_en')->orderByDesc('id')->limit(6)->get()]);
+        $populares = Tramite::query()->publicados()->with('propietaria:id,nombre')->withCount('solicitudes')->orderByDesc('solicitudes_count')->orderByDesc('publicado_en')->orderByDesc('id')->limit(6)->get();
+        $direcciones = Unidad::query()->whereIn('id', Tramite::query()->publicados()->whereNotNull('unidad_propietaria_id')->select('unidad_propietaria_id'))
+            ->withCount(['propietariaDe as publicados_count' => fn ($c) => $c->publicados()])->orderBy('nombre')->get(['id', 'codigo', 'nombre']);
+
+        return view('publico.inicio', ['destacados' => $populares, 'direcciones' => $direcciones, 'totalTramites' => Tramite::query()->publicados()->count()]);
     }
 
     /** Listado público: solo vigentes marcados públicos y no sensibles. */

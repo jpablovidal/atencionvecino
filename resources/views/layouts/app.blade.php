@@ -22,8 +22,8 @@
 <a class="skip-link skip-link-2" href="#navegacion">Saltar a la navegación</a>
 <div id="a11y-anuncio" class="sr-anuncio" role="status" aria-live="polite" aria-atomic="true"></div>
 @php
-  $lateral = (bool) (session('ciudadano') || auth()->check()) && ! $__env->hasSection('sinlateral');
   $vecino = ($espacio ?? null) === 'ciudadano' || (! auth()->check() && session('ciudadano'));
+  $lateral = (bool) (auth()->check() && ! $vecino) && ! $__env->hasSection('sinlateral'); // el personal usa el menú lateral; vecinos y público, el portal
   $esLogin = $__env->hasSection('login');
   $logoSrc = ($marca['header']['mostrar_logo'] && $marca['logo']) ? route('marca.logo', ['v' => substr($marca['logo']['sha256'], 0, 10)]) : null;
 @endphp
@@ -79,6 +79,13 @@
     @endforeach
   </div></nav>
 <div class="sgd-backdrop" id="sgd-backdrop" hidden></div>
+@if(! $lateral && ! $__env->hasSection('sinlateral'))
+  @hasSection('hero')
+  <section class="portal-hero" aria-labelledby="hero-titulo"><div class="container">@yield('hero')</div></section>
+  @else
+  <div class="portal-busqueda"><div class="container">@include('partials.buscador', ['id' => 'q-portal'])</div></div>
+  @endif
+@endif
 <div class="sgd-main">
 @endif
 <main id="contenido" class="{{ $esLogin ? 'sgd-login-card' : 'sgd-content' }}" tabindex="-1">
@@ -108,6 +115,7 @@
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 @stack('scripts')
 <script src="{{ asset('assets/js/sgd.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/sgd.js')), 0, 8) }}"></script>
+<script src="{{ asset('assets/js/buscador.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/buscador.js')), 0, 8) }}"></script>
 <script src="{{ asset('assets/js/progreso.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/progreso.js')), 0, 8) }}"></script>
 <script src="{{ asset('assets/js/a11y.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/a11y.js')), 0, 8) }}"></script>
 </body>

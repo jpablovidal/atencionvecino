@@ -15,8 +15,9 @@ class CatalogoTramitesController extends Controller
 
     public function index(Request $request)
     {
-        $f = $request->validate(['q' => 'nullable|string|max:100', 'direccion' => 'nullable|integer|min:1']);
-        $q = Tramite::query()->publicados()->with('propietaria:id,nombre');
+        $f = $request->validate(['q' => 'nullable|string|max:100', 'direccion' => 'nullable|integer|min:1', 'orden' => 'nullable|in:nombre,populares,recientes']);
+        $orden = $f['orden'] ?? 'nombre';
+        $q = Tramite::query()->publicados()->with('propietaria:id,nombre')->withCount('solicitudes');
         if (! empty($f['direccion'])) {
             $q->where('unidad_propietaria_id', (int) $f['direccion']);
         }
@@ -24,17 +25,34 @@ class CatalogoTramitesController extends Controller
             $like = '%'.addcslashes($f['q'], '%_\\').'%';
             $q->where(fn ($w) => $w->where('nombre', 'like', $like)->orWhere('descripcion', 'like', $like)->orWhere('instrucciones', 'like', $like));
         }
+        match ($orden) {
+            'populares' => $q->orderByDesc('solicitudes_count')->orderBy('nombre'),
+            'recientes' => $q->orderByDesc('publicado_en')->orderByDesc('id'),
+            default => $q->orderBy('nombre'),
+        };
         $direcciones = Unidad::query()->whereIn('id', Tramite::query()->publicados()->whereNotNull('unidad_propietaria_id')->select('unidad_propietaria_id'))
             ->withCount(['propietariaDe as publicados_count' => fn ($c) => $c->publicados()])->orderBy('nombre')->get(['id', 'nombre']);
         $this->audit->registrar('publico.tramites', null, null, [], false, ['run' => null, 'rol' => 'publico']);
 
         return view('publico.tramites', [
-            'tramites' => $q->orderBy('nombre')->paginate(12)->withQueryString(), 'direcciones' => $direcciones, 'f' => $f + ['q' => null, 'direccion' => null],
+            'tramites' => $q->paginate(12)->withQueryString(), 'direcciones' => $direcciones, 'f' => $f + ['q' => null, 'direccion' => null, 'orden' => 'nombre'], 'total' => Tramite::query()->publicados()->count(),
         ]);
     }
 
+    /** Sugerencias del buscador: solo trámites publicados (nombre, dirección y enlace); mínimo 2 letras, máximo 8 resultados. */
+    public function sugerencias(Request $request)
+    {
+        $d = $request->validate(['q' => 'required|string|min:2|max:100']);
+        $like = '%'.addcslashes($d['q'], '%_\\').'%';
+        $r = Tramite::query()->publicados()->with('propietaria:id,nombre')->where(fn ($w) => $w->where('nombre', 'like', $like)->orWhere('descripcion', 'like', $like))
+            ->orderByRaw('case when nombre like ? then 0 else 1 end', [$like])->orderBy('nombre')->limit(8)->get()
+            ->map(fn ($t) => ['id' => $t->id, 'nombre' => $t->nombre, 'direccion' => $t->propietaria?->nombre, 'url' => route('catalogo.ficha', [$t->id, Str::slug($t->nombre)])]);
+
+        return response()->json($r->values())->header('Cache-Control', 'no-store');
+    }
+
     /**
-     * «Realizar este trámite»: con sesión de ciudadano va directo al formulario; sin sesión recuerda SOLO el id del trámite
+     * «Realizar este trámite": con sesión de ciudadano va directo al formulario; sin sesión recuerda SOLO el id del trámite
      * (entero, de un solo uso, 30 min) y envía a ClaveÚnica. Al volver, AuthController lo retoma.
      */
     public function iniciar(Request $request, int $id)
@@ -63,6 +81,8 @@ class CatalogoTramitesController extends Controller
         }
         $this->audit->registrar('publico.tramite', 'tramite', $t->id, [], false, ['run' => null, 'rol' => 'publico']);
 
-        return view('publico.tramite', ['tramite' => $t]);
+        $relacionados = Tramite::query()->publicados()->where('id', '!=', $t->id)->where('unidad_propietaria_id', $t->unidad_propietaria_id)->orderBy('nombre')->limit(5)->get(['id', 'nombre']);
+
+        return view('publico.tramite', ['tramite' => $t, 'relacionados' => $relacionados]);
     }
 }

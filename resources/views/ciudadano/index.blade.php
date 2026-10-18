@@ -1,8 +1,11 @@
 @extends('layouts.app')
 @section('titulo', 'Mis solicitudes')
+@section('hero')
+<h1 id="hero-titulo">Mis solicitudes</h1>
+<p class="hero-sub">Bienvenido(a), <strong>{{ $c['nombres'] }} {{ $c['apellidos'] }}</strong> (RUN {{ $c['run'] }}). Siga sus trámites o inicie uno nuevo.</p>
+@include('partials.buscador', ['id' => 'q-ciu', 'grande' => true, 'valor' => ''])
+@endsection
 @section('contenido')
-<h1>Mis solicitudes</h1>
-<p class="lead-sub">Bienvenido(a), <strong>{{ $c['nombres'] }} {{ $c['apellidos'] }}</strong> (RUN {{ $c['run'] }}).</p>
 @include('partials.kpis', ['kpis' => [
   ['icono' => 'clock', 'valor' => $resumen['curso'], 'etiqueta' => 'Solicitudes en trámite', 'nivel' => 'info'],
   ['icono' => 'alert', 'valor' => $resumen['devuelta'], 'etiqueta' => 'Devueltas: requieren su respuesta', 'nivel' => $resumen['devuelta'] > 0 ? 'aviso' : 'ok'],
@@ -17,8 +20,7 @@
 @endif
 
 <h2 class="seccion">Trámites rápidos</h2>
-<form method="get" action="{{ route('catalogo') }}" class="buscador-tramites" role="search"><label class="sr-only" for="q-ciu">Buscar un trámite</label>
-  <div class="input-group"><input class="form-control" id="q-ciu" name="q" maxlength="100" placeholder="Buscar un trámite o servicio"><div class="input-group-append"><button class="btn btn-primary">Buscar</button></div></div></form>
+
 @php $listado = $tramites->flatten(1)->take(6); @endphp
 @forelse($listado as $t)
 <div class="tramite-rapido"><div><strong>{{ $t->nombre }}</strong><small>{{ $t->propietaria?->nombre }} · Respuesta en hasta {{ $t->plazo_dias }} días</small>@if($t->descripcion)<span>{{ \Illuminate\Support\Str::limit($t->descripcion, 140) }}</span>@endif</div>

@@ -53,6 +53,12 @@ class Tramite extends Model
     }
 
     /** @return BelongsTo<Unidad, $this> */
+    /** @return HasMany<Solicitud, $this> */
+    public function solicitudes(): HasMany
+    {
+        return $this->hasMany(Solicitud::class);
+    }
+
     public function propietaria(): BelongsTo
     {
         return $this->belongsTo(Unidad::class, 'unidad_propietaria_id');

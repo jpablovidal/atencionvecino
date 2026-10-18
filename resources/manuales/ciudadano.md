@@ -4,6 +4,10 @@ Este manual explica cómo presentar una solicitud a la Municipalidad de Santo Do
 
 > **Antes de empezar:** necesita su **ClaveÚnica** (https://claveunica.gob.cl). Si tiene dificultades para usar el sistema, todos los trámites pueden hacerse también de forma presencial en la oficina de atención. En la parte superior de cada página hay opciones para **agrandar el texto, activar alto contraste y quitar animaciones**.
 
+## Cómo encontrar su trámite
+
+En el portal (página de inicio) use el **buscador**: al escribir 2 o más letras aparecen **sugerencias**; elíjalas con las flechas y Enter, o presione **Buscar** para ver el catálogo completo. También puede explorar por **dirección municipal** o ver los **trámites más solicitados**. En el **catálogo** filtre por dirección y ordene por nombre, más solicitados o más recientes. Cada trámite explica **qué es**, **qué documentos necesita**, el **plazo** y **cómo hacerlo**; presione **Realizar este trámite en línea** para comenzar.
+
 ## 1. Cómo ingresar
 
 1. Entre a la página principal y presione **Ingresar con ClaveÚnica** (o *Ingresar como ciudadano(a)* en la página "Ingreso").
