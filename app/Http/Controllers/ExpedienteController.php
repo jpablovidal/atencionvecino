@@ -7,8 +7,10 @@ use App\Models\AccesoRestringido;
 use App\Models\Archivo;
 use App\Models\Comentario;
 use App\Models\ComunicacionOficial;
+use App\Models\DecretoPago;
 use App\Models\Derivacion;
 use App\Models\Expediente;
+use App\Models\ExpedienteVinculo;
 use App\Models\Institucion;
 use App\Models\Notificacion;
 use App\Models\PiseeConsulta;
@@ -58,6 +60,10 @@ class ExpedienteController extends Controller
             'entrante' => $expediente->origen === 'docdigital' ? ComunicacionOficial::query()->find($expediente->comunicacion_id) : null,
             'origenCodigo' => $expediente->metadatos['relaciones']['institucion_origen_codigo'] ?? null,
             'transp' => $this->datosTransparencia($r->user(), $expediente),
+            'vinculos' => $expediente->vinculos()->with('origen:id,codigo,estado', 'microforma:id,codigo,titulo')->get(),
+            'referenciadoPor' => ExpedienteVinculo::query()->with('expediente')->where('tipo', 'expediente')->where('origen_expediente_id', $expediente->id)->get()->filter(fn ($vv) => $r->user()->can('ver', $vv->expediente))->values(),
+            'decretoPago' => DecretoPago::query()->where('expediente_id', $expediente->id)->where('estado', 'abierto')->first(),
+            'copias' => $expediente->archivos->whereNotNull('vinculo_id'),
         ]);
     }
 

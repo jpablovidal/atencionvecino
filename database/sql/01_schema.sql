@@ -586,4 +586,58 @@ insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `siste
 
 select `id` from `roles` where `clave` = 'oficina_partes' limit 1;
 
+create table `expediente_vinculos` (`id` bigint unsigned not null auto_increment primary key, `expediente_id` bigint unsigned not null, `tipo` varchar(12) not null, `origen_expediente_id` bigint unsigned null, `microforma_id` bigint unsigned null, `motivo` varchar(300) not null, `creado_por` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `expediente_vinculos` add constraint `expediente_vinculos_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`);
+
+alter table `expediente_vinculos` add constraint `expediente_vinculos_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `expediente_vinculos` add index `expediente_vinculos_expediente_id_tipo_index`(`expediente_id`, `tipo`);
+
+alter table `expediente_vinculos` add index `expediente_vinculos_origen_expediente_id_index`(`origen_expediente_id`);
+
+alter table `archivos` add `vinculo_id` bigint unsigned null;
+
+alter table `archivos` add `origen_descripcion` varchar(200) null;
+
+alter table `archivos` add `origen_sha256` varchar(64) null;
+
+create table `decretos_pago` (`id` bigint unsigned not null auto_increment primary key, `expediente_id` bigint unsigned not null, `compra_expediente_id` bigint unsigned null, `proveedor_nombre` varchar(160) not null, `proveedor_run` varchar(12) null, `concepto` varchar(500) not null, `monto` bigint unsigned not null, `imputacion` varchar(160) null, `orden_compra` varchar(60) null, `factura` varchar(60) null, `fecha` date null, `estado` varchar(10) not null default 'abierto', `origen` varchar(10) null, `documento_id` bigint unsigned null, `archivo_id` bigint unsigned null, `numero_externo` varchar(40) null, `anulado_motivo` varchar(300) null, `creado_por` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `decretos_pago` add constraint `decretos_pago_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`);
+
+alter table `decretos_pago` add constraint `decretos_pago_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `decretos_pago` add index `decretos_pago_estado_id_index`(`estado`, `id`);
+
+alter table `decretos_pago` add index `decretos_pago_expediente_id_index`(`expediente_id`);
+
+create table `egresos` (`id` bigint unsigned not null auto_increment primary key, `decreto_pago_id` bigint unsigned not null, `fecha` date not null, `medio_pago` varchar(20) not null, `monto` bigint unsigned not null, `detalle` varchar(1000) not null, `referencia` varchar(80) null, `cuenta` varchar(120) null, `estado` varchar(10) not null default 'abierto', `documento_id` bigint unsigned null, `anulado_motivo` varchar(300) null, `creado_por` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `egresos` add constraint `egresos_decreto_pago_id_foreign` foreign key (`decreto_pago_id`) references `decretos_pago` (`id`);
+
+alter table `egresos` add constraint `egresos_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `egresos` add index `egresos_decreto_pago_id_index`(`decreto_pago_id`);
+
+create table `pago_firmantes` (`id` bigint unsigned not null auto_increment primary key, `documento` varchar(14) not null, `usuario_id` bigint unsigned not null, `cargo` varchar(120) not null, `funcion` varchar(10) not null, `firma_tipo` varchar(10) not null default 'avanzada', `orden` smallint unsigned not null default '1', `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `pago_firmantes` add constraint `pago_firmantes_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`);
+
+alter table `pago_firmantes` add index `pago_firmantes_documento_activo_orden_index`(`documento`, `activo`, `orden`);
+
+alter table `documento_pasos` add `firma_permitida` varchar(10) not null default 'avanzada';
+
+alter table `documento_pasos` add `firma_tipo` varchar(10) null;
+
+alter table `tipos_documento` add `permite_firma_simple` tinyint(1) not null default '0';
+
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('tesorero', 'Tesorero(a) municipal', 'Genera el egreso de los decretos de pago (fecha, medio de pago, monto y detalle) y lo firma con firma simple o avanzada.', 'funcionario', 1, 1, '2026-12-03 00:00:00', '2026-12-03 00:00:00');
+
+select `id` from `roles` where `clave` = 'tesorero' limit 1;
+
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('contabilidad', 'Encargado(a) de pagos', 'Carga el expediente de pago y el proceso de compra, genera o carga el decreto de pago y lo envía a visación y firma.', 'funcionario', 1, 1, '2026-12-03 00:00:00', '2026-12-03 00:00:00');
+
+select `id` from `roles` where `clave` = 'contabilidad' limit 1;
+
 SET FOREIGN_KEY_CHECKS = 1;

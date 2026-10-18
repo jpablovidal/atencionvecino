@@ -94,3 +94,8 @@ Toda comunicación recibida genera un expediente electrónico con metadatos MGDE
 - El sistema aplica **minimización** (la bitácora de accesos muestra RUN enmascarado y no guarda IP en la vista), **necesidad de conocer** (autorización por persona, con motivo y vencimiento), **trazabilidad** (cada acceso y cada intento denegado queda en la cadena de auditoría) y **separación de funciones** (administración del sistema no ve contenido restringido).
 - Referencias: Ley 19.628 sobre protección de la vida privada y Ley 21.719 que la reemplaza (vigencia y alcance **A VALIDAR** con el encargado de protección de datos); Ley 20.285 (reserva o secreto como causal de denegación: la restricción interna **no** equivale a declarar reserva legal); Ley 21.663 (ciberseguridad).
 - Los plazos en días administrativos se calculan con los feriados registrados en el sistema (Ley 19.880, **A VALIDAR**).
+
+## 11. Decreto de pago, egreso y firma electrónica simple (A VALIDAR)
+- El **decreto de pago** y el **egreso** son documentos del sistema con folio propio. La estructura de vistos y considerandos del ejemplo (Ley 18.695; Ley 19.886 y su reglamento) es referencial: la **Dirección de Control, Jurídica y Finanzas deben validarla**.
+- **Firma electrónica simple y avanzada** (Ley 19.799): el egreso admite ambas; el decreto de pago solo avanzada. El valor probatorio de la firma simple para comprobantes de egreso es **A VALIDAR** con las normas de contabilidad gubernamental y el criterio de la Contraloría.
+- La **trazabilidad** (quién creó, generó, visó, firmó, anuló y consultó) queda en la cadena de auditoría; el sistema no reemplaza el sistema contable municipal ni el pago bancario.

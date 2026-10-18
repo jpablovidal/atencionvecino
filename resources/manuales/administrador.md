@@ -230,3 +230,6 @@ En **Anuncios** cree avisos con título, descripción, imagen o video y un enlac
 
 ## Accesos a expedientes restringidos
 En **Accesos a restringidos** ve quién vio —o intentó ver— expedientes, documentos o archivos restringidos (nombre, cargo, RUN parcial, resultado y expediente). **Usted no puede ver el contenido restringido** ni ser autorizado(a) a verlo. La consulta queda registrada.
+
+## Decreto de pago: correlativo y firmantes
+En **Decreto de pago: correlativo y firmantes** configure, para el **decreto de pago** y para el **egreso**: el **correlativo propio** (formato, dígitos, número inicial, reinicio anual y ajuste del contador solo hacia arriba, con motivo) y la lista de **visadores y firmantes en orden**, con su cargo y su tipo de firma (avanzada; en el egreso también simple o a elección). La cantidad de firmantes activos debe coincidir con la que exige el tipo de documento (flujo ágil o clásico). Usted configura pero **no ve** los decretos ni sus montos.

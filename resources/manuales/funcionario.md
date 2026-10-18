@@ -207,3 +207,9 @@ Cuando termine la gestión de una solicitud, en el expediente (sección **Respue
 
 ## Avisos al vecino
 El vecino recibe un aviso (Casilla Única y copia al correo) **por cada movimiento** de su solicitud: ingreso, apertura del expediente, derivación, devolución y su respuesta, prórroga, término de la gestión, reapertura, respuesta final en preparación y despachada. Los textos son simples y no incluyen datos internos.
+
+## Asociar otros expedientes y microformas a su expediente
+En la sección **Expedientes y microformas asociados** (dentro del expediente abierto) use **Buscar y asociar**: escriba un código, un folio, un trámite o un título y elija **Expedientes** o **Microformas** (estas últimas solo si su rol incluye la consulta del archivo municipal). Solo aparecen los expedientes que usted ya puede ver. Al asociar indique el **motivo**. Luego abra el contenido asociado y **incorpore copias** de los documentos y archivos que necesite: quedan en su expediente con su origen y su huella SHA-256. Lo restringido solo se copia si usted está autorizado(a), y la copia queda restringida. Quitar la asociación no borra lo ya incorporado.
+
+## Decreto de pago (si su rol lo permite)
+Desde el expediente de pago use **Crear decreto de pago** (o el menú **Decretos de pago**). Siga tres pasos: (1) elija el expediente de pago y, si corresponde, el **código del expediente del proceso de compra** (queda asociado); (2) ingrese proveedor, RUT, concepto y monto; (3) orden de compra, factura e imputación. Luego, en el decreto: **genere el PDF con la plantilla** (queda como borrador editable y se envía a visación y firma con los firmantes configurados) o **cargue el PDF ya emitido** indicando su número y fecha. Cuando el decreto está firmado queda **emitido** y Tesorería genera el egreso.

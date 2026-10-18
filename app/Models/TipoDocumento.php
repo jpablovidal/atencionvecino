@@ -26,5 +26,5 @@ class TipoDocumento extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['firma_alcalde' => 'boolean', 'activo' => 'boolean', 'folio_reinicio_anual' => 'boolean'];
+    protected $casts = ['firma_alcalde' => 'boolean', 'activo' => 'boolean', 'permite_firma_simple' => 'boolean', 'folio_reinicio_anual' => 'boolean'];
 }

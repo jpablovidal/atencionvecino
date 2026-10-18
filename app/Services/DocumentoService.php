@@ -32,7 +32,11 @@ class DocumentoService
 
     // ---------------------------------------------------------------- borradores
 
-    public function crear(Expediente $exp, TipoDocumento $tipo, ?Plantilla $plantilla, string $titulo, Usuario $autor): Documento
+    /**
+     * @param  array<string,string>  $vars  campos de combinación adicionales (p. ej. los del decreto de pago)
+     * @param  string|null  $htmlInicial  contenido ya compuesto por el sistema (sin plantilla)
+     */
+    public function crear(Expediente $exp, TipoDocumento $tipo, ?Plantilla $plantilla, string $titulo, Usuario $autor, array $vars = [], ?string $htmlInicial = null): Documento
     {
         $titulo = HtmlSanitizer::sinInvisibles($titulo);
         if ($exp->estado !== 'abierto') {
@@ -41,7 +45,7 @@ class DocumentoService
         if ($exp->origen === 'docdigital' && ComunicacionOficial::query()->where('id', $exp->comunicacion_id)->value('acuse_estado') !== 'registrado') {
             throw new FlujoException('Debe acusar recibo de la comunicación recibida antes de gestionarla y responderla.');
         }
-        $html = $plantilla ? $this->combinar($plantilla->contenido_html, $exp, $autor, $plantilla) : '<p></p>';
+        $html = $htmlInicial ?? ($plantilla ? $this->combinar($plantilla->contenido_html, $exp, $autor, $plantilla, $vars) : '<p></p>');
 
         return DB::transaction(function () use ($exp, $tipo, $titulo, $autor, $html, $plantilla) {
             $doc = Documento::query()->create([
@@ -56,7 +60,7 @@ class DocumentoService
     }
 
     /** Campos de combinación; los valores se ESCAPAN antes de insertarse y luego todo se sanitiza. */
-    public function combinar(string $html, Expediente $exp, ?Usuario $autor = null, ?Plantilla $plantilla = null): string
+    public function combinar(string $html, Expediente $exp, ?Usuario $autor = null, ?Plantilla $plantilla = null, array $extra = []): string
     {
         $exp->loadMissing(['solicitud.tramite', 'unidad']);
         $s = $exp->solicitud;
@@ -71,7 +75,7 @@ class DocumentoService
             'institucion_origen' => $exp->metadatos['relaciones']['institucion_origen'] ?? '',
             'asunto_origen' => $exp->origen === 'docdigital' ? ($exp->metadatos['descripcion']['resumen'] ?? '') : '',
             'folio_docdigital' => $exp->metadatos['descripcion']['folio_docdigital'] ?? '',
-        ] + PlantillaEstructura::valoresCadena($plantilla?->estructura, $autor);
+        ] + $extra + PlantillaEstructura::valoresCadena($plantilla?->estructura, $autor);
 
         return preg_replace_callback('/\{\{\s*([a-z0-9_]+)\s*\}\}/', fn ($m) => array_key_exists($m[1], $v) ? e((string) $v[$m[1]]) : $m[0], $html) ?? $html;
     }
@@ -115,10 +119,11 @@ class DocumentoService
     /**
      * @param  array<int,int>  $visadores  ids en orden
      * @param  array<int,int>  $firmantes  ids en orden
+     * @param  array<int,string>  $permitidas  usuario_id => avanzada|simple|ambas (por defecto avanzada). La firma simple exige un tipo de documento que la permita.
      */
-    public function definirFlujo(Documento $doc, string $flujo, array $visadores, array $firmantes): Documento
+    public function definirFlujo(Documento $doc, string $flujo, array $visadores, array $firmantes, array $permitidas = []): Documento
     {
-        return DB::transaction(function () use ($doc, $flujo, $visadores, $firmantes) {
+        return DB::transaction(function () use ($doc, $flujo, $visadores, $firmantes, $permitidas) {
             $doc = Documento::query()->with('tipo')->lockForUpdate()->findOrFail($doc->id);
             if ($doc->estado !== 'borrador') {
                 throw new FlujoException('Solo se puede definir el flujo de un borrador.');
@@ -151,13 +156,22 @@ class DocumentoService
                     throw new FlujoException('Este tipo de documento debe ser firmado por el alcalde o por quien tenga delegación vigente.');
                 }
             }
+            foreach ($firmantes as $id) {
+                $perm = $permitidas[$id] ?? 'avanzada';
+                if (! in_array($perm, ['avanzada', 'simple', 'ambas'], true)) {
+                    throw new FlujoException('Tipo de firma inválido.');
+                }
+                if ($perm !== 'avanzada' && ! $doc->tipo->permite_firma_simple) {
+                    throw new FlujoException('Este tipo de documento no admite firma electrónica simple: solo firma avanzada.');
+                }
+            }
             $doc->pasos()->delete();
             $orden = 1;
             foreach ($visadores as $id) {
                 DocumentoPaso::query()->create(['documento_id' => $doc->id, 'orden' => $orden++, 'tipo' => 'visacion', 'usuario_id' => $id]);
             }
             foreach ($firmantes as $id) {
-                DocumentoPaso::query()->create(['documento_id' => $doc->id, 'orden' => $orden++, 'tipo' => 'firma', 'usuario_id' => $id]);
+                DocumentoPaso::query()->create(['documento_id' => $doc->id, 'orden' => $orden++, 'tipo' => 'firma', 'usuario_id' => $id, 'firma_permitida' => $permitidas[$id] ?? 'avanzada']);
             }
             $doc->forceFill(['estado' => 'en_flujo', 'flujo' => $flujo])->save();
             $this->audit->registrar('documento.flujo', 'documento', $doc->id, ['flujo' => $flujo, 'visadores' => count($visadores), 'firmantes' => count($firmantes)]);
@@ -197,7 +211,7 @@ class DocumentoService
         });
     }
 
-    public function firmar(Documento $doc, Usuario $u, ?string $otp): Documento
+    public function firmar(Documento $doc, Usuario $u, ?string $otp, ?string $tipoFirma = null): Documento
     {
         $doc = Documento::query()->with('tipo')->findOrFail($doc->id);
         $paso = $this->pasoEnTurno($doc, $u, 'firma');
@@ -208,12 +222,13 @@ class DocumentoService
         if ($doc->tipo->firma_alcalde && $primera?->id === $paso->id && ! $this->delegaciones->puedeFirmarComoAlcalde($u, $doc->tipo)) {
             throw new FlujoException('Su delegación de firma no está vigente.');
         }
+        $tipoFirma = $this->tipoFirmaEfectivo($paso, $tipoFirma);
         $cerrojo = Cache::lock('firma-paso:'.$paso->id, 90); // evita dos llamadas simultáneas a FirmaGob por el mismo paso (doble envío)
         if (! $cerrojo->get()) {
             throw new FlujoException('Su firma ya se está procesando. Espere unos segundos y revise el estado del documento.');
         }
         try {
-            $this->firmarPaso($doc, $paso, $u, $otp);
+            $tipoFirma === 'simple' ? $this->firmarSimple($doc, $paso, $u) : $this->firmarPaso($doc, $paso, $u, $otp);
         } finally {
             $cerrojo->release();
         }
@@ -225,6 +240,38 @@ class DocumentoService
 
             return $doc->refresh();
         }
+    }
+
+    /** avanzada | simple según lo permitido en el paso y lo elegido por quien firma. */
+    private function tipoFirmaEfectivo(DocumentoPaso $paso, ?string $elegido): string
+    {
+        $perm = $paso->firma_permitida ?: 'avanzada';
+        $tipo = $elegido ?: ($perm === 'simple' ? 'simple' : 'avanzada');
+        if (! in_array($tipo, ['avanzada', 'simple'], true) || ($perm !== 'ambas' && $perm !== $tipo)) {
+            throw new FlujoException($perm === 'simple' ? 'Este paso se firma con firma electrónica simple.' : 'Este paso se firma con firma electrónica avanzada (FirmaGob).');
+        }
+
+        return $tipo;
+    }
+
+    /**
+     * Firma electrónica SIMPLE (Ley 19.799): la persona autenticada en el sistema manifiesta su voluntad sobre el PDF íntegro (se verifica su
+     * SHA-256). No usa FirmaGob ni OTP; queda registrada en el documento y en la auditoría. Solo en tipos de documento que la admiten.
+     */
+    private function firmarSimple(Documento $doc, DocumentoPaso $paso, Usuario $u): void
+    {
+        if (! $doc->tipo->permite_firma_simple) {
+            throw new FlujoException('Este tipo de documento no admite firma electrónica simple.');
+        }
+        $pdf = $this->vault->get($doc->pdf_ruta, $doc->pdf_sha256); // verifica integridad antes de firmar
+        DB::transaction(function () use ($doc, $paso, $pdf) {
+            $paso = DocumentoPaso::query()->lockForUpdate()->findOrFail($paso->id);
+            if ($paso->estado !== 'pendiente') {
+                return; // idempotente
+            }
+            $paso->forceFill(['estado' => 'completado', 'simulada' => false, 'firma_tipo' => 'simple', 'checksum_original' => hash('sha256', $pdf), 'completado_en' => now()])->save();
+            $this->audit->registrar('documento.firmar', 'documento', $doc->id, ['tipo' => 'simple'], true);
+        });
     }
 
     private function firmarPaso(Documento $doc, DocumentoPaso $paso, Usuario $u, ?string $otp): void
@@ -244,7 +291,7 @@ class DocumentoService
             if ($paso->estado !== 'pendiente') {
                 return; // idempotente
             }
-            $paso->forceFill(['estado' => 'completado', 'simulada' => $res['simulada'], 'checksum_original' => $res['checksum_original'], 'completado_en' => now()])->save();
+            $paso->forceFill(['estado' => 'completado', 'firma_tipo' => 'avanzada', 'simulada' => $res['simulada'], 'checksum_original' => $res['checksum_original'], 'completado_en' => now()])->save();
             if ($nuevo) {
                 $doc->forceFill(['pdf_ruta' => $nuevo['ruta'], 'pdf_sha256' => $nuevo['sha256'], 'pdf_firmado_ruta' => $nuevo['ruta'], 'pdf_firmado_sha256' => $nuevo['sha256']])->save();
             }
@@ -296,7 +343,7 @@ class DocumentoService
             'origen' => ['organismo' => 'I. Municipalidad de Santo Domingo', 'fecha_firma' => $d->fecha_firma?->toIso8601String()],
             'formato' => ['mime' => 'application/pdf', 'sha256' => $sha256Pdf],
             'seguridad' => ['nivel_acceso' => $d->nivel_acceso, 'sensible' => $d->sensible],
-            'firmantes' => $d->pasos->where('tipo', 'firma')->map(fn ($p) => ['nombre' => $p->usuario->nombreCompleto(), 'simulada' => $p->simulada])->values()->all(),
+            'firmantes' => $d->pasos->where('tipo', 'firma')->map(fn ($p) => ['nombre' => $p->usuario->nombreCompleto(), 'simulada' => $p->simulada, 'tipo_firma' => $p->firma_tipo ?? 'avanzada'])->values()->all(),
             'version' => $d->version_actual,
         ];
     }

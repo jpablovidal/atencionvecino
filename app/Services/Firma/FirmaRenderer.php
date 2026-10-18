@@ -52,7 +52,7 @@ class FirmaRenderer
             $i++;
             $items[] = $this->resolver($d->tipo_documento_id, $i) + ['datos' => [
                 'nombre' => $p->usuario->nombreCompleto(), 'cargo' => $p->usuario->cargo, 'run' => $p->usuario->run,
-                'fecha' => $p->completado_en?->timezone('America/Santiago')->format('d-m-Y H:i'), 'codigo' => $d->codigo_validacion, 'simulada' => (bool) $p->simulada,
+                'fecha' => $p->completado_en?->timezone('America/Santiago')->format('d-m-Y H:i'), 'codigo' => $d->codigo_validacion, 'simulada' => (bool) $p->simulada, 'simple' => $p->firma_tipo === 'simple',
             ]];
         }
 

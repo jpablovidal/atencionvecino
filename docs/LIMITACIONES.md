@@ -126,3 +126,12 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La respuesta final exige el expediente **cerrado**; si se reabre, se instruye de nuevo. Los movimientos anteriores a esta versión no existen (el historial muestra solo el ingreso).
 - La entrega física se acredita con un acta de texto (quién recibe, fecha y hora): no hay firma manuscrita digitalizada.
 - Las solicitudes sin solicitante ciudadano (comunicaciones recibidas por DocDigital) se responden por DocDigital, no por este flujo.
+
+## Asociar expedientes, decreto de pago y egreso
+- **Alcance de la búsqueda:** solo se encuentran expedientes que la persona ya puede ver (su dirección o participación). Para reutilizar un proceso de **otra dirección** hay que ser derivado(a) al expediente o pedir que se lo deriven: no existe una consulta transversal (decisión de protección de datos; ampliarla es una decisión institucional).
+- **Copias:** lo incorporado es una **copia** (no se sincroniza con el original); si el original cambia después, la copia conserva la huella del momento. Los documentos del flujo (HTML) se copian como su PDF vigente.
+- **Decreto de pago:** el contenido jurídico de la plantilla de ejemplo (vistos, considerandos, resolutivos) es **referencial**; el decreto y el egreso no reemplazan el sistema contable municipal: **no** se integra con el presupuesto, el devengado ni el banco (la imputación, la factura y la referencia del pago son texto informado). La disponibilidad presupuestaria no se verifica.
+- **Egreso:** el valor legal de un comprobante de egreso con **firma electrónica simple** es **A VALIDAR** con Control, Jurídica y la normativa contable (Ley 19.799; normativa de la Contraloría). Si la institución exige firma avanzada, configure al firmante como «avanzada» (lo exige el sistema).
+- **Firma simple:** acredita la voluntad de una persona autenticada en el sistema; no usa certificado. La reautenticación se aproxima con «ingreso en los últimos 30 minutos».
+- **Montos:** solo pesos chilenos enteros; no hay multimoneda ni retenciones, impuestos o descuentos.
+- **Decreto cargado:** su firma se reconoce, pero la validez de una firma externa no se verifica contra una autoridad certificadora (ver «Reconocimiento de firma electrónica en archivos»).

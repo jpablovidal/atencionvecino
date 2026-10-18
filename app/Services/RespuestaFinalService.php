@@ -11,6 +11,7 @@ use App\Models\Notificacion;
 use App\Models\RespuestaFinal;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Respuesta final de notificación. Quien gestionó el expediente INSTRUYE: confirma que enviará la respuesta final e indica los documentos y
@@ -28,6 +29,15 @@ class RespuestaFinalService
         private readonly AuditoriaService $audit, private readonly NotificacionService $notif, private readonly MovimientoService $mov,
         private readonly AccesoRestringidoService $restringidos,
     ) {}
+
+    private function autorizado(callable $exigir): void
+    {
+        try {
+            $exigir();
+        } catch (HttpException) {
+            throw new FlujoException('Hay contenido restringido para el que no está autorizado(a): no puede entregarlo. El intento queda registrado.');
+        }
+    }
 
     private function texto(?string $t, int $max): string
     {
@@ -74,10 +84,10 @@ class RespuestaFinalService
             throw new FlujoException('Seleccione solo documentos vigentes y archivos del expediente que puedan entregarse al solicitante.');
         }
         foreach ($docs as $d) {
-            $this->restringidos->exigirDocumento($u, $d, 'respuesta_final');
+            $this->autorizado(fn () => $this->restringidos->exigirDocumento($u, $d, 'respuesta_final'));
         }
         foreach ($arch as $a) {
-            $this->restringidos->exigirArchivo($u, $a, 'respuesta_final');
+            $this->autorizado(fn () => $this->restringidos->exigirArchivo($u, $a, 'respuesta_final'));
         }
 
         return DB::transaction(function () use ($u, $e, $s, $canal, $motivo, $instruccion, $docs, $arch) {

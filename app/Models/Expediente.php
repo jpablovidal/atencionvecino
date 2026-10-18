@@ -72,6 +72,12 @@ class Expediente extends Model
         return $this->hasMany(Derivacion::class)->orderBy('id');
     }
 
+    /** @return HasMany<ExpedienteVinculo, $this> */
+    public function vinculos(): HasMany
+    {
+        return $this->hasMany(ExpedienteVinculo::class)->orderBy('id');
+    }
+
     /** @return HasMany<RespuestaFinal, $this> */
     public function respuestas(): HasMany
     {

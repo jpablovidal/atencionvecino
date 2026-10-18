@@ -9,5 +9,6 @@
   @if($e->mostrar_run)<div>RUN {{ \App\Support\Run::enmascarar((string) $f['run']) }}</div>@endif
   @if($e->mostrar_fecha && ! empty($f['fecha']))<div>{{ $f['fecha'] }} (hora de Chile)</div>@endif
   @if($e->mostrar_codigo && ! empty($f['codigo']))<div>Cód. validación: {{ $f['codigo'] }}</div>@endif
+  @if(! empty($f['simple']))<div>Firma electrónica simple</div>@endif
   @if(! empty($f['simulada']))<div style="color:#b00020;font-weight:bold">FIRMA SIMULADA – sin validez legal</div>@endif
 </div>

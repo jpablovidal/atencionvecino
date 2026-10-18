@@ -142,6 +142,8 @@ else
     "$PHP" artisan pruebas:transparencia || true
     echo; echo "Oficina de Partes (responde a los solicitantes): creando (solo si falta) su unidad y su cuenta de prueba (contraseña aleatoria, se muestra una sola vez):"
     "$PHP" artisan pruebas:partes || true
+    echo; echo "Decreto de pago y Tesorería: creando (solo si faltan) su unidad, las cuentas de prueba y los firmantes de demostración (contraseñas aleatorias, se muestran una sola vez):"
+    "$PHP" artisan pruebas:pagos || true
   fi
   echo "Actualización aplicada. Para ver/rotar cuentas de prueba: php artisan pruebas:credenciales --rotar"
 fi

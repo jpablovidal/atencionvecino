@@ -132,6 +132,16 @@
 <td>@if($c->archivo_id)<a href="{{ route('app.expediente.archivo',[$e,$c->archivo_id]) }}">Ver resultado (JSON)</a>@else<span class="estado estado-fallida">{{ $c->error }}</span>@endif</td></tr>@empty<tr><td colspan="5">Sin consultas.</td></tr>@endforelse</tbody></table>
 @endif
 
+<h2 class="h4 mt-4" id="asociados">Expedientes y microformas asociados</h2>
+<p class="small text-muted">Permite reutilizar procesos y antecedentes de otros expedientes o del archivo municipal: se asocian (queda registrado quién y por qué) y se pueden incorporar copias de su contenido, con su origen y huella.</p>
+@if($vinculos->isNotEmpty())<ul>@foreach($vinculos as $vv)<li>@if($vv->tipo==='microforma')Microforma {{ $vv->microforma?->codigo ?: '#'.$vv->microforma_id }} — {{ $vv->microforma?->titulo }}@else Expediente {{ $vv->origen?->codigo }}@endif
+ · <a href="{{ route('app.vinculos.ver', $vv) }}">ver y incorporar contenido<span class="sr-only"> de {{ $vv->tipo==='microforma' ? 'la microforma' : 'el expediente '.$vv->origen?->codigo }}</span></a> <small>({{ $vv->motivo }})</small></li>@endforeach</ul>@else<p>No hay expedientes ni microformas asociados.</p>@endif
+@if($copias->isNotEmpty())<p class="small mb-1">Copias incorporadas: @foreach($copias as $cp)<span class="chip chip-claro" title="{{ $cp->origen_descripcion }}">{{ $cp->titulo }}</span> @endforeach</p>@endif
+@if($referenciadoPor->isNotEmpty())<p class="small mb-1">Este expediente fue reutilizado en: @foreach($referenciadoPor as $rp)<a href="{{ route('app.expediente', $rp->expediente) }}">{{ $rp->expediente->codigo }}</a>@unless($loop->last), @endunless @endforeach.</p>@endif
+@if($puedeOperar && $e->estado==='abierto' && auth()->user()->tienePermiso('expedientes.vincular'))<p><a class="btn btn-outline-primary" href="{{ route('app.vinculos.buscar', $e) }}">Buscar y asociar expedientes o microformas</a></p>@endif
+@if($decretoPago)<p><strong>Decreto de pago:</strong> <a href="{{ route('app.pagos.ver', $decretoPago) }}">{{ $decretoPago->proveedor_nombre }} · ${{ number_format($decretoPago->monto, 0, ',', '.') }}</a> ({{ \App\Models\DecretoPago::FASES[$decretoPago->fase()] }})</p>
+@elseif($puedeOperar && $e->estado==='abierto' && auth()->user()->tienePermiso('decretopago.gestionar'))<p><a class="btn btn-outline-primary" href="{{ route('app.pagos.nuevo', ['expediente' => $e->id]) }}">Crear decreto de pago para este expediente</a></p>@endif
+
 @if($s)
 <h2 class="h4 mt-4" id="respuesta-final">Respuesta final al solicitante</h2>
 <p class="small text-muted">Quien gestionó la solicitud indica <strong>qué documentos y archivos del expediente</strong> se entregan; la persona encargada de responder (p. ej. Oficina de Partes) los notifica por <strong>Casilla Única con copia al correo</strong> o, excepcionalmente, con entrega física. El sistema no afirma haber enviado nada sin evidencia.</p>

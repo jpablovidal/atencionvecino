@@ -22,6 +22,7 @@ use App\Http\Controllers\LogsController;
 use App\Http\Controllers\MantenedorController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PagosController;
 use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RecursosController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\SistemaController;
 use App\Http\Controllers\TramitesController;
 use App\Http\Controllers\TransparenciaController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\VinculosController;
 use Illuminate\Support\Facades\Route;
 
 // ---- Público
@@ -188,6 +190,47 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/seguimiento', [SeguimientoController::class, 'index'])->middleware('permiso:seguimiento.consultar')->name('seguimiento');
         Route::get('/oirs', [SeguimientoController::class, 'oirs'])->middleware('permiso:oirs.ver')->name('oirs');
         Route::get('/seguimiento/{folio}', [SeguimientoController::class, 'detalle'])->middleware('permiso:seguimiento.consultar,oirs.ver')->where('folio', '[A-Za-z0-9\-]{5,30}')->name('seguimiento.detalle');
+    });
+
+    // ---- Asociar otros expedientes y microformas (con su contenido) al expediente que se gestiona
+    Route::middleware(['permiso:expedientes.vincular', 'throttle:60,1'])->group(function () {
+        Route::get('/expedientes/{expediente}/asociar', [VinculosController::class, 'buscar'])->name('vinculos.buscar');
+        Route::post('/expedientes/{expediente}/vinculos', [VinculosController::class, 'vincular'])->name('vinculos.crear');
+        Route::get('/vinculos/{vinculo}', [VinculosController::class, 'ver'])->whereNumber('vinculo')->name('vinculos.ver');
+        Route::post('/vinculos/{vinculo}/incorporar', [VinculosController::class, 'incorporar'])->whereNumber('vinculo')->name('vinculos.incorporar');
+        Route::post('/vinculos/{vinculo}/quitar', [VinculosController::class, 'quitar'])->whereNumber('vinculo')->name('vinculos.quitar');
+    });
+
+    // ---- Decreto de pago y egreso de Tesorería
+    Route::middleware('throttle:60,1')->prefix('pagos')->group(function () {
+        Route::get('/', [PagosController::class, 'index'])->middleware('permiso:decretopago.ver')->name('pagos');
+        Route::get('/nuevo', [PagosController::class, 'nuevo'])->middleware('permiso:decretopago.gestionar')->name('pagos.nuevo');
+        Route::post('/', [PagosController::class, 'crear'])->middleware('permiso:decretopago.gestionar')->name('pagos.crear');
+        Route::middleware('permiso:decretopago.configurar')->prefix('configuracion')->group(function () {
+            Route::get('/', [PagosController::class, 'configuracion'])->name('pagos.config');
+            Route::post('/{doc}/correlativo', [PagosController::class, 'guardarCorrelativo'])->where('doc', 'decreto_pago|egreso')->name('pagos.config.correlativo');
+            Route::post('/{doc}/ajustar', [PagosController::class, 'ajustarContador'])->where('doc', 'decreto_pago|egreso')->name('pagos.config.ajustar');
+            Route::post('/{doc}/firmantes', [PagosController::class, 'agregarFirmante'])->where('doc', 'decreto_pago|egreso')->name('pagos.config.firmante');
+            Route::post('/firmantes/{firmante}/{accion}', [PagosController::class, 'accionFirmante'])->whereNumber('firmante')->name('pagos.config.accion');
+        });
+        Route::middleware('permiso:decretopago.ver')->group(function () {
+            Route::get('/egresos/{egreso}', [PagosController::class, 'egreso'])->whereNumber('egreso')->name('pagos.egreso');
+            Route::get('/egresos/{egreso}/pdf', [PagosController::class, 'egresoPdf'])->whereNumber('egreso')->name('pagos.egreso.pdf');
+            Route::get('/{decreto}', [PagosController::class, 'ver'])->whereNumber('decreto')->name('pagos.ver');
+            Route::get('/{decreto}/pdf', [PagosController::class, 'pdf'])->whereNumber('decreto')->name('pagos.pdf');
+        });
+        Route::middleware('permiso:decretopago.gestionar')->group(function () {
+            Route::post('/{decreto}', [PagosController::class, 'actualizar'])->whereNumber('decreto')->name('pagos.actualizar');
+            Route::post('/{decreto}/generar', [PagosController::class, 'generar'])->whereNumber('decreto')->name('pagos.generar');
+            Route::post('/{decreto}/enviar-firma', [PagosController::class, 'enviarFirma'])->whereNumber('decreto')->name('pagos.enviar_firma');
+            Route::post('/{decreto}/cargar', [PagosController::class, 'cargar'])->middleware('throttle:20,1')->whereNumber('decreto')->name('pagos.cargar');
+            Route::post('/{decreto}/anular', [PagosController::class, 'anular'])->whereNumber('decreto')->name('pagos.anular');
+        });
+        Route::middleware('permiso:egresos.gestionar')->group(function () {
+            Route::post('/{decreto}/egresos', [PagosController::class, 'crearEgreso'])->whereNumber('decreto')->name('pagos.egreso.crear');
+            Route::post('/egresos/{egreso}/firmar', [PagosController::class, 'firmarEgreso'])->whereNumber('egreso')->name('pagos.egreso.firmar');
+            Route::post('/egresos/{egreso}/anular', [PagosController::class, 'anularEgreso'])->whereNumber('egreso')->name('pagos.egreso.anular');
+        });
     });
 
     // ---- Respuesta final de notificación: instruir (gestión del expediente) y despachar (Oficina de Partes)

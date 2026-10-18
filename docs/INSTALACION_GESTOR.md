@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `09c8b54af9787da7b49de33038b33f2a6cbb6d2a7fc4c2759a62ca2ecc083251`).
+- Archivo **`sgd-release.zip`** (SHA-256 `b634fbe91ed093eb8e2675019dbc301d4b4425d19a5223b49388bf52bd2ef723`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -34,6 +34,9 @@ Abra **https://gestor.santodomingo.cl** (verá el aviso amarillo «AMBIENTE DE P
 | Auditoría | `10000007-5` | Solo lectura, bitácora, seguridad |
 | **Autoridad** | `10000013-K` | Seguimiento de solicitudes: por RUN, fechas, dirección, etapa o trámite (solo lectura) |
 | **Transparencia activa y pasiva** | `10000015-6` | Consultas de acceso a la información, expedientes, requerimientos, plazos, transparencia activa y reportes |
+| **Oficina de Partes** | `10000016-4` | Respuestas finales instruidas: notificar por Casilla Única con copia al correo o registrar la entrega física |
+| **Encargado(a) de pagos** | `10000017-2` | Decretos de pago: expediente de pago y proceso de compra, generar o cargar el PDF, enviar a firma |
+| **Tesorero(a) municipal** | `10000018-0` | Egresos de los decretos de pago, con firma simple o avanzada |
 | **OIRS** | `10000014-8` | Solicitudes, responsables, plazos vencidos y por vencer (solo lectura) |
 | Director de Obras | `10000008-3` | Funcionario con firma |
 | **Directora DIDECO** | `10000009-1` | Crea, publica y deshabilita trámites de su dirección |
@@ -92,6 +95,13 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 - **Cuenta de prueba nueva** al actualizar: `10000016-4` (Oficina de Partes); el instalador la crea (solo si falta) y muestra su contraseña **una sola vez**: anótela (o `php artisan pruebas:credenciales --rotar`). Para dar el rol a una persona real: *Administración → Usuarios* → rol **Oficina de Partes**.
 - **Correo con Google Workspace**: los avisos salen por la **Gmail API** con la cuenta de servicio y delegación de todo el dominio (README §10: habilitar Gmail API, delegar el scope `https://www.googleapis.com/auth/gmail.send` al ID de cliente de la cuenta de servicio, subir el JSON a `~/sgd_secrets/gmail-sa.json` con permisos 600 y fijar `MAIL_MAILER=gmail_api`, `GOOGLE_MAIL_SENDER=no-responder@santodomingo.cl` en `~/sgd/.env`). Sin esa configuración el correo queda «fallido» y se reintenta; los demás pasos funcionan. La cola se procesa con el cron (`schedule:run`) que ya instala el comando.
 - **Casilla Única**: mientras la conexión esté en modo *outbox* (valor por defecto) los avisos y notificaciones quedan **pendientes** hasta registrar el acuse (panel *Casilla Única* o la pantalla de la respuesta). El formato del mensaje de aviso es **A VALIDAR** con la guía oficial. Si el volumen es alto, puede desactivar solo los avisos de movimiento con `SGD_AVISOS_MOVIMIENTOS=false` en `.env` (el correo de la respuesta final se mantiene).
+
+## Novedades: asociar expedientes y microformas, decreto de pago y egreso
+- **Asociar expedientes y microformas**: dentro de un expediente abierto, *Buscar y asociar expedientes o microformas* permite reutilizar procesos y antecedentes. Solo se encuentran los expedientes que la persona ya puede ver; las microformas exigen el permiso de consulta del archivo municipal. Se pueden **incorporar copias** del contenido (con su origen y huella); lo restringido solo se copia con autorización y la copia queda restringida.
+- **Decretos de pago** (menú *Decretos de pago*): el Encargado(a) de pagos carga el expediente de pago y el proceso de compra, y **genera el PDF con la plantilla** «Decreto de pago» (con visación y firma en orden) o **carga el PDF ya emitido**. **Tesorería** genera el **egreso** (fecha, medio de pago, monto, detalle) y lo firma con **firma simple o avanzada** según se configure.
+- **Configuración** (menú *Decreto de pago: correlativo y firmantes*, administración): correlativo propio del decreto y del egreso, y firmantes en orden. **Debe revisarla** antes de usar el módulo con datos reales: cantidad de firmantes (1 o 2 firmas por tipo), cargos y tipo de firma. El valor legal de la firma simple para egresos es **A VALIDAR**.
+- **Cuentas de prueba nuevas** al actualizar: `10000017-2` (Encargado de pagos) y `10000018-0` (Tesorera). El instalador las crea (solo si faltan), crea los firmantes de demostración y muestra las contraseñas **una sola vez**: anótelas (o `php artisan pruebas:credenciales --rotar`). La plantilla de ejemplo se crea con `plantillas:ejemplos` (ya lo ejecuta el instalador).
+- Las tablas y roles nuevos (Tesorero(a) municipal y Encargado(a) de pagos) se crean solos al repetir el comando del Paso 2.
 
 ## Operación
 ```bash

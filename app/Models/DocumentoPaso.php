@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  * @property int $usuario_id
  * @property string $estado
  * @property bool $simulada
+ * @property string $firma_permitida
+ * @property string|null $firma_tipo
  * @property string|null $checksum_original
  * @property string|null $comentario
  * @property Carbon|null $completado_en

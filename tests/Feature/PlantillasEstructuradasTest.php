@@ -255,10 +255,10 @@ class PlantillasEstructuradasTest extends TestCase
         Documento::query()->count();
         TipoDocumento::query()->where('codigo', 'INSTRUCTIVO')->update(['codigo' => 'INSTRUCTIVO_X']);
         $this->artisan('plantillas:ejemplos --inactivas')->assertSuccessful();
-        $this->assertSame(5, Plantilla::query()->where('nombre', 'like', '%(ejemplo)')->count());
+        $this->assertSame(6, Plantilla::query()->where('nombre', 'like', '%(ejemplo)')->count());
         $this->assertSame(0, Plantilla::query()->where('nombre', 'like', '%(ejemplo)')->where('activo', true)->count(), '--inactivas');
         $this->assertNotNull(TipoDocumento::query()->where('codigo', 'INSTRUCTIVO')->first(), 'crea el tipo que falta');
         $this->artisan('plantillas:ejemplos')->assertSuccessful();
-        $this->assertSame(5, Plantilla::query()->where('nombre', 'like', '%(ejemplo)')->count(), 'idempotente');
+        $this->assertSame(6, Plantilla::query()->where('nombre', 'like', '%(ejemplo)')->count(), 'idempotente');
     }
 }

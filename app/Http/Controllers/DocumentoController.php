@@ -134,11 +134,14 @@ class DocumentoController extends Controller
 
     public function firmar(Request $r, Documento $documento)
     {
-        $d = $r->validate(['otp' => ['required', 'string', 'regex:/^\d{6}$/']]);
+        $d = $r->validate(['tipo_firma' => 'nullable|in:avanzada,simple', 'otp' => [($r->input('tipo_firma') === 'simple' ? 'nullable' : 'required'), 'string', 'regex:/^\d{6}$/'], 'confirmo' => 'nullable|boolean']);
+        if (($d['tipo_firma'] ?? null) === 'simple' && (! $r->boolean('confirmo') || (time() - (int) $r->session()->get('login_at', 0)) > 1800)) {
+            return back()->with('error', 'Para firmar con firma electrónica simple confirme su voluntad de firmar y haya ingresado al sistema en los últimos 30 minutos (vuelva a ingresar si es necesario).');
+        }
         app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'firmar');
         $this->authorize('ver', $documento);
         try {
-            $doc = $this->svc->firmar($documento, $r->user(), $d['otp']);
+            $doc = $this->svc->firmar($documento, $r->user(), $d['otp'] ?? null, $d['tipo_firma'] ?? null);
         } catch (FlujoException $e) {
             return back()->with('error', $e->getMessage());
         }

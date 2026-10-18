@@ -26,6 +26,8 @@ class ManualRenderer
         'transparencia' => ['Transparencia activa y pasiva', 'Gestionar consultas de acceso a la información, expedientes, requerimientos, plazos, transparencia activa y reportes.'],
         'oirs' => ['OIRS', 'Visualizar solicitudes, su estado, responsables y plazos vencidos o por vencer.'],
         'oficina-partes' => ['Oficina de Partes', 'Recibir las respuestas finales instruidas y notificarlas al solicitante por Casilla Única con copia al correo, o registrar la entrega física.'],
+        'pagos' => ['Encargado(a) de pagos', 'Crear decretos de pago con el expediente de pago y el proceso de compra, generar o cargar el PDF y enviarlo a firma.'],
+        'tesorero' => ['Tesorero(a) municipal', 'Generar el egreso de los decretos de pago (fecha, medio de pago, monto y detalle) y firmarlo con firma simple o avanzada.'],
         'publico' => ['Público general', 'Validar documentos, consultar documentos públicos y usar las opciones de accesibilidad.'],
     ];
 

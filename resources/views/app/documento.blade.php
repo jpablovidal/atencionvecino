@@ -64,10 +64,7 @@
 <div><button class="btn btn-success" name="accion" value="aprobar">Visar</button> <button class="btn btn-outline-danger" name="accion" value="rechazar">Rechazar</button></div></form>
 @endif
 @if($miTurno && $turno->tipo==='firma')
-<form method="post" action="{{ route('app.documento.firmar',$d) }}" class="card card-body mb-4" autocomplete="off">@csrf
-<h3 class="h6">Es su turno de firmar (firma electrónica avanzada FirmaGob)</h3>
-<div class="form-group col-md-4 px-0"><label for="otp">Código OTP de 6 dígitos</label><input class="form-control" id="otp" name="otp" inputmode="numeric" pattern="\d{6}" maxlength="6" required autocomplete="one-time-code"></div>
-<div><button class="btn btn-success">Firmar</button></div></form>
+@include('partials.firmar_form', ['accion' => route('app.documento.firmar',$d), 'turno' => $turno, 'pre' => 'doc'])
 @endif
 @if($completos && $puedeOperar)
 <form method="post" action="{{ route('app.documento.finalizar',$d) }}" class="mb-4">@csrf<p>Todas las firmas están completas pero el documento no se finalizó.</p><button class="btn btn-primary">Reintentar finalización</button></form>

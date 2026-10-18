@@ -25,7 +25,7 @@ class PlantillasEjemplos extends Command
 
                 continue;
             }
-            $tipo = TipoDocumento::query()->firstOrCreate(['codigo' => $ej['tipo_codigo']], ['nombre' => $ej['tipo_nombre'], 'prefijo' => $ej['prefijo'], 'firma_alcalde' => $ej['tipo_codigo'] === 'DEC_ALC', 'firmas_agil' => 1, 'firmas_clasico' => 2, 'activo' => true]);
+            $tipo = TipoDocumento::query()->firstOrCreate(['codigo' => $ej['tipo_codigo']], ['nombre' => $ej['tipo_nombre'], 'prefijo' => $ej['prefijo'], 'firma_alcalde' => in_array($ej['tipo_codigo'], ['DEC_ALC', 'DECRETO_PAGO'], true), 'firmas_agil' => 1, 'firmas_clasico' => 2, 'activo' => true]);
             $html = PlantillaEstructura::componer($ej['estructura']);
             $p = Plantilla::query()->create(['tipo_documento_id' => $tipo->id, 'nombre' => $ej['nombre'], 'descripcion' => $ej['descripcion'], 'contenido_html' => $html, 'estructura' => $ej['estructura'],
                 'alcance' => 'todas', 'activo' => ! $this->option('inactivas'), 'version' => 1]);

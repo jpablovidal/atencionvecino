@@ -17,7 +17,7 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px;color:#111} h1,h2,h3{co
 <tr><td class="k">Folio</td><td>{{ $doc->numeroFormateado() }} (N° {{ $doc->numero }}, año {{ $doc->anio }})</td></tr>
 <tr><td class="k">Fecha de firma</td><td>{{ $doc->fecha_firma?->timezone('America/Santiago')->format('d-m-Y H:i') }} (hora de Chile)</td></tr>
 <tr><td class="k">Título</td><td>{{ $doc->titulo }}</td></tr>
-<tr><td class="k">Firmantes</td><td>@foreach($doc->pasos->where('tipo','firma') as $p){{ $p->usuario->nombreCompleto() }} ({{ $p->usuario->cargo }})@if($p->simulada) <span class="sim">FIRMA SIMULADA – sin validez legal</span>@endif<br>@endforeach</td></tr>
+<tr><td class="k">Firmantes</td><td>@foreach($doc->pasos->where('tipo','firma') as $p){{ $p->usuario->nombreCompleto() }} ({{ $p->usuario->cargo }})@if($p->firma_tipo==='simple') <em>(firma electrónica simple)</em>@endif @if($p->simulada) <span class="sim">FIRMA SIMULADA – sin validez legal</span>@endif<br>@endforeach</td></tr>
 <tr><td class="k">Visaciones</td><td>@forelse($doc->pasos->where('tipo','visacion') as $p){{ $p->usuario->nombreCompleto() }}<br>@empty — @endforelse</td></tr>
 <tr><td class="k">SHA-256 (contenido)</td><td style="font-size:8px">{{ $sha }}</td></tr>
 <tr><td class="k">Código de validación</td><td><strong>{{ $doc->codigo_validacion }}</strong></td></tr>

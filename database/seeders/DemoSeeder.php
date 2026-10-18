@@ -32,6 +32,7 @@ class DemoSeeder extends Seeder
             ['id' => 5, 'codigo' => 'ARCH', 'nombre' => 'Archivo Municipal', 'activo' => 1] + $t,
             ['id' => 6, 'codigo' => 'TRANSP', 'nombre' => 'Unidad de Transparencia', 'activo' => 1] + $t,
             ['id' => 7, 'codigo' => 'OPARTES', 'nombre' => 'Oficina de Partes', 'activo' => 1] + $t,
+            ['id' => 8, 'codigo' => 'DAF', 'nombre' => 'Dirección de Administración y Finanzas', 'activo' => 1] + $t,
         ]);
 
         $u = fn (int $id, int $cuerpo, string $nom, string $ape, string $rol, ?int $unidad, bool $firma, string $cargo) => [
@@ -48,7 +49,7 @@ class DemoSeeder extends Seeder
             ['arch_cert', 'Ministro(a) de fe del archivo', 'Certifica microformas (acta) y autoriza la disposición de originales.', ['archivo.ver', 'archivo.certificar', 'archivo.disposicion'], 'secretario'],
         ] as $i => $fila) {
             [$clave, $nombre, $desc, $extra, $base] = array_pad($fila, 5, 'funcionario');
-            $rid = 10 + $i; // los 9 roles del sistema ocupan 1-9; id explícito para que 02_seed_demo.sql sea generable
+            $rid = 12 + $i; // los 11 roles del sistema ocupan 1-11; id explícito para que 02_seed_demo.sql sea generable
             DB::table('roles')->insert(['id' => $rid, 'clave' => $clave, 'nombre' => $nombre, 'descripcion' => $desc, 'rol_base' => $base, 'sistema' => 0, 'activo' => 1, 'created_at' => $ahora, 'updated_at' => $ahora]);
             foreach (array_unique([...Permisos::deBase($base), ...$extra]) as $perm) {
                 DB::table('rol_permisos')->insert(['rol_id' => $rid, 'permiso' => $perm]);
@@ -71,6 +72,8 @@ class DemoSeeder extends Seeder
             $u(14, 10000014, 'Omar', 'OIRS Demo', 'oirs', null, false, 'Encargado OIRS'),
             $u(15, 10000015, 'Teresa', 'Transparencia Demo', 'transparencia', 6, false, 'Encargada de Transparencia'),
             $u(16, 10000016, 'Patricia', 'Oficina de Partes Demo', 'oficina_partes', 7, false, 'Encargada de Oficina de Partes'),
+            $u(17, 10000017, 'Bernardo', 'Pagos Demo', 'contabilidad', 8, false, 'Encargado de pagos'),
+            $u(18, 10000018, 'Tamara', 'Tesorera Demo', 'tesorero', 8, true, 'Tesorera Municipal'),
         ]);
 
         DB::table('tramites')->insert([
@@ -114,24 +117,30 @@ class DemoSeeder extends Seeder
         $tipos = [
             [1, 'DEC_ALC', 'Decreto alcaldicio', 'Decreto', 1], [2, 'DEC_SIAPER', 'Decreto SIAPER', 'Decreto SIAPER', 0], [3, 'OFICIO', 'Oficio', 'Oficio', 0],
             [4, 'ORDENANZA', 'Ordenanza', 'Ordenanza', 0], [5, 'REGLAMENTO', 'Reglamento', 'Reglamento', 0], [6, 'INSTRUCTIVO', 'Instructivo', 'Instructivo', 0],
+            [7, 'DECRETO_PAGO', 'Decreto de pago', 'Decreto de pago', 1], [8, 'EGRESO', 'Egreso', 'Egreso', 0],
         ];
         foreach ($tipos as [$id, $cod, $nom, $pre, $alc]) {
-            DB::table('tipos_documento')->insert(['id' => $id, 'codigo' => $cod, 'nombre' => $nom, 'prefijo' => $pre, 'firma_alcalde' => $alc, 'firmas_agil' => 1, 'firmas_clasico' => 2, 'activo' => 1] + $t);
+            DB::table('tipos_documento')->insert(['id' => $id, 'codigo' => $cod, 'nombre' => $nom, 'prefijo' => $pre, 'firma_alcalde' => $alc, 'firmas_agil' => 1, 'firmas_clasico' => 2, 'activo' => 1, 'permite_firma_simple' => (int) ($cod === 'EGRESO')] + $t);
             DB::table('plantillas')->insert([
                 'id' => $id, 'tipo_documento_id' => $id, 'nombre' => $nom.' (base)', 'activo' => 1,
                 'contenido_html' => '<h2>'.$nom.'</h2><p>Santo Domingo, {{fecha}}.</p><p>VISTOS: la solicitud folio {{folio}} de {{solicitante_nombre}}, RUN {{solicitante_run}}, expediente {{expediente}} ({{tramite}}).</p><p>CONSIDERANDO: [COMPLETAR]</p><p>DECRETO / RESUELVO: [COMPLETAR]</p><p>Anótese, comuníquese y archívese.</p>',
             ] + $t);
         }
-        $codigoATipo = ['DEC_ALC' => 1, 'OFICIO' => 3, 'ORDENANZA' => 4, 'REGLAMENTO' => 5, 'INSTRUCTIVO' => 6];
+        $codigoATipo = ['DEC_ALC' => 1, 'OFICIO' => 3, 'ORDENANZA' => 4, 'REGLAMENTO' => 5, 'INSTRUCTIVO' => 6, 'DECRETO_PAGO' => 7];
         foreach (PlantillaEjemplos::definiciones() as $i => $ej) { // plantillas de ejemplo por secciones (decretos, oficios y demás)
             $htmlEj = PlantillaEstructura::componer($ej['estructura']);
-            DB::table('plantillas')->insert(['id' => 7 + $i, 'tipo_documento_id' => $codigoATipo[$ej['tipo_codigo']], 'nombre' => $ej['nombre'], 'descripcion' => $ej['descripcion'], 'activo' => 1,
+            DB::table('plantillas')->insert(['id' => 9 + $i, 'tipo_documento_id' => $codigoATipo[$ej['tipo_codigo']], 'nombre' => $ej['nombre'], 'descripcion' => $ej['descripcion'], 'activo' => 1,
                 'contenido_html' => $htmlEj, 'estructura' => json_encode($ej['estructura'], JSON_UNESCAPED_UNICODE)] + $t);
         }
         foreach (DB::table('plantillas')->get() as $pl) { // versión 1 de cada plantilla (historial)
             DB::table('plantilla_versiones')->insert(['plantilla_id' => $pl->id, 'version' => 1, 'nombre' => $pl->nombre, 'contenido_html' => $pl->contenido_html, 'estructura' => $pl->estructura ?? null,
                 'sha256' => hash('sha256', (string) $pl->contenido_html), 'created_at' => '2026-01-01 00:00:00']);
         }
+        DB::table('pago_firmantes')->insert([ // configuración de demostración del decreto de pago y del egreso
+            ['id' => 1, 'documento' => 'decreto_pago', 'usuario_id' => 3, 'cargo' => 'Secretaria Municipal', 'funcion' => 'visacion', 'firma_tipo' => 'avanzada', 'orden' => 1, 'activo' => 1] + $t,
+            ['id' => 2, 'documento' => 'decreto_pago', 'usuario_id' => 2, 'cargo' => 'Alcalde', 'funcion' => 'firma', 'firma_tipo' => 'avanzada', 'orden' => 2, 'activo' => 1] + $t,
+            ['id' => 3, 'documento' => 'egreso', 'usuario_id' => 18, 'cargo' => 'Tesorera Municipal', 'funcion' => 'firma', 'firma_tipo' => 'ambas', 'orden' => 1, 'activo' => 1] + $t,
+        ]);
         DB::table('delegaciones_firma')->insert([
             'id' => 1, 'tipo_documento_id' => 1, 'delegado_id' => 8, 'decreto_referencia' => 'Decreto Alcaldicio N° 123/2026 (DEMO)',
             'vigente_desde' => '2026-01-01', 'vigente_hasta' => '2026-12-31', 'creado_por' => 2, 'activo' => 1,
