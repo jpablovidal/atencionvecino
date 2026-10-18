@@ -496,4 +496,54 @@ insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite
 
 insert ignore into `transparencia_activa_items` (`codigo`, `nombre`, `dia_limite`, `activo`, `created_at`, `updated_at`) values ('ENTIDADES', 'Entidades en que tiene participación, representación o intervención', 10, 1, '2026-11-01 00:00:00', '2026-11-01 00:00:00');
 
+alter table `transparencia_feriados` add `tipo` varchar(15) not null default 'nacional';
+
+alter table `transparencia_feriados` add `creado_por` bigint unsigned null;
+
+alter table `tramites` modify `plazo_habiles` tinyint(1) not null default '1';
+
+update `tramites` set `plazo_habiles` = 1;
+
+alter table `plantillas` add `estructura` json null;
+
+alter table `plantilla_versiones` add `estructura` json null;
+
+alter table `documentos` add `plantilla_id` bigint unsigned null;
+
+alter table `expedientes` add `restringido` tinyint(1) not null default '0';
+
+alter table `expedientes` add `restringido_motivo` varchar(300) null;
+
+alter table `expedientes` add `restringido_por` bigint unsigned null;
+
+alter table `expedientes` add `restringido_en` timestamp null;
+
+alter table `archivos` add `restringido` tinyint(1) not null default '0';
+
+alter table `archivos` add `restringido_motivo` varchar(300) null;
+
+alter table `archivos` add `restringido_por` bigint unsigned null;
+
+alter table `archivos` add `restringido_en` timestamp null;
+
+alter table `documentos` add `restringido` tinyint(1) not null default '0';
+
+alter table `documentos` add `restringido_motivo` varchar(300) null;
+
+alter table `documentos` add `restringido_por` bigint unsigned null;
+
+alter table `documentos` add `restringido_en` timestamp null;
+
+create table `acceso_restringido` (`id` bigint unsigned not null auto_increment primary key, `expediente_id` bigint unsigned not null, `archivo_id` bigint unsigned null, `documento_id` bigint unsigned null, `usuario_id` bigint unsigned not null, `otorgado_por` bigint unsigned not null, `motivo` varchar(300) not null, `vence_en` timestamp null, `revocado_en` timestamp null, `revocado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `acceso_restringido` add constraint `acceso_restringido_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`);
+
+alter table `acceso_restringido` add constraint `acceso_restringido_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`);
+
+alter table `acceso_restringido` add constraint `acceso_restringido_otorgado_por_foreign` foreign key (`otorgado_por`) references `usuarios` (`id`);
+
+alter table `acceso_restringido` add index `acceso_restringido_usuario_id_expediente_id_index`(`usuario_id`, `expediente_id`);
+
+alter table `acceso_restringido` add index `acceso_restringido_expediente_id_revocado_en_index`(`expediente_id`, `revocado_en`);
+
 SET FOREIGN_KEY_CHECKS = 1;

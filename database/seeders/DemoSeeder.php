@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Support\Ambiente;
 use App\Support\Permisos;
+use App\Support\PlantillaEjemplos;
+use App\Support\PlantillaEstructura;
 use App\Support\Run;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -118,8 +120,14 @@ class DemoSeeder extends Seeder
                 'contenido_html' => '<h2>'.$nom.'</h2><p>Santo Domingo, {{fecha}}.</p><p>VISTOS: la solicitud folio {{folio}} de {{solicitante_nombre}}, RUN {{solicitante_run}}, expediente {{expediente}} ({{tramite}}).</p><p>CONSIDERANDO: [COMPLETAR]</p><p>DECRETO / RESUELVO: [COMPLETAR]</p><p>Anótese, comuníquese y archívese.</p>',
             ] + $t);
         }
+        $codigoATipo = ['DEC_ALC' => 1, 'OFICIO' => 3, 'ORDENANZA' => 4, 'REGLAMENTO' => 5, 'INSTRUCTIVO' => 6];
+        foreach (PlantillaEjemplos::definiciones() as $i => $ej) { // plantillas de ejemplo por secciones (decretos, oficios y demás)
+            $htmlEj = PlantillaEstructura::componer($ej['estructura']);
+            DB::table('plantillas')->insert(['id' => 7 + $i, 'tipo_documento_id' => $codigoATipo[$ej['tipo_codigo']], 'nombre' => $ej['nombre'], 'descripcion' => $ej['descripcion'], 'activo' => 1,
+                'contenido_html' => $htmlEj, 'estructura' => json_encode($ej['estructura'], JSON_UNESCAPED_UNICODE)] + $t);
+        }
         foreach (DB::table('plantillas')->get() as $pl) { // versión 1 de cada plantilla (historial)
-            DB::table('plantilla_versiones')->insert(['plantilla_id' => $pl->id, 'version' => 1, 'nombre' => $pl->nombre, 'contenido_html' => $pl->contenido_html,
+            DB::table('plantilla_versiones')->insert(['plantilla_id' => $pl->id, 'version' => 1, 'nombre' => $pl->nombre, 'contenido_html' => $pl->contenido_html, 'estructura' => $pl->estructura ?? null,
                 'sha256' => hash('sha256', (string) $pl->contenido_html), 'created_at' => '2026-01-01 00:00:00']);
         }
         DB::table('delegaciones_firma')->insert([

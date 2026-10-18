@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Permisos;
+use App\Support\PlantillaEstructura;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,12 @@ class Usuario extends Model implements AuthenticatableContract
     public function unidad(): BelongsTo
     {
         return $this->belongsTo(Unidad::class);
+    }
+
+    /** Iniciales (primer nombre y apellidos): se usan en la cadena de responsabilidad de los documentos. */
+    public function iniciales(): string
+    {
+        return PlantillaEstructura::iniciales($this);
     }
 
     public function nombreCompleto(): string

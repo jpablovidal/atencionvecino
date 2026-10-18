@@ -176,18 +176,6 @@ class TransparenciaController extends Controller
         return $this->hecho(fn () => $this->svc->guardarParametros($r->user(), $r->only(array_keys(TransparenciaService::PARAMETROS))), 'Parámetros guardados.');
     }
 
-    public function feriadoAgregar(Request $r)
-    {
-        $d = $r->validate(['fecha' => 'required|date_format:Y-m-d', 'nombre' => 'required|string|max:200']);
-
-        return $this->hecho(fn () => $this->svc->agregarFeriado($r->user(), $d['fecha'], $d['nombre']), 'Feriado agregado.');
-    }
-
-    public function feriadoQuitar(Request $r, TransparenciaFeriado $feriado)
-    {
-        return $this->hecho(fn () => $this->svc->quitarFeriado($r->user(), $feriado), 'Feriado eliminado.');
-    }
-
     // ---------------------------------------------------------------- reportes
     public function reportes(Request $r, TransparenciaReporte $rep)
     {

@@ -40,7 +40,7 @@ class Archivo extends Model
         static::creating(fn (self $a) => $a->almacen = str_starts_with((string) $a->ruta, 'gd:') ? 'drive' : 'local');
     }
 
-    protected $casts = ['sensible' => 'boolean'];
+    protected $casts = ['sensible' => 'boolean', 'restringido' => 'boolean', 'restringido_en' => 'datetime'];
 
     /** @return array<string,mixed>|null resultado del análisis de firma electrónica */
     public function firma(): ?array

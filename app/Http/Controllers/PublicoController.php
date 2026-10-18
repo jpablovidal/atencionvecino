@@ -30,7 +30,7 @@ class PublicoController extends Controller
     public function listado(Request $request)
     {
         $f = $request->validate(['tipo' => 'nullable|integer', 'q' => 'nullable|string|max:100', 'anio' => 'nullable|integer|between:2000,2100']);
-        $q = Documento::query()->with('tipo')->where('estado', 'vigente')->where('nivel_acceso', 'publico')->where('sensible', false);
+        $q = Documento::query()->with('tipo')->where('estado', 'vigente')->where('nivel_acceso', 'publico')->where('sensible', false)->where('restringido', false)->whereHas('expediente', fn ($e) => $e->where('restringido', false));
         if (! empty($f['tipo'])) {
             $q->where('tipo_documento_id', $f['tipo']);
         }
@@ -63,7 +63,9 @@ class PublicoController extends Controller
         $doc = Documento::query()->with(['tipo', 'pasos.usuario'])->where('codigo_validacion', $codigo)->where('estado', 'vigente')->first();
         $this->audit->registrar('publico.validar', 'documento', $doc?->id, ['encontrado' => (bool) $doc], false, ['run' => null, 'rol' => 'publico']);
 
-        return view('publico.validar', ['doc' => $doc, 'codigo' => $codigo]);
+        $restringido = $doc && ($doc->restringido || $doc->expediente?->restringido);
+
+        return view('publico.validar', ['doc' => $doc, 'codigo' => $codigo, 'restringido' => (bool) $restringido]);
     }
 
     /** La copia pública se entrega solo si el documento es público y no sensible. */

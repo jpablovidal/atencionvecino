@@ -28,7 +28,7 @@ class Expediente extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['metadatos' => 'array', 'cerrado_en' => 'datetime'];
+    protected $casts = ['metadatos' => 'array', 'cerrado_en' => 'datetime', 'restringido' => 'boolean', 'restringido_en' => 'datetime'];
 
     /** @return BelongsTo<Solicitud, $this> */
     public function solicitud(): BelongsTo

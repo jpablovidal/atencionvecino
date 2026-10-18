@@ -25,7 +25,7 @@ class Plantilla extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['activo' => 'boolean'];
+    protected $casts = ['activo' => 'boolean', 'estructura' => 'array'];
 
     /** @return BelongsTo<TipoDocumento, $this> */
     public function tipo(): BelongsTo

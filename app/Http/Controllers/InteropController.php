@@ -11,6 +11,7 @@ use App\Models\Expediente;
 use App\Models\Institucion;
 use App\Models\PiseeServicio;
 use App\Models\ProcesoCodificador;
+use App\Services\AccesoRestringidoService;
 use App\Services\AuditoriaService;
 use App\Services\FileVault;
 use App\Services\Interop\CodificadorService;
@@ -122,6 +123,7 @@ class InteropController extends Controller
         $u = $r->user();
         abort_unless($comunicacion->direccion === 'entrante' && $comunicacion->archivo_id && ($u->rolBase() === 'auditor' || ($u->operaExpedientes() && $u->unidad_id === $comunicacion->unidad_id)), 404);
         $a = Archivo::query()->findOrFail($comunicacion->archivo_id);
+        app(AccesoRestringidoService::class)->exigirArchivo($u, $a, 'descargar_comunicacion');
         $this->audit->registrar('docdigital.descarga', 'comunicacion', $comunicacion->id, [], true);
 
         return descarga($vault->get($a->ruta, $a->sha256), $a->nombre_original, 'application/pdf');

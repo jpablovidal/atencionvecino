@@ -143,7 +143,6 @@ class TransparenciaTest extends TestCase
             }
             $t->post("/app/transparencia/solicitudes/{$s->folio}/prorroga", ['motivo' => 'motivo suficiente'])->assertForbidden();
             $t->post("/app/transparencia/solicitudes/{$s->folio}/requerimientos", ['unidad_id' => 3, 'instruccion' => 'entregue la información'])->assertForbidden();
-            $t->post('/app/transparencia/feriados', ['fecha' => '2026-12-25', 'nombre' => 'Navidad'])->assertForbidden();
             $t->post('/app/transparencia/plazos', ['prorroga_dias' => 10])->assertForbidden();
         }
         auth()->forgetGuards();
@@ -203,16 +202,16 @@ class TransparenciaTest extends TestCase
     {
         $t = $this->transp();
         $this->svc()->agregarFeriado($t, '2026-12-25', 'Navidad');
-        $this->permisoDenegado(fn () => $this->svc()->agregarFeriado($t, '2026-12-25', 'Navidad'), 'registrado');
+        $this->permisoDenegado(fn () => $this->svc()->agregarFeriado($t, '2026-12-25', 'Navidad'), 'registrada');
         $this->permisoDenegado(fn () => $this->svc()->agregarFeriado($t, 'no-fecha', 'X'), 'inválida');
         $this->permisoDenegado(fn () => $this->svc()->agregarFeriado($t, '1999-01-01', 'Antiguo'), 'rango');
         $this->permisoDenegado(fn () => $this->svc()->agregarFeriado($this->usuario('funcionario'), '2026-12-26', 'Otro'), 'permiso');
         $f = TransparenciaFeriado::query()->first();
-        $this->comoFuncionario($t)->post("/app/transparencia/feriados/{$f->id}/quitar")->assertSessionHas('ok');
+        $this->comoFuncionario($t)->post("/app/feriados/{$f->id}/eliminar")->assertSessionHas('ok');
         $this->assertSame(0, TransparenciaFeriado::query()->count());
-        $this->post('/app/transparencia/feriados', ['fecha' => '2026-09-18', 'nombre' => '<b>Fiestas</b> Patrias'])->assertSessionHas('ok');
+        $this->post('/app/feriados', ['fecha' => '2026-09-18', 'nombre' => '<b>Fiestas</b> Patrias', 'tipo' => 'nacional'])->assertSessionHas('ok');
         $this->assertStringNotContainsString('<b>', TransparenciaFeriado::query()->first()->nombre);
-        $this->assertDatabaseHas('audit_log', ['accion' => 'transparencia.feriado_agregar']);
+        $this->assertDatabaseHas('audit_log', ['accion' => 'feriado.agregar']);
     }
 
     public function test_prorroga_unica_antes_del_vencimiento_y_visible_para_el_solicitante(): void

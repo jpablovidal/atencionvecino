@@ -128,26 +128,32 @@ class ExpedienteService
     }
 
     /** Índice electrónico del expediente. */
-    public function indice(Expediente $e): array
+    public function indice(Expediente $e, ?Usuario $u = null): array
     {
+        $ocultos = $u ? app(AccesoRestringidoService::class)->ocultos($u, $e) : ['archivos' => [], 'documentos' => []];
         $items = [];
         foreach ($e->archivos()->get() as $a) {
-            $items[] = ['tipo' => 'archivo', 'titulo' => $a->titulo ?: $a->nombre_original, 'sha256' => $a->sha256, 'fecha' => (string) $a->created_at];
+            $items[] = in_array($a->id, $ocultos['archivos'], true)
+                ? ['tipo' => 'archivo', 'titulo' => 'Archivo restringido', 'sha256' => null, 'fecha' => (string) $a->created_at, 'restringido' => true]
+                : ['tipo' => 'archivo', 'titulo' => $a->titulo ?: $a->nombre_original, 'sha256' => $a->sha256, 'fecha' => (string) $a->created_at];
         }
         foreach ($e->documentos()->with('tipo')->get() as $d) {
-            $items[] = ['tipo' => 'documento', 'titulo' => $d->titulo, 'estado' => $d->estado, 'numero' => $d->numeroFormateado(), 'sha256' => $d->pdf_sha256, 'fecha' => (string) $d->updated_at];
+            $items[] = in_array($d->id, $ocultos['documentos'], true)
+                ? ['tipo' => 'documento', 'titulo' => 'Documento restringido', 'estado' => $d->estado, 'sha256' => null, 'fecha' => (string) $d->updated_at, 'restringido' => true]
+                : ['tipo' => 'documento', 'titulo' => $d->titulo, 'estado' => $d->estado, 'numero' => $d->numeroFormateado(), 'sha256' => $d->pdf_sha256, 'fecha' => (string) $d->updated_at];
         }
 
         return $items;
     }
 
-    public function exportar(Expediente $e): array
+    public function exportar(Expediente $e, ?Usuario $u = null): array
     {
         $this->audit->registrar('expediente.exportar', 'expediente', $e->id, [], true);
         $e->loadMissing('documentos.tipo');
         $m = $e->metadatos;
-        $m['indice'] = $this->indice($e);
-        $m['documentos'] = $e->documentos->map(fn ($d) => $d->metadatos ?? ['identificacion' => ['id' => $d->id, 'nombre' => $d->titulo], 'estado' => $d->estado])->values()->all();
+        $m['indice'] = $this->indice($e, $u);
+        $ocultos = $u ? app(AccesoRestringidoService::class)->ocultos($u, $e)['documentos'] : [];
+        $m['documentos'] = $e->documentos->map(fn ($d) => in_array($d->id, $ocultos, true) ? ['identificacion' => ['id' => $d->id, 'nombre' => 'Documento restringido'], 'estado' => $d->estado] : ($d->metadatos ?? ['identificacion' => ['id' => $d->id, 'nombre' => $d->titulo], 'estado' => $d->estado]))->values()->all();
 
         return $m;
     }

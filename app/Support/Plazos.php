@@ -80,7 +80,7 @@ class Plazos
     public static function deSolicitud(Solicitud $s, ?Tramite $t = null): Carbon
     {
         $t ??= $s->tramite;
-        $habiles = $t->plazo_habiles ? true : null;
+        $habiles = (bool) $t->plazo_habiles;
         $v = self::vencimiento($s->created_at, (int) $t->plazo_dias, $habiles);
         if ($s->prorroga_dias) {
             $v = self::vencimiento($v, (int) $s->prorroga_dias, $habiles);

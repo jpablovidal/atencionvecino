@@ -186,34 +186,15 @@ class TransparenciaService
         });
     }
 
+    /** Los feriados se administran en el módulo de feriados (FeriadoService). */
     public function agregarFeriado(Usuario $u, string $fecha, string $nombre): TransparenciaFeriado
     {
-        $this->exigir($u, 'transparencia.gestionar');
-        try {
-            $f = Carbon::createFromFormat('Y-m-d', $fecha, Plazos::TZ);
-        } catch (\Throwable) {
-            throw new FlujoException('Fecha inválida.');
-        }
-        if ($f->year < 2020 || $f->year > 2100) {
-            throw new FlujoException('Fecha fuera de rango.');
-        }
-        if (TransparenciaFeriado::query()->where('fecha', $f->format('Y-m-d'))->exists()) {
-            throw new FlujoException('Ese feriado ya está registrado.');
-        }
-        $r = TransparenciaFeriado::query()->create(['fecha' => $f->format('Y-m-d'), 'nombre' => $this->texto($nombre, 3, 120, 'El nombre', false)]);
-        Plazos::olvidarFeriados();
-        $this->audit->registrar('transparencia.feriado_agregar', 'feriado', $r->id, ['fecha' => $r->fecha]);
-
-        return $r;
+        return app(FeriadoService::class)->agregar($u, $fecha, $nombre);
     }
 
     public function quitarFeriado(Usuario $u, TransparenciaFeriado $f): void
     {
-        $this->exigir($u, 'transparencia.gestionar');
-        $id = $f->id;
-        $f->delete();
-        Plazos::olvidarFeriados();
-        $this->audit->registrar('transparencia.feriado_quitar', 'feriado', $id);
+        app(FeriadoService::class)->quitar($u, $f);
     }
 
     // ---------------------------------------------------------------- activa

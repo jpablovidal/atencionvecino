@@ -35,7 +35,7 @@ class PlantillaVersion extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['created_at' => 'datetime'];
+    protected $casts = ['created_at' => 'datetime', 'estructura' => 'array'];
 
     protected static function booted(): void
     {

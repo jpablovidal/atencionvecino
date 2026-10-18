@@ -12,6 +12,7 @@ use App\Http\Controllers\DocDigitalController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\EspacioController;
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\FeriadosController;
 use App\Http\Controllers\FirmasController;
 use App\Http\Controllers\FoliosController;
 use App\Http\Controllers\FuncionarioController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RecursosController;
 use App\Http\Controllers\RepositorioController;
+use App\Http\Controllers\RestringidosController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SeguimientoController;
 use App\Http\Controllers\SeguridadController;
@@ -184,6 +186,26 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/seguimiento/{folio}', [SeguimientoController::class, 'detalle'])->middleware('permiso:seguimiento.consultar,oirs.ver')->where('folio', '[A-Za-z0-9\-]{5,30}')->name('seguimiento.detalle');
     });
 
+    // ---- Restricciones de acceso (protección de datos personales)
+    Route::middleware(['throttle:60,1'])->prefix('restringidos')->group(function () {
+        Route::get('/', [RestringidosController::class, 'accesos'])->middleware('permiso:restringidos.auditar')->name('restringidos');
+        Route::middleware('permiso:restringidos.gestionar')->group(function () {
+            Route::post('/expedientes/{expediente}/restringir', [RestringidosController::class, 'restringir'])->name('restringidos.restringir');
+            Route::post('/expedientes/{expediente}/liberar', [RestringidosController::class, 'liberar'])->name('restringidos.liberar');
+            Route::post('/expedientes/{expediente}/autorizar', [RestringidosController::class, 'autorizar'])->name('restringidos.autorizar');
+            Route::post('/autorizaciones/{autorizacion}/revocar', [RestringidosController::class, 'revocar'])->whereNumber('autorizacion')->name('restringidos.revocar');
+        });
+    });
+
+    // ---- Administrador de feriados (no cuentan como días administrativos en los plazos)
+    Route::middleware(['permiso:feriados.gestionar', 'throttle:60,1'])->prefix('feriados')->group(function () {
+        Route::get('/', [FeriadosController::class, 'index'])->name('feriados');
+        Route::post('/', [FeriadosController::class, 'guardar'])->name('feriados.guardar');
+        Route::post('/importar', [FeriadosController::class, 'importar'])->name('feriados.importar');
+        Route::post('/{feriado}', [FeriadosController::class, 'actualizar'])->whereNumber('feriado')->name('feriados.actualizar');
+        Route::post('/{feriado}/eliminar', [FeriadosController::class, 'eliminar'])->whereNumber('feriado')->name('feriados.eliminar');
+    });
+
     // ---- Transparencia activa y pasiva (Ley 20.285): cada ruta exige su permiso
     Route::middleware('throttle:60,1')->group(function () {
         $folio = '[A-Za-z0-9\-]{5,30}';
@@ -201,8 +223,6 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::post('/transparencia/activa/{item}', [TransparenciaController::class, 'activaGuardar'])->whereNumber('item')->name('transparencia.activa.guardar');
             Route::post('/transparencia/activa/{item}/registrar', [TransparenciaController::class, 'activaRegistrar'])->whereNumber('item')->name('transparencia.activa.registrar');
             Route::post('/transparencia/plazos', [TransparenciaController::class, 'guardarParametros'])->name('transparencia.plazos.guardar');
-            Route::post('/transparencia/feriados', [TransparenciaController::class, 'feriadoAgregar'])->name('transparencia.feriados.agregar');
-            Route::post('/transparencia/feriados/{feriado}/quitar', [TransparenciaController::class, 'feriadoQuitar'])->whereNumber('feriado')->name('transparencia.feriados.quitar');
         });
     });
 

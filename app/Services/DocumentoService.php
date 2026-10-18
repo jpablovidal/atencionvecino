@@ -13,6 +13,7 @@ use App\Models\TipoDocumento;
 use App\Models\Usuario;
 use App\Services\Firma\FirmaClient;
 use App\Services\Firma\FirmaException;
+use App\Support\PlantillaEstructura;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -40,12 +41,12 @@ class DocumentoService
         if ($exp->origen === 'docdigital' && ComunicacionOficial::query()->where('id', $exp->comunicacion_id)->value('acuse_estado') !== 'registrado') {
             throw new FlujoException('Debe acusar recibo de la comunicación recibida antes de gestionarla y responderla.');
         }
-        $html = $plantilla ? $this->combinar($plantilla->contenido_html, $exp) : '<p></p>';
+        $html = $plantilla ? $this->combinar($plantilla->contenido_html, $exp, $autor, $plantilla) : '<p></p>';
 
-        return DB::transaction(function () use ($exp, $tipo, $titulo, $autor, $html) {
+        return DB::transaction(function () use ($exp, $tipo, $titulo, $autor, $html, $plantilla) {
             $doc = Documento::query()->create([
                 'expediente_id' => $exp->id, 'tipo_documento_id' => $tipo->id, 'titulo' => $titulo, 'html' => '', 'creado_por' => $autor->id,
-                'nivel_acceso' => 'reservado', 'sensible' => false, 'estado' => 'borrador', 'flujo' => 'agil', 'version_actual' => 0,
+                'nivel_acceso' => 'reservado', 'sensible' => false, 'estado' => 'borrador', 'flujo' => 'agil', 'version_actual' => 0, 'plantilla_id' => $plantilla?->id,
             ]);
             $this->nuevaVersion($doc, $html, $autor);
             $this->audit->registrar('documento.crear', 'documento', $doc->id, ['tipo' => $tipo->codigo]);
@@ -55,7 +56,7 @@ class DocumentoService
     }
 
     /** Campos de combinación; los valores se ESCAPAN antes de insertarse y luego todo se sanitiza. */
-    public function combinar(string $html, Expediente $exp): string
+    public function combinar(string $html, Expediente $exp, ?Usuario $autor = null, ?Plantilla $plantilla = null): string
     {
         $exp->loadMissing(['solicitud.tramite', 'unidad']);
         $s = $exp->solicitud;
@@ -70,9 +71,9 @@ class DocumentoService
             'institucion_origen' => $exp->metadatos['relaciones']['institucion_origen'] ?? '',
             'asunto_origen' => $exp->origen === 'docdigital' ? ($exp->metadatos['descripcion']['resumen'] ?? '') : '',
             'folio_docdigital' => $exp->metadatos['descripcion']['folio_docdigital'] ?? '',
-        ];
+        ] + PlantillaEstructura::valoresCadena($plantilla?->estructura, $autor);
 
-        return preg_replace_callback('/\{\{\s*([a-z_]+)\s*\}\}/', fn ($m) => array_key_exists($m[1], $v) ? e((string) $v[$m[1]]) : $m[0], $html) ?? $html;
+        return preg_replace_callback('/\{\{\s*([a-z0-9_]+)\s*\}\}/', fn ($m) => array_key_exists($m[1], $v) ? e((string) $v[$m[1]]) : $m[0], $html) ?? $html;
     }
 
     public function guardar(Documento $doc, string $titulo, string $html, array $meta, Usuario $autor): Documento

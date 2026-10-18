@@ -105,7 +105,7 @@ class TramiteService
             $t = Tramite::query()->create($campos + [
                 'codigo_interno' => $this->codigo($unidad, $admin ? ($d['codigo_interno'] ?? null) : null), 'estado' => 'borrador', 'activo' => false, 'unidad_propietaria_id' => $unidad->id,
                 'codigo_cpat' => $admin ? ($d['codigo_cpat'] ?? null) : null, 'proceso_codigo' => $admin ? ($d['proceso_codigo'] ?? null) : null, 'actualizado_por' => $u->id, 'version' => 0,
-                'es_transparencia' => $admin && ! empty($d['es_transparencia']), 'plazo_habiles' => $admin && ! empty($d['plazo_habiles']),
+                'es_transparencia' => $admin && ! empty($d['es_transparencia']), 'plazo_habiles' => $admin ? ! empty($d['plazo_habiles']) : true,
             ]);
             $t->unidades()->sync($unidades);
             $this->guardarAnexos($t, $anexos);

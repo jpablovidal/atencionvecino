@@ -48,11 +48,12 @@
 @if($d->estado==='borrador' && $puedeOperar)
 <form method="post" action="{{ route('app.documento.flujo',$d) }}" class="card card-body mb-4">@csrf
 <h3 class="h6">Definir flujo (reglas del tipo: ágil {{ $d->tipo->firmas_agil }} firma(s), clásico {{ $d->tipo->firmas_clasico }} firma(s)@if($d->tipo->firma_alcalde); 1ª firma: alcalde o delegado vigente @endif)</h3>
+@if(!empty($sugerencia))<p class="alert alert-info small">La plantilla sugiere que <strong>visen</strong>: {{ implode(', ', $sugerencia['cadena']) ?: '—' }} y que <strong>firmen</strong>: {{ implode(', ', $sugerencia['firmas']) }}. Se preseleccionó a quienes ocupan esos cargos; revíselo y ajuste.</p>@endif
 <div class="form-group col-md-4 px-0"><label for="flujo">Flujo</label><select class="form-control" id="flujo" name="flujo"><option value="agil">Ágil</option><option value="clasico">Clásico</option></select></div>
 <div class="form-row">
-@foreach([1,2,3] as $i)<div class="form-group col-md-4"><label for="vis{{ $i }}">Visador {{ $i }} (opcional)</label><select class="form-control" id="vis{{ $i }}" name="visadores[]"><option value="">—</option>@foreach($usuarios as $u)<option value="{{ $u->id }}">{{ $u->nombreCompleto() }}</option>@endforeach</select></div>@endforeach</div>
+@foreach([1,2,3] as $i)<div class="form-group col-md-4"><label for="vis{{ $i }}">Visador {{ $i }} (opcional)</label><select class="form-control" id="vis{{ $i }}" name="visadores[]"><option value="">—</option>@foreach($usuarios as $u)<option value="{{ $u->id }}" @selected(($sugerencia['visadores'][$i-1] ?? null) === $u->id)>{{ $u->nombreCompleto() }} ({{ $u->iniciales() }})</option>@endforeach</select></div>@endforeach</div>
 <div class="form-row">
-@foreach([1,2] as $i)<div class="form-group col-md-6"><label for="fir{{ $i }}">Firmante {{ $i }}</label><select class="form-control" id="fir{{ $i }}" name="firmantes[]"><option value="">—</option>@foreach($usuarios->where('puede_firmar',true) as $u)<option value="{{ $u->id }}">{{ $u->nombreCompleto() }} ({{ $u->rol }})</option>@endforeach</select></div>@endforeach</div>
+@foreach([1,2] as $i)<div class="form-group col-md-6"><label for="fir{{ $i }}">Firmante {{ $i }}</label><select class="form-control" id="fir{{ $i }}" name="firmantes[]"><option value="">—</option>@foreach($usuarios->where('puede_firmar',true) as $u)<option value="{{ $u->id }}" @selected(($sugerencia['firmantes'][$i-1] ?? null) === $u->id)>{{ $u->nombreCompleto() }} ({{ $u->rol }})</option>@endforeach</select></div>@endforeach</div>
 <div><button class="btn btn-primary">Iniciar flujo</button></div></form>
 @endif
 

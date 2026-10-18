@@ -7,10 +7,12 @@ use App\Models\Plantilla;
 use App\Models\PlantillaVersion;
 use App\Models\TipoDocumento;
 use App\Models\Unidad;
+use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\HtmlSanitizer;
 use App\Services\PdfService;
 use App\Services\PlantillaService;
+use App\Support\PlantillaEstructura;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -104,6 +106,9 @@ class PlantillasController extends Controller
     {
         return ['p' => $p, 'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(), 'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(),
             'sel' => $p ? $p->unidades()->pluck('unidades.id')->all() : [], 'variables' => PlantillaService::VARIABLES,
+            'estructurada' => $p ? $p->estructura !== null : request('modo') !== 'libre', 'estructura' => $p?->estructura,
+            'tiposCuerpo' => PlantillaEstructura::TIPOS_CUERPO, 'rolesFirma' => PlantillaEstructura::ROLES_FIRMA, 'cierres' => PlantillaEstructura::CIERRES,
+            'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(['id', 'nombres', 'apellidos', 'cargo']),
             'contenido' => $p ? app(HtmlSanitizer::class)->limpiar($p->contenido_html) : ''];
     }
 
@@ -111,8 +116,15 @@ class PlantillasController extends Controller
     {
         $d = $r->validate([
             'nombre' => 'required|string|min:3|max:150', 'descripcion' => 'nullable|string|max:255', 'tipo_documento_id' => ['required', 'integer', Rule::exists('tipos_documento', 'id')],
-            'contenido_html' => 'required|string|max:400000', 'alcance' => 'required|in:todas,unidades', 'unidades' => 'nullable|array', 'unidades.*' => ['integer', Rule::exists('unidades', 'id')],
+            'contenido_html' => 'required_without:cuerpo_html|nullable|string|max:400000', 'alcance' => 'required|in:todas,unidades', 'unidades' => 'nullable|array', 'unidades.*' => ['integer', Rule::exists('unidades', 'id')],
+            'modo' => 'nullable|in:estructurada,libre', 'materia' => 'nullable|string|max:600', 'vistos' => 'nullable|array|max:40', 'vistos.*' => 'nullable|string|max:2000', 'considerando' => 'nullable|array|max:40', 'considerando.*' => 'nullable|string|max:2000',
+            'cuerpo_tipo' => 'nullable|string|max:15', 'cuerpo_html' => 'nullable|string|max:400000', 'cierre' => 'nullable|string|max:400',
+            'firmas' => 'nullable|array|max:10', 'firmas.*.cargo' => 'nullable|string|max:300', 'firmas.*.rol' => 'nullable|string|max:15',
+            'cadena' => 'nullable|array|max:15', 'cadena.*.cargo' => 'nullable|string|max:300', 'cadena.*.usuario_id' => 'nullable|integer',
         ]);
+        if (($d['modo'] ?? null) === 'estructurada') {
+            $d['estructura'] = $r->only(['materia', 'vistos', 'considerando', 'cuerpo_tipo', 'cuerpo_html', 'cierre', 'firmas', 'cadena']);
+        }
         try {
             $p = $this->svc->guardar($plantilla, $d, $r->user());
         } catch (FlujoException $e) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\FlujoException;
+use App\Models\AccesoRestringido;
 use App\Models\Archivo;
 use App\Models\Comentario;
 use App\Models\ComunicacionOficial;
@@ -16,6 +17,7 @@ use App\Models\Plantilla;
 use App\Models\TipoDocumento;
 use App\Models\Unidad;
 use App\Models\Usuario;
+use App\Services\AccesoRestringidoService;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
@@ -39,7 +41,8 @@ class ExpedienteController extends Controller
         $this->audit->registrar('expediente.ver', 'expediente', $expediente->id, [], true);
 
         return view('app.expediente', [
-            'e' => $expediente, 'indice' => $svc->indice($expediente),
+            'e' => $expediente, 'indice' => $svc->indice($expediente, $r->user()), 'ocultos' => app(AccesoRestringidoService::class)->ocultos($r->user(), $expediente),
+            'restr' => $this->datosRestringidos($r->user(), $expediente),
             'tipos' => TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(),
             'plantillas' => Plantilla::query()->visiblesPara($r->user())->where('activo', true)->orderBy('nombre')->get(),
             'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
@@ -55,6 +58,19 @@ class ExpedienteController extends Controller
             'origenCodigo' => $expediente->metadatos['relaciones']['institucion_origen_codigo'] ?? null,
             'transp' => $this->datosTransparencia($r->user(), $expediente),
         ]);
+    }
+
+    /** Estado de restricción del expediente y autorizaciones (solo para quien puede administrarlas). */
+    private function datosRestringidos(Usuario $u, Expediente $e): ?array
+    {
+        if (! $u->tienePermiso('restringidos.gestionar') || $u->rolBase() === 'admin') {
+            return null;
+        }
+        $svc = app(AccesoRestringidoService::class);
+        $autorizado = $svc->autorizado($u, $e);
+
+        return ['gestiona' => $e->estado !== null, 'autorizado' => $autorizado, 'autorizaciones' => $autorizado || ! $e->restringido ? AccesoRestringido::query()->vigentes()->with('usuario:id,nombres,apellidos,cargo')->where('expediente_id', $e->id)->orderBy('id')->get() : collect(),
+            'candidatos' => Usuario::query()->where('activo', true)->where('id', '!=', $u->id)->get(['id', 'nombres', 'apellidos', 'cargo', 'rol'])->filter(fn ($x) => $x->operaExpedientes() || $x->rolBase() === 'auditor')->values()];
     }
 
     /** Ficha de transparencia (plazo, prórroga, requerimientos y derivación) cuando la solicitud es de acceso a la información. */
@@ -162,6 +178,7 @@ class ExpedienteController extends Controller
     {
         $this->authorize('ver', $expediente);
         abort_unless($archivo->expediente_id === $expediente->id, 404);
+        app(AccesoRestringidoService::class)->exigirArchivo($r->user(), $archivo, 'descargar_archivo');
         $this->audit->registrar('archivo.descarga', 'archivo', $archivo->id, [], true);
 
         return descarga($vault->get($archivo->ruta, $archivo->sha256), $archivo->nombre_original, $archivo->mime);
@@ -211,7 +228,7 @@ class ExpedienteController extends Controller
     {
         $this->permiso('expedientes.exportar');
         $this->authorize('ver', $expediente);
-        $json = json_encode($svc->exportar($expediente), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $json = json_encode($svc->exportar($expediente, $r->user()), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         return descarga((string) $json, 'expediente-'.$expediente->codigo.'.json', 'application/json');
     }

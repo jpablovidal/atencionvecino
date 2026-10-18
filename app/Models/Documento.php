@@ -40,7 +40,7 @@ class Documento extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['sensible' => 'boolean', 'metadatos' => 'array', 'fecha_firma' => 'datetime'];
+    protected $casts = ['sensible' => 'boolean', 'metadatos' => 'array', 'fecha_firma' => 'datetime', 'restringido' => 'boolean', 'restringido_en' => 'datetime'];
 
     /** @return BelongsTo<Expediente, $this> */
     public function expediente(): BelongsTo
@@ -90,6 +90,6 @@ class Documento extends Model
 
     public function esPublico(): bool
     {
-        return $this->estado === 'vigente' && $this->nivel_acceso === 'publico' && ! $this->sensible;
+        return $this->estado === 'vigente' && $this->nivel_acceso === 'publico' && ! $this->sensible && ! $this->restringido && ! $this->expediente?->restringido;
     }
 }

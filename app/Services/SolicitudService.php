@@ -9,6 +9,7 @@ use App\Models\Solicitud;
 use App\Models\Tramite;
 use App\Models\Usuario;
 use App\Services\Firma\ArchivoFirmaService;
+use App\Support\Plazos;
 use App\Support\UploadValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -140,7 +141,7 @@ class SolicitudService
             if ($s->estado !== 'en_tramite') {
                 throw new FlujoException('La solicitud no está en trámite.');
             }
-            $d = Devolucion::query()->create(['solicitud_id' => $s->id, 'creado_por' => $u->id, 'observacion' => $observacion, 'plazo_dias' => $dias, 'vence_en' => now('America/Santiago')->addDays($dias)->endOfDay()]);
+            $d = Devolucion::query()->create(['solicitud_id' => $s->id, 'creado_por' => $u->id, 'observacion' => $observacion, 'plazo_dias' => $dias, 'vence_en' => Plazos::vencimiento(now('America/Santiago'), $dias, true)]);
             $s->forceFill(['estado' => 'devuelta'])->save();
             $this->audit->registrar('solicitud.devolver', 'solicitud', $s->folio, ['dias' => $dias]);
 

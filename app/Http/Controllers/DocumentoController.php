@@ -8,12 +8,14 @@ use App\Models\Expediente;
 use App\Models\Plantilla;
 use App\Models\TipoDocumento;
 use App\Models\Usuario;
+use App\Services\AccesoRestringidoService;
 use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
 use App\Services\FileVault;
 use App\Services\Firma\FirmaPdfInspector;
 use App\Services\HtmlSanitizer;
 use App\Services\LlmAsistente;
+use App\Support\PlantillaEstructura;
 use Illuminate\Http\Request;
 
 class DocumentoController extends Controller
@@ -39,8 +41,22 @@ class DocumentoController extends Controller
         return redirect()->route('app.documento', $doc)->with('ok', 'Documento creado.');
     }
 
+    /** Visadores y firmantes sugeridos por la plantilla del documento (cadena de responsabilidad y firmas). */
+    private function sugerencia(Documento $d): ?array
+    {
+        $e = Plantilla::query()->whereKey($d->plantilla_id)->value('estructura');
+        $e = is_string($e) ? json_decode($e, true) : $e;
+        if (! is_array($e)) {
+            return null;
+        }
+        $autor = Usuario::query()->find($d->creado_por);
+
+        return PlantillaEstructura::sugerirFlujo($e, $autor) + ['cadena' => array_column($e['cadena'] ?? [], 'cargo'), 'firmas' => array_column($e['firmas'] ?? [], 'cargo')];
+    }
+
     public function show(Request $r, Documento $documento, FirmaPdfInspector $inspector, FileVault $vault)
     {
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'ver_documento');
         $this->authorize('ver', $documento);
         $documento->load(['tipo', 'pasos.usuario', 'versiones', 'expediente']);
         $this->audit->registrar('documento.ver', 'documento', $documento->id, [], $documento->sensible);
@@ -60,6 +76,7 @@ class DocumentoController extends Controller
             'puedeOperar' => $u->can('operar', $documento),
             'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'llm' => (bool) config('sgd.llm.enabled'),
+            'sugerencia' => $documento->estado === 'borrador' && $documento->plantilla_id ? $this->sugerencia($documento) : null,
             'completos' => $documento->estado === 'en_flujo' && $documento->pasos->isNotEmpty() && $documento->pasos->every(fn ($p) => $p->estado === 'completado'),
         ]);
     }
@@ -67,6 +84,7 @@ class DocumentoController extends Controller
     public function guardar(Request $r, Documento $documento)
     {
         $this->permiso('documentos.crear');
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'editar_documento');
         $this->authorize('operar', $documento);
         $d = $r->validate([
             'titulo' => 'required|string|max:190', 'html' => 'required|string|max:200000', 'resumen' => 'nullable|string|max:1000', 'palabras_clave' => 'nullable|string|max:255',
@@ -86,6 +104,7 @@ class DocumentoController extends Controller
     public function flujo(Request $r, Documento $documento)
     {
         $this->permiso('documentos.crear');
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'definir_flujo');
         $this->authorize('operar', $documento);
         $d = $r->validate(['flujo' => 'required|in:agil,clasico', 'visadores' => 'nullable|array|max:5', 'visadores.*' => 'nullable|integer', 'firmantes' => 'required|array|min:1|max:2', 'firmantes.*' => 'nullable|integer']);
         $vis = array_values(array_filter(array_map('intval', $d['visadores'] ?? [])));
@@ -102,6 +121,7 @@ class DocumentoController extends Controller
     public function visar(Request $r, Documento $documento)
     {
         $d = $r->validate(['accion' => 'required|in:aprobar,rechazar', 'comentario' => 'nullable|string|max:1000']);
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'visar');
         $this->authorize('ver', $documento);
         try {
             $this->svc->visar($documento, $r->user(), $d['accion'] === 'aprobar', $d['comentario'] ?? null);
@@ -115,6 +135,7 @@ class DocumentoController extends Controller
     public function firmar(Request $r, Documento $documento)
     {
         $d = $r->validate(['otp' => ['required', 'string', 'regex:/^\d{6}$/']]);
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'firmar');
         $this->authorize('ver', $documento);
         try {
             $doc = $this->svc->firmar($documento, $r->user(), $d['otp']);
@@ -128,6 +149,7 @@ class DocumentoController extends Controller
 
     public function finalizar(Request $r, Documento $documento)
     {
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'finalizar');
         $this->authorize('operar', $documento);
         try {
             $this->svc->finalizar($documento);
@@ -144,6 +166,7 @@ class DocumentoController extends Controller
 
     public function pdf(Request $r, Documento $documento)
     {
+        app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'descargar_pdf');
         $this->authorize('ver', $documento);
         $this->audit->registrar('documento.pdf', 'documento', $documento->id, [], true);
 

@@ -8,7 +8,7 @@
 <div class="card border-info mb-3"><div class="card-body">
 <h2 class="h5">Comunicación oficial recibida por DocDigital</h2>
 <p class="mb-1"><strong>{{ $entrante->asunto }}</strong> — de {{ $entrante->institucion_nombre ?? $entrante->institucion_codigo ?? 'institución no informada' }} · ID DocDigital <span class="hash">{{ $entrante->evidencia }}</span> · recibida {{ $entrante->evidencia_en }}</p>
-<p class="mb-2">Documento original: @foreach($e->archivos->where('ambito','docdigital') as $a)<a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->nombre_original }}</a> <span class="hash">{{ $a->sha256 }}</span> @include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endforeach</p>
+<p class="mb-2">Documento original: @foreach($e->archivos->where('ambito','docdigital') as $a)@if(in_array($a->id, $ocultos['archivos'], true))<em>archivo restringido</em>@continue @endif<a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->nombre_original }}</a> <span class="hash">{{ $a->sha256 }}</span> @include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endforeach</p>
 @if($entrante->acuse_estado==='registrado')
 <p class="mb-0"><span class="estado estado-vigente">acuse de recibo registrado</span> ({{ $entrante->acuse_tipo }}) {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span>@if($entrante->acuse_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif</p>
 @else
@@ -24,6 +24,7 @@
 @if($puedeOperar && ! $e->responsable_id)<form method="post" action="{{ route('app.expediente.asignarme',$e) }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-primary">Asignarme este expediente</button></form>@endif
 </div></div>
 @endif
+@if(!empty($restr))@include('app.restringidos._expediente', ['r' => $restr])@endif
 @if(!empty($transp))@include('app.transparencia._expediente', ['t' => $transp])@endif
 <div class="card mb-3"><div class="card-body"><h2 class="h5">Metadatos MGDEE</h2>
 <dl class="row mb-0">
@@ -48,11 +49,11 @@
 </div></div>
 
 <h2 class="h4">Índice del expediente</h2>
-<table class="table table-sm"><thead><tr><th scope="col">Tipo</th><th scope="col">Título</th><th scope="col">SHA-256</th></tr></thead><tbody>@foreach($indice as $i)<tr><td>{{ $i['tipo'] }}</td><td>{{ $i['titulo'] }} {{ $i['numero'] ?? '' }}</td><td class="hash">{{ $i['sha256'] }}</td></tr>@endforeach</tbody></table>
+<table class="table table-sm"><thead><tr><th scope="col">Tipo</th><th scope="col">Título</th><th scope="col">SHA-256</th></tr></thead><tbody>@foreach($indice as $i)<tr><td>{{ $i['tipo'] }}</td><td>@if(!empty($i['restringido']))<em>{{ $i['titulo'] }}</em>@else{{ $i['titulo'] }} {{ $i['numero'] ?? '' }}@endif</td><td class="hash">{{ $i['sha256'] ?? '—' }}</td></tr>@endforeach</tbody></table>
 
 <h2 class="h4">Documentos</h2>
 <table class="table table-sm"><thead><tr><th scope="col">Título</th><th scope="col">Tipo</th><th scope="col">Estado</th><th scope="col">N°</th></tr></thead><tbody>
-@forelse($e->documentos as $d)<tr><td><a href="{{ route('app.documento',$d) }}">{{ $d->titulo }}</a></td><td>{{ $d->tipo->nombre }}</td><td><span class="estado estado-{{ $d->estado }}">{{ str_replace('_',' ',$d->estado) }}</span></td><td>{{ $d->numeroFormateado() }}</td></tr>@empty<tr><td colspan="4">Sin documentos.</td></tr>@endforelse</tbody></table>
+@forelse($e->documentos as $d)@if(in_array($d->id, $ocultos['documentos'], true))<tr><td><em>Documento restringido</em> <span class="chip chip-claro">acceso limitado</span></td><td>—</td><td>—</td><td>—</td></tr>@continue @endif<tr><td><a href="{{ route('app.documento',$d) }}">{{ $d->titulo }}</a>@if(in_array($d->id, $ocultos['restringidos_documentos'], true)) <span class="chip chip-claro">restringido</span>@endif</td><td>{{ $d->tipo->nombre }}</td><td><span class="estado estado-{{ $d->estado }}">{{ str_replace('_',' ',$d->estado) }}</span></td><td>{{ $d->numeroFormateado() }}</td></tr>@empty<tr><td colspan="4">Sin documentos.</td></tr>@endforelse</tbody></table>
 @if($puedeOperar && $e->estado==='abierto')
 <form method="post" action="{{ route('app.documento.store',$e) }}" class="form-inline mb-4">@csrf
 <label class="mr-2" for="tipo_documento_id">Nuevo documento</label>
@@ -63,7 +64,7 @@
 <button class="btn btn-primary">Crear</button></form>@endif
 
 <h2 class="h4">Archivos del expediente</h2>
-<ul>@foreach($e->archivos->where('ambito','!=','comprobante') as $a)<li><a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->titulo ?: $a->nombre_original }}</a> <small>({{ $a->ambito }}, {{ $a->nivel_acceso }}{{ $a->sensible?', sensible':'' }})</small> @if($a->mime === 'application/pdf')@include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endif</li>@endforeach</ul>
+<ul>@foreach($e->archivos->where('ambito','!=','comprobante') as $a)@if(in_array($a->id, $ocultos['archivos'], true))<li><em>Archivo restringido</em> <span class="chip chip-claro">acceso limitado</span></li>@continue @endif<li><a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->titulo ?: $a->nombre_original }}</a>@if(in_array($a->id, $ocultos['restringidos_archivos'], true)) <span class="chip chip-claro">restringido</span>@endif <small>({{ $a->ambito }}, {{ $a->nivel_acceso }}{{ $a->sensible?', sensible':'' }})</small> @if($a->mime === 'application/pdf')@include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endif</li>@endforeach</ul>
 @if($puedeOperar && $e->estado==='abierto')
 <form method="post" action="{{ route('app.expediente.subir',$e) }}" enctype="multipart/form-data" class="card card-body mb-4">@csrf
 <h3 class="h6">Cargar archivo</h3>
@@ -137,7 +138,7 @@
 @if($puedeOperar)
 <form method="post" action="{{ route('app.expediente.notificar',$e) }}" class="card card-body mb-3">@csrf
 <fieldset><legend class="h6">Documentos a notificar</legend>
-@foreach($e->documentos->where('estado','vigente') as $d)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="n_{{ $d->id }}" name="documentos[]" value="{{ $d->id }}"><label class="custom-control-label" for="n_{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</label></div>@endforeach</fieldset>
+@foreach($e->documentos->where('estado','vigente')->reject(fn ($dd) => in_array($dd->id, $ocultos['documentos'], true)) as $d)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="n_{{ $d->id }}" name="documentos[]" value="{{ $d->id }}"><label class="custom-control-label" for="n_{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</label></div>@endforeach</fieldset>
 <div class="form-group mt-2"><label for="n_canal">Canal</label><select class="form-control col-md-4" id="n_canal" name="canal">@foreach(['casilla_unica'=>'Casilla Única','correo'=>'Correo (aviso con enlace)','presencial'=>'Soporte físico / presencial'] as $v=>$l)<option value="{{ $v }}" @selected($s->canal_notificacion===$v)>{{ $l }}</option>@endforeach</select></div>
 <div><button class="btn btn-primary">Crear notificaciones</button></div></form>@endif
 <table class="table table-sm"><thead><tr><th scope="col">Documento</th><th scope="col">Canal</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead><tbody>

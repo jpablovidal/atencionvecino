@@ -10,6 +10,7 @@ use App\Models\DocumentoPaso;
 use App\Models\Expediente;
 use App\Models\Solicitud;
 use App\Models\Usuario;
+use App\Services\AccesoRestringidoService;
 use App\Services\AuditoriaService;
 use App\Services\DashboardService;
 use App\Services\ExpedienteService;
@@ -107,6 +108,7 @@ class FuncionarioController extends Controller
         if ($s->expediente_id) {
             $this->authorize('ver', $s->expediente); // una vez abierto el expediente rige su política de acceso, no solo la unidad del trámite
         }
+        app(AccesoRestringidoService::class)->exigirArchivo($r->user(), $archivo, 'descargar_archivo');
         $this->audit->registrar('archivo.descarga', 'archivo', $archivo->id, [], true);
 
         return descarga($vault->get($archivo->ruta, $archivo->sha256), $archivo->nombre_original, $archivo->mime);
@@ -125,6 +127,10 @@ class FuncionarioController extends Controller
                 ->orWhereHas('documentos.pasos', fn ($p) => $p->where('usuario_id', $u->id)));
         }
 
-        return view('app.vigentes', ['docs' => $q->orderByDesc('fecha_firma')->paginate(25)]);
+        $docs = $q->orderByDesc('fecha_firma')->paginate(25);
+        $acceso = app(AccesoRestringidoService::class);
+        $ocultos = $docs->getCollection()->filter(fn ($d) => ! $acceso->puedeVerDocumento($r->user(), $d))->pluck('id')->all();
+
+        return view('app.vigentes', ['docs' => $docs, 'ocultos' => $ocultos]);
     }
 }
