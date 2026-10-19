@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\FlujoException;
 use App\Models\ComunicacionOficial;
+use App\Models\DocDigitalEvidencia;
 use App\Services\AuditoriaService;
 use App\Services\Interop\ComunicacionService;
 use App\Services\Interop\DocDigital\DocDigitalException;
+use App\Services\Interop\DocDigital\EvidenciaService;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Interop\DocDigitalDashboardService;
 use App\Services\Interop\DocDigitalEstado;
@@ -33,6 +35,8 @@ class DocDigitalController extends Controller
             'credenciales' => $oauth ? 'OAuth2 (Client ID y Client Secret)' : ($cfg['api_token'] ? 'Token fijo' : null),
             'estado' => DocDigitalEstado::leer(), 'veContenido' => $veContenido, 'puedeGestionar' => $u->tienePermiso('docdigital.gestionar'), 'unidadRecepcion' => $cfg['unidad_recepcion'],
             'diagnostico' => session('diagnostico'),
+            'evidenciaHasta' => EvidenciaService::activaHasta(), 'evidenciaTotal' => DocDigitalEvidencia::query()->count(),
+            'evidencias' => $u->tienePermiso('docdigital.gestionar') ? DocDigitalEvidencia::query()->orderByDesc('id')->limit(25)->get() : collect(),
         ];
         if ($veContenido) {
             $ent = fn () => $scope(ComunicacionOficial::query()->where('direccion', 'entrante'));
@@ -109,6 +113,55 @@ class DocDigitalController extends Controller
         $svc->refrescarEstados();
 
         return back()->with('ok', "Sincronización terminada: {$res['nuevas']} nueva(s), {$res['omitidas']} omitida(s).");
+    }
+
+    /** Activa (24 h), desactiva o borra el registro de evidencias (JSON de cada llamada a DocDigital). */
+    public function evidencia(Request $r)
+    {
+        $d = $r->validate(['accion' => 'required|in:activar,desactivar,borrar']);
+        $u = $r->user();
+        if ($d['accion'] === 'activar') {
+            $hasta = EvidenciaService::activar(24, $u->id);
+            $this->audit->registrar('docdigital.evidencia_activar', null, null, ['hasta' => $hasta->format('c')]);
+
+            return back()->with('ok', 'Registro de evidencias activo hasta '.$hasta->format('d-m-Y H:i').'. Solo se guardan el JSON y la respuesta de cada llamada (sin archivos ni credenciales).');
+        }
+        if ($d['accion'] === 'desactivar') {
+            EvidenciaService::desactivar($u->id);
+            $this->audit->registrar('docdigital.evidencia_desactivar');
+
+            return back()->with('ok', 'Registro de evidencias desactivado.');
+        }
+        $n = EvidenciaService::vaciar();
+        $this->audit->registrar('docdigital.evidencia_borrar', null, null, ['filas' => $n]);
+
+        return back()->with('ok', "Evidencias borradas: $n.");
+    }
+
+    /** Descarga las evidencias: JSON único, o ZIP con un archivo por llamada (solicitud y respuesta) si hay soporte ZIP. */
+    public function evidenciaDescargar(Request $r)
+    {
+        $d = $r->validate(['formato' => 'nullable|in:json,zip']);
+        $filas = EvidenciaService::exportar();
+        $this->audit->registrar('docdigital.evidencia_descargar', null, null, ['filas' => count($filas), 'formato' => $d['formato'] ?? 'json']);
+        $flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT;
+        $sello = now()->format('Ymd-His');
+        if (($d['formato'] ?? 'json') === 'zip' && class_exists(\ZipArchive::class)) {
+            $tmp = tempnam(sys_get_temp_dir(), 'ddev');
+            $z = new \ZipArchive;
+            $z->open($tmp, \ZipArchive::OVERWRITE);
+            foreach ($filas as $f) {
+                $base = sprintf('%03d_%s_%s', $f['n'], $f['metodo'], trim((string) preg_replace('/[^A-Za-z0-9]+/', '-', $f['ruta']), '-'));
+                $z->addFromString($base.'_solicitud.json', json_encode(['metodo' => $f['metodo'], 'ruta' => $f['ruta'], 'consulta' => $f['consulta'], 'cuerpo' => $f['solicitud']], $flags));
+                $z->addFromString($base.'_respuesta.json', json_encode(['http_status' => $f['http_status'], 'cuerpo' => $f['respuesta']], $flags));
+            }
+            $z->addFromString('indice.json', json_encode(array_map(fn ($f) => ['n' => $f['n'], 'fecha' => $f['fecha'], 'ambiente' => $f['ambiente'], 'metodo' => $f['metodo'], 'ruta' => $f['ruta'], 'http_status' => $f['http_status']], $filas), $flags));
+            $z->close();
+
+            return response()->download($tmp, "docdigital-evidencias-$sello.zip")->deleteFileAfterSend(true);
+        }
+
+        return response(json_encode(['generado' => now()->toIso8601String(), 'llamadas' => $filas], $flags), 200, ['Content-Type' => 'application/json; charset=utf-8', 'Content-Disposition' => "attachment; filename=\"docdigital-evidencias-$sello.json\""]);
     }
 
     public function reintentar(Request $r, ComunicacionService $svc)

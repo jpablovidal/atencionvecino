@@ -64,8 +64,8 @@ trait DocDigitalApi
             "$base/entidades/token" => Http::response($this->ddOk([['entidad_id' => 5001, 'entidad_nombre' => 'I. Municipalidad de Santo Domingo', 'entidad_padre_id' => 1]]), 200),
             "$base/tipos/documentos/" => Http::response($this->ddOk([['tipo_id' => 3, 'nombre' => 'Oficio']]), 200),
             "$base/documentos/firmado/ingresar" => Http::response($this->ddOk(['fecha_ingreso' => '2026-10-19', 'id_documento' => 987654, 'id_solicitud' => 555, 'anexos' => []]), 200),
-            "$base/documentos/recibidos/*/acusorecibo" => Http::response($this->ddOk(['completada' => true, 'tareaSiguienteId' => 77]), 200),
-            "$base/documentos/recibidos/*/devolver" => Http::response($this->ddOk(['completada' => true, 'tareaSiguienteId' => 78]), 200),
+            "$base/documentos/recibidos/*/acusorecibo*" => Http::response($this->ddOk(['completada' => true, 'tareaSiguienteId' => 77]), 200),
+            "$base/documentos/recibidos/*/devolver*" => Http::response($this->ddOk(['completada' => true, 'tareaSiguienteId' => 78]), 200),
             "$base/documentos/recibidos*" => Http::response($this->ddOk($lista), 200),
             "$base/documentos/*/archivo/descargar*" => function (Request $r) use ($pdfs, $anexos) {
                 preg_match('#/documentos/(\d+)/archivo/descargar#', $r->url(), $m);

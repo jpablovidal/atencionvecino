@@ -123,8 +123,8 @@ class DocDigitalV3ContratoTest extends TestCase
         $c = $this->cliente();
         $this->assertSame('acuse-101-tarea-77', $c->acusarRecibo('101')['evidencia']);
         $this->assertSame('devolucion-101-tarea-78', $c->devolver('101', 'Documento mal dirigido')['evidencia']);
-        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_ends_with($r->url(), '/documentos/recibidos/101/acusorecibo') && $r['entidadDestinataria'] === 5001);
-        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_ends_with($r->url(), '/documentos/recibidos/101/devolver') && $r['motivo'] === 'Documento mal dirigido');
+        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_contains($r->url(), '/documentos/recibidos/101/acusorecibo') && $r['entidadDestinataria'] === 5001);
+        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_contains($r->url(), '/documentos/recibidos/101/devolver') && $r['motivo'] === 'Documento mal dirigido');
         // el id va en la ruta: solo dígitos (sin inyección de rutas) y el motivo respeta 3–255 caracteres
         foreach (['../x', '1/2', '10 1', ''] as $malo) {
             try {
@@ -178,7 +178,7 @@ class DocDigitalV3ContratoTest extends TestCase
         $c->refresh();
         $this->assertSame(['devuelto', 'api'], [$c->acuse_estado, $c->acuse_tipo]);
         $this->assertStringContainsString('No corresponde', (string) $c->acuse_evidencia);
-        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/documentos/recibidos/501/devolver') && $r['motivo'] === 'No corresponde a esta municipalidad');
+        Http::assertSent(fn ($r) => str_contains($r->url(), '/documentos/recibidos/501/devolver') && $r['motivo'] === 'No corresponde a esta municipalidad');
         $this->comoFuncionario($sec)->get("/app/expedientes/{$e->id}")->assertSee('devuelto a la entidad de origen');
         // ya no admite acuse ni una segunda devolución
         $this->comoFuncionario($sec)->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('error');

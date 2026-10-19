@@ -162,6 +162,11 @@ return [
         'client_id' => env('DOCDIGITAL_CLIENT_ID'),
         'client_secret' => env('DOCDIGITAL_CLIENT_SECRET'),
         'token_url' => env('DOCDIGITAL_TOKEN_URL'),
+        // Producción tiene otras credenciales e ids que DemoDoc (el manual pide no usar ids estáticos): si se definen, reemplazan a los generales con modo=prod
+        'prod_client_id' => env('DOCDIGITAL_PROD_CLIENT_ID'),
+        'prod_client_secret' => env('DOCDIGITAL_PROD_CLIENT_SECRET'),
+        'prod_entidad_id' => env('DOCDIGITAL_PROD_ENTIDAD_ID'),
+        'prod_tipo_documento_id' => env('DOCDIGITAL_PROD_TIPO_DOCUMENTO_ID'),
         'entidad_id' => env('DOCDIGITAL_ENTIDAD_ID'), // id de la entidad creadora; si se omite se usa la única asociada al token (GET /entidades/token)
         'tipo_documento_id' => env('DOCDIGITAL_TIPO_DOCUMENTO_ID'), // tipo por defecto (GET /tipos/documentos/); si se omite se busca por nombre
         'unidad_recepcion' => env('DOCDIGITAL_UNIDAD_RECEPCION', 'SECMUN'), // código de unidad que recibe lo entrante

@@ -41,7 +41,34 @@ class HttpDocDigitalClient implements DocDigitalClient
 
     private const MAX_PAGINAS = 4;
 
-    public function __construct(private readonly array $cfg, private readonly string $ambiente) {}
+    /** @var array<string,mixed> */
+    private readonly array $cfg;
+
+    /**
+     * En producción los ids y las credenciales son otros que en DemoDoc: si hay valores `prod_*` reemplazan a los generales
+     * (sin ellos se usan los generales, como antes).
+     *
+     * @param  array<string,mixed>  $cfg
+     */
+    public function __construct(array $cfg, private readonly string $ambiente)
+    {
+        if ($ambiente === 'prod') {
+            foreach (['client_id', 'client_secret', 'entidad_id', 'tipo_documento_id'] as $k) {
+                if (! empty($cfg['prod_'.$k])) {
+                    $cfg[$k] = $cfg['prod_'.$k];
+                }
+            }
+            if (! empty($cfg['prod_client_id']) && empty($cfg['prod_client_secret'])) {
+                $cfg['client_secret'] = null; // nunca mezclar el Client ID de producción con el secreto de DemoDoc
+            }
+        }
+        $this->cfg = $cfg;
+    }
+
+    private function evidencia(bool $conCuerpo = true): \Closure
+    {
+        return \Closure::fromCallable(EvidenciaService::middleware($this->ambiente, $conCuerpo));
+    }
 
     private function urlBase(): string
     {
@@ -91,7 +118,7 @@ class HttpDocDigitalClient implements DocDigitalClient
             return $t;
         }
         try {
-            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()
+            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()->withMiddleware($this->evidencia())
                 ->withBasicAuth((string) $this->cfg['client_id'], (string) $this->cfg['client_secret'])->send('POST', $url);
         } catch (\Throwable) {
             throw new DocDigitalException('No fue posible contactar el servicio de autorización de DocDigital.');
@@ -108,7 +135,7 @@ class HttpDocDigitalClient implements DocDigitalClient
 
     private function http(): PendingRequest
     {
-        return Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()->withToken($this->token());
+        return Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()->withMiddleware($this->evidencia())->withToken($this->token());
     }
 
     /** Ejecuta la llamada y traduce fallas de red a un error sin detalles internos. */
@@ -289,6 +316,19 @@ class HttpDocDigitalClient implements DocDigitalClient
         throw new DocDigitalException('No hay un tipo de documento de DocDigital equivalente: indique DOCDIGITAL_TIPO_DOCUMENTO_ID (vea «Tipos de documento» en el diagnóstico).');
     }
 
+    /** Nombre de archivo según el manual: 3 a 150 caracteres; letras, números, «_», «.», «-», tildes, espacios, «°» y paréntesis. */
+    public static function nombreArchivo(string $n): string
+    {
+        $n = trim((string) preg_replace('/[^\p{L}\p{N}_.\- °()]/u', '_', $n));
+        if (mb_strlen($n) > 150) {
+            $ext = pathinfo($n, PATHINFO_EXTENSION);
+            $ext = $ext !== '' && mb_strlen($ext) <= 10 ? '.'.$ext : '';
+            $n = mb_substr($n, 0, 150 - mb_strlen($ext)).$ext;
+        }
+
+        return mb_strlen($n) >= 3 ? $n : str_pad($n === '' ? 'documento' : $n, 3, '_');
+    }
+
     public function enviar(string $pdf, string $nombre, array $meta): array
     {
         if (strlen($pdf) > min(self::MAX_PDF, (int) $this->cfg['max_bytes'])) {
@@ -298,9 +338,9 @@ class HttpDocDigitalClient implements DocDigitalClient
         $reservado = (bool) ($meta['reservado'] ?? false);
         $cuerpo = [
             'tipo_id' => $this->tipoId($meta),
-            'materia' => mb_substr((string) $meta['asunto'], 0, 150),
-            'descripcion' => mb_substr((string) $meta['asunto'], 0, 250),
-            'nombre' => mb_substr($nombre, 0, 255),
+            'materia' => mb_substr(trim((string) $meta['asunto']) ?: 'Sin materia', 0, 150),
+            'descripcion' => mb_substr(trim((string) $meta['asunto']) ?: 'Sin descripción', 0, 250),
+            'nombre' => self::nombreArchivo($nombre),
             'documento' => base64_encode($pdf),
             'reservado' => $reservado,
             'es_reservado' => $reservado,
@@ -318,7 +358,7 @@ class HttpDocDigitalClient implements DocDigitalClient
             }
         }
         if ($anexos) {
-            $cuerpo['documentos_anexos'] = array_map(fn ($a) => ['nombre_archivo' => mb_substr((string) $a['nombre'], 0, 255), 'tipo' => 'anexo', 'contenido' => base64_encode((string) $a['bytes'])], $anexos);
+            $cuerpo['documentos_anexos'] = array_map(fn ($a) => ['nombre_archivo' => self::nombreArchivo((string) $a['nombre']), 'tipo' => 'anexo', 'contenido' => base64_encode((string) $a['bytes'])], $anexos);
         }
         $r = $this->llamar(fn () => $this->http()->asJson()->post($base.self::P_INGRESAR, $cuerpo));
         $id = $r->successful() ? $r->json('result.id_documento') : null;
@@ -338,6 +378,12 @@ class HttpDocDigitalClient implements DocDigitalClient
     }
 
     /** Con varias entidades asociadas al token, el acuse y la devolución indican la entidad destinataria (si se configuró DOCDIGITAL_ENTIDAD_ID). */
+    /** El manual de integración (v1.0) la define como parámetro de consulta y la especificación 3.2.7 en el cuerpo: se envía en ambos. */
+    private function consultaEntidad(): string
+    {
+        return (int) ($this->cfg['entidad_id'] ?? 0) > 0 ? '?entidadDestinataria='.(int) $this->cfg['entidad_id'] : '';
+    }
+
     private function conEntidad(array $cuerpo): array|\stdClass
     {
         if ((int) ($this->cfg['entidad_id'] ?? 0) > 0) {
@@ -385,7 +431,7 @@ class HttpDocDigitalClient implements DocDigitalClient
     public function acusarRecibo(string $id): array
     {
         $id = $this->idSeguro($id);
-        $r = $this->llamar(fn () => $this->http()->asJson()->put($this->base().self::P_RECIBIDOS.'/'.$id.'/acusorecibo', $this->conEntidad([])));
+        $r = $this->llamar(fn () => $this->http()->asJson()->put($this->base().self::P_RECIBIDOS.'/'.$id.'/acusorecibo'.$this->consultaEntidad(), $this->conEntidad([])));
         if (! $r->successful()) {
             throw new DocDigitalException('DocDigital rechazó el acuse de recibo ('.$this->detalle($r).').');
         }
@@ -401,7 +447,7 @@ class HttpDocDigitalClient implements DocDigitalClient
         if (mb_strlen($motivo) < 3 || mb_strlen($motivo) > 255) {
             throw new DocDigitalException('El motivo de la devolución debe tener entre 3 y 255 caracteres.');
         }
-        $r = $this->llamar(fn () => $this->http()->asJson()->put($this->base().self::P_RECIBIDOS.'/'.$id.'/devolver', $this->conEntidad(['motivo' => $motivo])));
+        $r = $this->llamar(fn () => $this->http()->asJson()->put($this->base().self::P_RECIBIDOS.'/'.$id.'/devolver'.$this->consultaEntidad(), $this->conEntidad(['motivo' => $motivo])));
         if (! $r->successful()) {
             throw new DocDigitalException('DocDigital rechazó la devolución ('.$this->detalle($r).').');
         }
@@ -469,7 +515,7 @@ class HttpDocDigitalClient implements DocDigitalClient
     private function descargar(string $id, ?string $anexoId = null, int $max = self::MAX_PDF): ?string
     {
         try {
-            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->withToken($this->token())->get($this->base().'/documentos/'.$id.'/archivo/descargar', $anexoId !== null ? ['archivo_id' => $anexoId] : []);
+            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->withMiddleware($this->evidencia(false))->withToken($this->token())->get($this->base().'/documentos/'.$id.'/archivo/descargar', $anexoId !== null ? ['archivo_id' => $anexoId] : []);
         } catch (DocDigitalException $e) {
             throw $e;
         } catch (\Throwable) {

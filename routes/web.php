@@ -207,6 +207,8 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/docdigital/entidades', [DocDigitalController::class, 'entidades'])->middleware('throttle:20,1')->name('docdigital.entidades');
         Route::post('/docdigital/diagnosticar', [DocDigitalController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('docdigital.diagnosticar');
         Route::post('/docdigital/sincronizar', [DocDigitalController::class, 'sincronizar'])->middleware('throttle:6,1')->name('docdigital.sincronizar');
+        Route::post('/docdigital/evidencia', [DocDigitalController::class, 'evidencia'])->middleware('throttle:20,1')->name('docdigital.evidencia');
+        Route::get('/docdigital/evidencia/descargar', [DocDigitalController::class, 'evidenciaDescargar'])->middleware('throttle:10,1')->name('docdigital.evidencia.descargar');
         Route::post('/docdigital/reintentar', [DocDigitalController::class, 'reintentar'])->middleware('throttle:6,1')->name('docdigital.reintentar');
     });
 

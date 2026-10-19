@@ -97,8 +97,8 @@ class DocDigitalEstadoTest extends TestCase
     public function test_errores_de_texto_plano_se_muestran_y_el_403_no_filtra_el_run(): void
     {
         $this->ddFake([], [], [
-            $this->dd.'/documentos/recibidos/60088/acusorecibo' => Http::response('No existe documento 60088 en estado pendiente para dar acuse.', 400, ['Content-Type' => 'text/plain']),
-            $this->dd.'/documentos/recibidos/60234/devolver' => Http::response('Acceso denegado. Usuario run 21.586.306-9 (ID: 41.716, entidad: Municipalidad de Santo Domingo) sin permiso para la operación solicitada.', 403, ['Content-Type' => 'text/plain']),
+            $this->dd.'/documentos/recibidos/60088/acusorecibo*' => Http::response('No existe documento 60088 en estado pendiente para dar acuse.', 400, ['Content-Type' => 'text/plain']),
+            $this->dd.'/documentos/recibidos/60234/devolver*' => Http::response('Acceso denegado. Usuario run 21.586.306-9 (ID: 41.716, entidad: Municipalidad de Santo Domingo) sin permiso para la operación solicitada.', 403, ['Content-Type' => 'text/plain']),
         ]);
         $c = new HttpDocDigitalClient(config('sgd.docdigital'), 'demo');
         try {

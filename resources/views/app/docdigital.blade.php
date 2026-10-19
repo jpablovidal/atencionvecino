@@ -33,6 +33,30 @@
 
 @if($veContenido)
 @include('partials.panel', ['panel' => $panel])
+@if($puedeGestionar)
+<section class="card mb-4"><div class="card-body">
+  <h2 class="h5">Evidencias de las llamadas a DocDigital</h2>
+  <p class="small mb-2">Para la certificación con Gobierno Digital: guarda el <strong>JSON enviado y la respuesta</strong> de cada llamada (ingreso, acuse, devolución, consultas). No guarda credenciales, el token ni los archivos (los campos base64 se reemplazan por su tamaño y huella SHA-256). Se activa por 24 horas.</p>
+  <p class="mb-2">Estado: @if($evidenciaHasta)<span class="estado estado-vigente">Activo hasta {{ $evidenciaHasta->format('d-m-Y H:i') }}</span>@else<span class="estado">Inactivo</span>@endif · {{ $evidenciaTotal }} llamada(s) registradas</p>
+  <div class="d-flex flex-wrap">
+    <form method="post" action="{{ route('app.docdigital.evidencia') }}" class="mr-2 mb-2">@csrf<input type="hidden" name="accion" value="{{ $evidenciaHasta ? 'desactivar' : 'activar' }}"><button class="btn btn-outline-primary">{{ $evidenciaHasta ? 'Desactivar registro' : 'Activar registro (24 h)' }}</button></form>
+    @if($evidenciaTotal)
+    <a class="btn btn-outline-secondary mr-2 mb-2" href="{{ route('app.docdigital.evidencia.descargar', ['formato' => 'json']) }}">Descargar JSON</a>
+    <a class="btn btn-outline-secondary mr-2 mb-2" href="{{ route('app.docdigital.evidencia.descargar', ['formato' => 'zip']) }}">Descargar ZIP (un archivo por llamada)</a>
+    <form method="post" action="{{ route('app.docdigital.evidencia') }}" class="mb-2" data-confirm="¿Borrar todas las evidencias registradas?">@csrf<input type="hidden" name="accion" value="borrar"><button class="btn btn-outline-danger">Borrar evidencias</button></form>
+    @endif
+  </div>
+  @if($evidencias->isNotEmpty())
+  <div class="table-responsive mt-2"><table class="table table-sm"><caption class="sr-only">Últimas llamadas registradas</caption><thead><tr><th scope="col">N°</th><th scope="col">Fecha</th><th scope="col">Ambiente</th><th scope="col">Llamada</th><th scope="col">HTTP</th><th scope="col">Detalle</th></tr></thead><tbody>
+    @foreach($evidencias as $e)
+    <tr><td>{{ $e->id }}</td><td>{{ $e->creado_en }}</td><td>{{ $e->ambiente }}</td><td><code>{{ $e->metodo }} {{ $e->ruta }}</code></td><td>{{ $e->http_status ?? 'sin respuesta' }}</td>
+      <td><details><summary>Ver JSON</summary><p class="small mb-1"><strong>Solicitud</strong>@if($e->consulta) (consulta: {{ $e->consulta }})@endif</p><pre class="small">{{ $e->solicitud ?? '—' }}</pre><p class="small mb-1"><strong>Respuesta</strong></p><pre class="small">{{ $e->respuesta ?? '—' }}</pre></details></td></tr>
+    @endforeach
+  </tbody></table></div>
+  @endif
+</div></section>
+@endif
+
 <h2 class="seccion">Comunicaciones recibidas (últimas 15)</h2>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Comunicaciones recibidas</caption><thead><tr><th scope="col">Recibida</th><th scope="col">Origen</th><th scope="col">Asunto</th><th scope="col">Acuse</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody>
 @forelse($recibidas as $c)<tr><td class="text-nowrap">{{ $c->evidencia_en?->format('d-m-Y H:i') }}</td><td>{{ $c->institucion_nombre ?? $c->institucion_codigo ?? '—' }}</td><td>{{ $c->asunto }}</td><td><span class="estado estado-{{ $c->acuse_estado === 'pendiente' ? 'pendiente' : 'vigente' }}">{{ $c->acuse_estado }}</span></td><td>@if($c->expediente_id)<a class="btn btn-sm btn-outline-primary" href="{{ route('app.expediente',$c->expediente_id) }}">Abrir expediente<span class="sr-only"> de {{ $c->asunto }}</span></a>@endif</td></tr>

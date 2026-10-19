@@ -706,4 +706,8 @@ alter table `comunicaciones_oficiales` add `dd_estado` varchar(50) null;
 
 alter table `comunicaciones_oficiales` add `dd_estado_en` timestamp null;
 
+create table `docdigital_evidencias` (`id` bigint unsigned not null auto_increment primary key, `creado_en` timestamp null, `ambiente` varchar(10) not null, `metodo` varchar(8) not null, `ruta` varchar(255) not null, `consulta` text null, `solicitud` longtext null, `http_status` smallint unsigned null, `respuesta` longtext null, `duracion_ms` int unsigned null, `usuario_id` bigint unsigned null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `docdigital_evidencias` add index `docdigital_evidencias_creado_en_index`(`creado_en`);
+
 SET FOREIGN_KEY_CHECKS = 1;

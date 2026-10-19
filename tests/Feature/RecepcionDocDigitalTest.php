@@ -128,7 +128,7 @@ class RecepcionDocDigitalTest extends TestCase
         $this->comoFuncionario($sec)->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('ok');
         $c->refresh();
         $this->assertSame(['registrado', 'api', 'acuse-101-tarea-77', $sec->id], [$c->acuse_estado, $c->acuse_tipo, $c->acuse_evidencia, $c->acuse_por_id]);
-        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_ends_with($r->url(), '/documentos/recibidos/101/acusorecibo') && $r->header('Authorization')[0] === 'Bearer tok-dd');
+        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_contains($r->url(), '/documentos/recibidos/101/acusorecibo') && $r->header('Authorization')[0] === 'Bearer tok-dd');
         $this->assertSame('borrador', $ds->crear($e->refresh(), $tipo, null, 'Respuesta', $sec)->estado);
         // un segundo acuse no es posible
         $this->comoFuncionario($sec)->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('error');
@@ -140,7 +140,7 @@ class RecepcionDocDigitalTest extends TestCase
         $this->recibir();
         $e = Expediente::query()->where('origen', 'docdigital')->firstOrFail();
         $c = ComunicacionOficial::query()->findOrFail($e->comunicacion_id);
-        $this->ddFake([], [], [$this->dd.'/documentos/recibidos/*/acusorecibo' => Http::response([], 500)]);
+        $this->ddFake([], [], [$this->dd.'/documentos/recibidos/*/acusorecibo*' => Http::response([], 500)]);
         $this->comoFuncionario($this->usuario('secretario'))->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('error');
         $this->assertSame('pendiente', $c->refresh()->acuse_estado);
         foreach (['funcionario', 'admin', 'auditor'] as $rol) { // otra unidad, admin y auditor no acusan

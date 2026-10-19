@@ -195,3 +195,12 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Tiempos de espera (504):** las consultas sin paginación fallan en DocDigital; el cliente siempre pagina (50 por página, 4 páginas por sincronización).
 - **Identificadores de entidad** que informó el DemoDoc: «Municipalidad de Santo Domingo» aparece con id **284** (DOCDIGITAL_ENTIDAD_ID, A VALIDAR en producción: pueden ser distintos).
 - El informe señala que el instructivo «Pruebas requeridas en DemoDoc» quedó **obsoleto** respecto de la API actual: este cliente sigue el OpenAPI v3.2.514 entregado, no ese instructivo.
+
+## Evidencias y producción de DocDigital
+- El registro de evidencias existe para armar el documento de certificación; **no reemplaza las capturas de pantalla de DemoDoc** que también se piden, que debe tomar una persona.
+- El JSON de **producción** que se registre contiene materia, descripción, folio y nombres de archivo reales (datos institucionales): se guarda en la base, solo lo ve quien gestiona DocDigital, vence a las 24 h y puede borrarse. Úselo preferentemente en DemoDoc.
+- El manual de integración (v1.0, 24-01-2025) y la especificación 3.2.7 difieren en `entidadDestinataria` (consulta vs. cuerpo): se envía en ambos; **A VALIDAR** en DemoDoc. El PDF «Pruebas requeridas» escribe `POST` para acuse y devolución; manual y especificación dicen `PUT` (se usa `PUT`).
+- La habilitación en **producción exige certificación de la Secretaría de Gobierno Digital** (formulario https://digital.gob.cl/incidencia con el documento «Certificación de Integraciones para API DocDigital», que **no se recibió ni se revisó**). Tener credenciales de producción que obtienen token no equivale a estar certificado.
+- Con modo `prod` el cron `docdigital:sincronizar` (cada 10 minutos) **importa documentos reales** a la base; en un ambiente de pruebas eso mezcla datos reales con los de prueba. Nada se acusa ni devuelve solo.
+- Nada de esto se probó contra DemoDoc ni producción reales; las pruebas usan respuestas simuladas.
+

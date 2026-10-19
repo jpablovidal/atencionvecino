@@ -29,7 +29,7 @@ class ProduccionService
 
     /** Tablas de PROCESOS que se vacían, en orden seguro respecto de las claves foráneas (hijas primero). */
     public const BORRAR = [
-        'acceso_restringido', 'respuesta_final_items', 'respuestas_finales', 'avisos_movimiento', 'comunicacion_anexos', 'archivo_eventos', 'archivo_microforma_archivos', 'archivo_microforma_items',
+        'acceso_restringido', 'respuesta_final_items', 'respuestas_finales', 'avisos_movimiento', 'comunicacion_anexos', 'docdigital_evidencias', 'archivo_eventos', 'archivo_microforma_archivos', 'archivo_microforma_items',
         'archivo_microformas', 'egresos', 'decretos_pago', 'expediente_vinculos', 'documento_version_eventos', 'documento_pasos', 'documento_versiones', 'archivo_versiones',
         'archivos', 'comentarios', 'derivaciones', 'notificaciones', 'pisee_consultas', 'comunicaciones_oficiales', 'devoluciones', 'transparencia_derivaciones',
         'transparencia_requerimientos', 'transparencia_activa_items', 'transparencia_activa_registros', 'solicitud_movimientos', 'documentos', 'expedientes', 'solicitudes',
