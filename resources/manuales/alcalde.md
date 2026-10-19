@@ -66,3 +66,6 @@ Usted solo consulta los pagos: no crea decretos ni egresos.
 
 ## Firmar por lote
 En **Mis firmas** puede firmar o visar de una vez varios documentos (o todos los pendientes) en lugar de uno por uno: marque los documentos, elija firma avanzada (código OTP) y presione **Firmar lo seleccionado**. Revise los documentos antes (cada uno tiene su enlace); las firmas por delegación siguen las mismas reglas. El Panel de Alcaldía enlaza directo a esta pantalla.
+
+## Tiempos de respuesta (panel de Inicio)
+En su Inicio verá cuántos **días hábiles** demora en promedio el municipio en responder una solicitud, y el detalle **por área** y **por dirección municipal** (solicitudes terminadas en los últimos 12 meses; los feriados no cuentan). Mide desde que ingresa la solicitud hasta que se cierra su expediente.

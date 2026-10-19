@@ -19,14 +19,15 @@
 </div>
 @endif
 
-<h2 class="seccion">Trámites rápidos</h2>
-
-@php $listado = $tramites->flatten(1)->take(6); @endphp
+<nav aria-label="Usted está en" class="portal-migas"><span class="portal-migas-et">Usted está en:</span><ol><li><a href="{{ route('inicio') }}">Inicio</a></li><li aria-current="page">Mis solicitudes</li></ol></nav>
+<h2 class="seccion" id="mas-buscado">Lo más buscado</h2>
+@php $listado = $tramites->flatten(1)->take(6); $icoDir = ['DOM' => 'building', 'DIDECO' => 'users', 'ALC' => 'home', 'SECMUN' => 'file-text', 'ARCH' => 'archive', 'TRANSP' => 'book']; @endphp
+<ul class="portal-masbuscado" aria-labelledby="mas-buscado">
 @forelse($listado as $t)
-<div class="tramite-rapido"><div><strong>{{ $t->nombre }}</strong><small>{{ $t->propietaria?->nombre }} · Respuesta en hasta {{ $t->plazo_dias }} días</small>@if($t->descripcion)<span>{{ \Illuminate\Support\Str::limit($t->descripcion, 140) }}</span>@endif</div>
-  <a class="btn btn-primary" href="{{ route('ciudadano.nueva',$t) }}">Realizar trámite<span class="sr-only"> {{ $t->nombre }}</span></a></div>
-@empty<p>No hay trámites disponibles por ahora.</p>@endforelse
-<p class="small mt-2"><a href="{{ route('catalogo') }}">Ver todos los trámites y servicios</a></p>
+  <li><a href="{{ route('ciudadano.nueva',$t) }}"><span class="portal-ico portal-ico-g" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-{{ $icoDir[$t->propietaria?->codigo] ?? 'clipboard' }}"/></svg></span><span>{{ $t->nombre }}<small>{{ $t->propietaria?->nombre }} · Respuesta en hasta {{ $t->plazo_dias }} días · Realizar trámite</small></span></a></li>
+@empty<li>No hay trámites disponibles por ahora.</li>@endforelse
+</ul>
+<p class="portal-todos"><a href="{{ route('catalogo') }}">Conoce todos los servicios municipales por temas</a></p>
 
 <h2 class="seccion">Historial de solicitudes</h2>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Mis solicitudes</caption><thead><tr><th scope="col">Solicitud N°</th><th scope="col">Expediente N°</th><th scope="col">Trámite</th><th scope="col">Fecha</th><th scope="col">Estado</th></tr></thead><tbody>

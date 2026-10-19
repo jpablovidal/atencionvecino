@@ -8,6 +8,7 @@ use App\Services\AuditoriaService;
 use App\Services\Interop\ComunicacionService;
 use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
+use App\Services\Interop\DocDigitalDashboardService;
 use App\Services\Interop\DocDigitalEstado;
 use Illuminate\Http\Request;
 
@@ -43,6 +44,7 @@ class DocDigitalController extends Controller
                 ['icono' => 'alert', 'valor' => $sal()->where('estado', 'fallida')->count(), 'etiqueta' => 'Envíos fallidos', 'nivel' => $sal()->where('estado', 'fallida')->exists() ? 'aviso' : 'ok'],
                 ['icono' => 'check-circle', 'valor' => $sal()->where('estado', 'enviada')->count(), 'etiqueta' => 'Enviadas', 'nivel' => 'ok'],
             ];
+            $datos['panel'] = app(DocDigitalDashboardService::class)->para($u);
             $datos['recibidas'] = $ent()->orderByDesc('id')->limit(15)->get();
             $datos['enviadas'] = $sal()->orderByDesc('id')->limit(15)->get();
         }

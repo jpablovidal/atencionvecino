@@ -31,3 +31,6 @@ Los plazos se cuentan desde el ingreso. Una solicitud **devuelta** al solicitant
 ## 5. Transparencia
 
 Cada consulta queda registrada en la bitácora de auditoría. Entregue información solo a quien acredite ser el solicitante.
+
+## Tiempos de respuesta (panel de Inicio)
+En su Inicio verá cuántos **días hábiles** demora en promedio el municipio en responder una solicitud, y el detalle **por área** y **por dirección municipal** (solicitudes terminadas en los últimos 12 meses; los feriados no cuentan). Mide desde que ingresa la solicitud hasta que se cierra su expediente.

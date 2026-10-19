@@ -31,7 +31,7 @@
 </div></section>
 
 @if($veContenido)
-@include('partials.kpis', ['kpis' => $kpis])
+@include('partials.panel', ['panel' => $panel])
 <h2 class="seccion">Comunicaciones recibidas (últimas 15)</h2>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Comunicaciones recibidas</caption><thead><tr><th scope="col">Recibida</th><th scope="col">Origen</th><th scope="col">Asunto</th><th scope="col">Acuse</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody>
 @forelse($recibidas as $c)<tr><td class="text-nowrap">{{ $c->evidencia_en?->format('d-m-Y H:i') }}</td><td>{{ $c->institucion_nombre ?? $c->institucion_codigo ?? '—' }}</td><td>{{ $c->asunto }}</td><td><span class="estado estado-{{ $c->acuse_estado === 'pendiente' ? 'pendiente' : 'vigente' }}">{{ $c->acuse_estado }}</span></td><td>@if($c->expediente_id)<a class="btn btn-sm btn-outline-primary" href="{{ route('app.expediente',$c->expediente_id) }}">Abrir expediente<span class="sr-only"> de {{ $c->asunto }}</span></a>@endif</td></tr>

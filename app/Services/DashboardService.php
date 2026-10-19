@@ -61,6 +61,11 @@ class DashboardService
                 $kpis[] = ['icono' => 'send', 'valor' => $n, 'etiqueta' => 'Requerimientos de transparencia por responder'.($venc ? " ($venc vencidos)" : ''), 'nivel' => $venc ? 'aviso' : 'info', 'url' => route('app.transparencia.requerimientos', ['estado' => 'pendiente'])];
             }
         }
+        if ($u->tienePermiso('seguimiento.consultar') || $u->tienePermiso('alcaldia.panel') || $u->tienePermiso('oirs.ver') || $rol === 'admin') {
+            [$k, $b] = $this->tiempos($instantanea());
+            $kpis = array_merge($kpis, $k);
+            $bloques = array_merge($bloques, $b);
+        }
         if ($u->tienePermiso('decretopago.ver')) {
             $p = app(PagosTableroService::class)->datos();
             $kpis = array_merge($kpis, $p['kpis']);
@@ -115,6 +120,24 @@ class DashboardService
             $this->barras('Solicitudes por etapa', $porEtapa, 'Haga clic en una etapa para ver el detalle.'),
             $this->barras('Solicitudes activas por dirección', $porDir),
             $this->barras('Solicitudes ingresadas por mes', $meses, $dias !== null ? 'Tiempo medio de término (últimos 90 días): '.number_format($dias, 1, ',', '.').' días.' : null),
+        ]];
+    }
+
+    /** Cuánto demora el municipio, cada área y cada dirección en responder (solicitudes terminadas en los últimos 12 meses). */
+    private function tiempos($snap): array
+    {
+        $t = app(TiemposRespuestaService::class)->calcular($snap);
+        $m = $t['municipio'];
+        $fmt = fn (?float $v) => TiemposRespuestaService::fmt($v);
+        $fila = fn ($x) => [$x['nombre'], $x['n'], $fmt($x['habiles']), $fmt($x['corridos']), $x['en_plazo'] === null ? '—' : $x['en_plazo'].' %'];
+        $cab = ['', 'Solicitudes terminadas', 'Promedio (días hábiles)', 'Promedio (días corridos)', 'Dentro del plazo'];
+        $kpis = [['icono' => 'clock', 'valor' => $m['habiles'] === null ? '—' : number_format($m['habiles'], 1, ',', '.'), 'etiqueta' => 'Días hábiles en promedio que demora el municipio en responder (últimos 12 meses)', 'nivel' => 'info']];
+
+        return [$kpis, [
+            ['tipo' => 'tabla', 'titulo' => 'Tiempo de respuesta del municipio', 'cabeceras' => array_merge([''], array_slice($cab, 1)), 'vacio' => 'Aún no hay solicitudes terminadas.',
+                'filas' => $m['n'] ? [$fila(['nombre' => 'Todo el municipio'] + $m)] : []],
+            ['tipo' => 'tabla', 'titulo' => 'Tiempo de respuesta por área', 'cabeceras' => array_merge(['Área'], array_slice($cab, 1)), 'vacio' => 'Aún no hay solicitudes terminadas.', 'filas' => array_map($fila, $t['areas'])],
+            ['tipo' => 'tabla', 'titulo' => 'Tiempo de respuesta por dirección municipal', 'cabeceras' => array_merge(['Dirección'], array_slice($cab, 1)), 'vacio' => 'Aún no hay solicitudes terminadas.', 'filas' => array_map($fila, $t['direcciones'])],
         ]];
     }
 

@@ -177,3 +177,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Irreversible:** el paso a producción no puede deshacerse desde el panel; quien quiera conservar los datos de prueba debe respaldar antes (base de datos y carpeta de archivos). Los archivos cifrados se borran del repositorio; en una **unidad de Google Drive** se piden a la API (si falla alguno se informa el conteo).
 - El borrado cubre las tablas conocidas hoy (una prueba obliga a clasificar las nuevas). Datos fuera de la base y del repositorio (correos ya enviados, registros del servidor web, respaldos) no se tocan.
 - Tras el paso, `SGD_AMBIENTE` del `.env` puede seguir diciendo `pruebas`: manda el estado de la base. Se recomienda corregir el `.env` a `produccion` en la misma ventana de mantención.
+
+## Tiempos de respuesta y dashboard de DocDigital
+- El **tiempo de respuesta** mide hasta el **cierre del expediente**, no hasta que el vecino recibe la notificación final. Las solicitudes devueltas al vecino cuentan el tiempo de espera del vecino (no se descuenta la suspensión). Si una dirección nunca cierra sus expedientes, no aparece en el indicador. Solo se consideran los últimos 12 meses.
+- Las solicitudes cuyo expediente no tiene dirección se agrupan como «Sin dirección»; las direcciones sin área, como «Sin área asignada».
+- DocDigital: los tiempos de **acuse** y de **respuesta** se calculan con las fechas registradas en el sistema (recepción/sincronización, acuse y creación del envío), no con las de DocDigital. En modo Outbox dependen de que el personal registre los folios a tiempo.

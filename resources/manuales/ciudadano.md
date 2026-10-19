@@ -101,3 +101,7 @@ Al entrar al sitio puede aparecer una ventana con un aviso del municipio (por ej
 
 ## Estado de su solicitud y avisos
 En **Mis solicitudes** y en el detalle de cada solicitud ve el **número de solicitud**, el **número de expediente**, la **dirección municipal responsable** y la **fecha de cada movimiento**. Le avisamos de **cada movimiento** a su **Casilla Única**, con **copia a su correo electrónico**. La respuesta final llega por esos mismos medios; los documentos se descargan desde el detalle de la solicitud. Excepcionalmente la municipalidad puede entregarle los documentos en forma física.
+
+## Mis solicitudes y el formulario
+- En **Mis solicitudes** verá «Lo más buscado» para iniciar un trámite y el historial de sus solicitudes. Cada solicitud muestra su estado, la dirección responsable, la fecha de la última actualización y, en secciones plegables, sus **movimientos**, devoluciones y documentos notificados.
+- El formulario de cada trámite muestra primero qué documentos debe adjuntar, el plazo y quién lo atiende; luego se completa en 3 pasos (sus datos, documentos y cómo desea ser notificado) con una revisión antes de enviar. Los formatos y el peso máximo que acepta los define el municipio y se muestran en el propio formulario.

@@ -225,3 +225,6 @@ En **Mis firmas** (y desde el aviso «Firmar o visar por lote» de su Inicio) ve
 - **Subir un cambio:** en el archivo, entre a **Versiones** y use **Subir una versión nueva**: adjunte el archivo corregido e indique el **motivo del cambio**. El sistema no pisa el anterior: crea la versión 2, 3… y conserva todas.
 - **Qué cambió:** cada versión muestra quién la subió, cuándo, el motivo, un resumen de **qué cambió respecto de la versión anterior** (tamaño, páginas, líneas agregadas o quitadas en texto) y las firmas electrónicas que trae el archivo. Para imágenes y documentos ofimáticos el contenido no se compara automáticamente y el resumen lo indica.
 - **Historial de un documento:** junto a cada documento del expediente, **Historial** muestra por versión qué párrafos cambiaron y quién **editó, visó, rechazó o firmó**.
+
+## Panel de DocDigital
+En **DocDigital** verá, además del estado de la conexión, un panel con las comunicaciones recibidas y enviadas de su dirección, los **acuses atrasados**, los envíos fallidos, el **tiempo medio para registrar el acuse** y para responder lo recibido, el movimiento de los últimos 6 meses y las instituciones con más movimiento. Auditoría ve toda la municipalidad.

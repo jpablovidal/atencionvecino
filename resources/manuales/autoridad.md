@@ -30,3 +30,6 @@ El plazo de cada trámite se cuenta desde el ingreso. Una solicitud **devuelta**
 ## 4. Transparencia
 
 Cada consulta y cada solicitud abierta quedan registradas en la bitácora de auditoría. Use los datos personales (RUN, nombre) solo para el fin institucional de la consulta.
+
+## Tiempos de respuesta (panel de Inicio)
+En su Inicio verá cuántos **días hábiles** demora en promedio el municipio en responder una solicitud, y el detalle **por área** y **por dirección municipal** (solicitudes terminadas en los últimos 12 meses; los feriados no cuentan). Mide desde que ingresa la solicitud hasta que se cierra su expediente.
