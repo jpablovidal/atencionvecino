@@ -46,7 +46,7 @@ class ApiConfigRepositorioHttpTest extends TestCase
     public function test_la_configuracion_de_bd_prevalece_sobre_env_y_se_puede_volver_a_env(): void
     {
         config(['sgd.docdigital.mode' => 'outbox', 'sgd.docdigital.unidad_recepcion' => 'SECMUN']);
-        $this->admin()->post('/app/admin/api/docdigital', ['activo' => 1, 'mode' => 'prod', 'url_prod' => 'https://docdigital.ejemplo.gob.cl', 'unidad_recepcion' => 'ALC', 'path_enviar' => '/api/v2/enviar'])->assertSessionHas('ok');
+        $this->admin()->post('/app/admin/api/docdigital', ['activo' => 1, 'mode' => 'prod', 'url_prod' => 'https://docdigital.ejemplo.gob.cl', 'unidad_recepcion' => 'ALC', 'entidad_id' => '5001'])->assertSessionHas('ok');
         ApiConfigService::aplicar();
         $this->assertSame(['prod', 'ALC', 'https://docdigital.ejemplo.gob.cl'], [config('sgd.docdigital.mode'), config('sgd.docdigital.unidad_recepcion'), config('sgd.docdigital.url_prod')]);
         $this->assertDatabaseHas('audit_log', ['accion' => 'api.configurar']);
@@ -64,7 +64,7 @@ class ApiConfigRepositorioHttpTest extends TestCase
             ['docdigital', ['mode' => 'inventado']], ['docdigital', ['url_prod' => 'http://sin-tls.cl']], ['docdigital', ['url_prod' => 'https://user:pass@x.cl']],
             ['docdigital', ['url_prod' => 'https://127.0.0.1/x']], ['docdigital', ['url_prod' => 'https://10.0.0.5/x']], ['docdigital', ['url_prod' => 'https://localhost/x']],
             ['google_mail', ['service_account_json' => 'relativa/sa.json']], ['google_mail', ['service_account_json' => '/home/x/../etc/passwd']], ['google_mail', ['service_account_json' => public_path('sa.json')]],
-            ['google_mail', ['rate_per_minute' => 'diez']], ['docdigital', ['path_enviar' => "/x\r\nHost: evil"]],
+            ['google_mail', ['rate_per_minute' => 'diez']], ['docdigital', ['entidad_id' => "5\r\nHost: evil"]],
         ];
         foreach ($casos as [$s, $d]) {
             $this->admin()->post("/app/admin/api/$s", ['activo' => 1] + $d)->assertSessionHas('error');

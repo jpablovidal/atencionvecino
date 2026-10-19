@@ -9,7 +9,9 @@
 <h2 class="h5">Comunicación oficial recibida por DocDigital</h2>
 <p class="mb-1"><strong>{{ $entrante->asunto }}</strong> — de {{ $entrante->institucion_nombre ?? $entrante->institucion_codigo ?? 'institución no informada' }} · ID DocDigital <span class="hash">{{ $entrante->evidencia }}</span> · recibida {{ $entrante->evidencia_en }}</p>
 <p class="mb-2">Documento original: @foreach($e->archivos->where('ambito','docdigital') as $a)@if(in_array($a->id, $ocultos['archivos'], true))<em>archivo restringido</em>@continue @endif<a href="{{ route('app.expediente.archivo',[$e,$a]) }}">{{ $a->nombre_original }}</a> <span class="hash">{{ $a->sha256 }}</span> @include('partials.firma_resultado', ['estado' => $a->firma_estado, 'det' => $a->firma()])@endforeach</p>
-@if($entrante->acuse_estado==='registrado')
+@if($entrante->acuse_estado==='devuelto')
+<p class="mb-0"><span class="estado estado-fallida">devuelto a la entidad de origen</span> {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span></p>
+@elseif($entrante->acuse_estado==='registrado')
 <p class="mb-0"><span class="estado estado-vigente">acuse de recibo registrado</span> ({{ $entrante->acuse_tipo }}) {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span>@if($entrante->acuse_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif</p>
 @else
 <p class="mb-2"><span class="estado estado-pendiente">acuse de recibo pendiente</span> — debe acusar recibo antes de gestionar y responder.</p>
@@ -17,7 +19,8 @@
 @if($docModo==='outbox')
 <form method="post" action="{{ route('app.comunicacion.acuse',$entrante) }}" class="form-inline">@csrf<label class="mr-2" for="ac_ev">Referencia del acuse emitido en DocDigital</label><input class="form-control form-control-sm mr-2" id="ac_ev" name="evidencia" required maxlength="200"><button class="btn btn-sm btn-primary">Registrar acuse</button></form>
 @else
-<form method="post" action="{{ route('app.comunicacion.acuse',$entrante) }}">@csrf<button class="btn btn-sm btn-primary">Acusar recibo por DocDigital</button></form>
+<form method="post" action="{{ route('app.comunicacion.acuse',$entrante) }}" class="d-inline-block mr-3">@csrf<button class="btn btn-sm btn-primary">Acusar recibo por DocDigital</button></form>
+<form method="post" action="{{ route('app.comunicacion.devolver',$entrante) }}" class="form-inline mt-2" data-confirm="¿Devolver este documento a la entidad de origen? Quedará registrado en DocDigital.">@csrf<label class="mr-2" for="dv_m">Devolver a la entidad de origen: motivo</label><input class="form-control form-control-sm mr-2" id="dv_m" name="motivo" required minlength="3" maxlength="255"><button class="btn btn-sm btn-outline-danger">Devolver</button></form>
 @endif
 @endif
 @endif

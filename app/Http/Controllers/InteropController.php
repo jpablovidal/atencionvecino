@@ -72,6 +72,23 @@ class InteropController extends Controller
         return back()->with('ok', 'Evidencia registrada.');
     }
 
+    public function devolver(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
+    {
+        $this->permiso('comunicaciones.acusar');
+        if ($comunicacion->direccion !== 'entrante' || $comunicacion->expediente_id === null) {
+            abort(404);
+        }
+        $this->authorize('operar', Expediente::query()->findOrFail($comunicacion->expediente_id));
+        $d = $r->validate(['motivo' => 'required|string|min:3|max:255']);
+        try {
+            $svc->devolver($comunicacion, $r->user(), $d['motivo']);
+        } catch (FlujoException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Documento devuelto a la entidad de origen por DocDigital.');
+    }
+
     public function acuse(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)
     {
         $this->permiso('comunicaciones.acusar');

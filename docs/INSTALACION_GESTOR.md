@@ -57,7 +57,7 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 DOCDIGITAL_CLIENT_SECRET='%s'
 " "$CID" "$CSEC" >> .env.nuevo && chmod 600 .env.nuevo && mv .env.nuevo .env && unset CID CSEC && $PHP artisan config:clear && echo "Credenciales guardadas"
 ```
-Luego, en el sitio: **Administración → APIs e integraciones → DocDigital**: indique la **URL del servidor** (DemoDoc o producción), la **URL para obtener el token OAuth2**, las **rutas** de enviar / recibidos / acuse y el **modo** (`demo` o `prod`). Esos datos están en la especificación (https://api-doc.digital.gob.cl/api/swagger-ui/index.html) y **el sistema aún no los trae validados** (ver `docs/LIMITACIONES.md`). Después abra **DocDigital** en el menú lateral y use **Probar conexión**.
+Luego, en el sitio: **Administración → APIs e integraciones → DocDigital**: indique el **modo** (`demo` o `prod`) y, si no usa los valores por defecto, la **URL del servidor** (DemoDoc ya viene: `https://api-demodoc.digital.gob.cl/api`; la de producción no figura en la especificación), el **id de la entidad** y el **tipo de documento** por defecto. El token OAuth2 y las rutas ya vienen según la especificación (https://api-doc.digital.gob.cl/api/swagger-ui/index.html) y **el sistema aún no los trae validados** (ver `docs/LIMITACIONES.md`). Después abra **DocDigital** en el menú lateral y use **Probar conexión**.
 
 > Si compartió el Client Secret por chat o correo, considérelo expuesto: pida a DocDigital que lo **rote** cuando termine las pruebas. No use credenciales de producción para pruebas con envíos reales.
 

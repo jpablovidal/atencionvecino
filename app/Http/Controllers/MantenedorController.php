@@ -41,6 +41,7 @@ class MantenedorController extends Controller
                 'nombre' => ['Nombre', 'text', ['required', 'string', 'max:190']],
                 'tipo' => ['Tipo', 'text', ['nullable', 'string', 'max:60']],
                 'codigo_padre' => ['Código de la institución padre', 'text', ['nullable', 'string', 'max:40']],
+                'docdigital_entidad_id' => ['Id de la entidad en DocDigital (para enviar documentos)', 'text', ['nullable', 'integer', 'min:1']],
             ], 'unico' => ['codigo']],
             'procesos' => ['permiso' => 'codificador.gestionar', 'modelo' => ProcesoCodificador::class, 'titulo' => 'Codificador: procesos', 'cols' => ['codigo', 'nombre', 'institucion_codigo', 'origen'], 'campos' => [
                 'codigo' => ['Código (Codificador)', 'text', ['required', 'string', 'max:40', 'regex:/^[A-Za-z0-9][A-Za-z0-9._\\-]*$/']],

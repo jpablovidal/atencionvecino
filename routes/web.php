@@ -155,6 +155,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::post('/expedientes/{expediente}/pisee', [InteropController::class, 'pisee'])->middleware('throttle:interop')->name('pisee.consultar');
     Route::post('/expedientes/{expediente}/comunicaciones', [InteropController::class, 'comunicar'])->middleware('throttle:interop')->name('comunicacion.crear');
     Route::post('/comunicaciones/{comunicacion}/evidencia', [InteropController::class, 'evidencia'])->name('comunicacion.evidencia');
+    Route::post('/comunicaciones/{comunicacion}/devolver', [InteropController::class, 'devolver'])->middleware('throttle:interop')->name('comunicacion.devolver');
     Route::post('/comunicaciones/{comunicacion}/acuse', [InteropController::class, 'acuse'])->middleware('throttle:interop')->name('comunicacion.acuse');
     Route::post('/expedientes/{expediente}/asignarme', [ExpedienteController::class, 'asignarme'])->name('expediente.asignarme');
     Route::post('/comunicaciones/{comunicacion}/reintentar', [InteropController::class, 'reintentar'])->name('comunicacion.reintentar');
@@ -203,6 +204,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     // ---- DocDigital: panel de gestión (ver = comunicaciones.ver; probar/sincronizar/reintentar = docdigital.gestionar)
     Route::get('/docdigital', [DocDigitalController::class, 'index'])->middleware('permiso:comunicaciones.ver,docdigital.gestionar')->name('docdigital');
     Route::middleware('permiso:docdigital.gestionar')->group(function () {
+        Route::get('/docdigital/entidades', [DocDigitalController::class, 'entidades'])->middleware('throttle:20,1')->name('docdigital.entidades');
         Route::post('/docdigital/diagnosticar', [DocDigitalController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('docdigital.diagnosticar');
         Route::post('/docdigital/sincronizar', [DocDigitalController::class, 'sincronizar'])->middleware('throttle:6,1')->name('docdigital.sincronizar');
         Route::post('/docdigital/reintentar', [DocDigitalController::class, 'reintentar'])->middleware('throttle:6,1')->name('docdigital.reintentar');

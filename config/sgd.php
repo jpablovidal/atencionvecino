@@ -155,20 +155,18 @@ return [
     // DocDigital (comunicaciones oficiales del Estado). outbox|mock|demo|prod  (mock y demo prohibidos en producción)
     'docdigital' => [
         'mode' => env('DOCDIGITAL_MODE', 'outbox'),
-        'url_demo' => env('DOCDIGITAL_URL_DEMO'),
-        'url_prod' => env('DOCDIGITAL_URL_PROD'),
+        'url_demo' => env('DOCDIGITAL_URL_DEMO', 'https://api-demodoc.digital.gob.cl/api'), // servidor DEMO de la especificación OpenAPI v3.2.514
+        'url_prod' => env('DOCDIGITAL_URL_PROD'), // no figura en la especificación: A VALIDAR con Gobierno Digital
         'api_token' => env('DOCDIGITAL_API_TOKEN'),
-        // OAuth2 «client credentials» (A VALIDAR con la especificación): si hay client_id/secret y token_url se obtiene un token y se cachea hasta su vencimiento
+        // OAuth2: POST {url}/oauth/token con HTTP Basic (Client_Id:Client_Secret). `token_url` es opcional (por defecto {url}/oauth/token).
         'client_id' => env('DOCDIGITAL_CLIENT_ID'),
         'client_secret' => env('DOCDIGITAL_CLIENT_SECRET'),
         'token_url' => env('DOCDIGITAL_TOKEN_URL'),
-        'scope' => env('DOCDIGITAL_SCOPE'),
-        'path_enviar' => env('DOCDIGITAL_PATH_ENVIAR'), // A VALIDAR con la guía de integración API MW V2
-        'path_recibidos' => env('DOCDIGITAL_PATH_RECIBIDOS'),
-        'path_acuse' => env('DOCDIGITAL_PATH_ACUSE'), // acuse de recibo (A VALIDAR)
+        'entidad_id' => env('DOCDIGITAL_ENTIDAD_ID'), // id de la entidad creadora; si se omite se usa la única asociada al token (GET /entidades/token)
+        'tipo_documento_id' => env('DOCDIGITAL_TIPO_DOCUMENTO_ID'), // tipo por defecto (GET /tipos/documentos/); si se omite se busca por nombre
         'unidad_recepcion' => env('DOCDIGITAL_UNIDAD_RECEPCION', 'SECMUN'), // código de unidad que recibe lo entrante
         'timeout' => 30,
-        'max_bytes' => 10 * 1024 * 1024,
+        'max_bytes' => 20 * 1024 * 1024, // la especificación admite hasta 20 MB en el archivo principal
     ],
 
     // Validación pública

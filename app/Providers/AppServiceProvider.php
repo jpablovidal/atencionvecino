@@ -65,6 +65,11 @@ class AppServiceProvider extends ServiceProvider
                         throw new DocDigitalException('DocDigital está en modo outbox: registre el acuse manualmente.');
                     }
 
+                    public function devolver(string $id, string $motivo): array
+                    {
+                        throw new DocDigitalException('DocDigital está en modo outbox: registre la devolución manualmente en DocDigital.');
+                    }
+
                     public function recibidos(): array
                     {
                         return [];

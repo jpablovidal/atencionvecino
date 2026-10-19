@@ -1,0 +1,3674 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DocDigital APIv2",
+    "description": "API RESTful para el envío y recepción de documentos en DocDigital v3.",
+    "termsOfService": "http://springdoc.org",
+    "contact": {
+      "name": "Gobierno Digital",
+      "url": "https://digital.gob.cl/",
+      "email": "soporte@digital.gob.cl"
+    },
+    "license": {
+      "name": "Apache License Version 3.0",
+      "url": "https://github.com/springdoc/springdoc-openapi/blob/master/LICENSE"
+    },
+    "version": "3.2.514"
+  },
+  "servers": [
+    {
+      "url": "https://api-demodoc.digital.gob.cl/api",
+      "description": "API url DEMO DocDigital V2"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "E0X Autenticación",
+      "description": "Endpoint para autenticación API"
+    },
+    {
+      "name": "E01 Documentos",
+      "description": "Endpoint para operaciones con documentos"
+    },
+    {
+      "name": "E02 Entidades",
+      "description": "Endpoint de consulta entidades"
+    },
+    {
+      "name": "E03 Usuarios",
+      "description": "Endpoint de consulta usuarios"
+    },
+    {
+      "name": "E04 Layouts",
+      "description": "Endpoint de consulta layouts"
+    },
+    {
+      "name": "E05 Tipos",
+      "description": "Endpoint de consulta de tipos"
+    }
+  ],
+  "paths": {
+    "/oauth/token": {
+      "post": {
+        "tags": [
+          "E0X Autenticación"
+        ],
+        "summary": "Obtener token de acceso",
+        "description": "Obtiene un token JWT para consumir los endpoints protegidos de la API.\n\nLa autenticación se realiza mediante HTTP Basic utilizando las credenciales asignadas (Client_Id y Client_Secret).\n\nCabecera requerida:\n\nAuthorization: Basic <base64(Client_Id:Client_Secret)>",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Token generado correctamente",
+            "content": {
+              "application/json": {
+                "example": {
+                  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "token_type": "Bearer",
+                  "expires_in": 3600
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inválidas"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "source": "curl --request POST 'https://api-demodoc.digital.gob.cl/api/oauth/token' \\\n--header 'Authorization: Basic U1VCUkVYX1...'"
+          },
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/oauth/token\"))\n    .header(\"Authorization\", \"Basic BASE64(ClientId:ClientSecret)\")\n    .POST(HttpRequest.BodyPublishers.noBody())\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/{id}/atributos-adicionales": {
+      "put": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para actualizar los atributos adicionales de un documento",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "putActualizarAtributosAdicionales",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2Boolean"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "String jsonBody = \"{\\n\" + \n    \"    \\\"clave\\\": \\\"valor\\\"\\n\" + \n    \"}\";\n\nHttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/123/atributos-adicionales\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .header(\"Content-Type\", \"application/json\")\n    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/recibidos/{id}/devolver": {
+      "put": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para de volver/rechazar un documento principal recibido por la entidad asociada al token de autenticación",
+        "description": "En caso de tener múltiples entidades asociadas al token de acceso, puede utilizar el parámetro 'entidadDestinataria' para dar rechazo/devolución del documento por una entidad específica del token.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "putDocumentosRecibidosDevolver",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OficinaPartesRecepcionRechazoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2DocumentoRecibidoAcusoReciboResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "String jsonBody = \"{\\n\" + \n    \"    \\\"motivo\\\": \\\"Motivo de devolución\\\",\\n\" + \n    \"    \\\"entidadDestinataria\\\": 456\\n\" + \n    \"}\";\n\nHttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/recibidos/123/devolver\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .header(\"Content-Type\", \"application/json\")\n    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/recibidos/{id}/acusorecibo": {
+      "put": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para dar acuso recibo de un documento principal recibido por la entidad asociada al token de autenticación",
+        "description": "En caso de tener múltiples entidades asociadas al token de acceso, puede utilizar el parámetro 'entidadDestinataria' para dar acuso recibo del documento por una entidad específica del token.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "putDocumentosRecibidosAcusoRecibo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OficinaPartesRecepcionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2DocumentoRecibidoAcusoReciboResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "String jsonBody = \"{\\n\" + \n    \"    \\\"entidadDestinataria\\\": 456\\n\" + \n    \"}\";\n\nHttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/recibidos/123/acusorecibo\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .header(\"Content-Type\", \"application/json\")\n    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/firmado/ingresar": {
+      "post": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para cargar un documento firmado y despacharlo",
+        "description": "Para que el documento pueda ser cargado y distribuido correctamente es obligatorio que el archivo (base64) posea una firma electrónica avanzada válida y reconocida por DocDigital.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "postDocumentoFirmadoIngresar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudDocumentoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ResultFirmadoBorradorEIngresar"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "String jsonBody = \"{\\n\" + \n    \"    \\\"reservado\\\": false,\\n\" + \n    \"    \\\"tipo_id\\\": 1,\\n\" + \n    \"    \\\"descripcion\\\": \\\"Descripción del documento\\\",\\n\" + \n    \"    \\\"materia\\\": \\\"Materia del documento\\\",\\n\" + \n    \"    \\\"nombre\\\": \\\"Nombre del documento\\\",\\n\" + \n    \"    \\\"documento\\\": \\\"BASE64_ENCODED_PDF_CONTENT\\\",\\n\" + \n    \"    \\\"id_entidad_creadora\\\": 12,\\n\" + \n    \"    \\\"run_usuario_creador\\\": 12345678,\\n\" + \n    \"    \\\"listado_id_entidades_destinatarias\\\": [34]\\n\" + \n    \"}\";\n\nHttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/firmado/ingresar\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .header(\"Content-Type\", \"application/json\")\n    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/firmado/borrador": {
+      "post": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "[ENDPOINT DEPRECACADO] Método para cargar un documento firmado en estado borrador",
+        "description": "Para que el documento borrador pueda ser cargado correctamente es obligatorio que el archivo (base64) posea una firma electrónica avanzada válida y reconocida por DocDigital.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "postDocumentosFirmadoBorrador",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudDocumentoBorradorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ResultFirmadoBorradorEIngresar"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "String jsonBody = \"{\\n\" + \n    \"    \\\"reservado\\\": false,\\n\" + \n    \"    \\\"tipo_id\\\": 1,\\n\" + \n    \"    \\\"descripcion\\\": \\\"Descripción borrador\\\",\\n\" + \n    \"    \\\"materia\\\": \\\"Materia borrador\\\",\\n\" + \n    \"    \\\"nombre\\\": \\\"Nombre borrador\\\",\\n\" + \n    \"    \\\"documento\\\": \\\"BASE64_ENCODED_PDF_CONTENT\\\",\\n\" + \n    \"    \\\"id_entidad_creadora\\\": 12,\\n\" + \n    \"    \\\"run_usuario_creador\\\": 12345678,\\n\" + \n    \"    \\\"listado_id_entidades_destinatarias\\\": [34]\\n\" + \n    \"}\";\n\nHttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/firmado/borrador\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .header(\"Content-Type\", \"application/json\")\n    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/usuarios/": {
+      "get": {
+        "tags": [
+          "E03 Usuarios"
+        ],
+        "summary": "Método para obtener usuarios o destinatarios",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getUsuarios",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "description": "Nombre o Apellido del usuario. Búsqueda por coincidencia",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "run",
+            "in": "query",
+            "description": "RUN de usuario sin guion y ni dígito verficador. Ej.: 12040901",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreEntidad",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idEntidad",
+            "in": "query",
+            "description": "ID de la entidad",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreOrganismo",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idOrganismo",
+            "in": "query",
+            "description": "ID del organismo",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "description": "Tipo rol usuario: 1=tramitador | 2=OP Salida | 3=OP Entrada | 4=Admin",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Tipo rol usuario: 1=tramitador | 2=OP Salida | 3=OP Entrada | 4=Admin",
+              "enum": [
+                "1,2,3,4"
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Tamaño de página de datos. Por defecto 50.000 registros. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número de la página solicitada (índice base 0). <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Tipo de ordenamiento",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListUsuario"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/usuarios/?nombre=Juan&pageSize=50\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/tipos/visaciones/": {
+      "get": {
+        "tags": [
+          "E05 Tipos"
+        ],
+        "summary": "Método para obtener tipos de visación",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getTiposVisaciones",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListTipoVisacion"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/tipos/visaciones/\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/tipos/documentos/": {
+      "get": {
+        "tags": [
+          "E05 Tipos"
+        ],
+        "summary": "Método para obtener tipos de documentos",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getTiposDocumentos",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListTipoDocumento"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/tipos/documentos/\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/layouts/": {
+      "get": {
+        "tags": [
+          "E04 Layouts"
+        ],
+        "summary": "[ENDPOINT DEPRECACADO] Método para obtener layouts de visación/firma",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getLayoutVisacionFirma",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/layouts/\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/entidades/token": {
+      "get": {
+        "tags": [
+          "E02 Entidades"
+        ],
+        "summary": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "description": "Método para obtener las entidades activas asociadas al token de autenticación",
+        "operationId": "getEntidadesAsociadasAlToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListEntidad"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/entidades/token\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/entidades/": {
+      "get": {
+        "tags": [
+          "E02 Entidades"
+        ],
+        "summary": "Puede utilizar parámetros de entrada para acotar la búsqueda.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "description": "Método para obtener entidades",
+        "operationId": "getEntidades",
+        "parameters": [
+          {
+            "name": "nombreEntidad",
+            "in": "query",
+            "description": "Nombre de la entidad",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idEntidad",
+            "in": "query",
+            "description": "ID de la entidad",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreOrganismo",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idOrganismo",
+            "in": "query",
+            "description": "ID de la organismo",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Tamaño de página de datos. Por defecto 50.000 registros. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número de la página solicitada (índice base 0). <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Tipo de ordenamiento",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListEntidad"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/entidades/?nombreEntidad=Gobierno&pageSize=50\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/{id}": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para obtener información de un documento principal no reservado por ID",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getDocumentoById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2DocumentoResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/123\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/{id}/reservado/archivo": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "[ENDPOINT DEPRECACADO] Utilizar: /{id}/archivo/descargar. Método para obtener el archivo(Base64) de un documento principal reservado por ID",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getDocumentoReservado",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "archivo_id",
+            "in": "query",
+            "description": "Identificador del archivo",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/123/reservado/archivo\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/{id}/estado": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para obtener información del estado actual de un documento principal y su historial",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getEstadoDocumento",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2DocumentStatus"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/123/estado\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/{id}/archivo": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "[ENDPOINT DEPRECACADO] Utilizar: /{id}/archivo/descargar. Método para obtener el archivo(Base64) de un documento principal no reservado o anexo por ID",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getArchivoPrincipal",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "archivo_id",
+            "in": "query",
+            "description": "Identificador del archivo",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/123/archivo\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/{id}/archivo/descargar": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para descargar el archivo(Bytes) de un documento principal o anexo por ID.",
+        "description": "\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "downloadDocumento",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador del documento",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "archivo_id",
+            "in": "query",
+            "description": "Identificador del archivo",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/123/archivo/descargar\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/recibidos": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para obtener los documentos recibidos por la entidad asociada al token de autenticación",
+        "description": "Puede utilizar parámetros de entrada para acotar la búsqueda de documentos recibidos.\n\nEn caso de tener múltiples entidades asociadas al token de acceso, puede utilizar el parámetro 'entidadDestinataria' para filtrar los documentos recibidos por una entidad específica del token.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getDocumentosRecibidos",
+        "parameters": [
+          {
+            "name": "materia",
+            "in": "query",
+            "description": "Materia del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipoDocumentoId",
+            "in": "query",
+            "description": "Identificador del tipo de documento. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "descripcion",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidadCreadora",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "entidadDestinataria",
+            "in": "query",
+            "description": "Identificador de entidad destinataria del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "fechaInicioCreacion",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinCreacion",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaInicioFolio",
+            "in": "query",
+            "description": "Fecha de folio y despacho del documento desde. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinFolio",
+            "in": "query",
+            "description": "Fecha de folio y despacho del documento hasta. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notificado",
+            "in": "query",
+            "description": "Indica si documento tiene acuse-recibo por entidad destinataria (acuso-recibo=true/pendiente=false)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "distribuido",
+            "in": "query",
+            "description": "Indica si documento fue derivado por entidad destinataria (derivado=true/pendiente=false)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tipoTramitacion",
+            "in": "query",
+            "description": "Tipo de tramitación del documento <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COMUNICACION_OFICIAL",
+                "COMUNICACION_INTERNA",
+                "GENERACION_DOCUMENTO_FEA"
+              ]
+            }
+          },
+          {
+            "name": "estadoTramitacion",
+            "in": "query",
+            "description": "Estado de la tramitación <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BORRADOR",
+                "PENDIENTE_VISACION",
+                "PENDIENTE_FIRMA",
+                "OPS_PENDIENTE_DESPACHO",
+                "OPS_RESUELTO_ENVIADO",
+                "OPS_RECHAZADO",
+                "RECHAZADO_VISACION",
+                "RECHAZADO_FIRMA",
+                "OPE_RECIBIDO_PARCIALMENTE",
+                "OPE_DEVUELTO_PARCIALMENTE",
+                "OPE_RECIBIDO_PARCIALMENTE_CON_DEVOLUCION",
+                "OPE_RECEPCION_TOTAL",
+                "OPE_DEVOLUCION_TOTAL",
+                "OPE_RECEPCION_TOTAL_CON_DEVOLUCION",
+                "DOCUMENTO_FIRMADO",
+                "CANCELADO_ADMINISTRADOR"
+              ]
+            }
+          },
+          {
+            "name": "tipoDocumento",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO] utilizar: pageSize",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Tamaño de página de datos. Por defecto 50.000 registros. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número de la página solicitada (índice base 0). <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Tipo de ordenamiento",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListDocumentoResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/recibidos?pageSize=50\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/creados": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para obtener los documentos creados por la entidad asociada al token de autenticación",
+        "description": "Puede utilizar parámetros de entrada para acotar la búsqueda de documentos creados.\n\nEn caso de tener múltiples entidades asociadas al token de acceso, puede utilizar el parámetro 'entidadCreadora' para filtrar los documentos creados por una entidad específica del token.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getDocumentosCreados",
+        "parameters": [
+          {
+            "name": "materia",
+            "in": "query",
+            "description": "Materia del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipoDocumentoId",
+            "in": "query",
+            "description": "Identificador del tipo de documento. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "descripcion",
+            "in": "query",
+            "description": "Descripción del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidadCreadora",
+            "in": "query",
+            "description": "Identificador de entidad creadora del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "entidadDestinataria",
+            "in": "query",
+            "description": "Identificador de entidad destinataria del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "fechaInicioCreacion",
+            "in": "query",
+            "description": "Fecha creación desde tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinCreacion",
+            "in": "query",
+            "description": "Fecha creación hasta tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaInicioFolio",
+            "in": "query",
+            "description": "Fecha actualización desde tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinFolio",
+            "in": "query",
+            "description": "Fecha actualización hasta tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "foliado",
+            "in": "query",
+            "description": "Indica si documento fue foliado-despachado por la entidad creadora (foliado-despachado=true/pendiente=false)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tipoTramitacion",
+            "in": "query",
+            "description": "Tipo de tramitación del documento <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COMUNICACION_OFICIAL",
+                "COMUNICACION_INTERNA",
+                "GENERACION_DOCUMENTO_FEA"
+              ]
+            }
+          },
+          {
+            "name": "estadoTramitacion",
+            "in": "query",
+            "description": "Estado de la tramitación <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BORRADOR",
+                "PENDIENTE_VISACION",
+                "PENDIENTE_FIRMA",
+                "OPS_PENDIENTE_DESPACHO",
+                "OPS_RESUELTO_ENVIADO",
+                "OPS_RECHAZADO",
+                "RECHAZADO_VISACION",
+                "RECHAZADO_FIRMA",
+                "OPE_RECIBIDO_PARCIALMENTE",
+                "OPE_DEVUELTO_PARCIALMENTE",
+                "OPE_RECIBIDO_PARCIALMENTE_CON_DEVOLUCION",
+                "OPE_RECEPCION_TOTAL",
+                "OPE_DEVOLUCION_TOTAL",
+                "OPE_RECEPCION_TOTAL_CON_DEVOLUCION",
+                "DOCUMENTO_FIRMADO",
+                "CANCELADO_ADMINISTRADOR"
+              ]
+            }
+          },
+          {
+            "name": "tipoDocumento",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notificado",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "distribuido",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "runCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO] utilizar: pageSize",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Tamaño de página de datos. Por defecto 50.000 registros. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número de la página solicitada (índice base 0). <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Tipo de ordenamiento",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListDocumentoResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/creados?pageSize=50\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/creados/enviados": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para obtener los documentos foliados/enviados por la entidad asociada al token de autenticación",
+        "description": "Puede utilizar parámetros de entrada para acotar la búsqueda de documentos creados.\n\nEn caso de tener múltiples entidades asociadas al token de acceso, puede utilizar el parámetro 'entidadCreadora' para filtrar los documentos creados por una entidad específica del token.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "getDocumentosCreadosEnviados",
+        "parameters": [
+          {
+            "name": "materia",
+            "in": "query",
+            "description": "Materia del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipoDocumentoId",
+            "in": "query",
+            "description": "Identificador del tipo de documento. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "descripcion",
+            "in": "query",
+            "description": "Descripción del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidadCreadora",
+            "in": "query",
+            "description": "Identificador de entidad creadora del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "entidadDestinataria",
+            "in": "query",
+            "description": "Identificador de entidad destinataria del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "fechaInicioCreacion",
+            "in": "query",
+            "description": "Fecha creación desde tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinCreacion",
+            "in": "query",
+            "description": "Fecha creación hasta tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaInicioFolio",
+            "in": "query",
+            "description": "Fecha actualización desde tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinFolio",
+            "in": "query",
+            "description": "Fecha actualización hasta tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipoTramitacion",
+            "in": "query",
+            "description": "Tipo de tramitación del documento <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COMUNICACION_OFICIAL",
+                "COMUNICACION_INTERNA",
+                "GENERACION_DOCUMENTO_FEA"
+              ]
+            }
+          },
+          {
+            "name": "estadoTramitacion",
+            "in": "query",
+            "description": "Estado de la tramitación <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BORRADOR",
+                "PENDIENTE_VISACION",
+                "PENDIENTE_FIRMA",
+                "OPS_PENDIENTE_DESPACHO",
+                "OPS_RESUELTO_ENVIADO",
+                "OPS_RECHAZADO",
+                "RECHAZADO_VISACION",
+                "RECHAZADO_FIRMA",
+                "OPE_RECIBIDO_PARCIALMENTE",
+                "OPE_DEVUELTO_PARCIALMENTE",
+                "OPE_RECIBIDO_PARCIALMENTE_CON_DEVOLUCION",
+                "OPE_RECEPCION_TOTAL",
+                "OPE_DEVOLUCION_TOTAL",
+                "OPE_RECEPCION_TOTAL_CON_DEVOLUCION",
+                "DOCUMENTO_FIRMADO",
+                "CANCELADO_ADMINISTRADOR"
+              ]
+            }
+          },
+          {
+            "name": "tipoDocumento",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notificado",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "distribuido",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "runCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO] utilizar: pageSize",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Tamaño de página de datos. Por defecto 50.000 registros. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número de la página solicitada (índice base 0). <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Tipo de ordenamiento",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListDocumentoResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/creados/enviados?pageSize=50\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    },
+    "/documentos/buscar": {
+      "get": {
+        "tags": [
+          "E01 Documentos"
+        ],
+        "summary": "Método para obtener documentos según parámetros de búsqueda",
+        "description": "Puede utilizar parámetros de entrada para acotar la búsqueda.\n\nEn caso que los parámetros 'entidadCreadora' y 'entidadDestinataria' no sean proporcionados se establecerá 'entidadCreadora' con las entidades asociadas al token de acceso.\n\n\tRequiere HEADER de autorización otorgando el token de acceso: 'Authorization: Bearer [access_token]'.",
+        "operationId": "buscarDocumentos",
+        "parameters": [
+          {
+            "name": "materia",
+            "in": "query",
+            "description": "Materia del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipoDocumentoId",
+            "in": "query",
+            "description": "Identificador del tipo de documento. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "descripcion",
+            "in": "query",
+            "description": "Descripción del documento.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidadCreadora",
+            "in": "query",
+            "description": "Identificador de entidad creadora del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "entidadDestinataria",
+            "in": "query",
+            "description": "Identificador de entidad destinataria del documento.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "fechaInicioCreacion",
+            "in": "query",
+            "description": "Fecha creación desde tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinCreacion",
+            "in": "query",
+            "description": "Fecha creación hasta tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaInicioFolio",
+            "in": "query",
+            "description": "Fecha actualización desde tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaFinFolio",
+            "in": "query",
+            "description": "Fecha actualización hasta tramitación documento. Formato dd-MM-yyyy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "foliado",
+            "in": "query",
+            "description": "Indica si documento fue foliado-despachado por la entidad creadora (foliado-despachado=true/pendiente=false)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "tipoTramitacion",
+            "in": "query",
+            "description": "Tipo de tramitación del documento <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COMUNICACION_OFICIAL",
+                "COMUNICACION_INTERNA",
+                "GENERACION_DOCUMENTO_FEA"
+              ]
+            }
+          },
+          {
+            "name": "estadoTramitacion",
+            "in": "query",
+            "description": "Estado de la tramitación <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BORRADOR",
+                "PENDIENTE_VISACION",
+                "PENDIENTE_FIRMA",
+                "OPS_PENDIENTE_DESPACHO",
+                "OPS_RESUELTO_ENVIADO",
+                "OPS_RECHAZADO",
+                "RECHAZADO_VISACION",
+                "RECHAZADO_FIRMA",
+                "OPE_RECIBIDO_PARCIALMENTE",
+                "OPE_DEVUELTO_PARCIALMENTE",
+                "OPE_RECIBIDO_PARCIALMENTE_CON_DEVOLUCION",
+                "OPE_RECEPCION_TOTAL",
+                "OPE_DEVOLUCION_TOTAL",
+                "OPE_RECEPCION_TOTAL_CON_DEVOLUCION",
+                "DOCUMENTO_FIRMADO",
+                "CANCELADO_ADMINISTRADOR"
+              ]
+            }
+          },
+          {
+            "name": "tipoDocumento",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notificado",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "distribuido",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "runCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreCreador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreVisador",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreFirmante",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "runDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "nombreDestinatario",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO]",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "[ATRIBUTO DEPRECADO] utilizar: pageSize",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Tamaño de página de datos. Por defecto 50.000 registros. <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número de la página solicitada (índice base 0). <b>[NUEVO ATRIBUTO]</b>",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "description": "Tipo de ordenamiento",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponseV2ListDocumentoResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Java",
+            "source": "HttpRequest request = HttpRequest.newBuilder()\n    .uri(URI.create(\"https://api-demodoc.digital.gob.cl/api/documentos/buscar?materia=Oficio&pageSize=50\"))\n    .header(\"Authorization\", \"Bearer YOUR_ACCESS_TOKEN\")\n    .GET()\n    .build();\n\nHttpClient client = HttpClient.newHttpClient();\nHttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n\nSystem.out.println(response.body());"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseResponseV2Boolean": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "boolean",
+            "description": "Resultado o retorno de la operación"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "OficinaPartesRecepcionRechazoRequest": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "description": "Motivo de rechazo del documento. Entre 3 y 255 caracteres",
+            "maxLength": 255,
+            "minLength": 3
+          },
+          "entidadDestinataria": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador de entidad destinataria (Opcional)",
+            "minimum": 1
+          }
+        }
+      },
+      "BaseResponseV2DocumentoRecibidoAcusoReciboResponse": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "$ref": "#/components/schemas/DocumentoRecibidoAcusoReciboResponse",
+            "description": "Resultado o retorno de la operación"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "DocumentoRecibidoAcusoReciboResponse": {
+        "type": "object",
+        "properties": {
+          "completada": {
+            "type": "boolean"
+          },
+          "tareaSiguienteId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "OficinaPartesRecepcionRequest": {
+        "type": "object",
+        "properties": {
+          "entidadDestinataria": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador de entidad destinataria (Opcional)",
+            "minimum": 1
+          }
+        }
+      },
+      "DocumentosAnexosRequest": {
+        "type": "object",
+        "properties": {
+          "nombre_archivo": {
+            "type": "string",
+            "description": "Nombre del archivo(incluir extensión si es tipo anexo)"
+          },
+          "tipo": {
+            "type": "string",
+            "description": "Tipo de archivo",
+            "enum": [
+              "anexo, url"
+            ],
+            "maxLength": 2147483647,
+            "minLength": 1
+          },
+          "contenido": {
+            "type": "string",
+            "description": "Contenido del archivo en base 64(tipo anexo) o url según corresponda. Tamaño máximo del archivo 50 MB"
+          }
+        },
+        "required": [
+          "tipo"
+        ]
+      },
+      "SolicitudDocumentoRequest": {
+        "type": "object",
+        "description": "Solicitud de creación y despacho de un documento",
+        "properties": {
+          "reservado": {
+            "type": "boolean"
+          },
+          "tipo_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Tipo de documento. Ver método /api/tipos/documentos/",
+            "minimum": 1
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripción del documento. Entre 1 y 250 caracteres",
+            "maxLength": 250,
+            "minLength": 1
+          },
+          "materia": {
+            "type": "string",
+            "description": "Materia o tema del documento. Entre 1 y 150 caracteres",
+            "maxLength": 150,
+            "minLength": 1
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Nombre del archivo principal",
+            "maxLength": 255,
+            "minLength": 1
+          },
+          "documento": {
+            "type": "string",
+            "description": "Archivo principal formato PDF en base 64. Tamaño máximo del archivo 20 MB",
+            "maxLength": 2147483647,
+            "minLength": 1
+          },
+          "es_reservado": {
+            "type": "boolean",
+            "description": "Indicador de si el documento es reservado o no"
+          },
+          "documentos_anexos": {
+            "type": "array",
+            "description": "Listado de archivos anexos al documento",
+            "items": {
+              "$ref": "#/components/schemas/DocumentosAnexosRequest"
+            }
+          },
+          "id_entidad_creadora": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador de la entidad creadora del documento",
+            "minimum": 1
+          },
+          "run_usuario_creador": {
+            "type": "string",
+            "description": "RUN de usuario creador"
+          },
+          "folio": {
+            "type": "string",
+            "description": "Folio del documento a distribuir",
+            "maxLength": 2147483647,
+            "minLength": 1
+          },
+          "listado_id_usuarios_destinatarios": {
+            "type": "array",
+            "description": "Lista de Identificadores de usuarios destinatarios",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "listado_id_entidades_destinatarias": {
+            "type": "array",
+            "description": "Lista de Identificadores de entidades destinatarias",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "listado_correos_copia": {
+            "type": "array",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO]",
+            "items": {
+              "type": "string",
+              "deprecated": true
+            }
+          },
+          "tipoDocumentoOficial": {
+            "$ref": "#/components/schemas/TipoDocumentoOficialRequest",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO] Utilizar: tipo_id"
+          }
+        },
+        "required": [
+          "documento",
+          "folio",
+          "id_entidad_creadora",
+          "listado_id_entidades_destinatarias",
+          "materia",
+          "nombre",
+          "tipo_id"
+        ]
+      },
+      "TipoDocumentoOficialRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO]"
+          }
+        }
+      },
+      "BaseResponseV2ResultFirmadoBorradorEIngresar": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "$ref": "#/components/schemas/ResultFirmadoBorradorEIngresar",
+            "description": "Resultado o retorno de la operación"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "ResultAnexos": {
+        "type": "object",
+        "properties": {
+          "id_documento_anexo": {
+            "type": "string"
+          },
+          "nombre_anexo": {
+            "type": "string"
+          }
+        }
+      },
+      "ResultFirmadoBorradorEIngresar": {
+        "type": "object",
+        "properties": {
+          "fecha_ingreso": {
+            "type": "string"
+          },
+          "id_documento": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "id_solicitud": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "anexos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResultAnexos"
+            }
+          }
+        }
+      },
+      "SolicitudDocumentoBorradorRequest": {
+        "type": "object",
+        "description": "Solicitud de creación de un documento borrador",
+        "properties": {
+          "reservado": {
+            "type": "boolean"
+          },
+          "tipo_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Tipo de documento. Ver método /api/tipos/documentos/",
+            "minimum": 1
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripción del documento. Entre 1 y 250 caracteres",
+            "maxLength": 250,
+            "minLength": 1
+          },
+          "materia": {
+            "type": "string",
+            "description": "Materia o tema del documento. Entre 1 y 150 caracteres",
+            "maxLength": 150,
+            "minLength": 1
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Nombre del archivo principal",
+            "maxLength": 255,
+            "minLength": 1
+          },
+          "documento": {
+            "type": "string",
+            "description": "Archivo principal formato PDF en base 64. Tamaño máximo del archivo 20 MB",
+            "maxLength": 2147483647,
+            "minLength": 1
+          },
+          "es_reservado": {
+            "type": "boolean",
+            "description": "Indicador de si el documento es reservado o no"
+          },
+          "documentos_anexos": {
+            "type": "array",
+            "description": "Listado de archivos anexos al documento",
+            "items": {
+              "$ref": "#/components/schemas/DocumentosAnexosRequest"
+            }
+          },
+          "id_entidad_creadora": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador de la entidad creadora del documento",
+            "minimum": 1
+          },
+          "run_usuario_creador": {
+            "type": "string",
+            "description": "RUN de usuario creador"
+          },
+          "listado_id_usuarios_destinatarios": {
+            "type": "array",
+            "description": "Lista de Identificadores de usuarios destinatarios",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "listado_id_entidades_destinatarias": {
+            "type": "array",
+            "description": "Lista de Identificadores de entidades destinatarias",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "listado_correos_copia": {
+            "type": "array",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO]",
+            "items": {
+              "type": "string",
+              "deprecated": true
+            }
+          },
+          "tipoDocumentoOficial": {
+            "$ref": "#/components/schemas/TipoDocumentoOficialRequest",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO] Utilizar: tipo_id"
+          }
+        },
+        "required": [
+          "documento",
+          "id_entidad_creadora",
+          "listado_id_entidades_destinatarias",
+          "materia",
+          "nombre",
+          "tipo_id"
+        ]
+      },
+      "BaseResponseV2ListUsuario": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "array",
+            "description": "Resultado o retorno de la operación",
+            "items": {
+              "$ref": "#/components/schemas/Usuario"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "Usuario": {
+        "type": "object",
+        "description": "Usuario",
+        "properties": {
+          "usuario_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador usuario"
+          },
+          "usuario_run": {
+            "type": "string",
+            "description": "RUN usuario"
+          },
+          "usuario_nombre": {
+            "type": "string",
+            "description": "Nombre completo usuario"
+          },
+          "usuario_email": {
+            "type": "string",
+            "description": "Email usuario"
+          },
+          "usuario_cargo": {
+            "type": "string",
+            "description": "Cargo usuario"
+          },
+          "entidad_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador entidad a la que el usuario pertenece"
+          },
+          "entidad_nombre": {
+            "type": "string",
+            "description": "Nombre entidad a la que el usuario pertenece"
+          },
+          "organismo_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador entidad padre o superior de la entidad del usuario"
+          },
+          "organismo_nombre": {
+            "type": "string",
+            "description": "Nombre entidad padre o superior de la entidad del usuario"
+          }
+        }
+      },
+      "BaseResponseV2ListTipoVisacion": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "array",
+            "description": "Resultado o retorno de la operación",
+            "items": {
+              "$ref": "#/components/schemas/TipoVisacion"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "TipoVisacion": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "tipo_id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "BaseResponseV2ListTipoDocumento": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "array",
+            "description": "Resultado o retorno de la operación",
+            "items": {
+              "$ref": "#/components/schemas/TipoDocumento"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "TipoDocumento": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "tipo_id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "BaseResponseV2ListEntidad": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "array",
+            "description": "Resultado o retorno de la operación",
+            "items": {
+              "$ref": "#/components/schemas/Entidad"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "Entidad": {
+        "type": "object",
+        "properties": {
+          "entidad_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador entidad"
+          },
+          "entidad_nombre": {
+            "type": "string",
+            "description": "Nombre entidad"
+          },
+          "entidad_padre_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador entidad padre"
+          },
+          "organismo": {
+            "$ref": "#/components/schemas/Organismo",
+            "description": "Organismo"
+          }
+        }
+      },
+      "Organismo": {
+        "type": "object",
+        "properties": {
+          "organismo_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador entidad Padre"
+          },
+          "organismo_nombre": {
+            "type": "string",
+            "description": "Nombre entidad Padre"
+          }
+        }
+      },
+      "BaseResponseV2DocumentoResponse": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "$ref": "#/components/schemas/DocumentoResponse",
+            "description": "Resultado o retorno de la operación"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "ConCopiaDestinatario": {
+        "type": "object",
+        "properties": {
+          "entidades": {
+            "type": "array",
+            "description": "Listado de entidades",
+            "items": {
+              "$ref": "#/components/schemas/EntidadDestinataria"
+            }
+          },
+          "correos": {
+            "type": "array",
+            "deprecated": true,
+            "description": "Listado de correos electrónicos[ATRIBUTO DEPRECADO]",
+            "items": {
+              "type": "string",
+              "deprecated": true
+            }
+          }
+        }
+      },
+      "DistribucionDestinatario": {
+        "type": "object",
+        "properties": {
+          "reservado": {
+            "type": "boolean",
+            "description": "Indica documento reservado"
+          },
+          "usuarios_destinatarios": {
+            "type": "array",
+            "description": "Listado de usuarios destinatarios",
+            "items": {
+              "$ref": "#/components/schemas/Usuario"
+            }
+          },
+          "con_copia": {
+            "$ref": "#/components/schemas/ConCopiaDestinatario",
+            "description": "Destinatarios en copia"
+          }
+        }
+      },
+      "DocumentoAnexo": {
+        "type": "object",
+        "description": "Documento anexo",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador archivo anexo <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "correlativo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Correlativo del archivo anexo <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "contenido": {
+            "type": "string",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO]"
+          },
+          "tipo": {
+            "type": "string",
+            "description": "Tipo anexo",
+            "enum": [
+              "anexo, url"
+            ]
+          },
+          "anexo_id": {
+            "type": "string",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO] Utilizar: id"
+          },
+          "nombre_archivo": {
+            "type": "string",
+            "description": "Nombre anexo"
+          },
+          "url_documento": {
+            "type": "string",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO] Utilizar: url_descarga"
+          },
+          "url_descarga": {
+            "type": "string",
+            "description": "Url de descarga del archivo. <b>[NUEVO ATRIBUTO]</b>"
+          }
+        }
+      },
+      "DocumentoPrincipal": {
+        "type": "object",
+        "description": "Documento principal",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador archivo principal <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "materia": {
+            "type": "string",
+            "description": "Materia o tema del documento"
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Breve descripción del documento"
+          },
+          "contenido": {
+            "type": "string",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO]"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "description": "Fecha de creación de documento"
+          },
+          "foliado": {
+            "type": "boolean",
+            "description": "Indica si documento tiene folio"
+          },
+          "folio": {
+            "type": "string",
+            "description": "Folio documento"
+          },
+          "fechaFolio": {
+            "type": "string",
+            "description": "Fecha de folio documento"
+          },
+          "metadata": {
+            "type": "string",
+            "description": "Metadata del documento"
+          },
+          "documento_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador documento"
+          },
+          "nombre_archivo": {
+            "type": "string",
+            "description": "Nombre archivo principal documento"
+          },
+          "url_documento": {
+            "type": "string",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO] Utilizar: url_descarga"
+          },
+          "url_descarga": {
+            "type": "string",
+            "description": "Url de descarga del archivo. <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "tipo_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Identificador tipo de documento"
+          },
+          "tipo": {
+            "type": "string",
+            "description": "Descripción tipo de documento"
+          },
+          "metadata_version": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Versión de la metadata del documento <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "atributos_adicionales": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Atributos adicionales del documento <b>[NUEVO ATRIBUTO]</b>"
+          }
+        }
+      },
+      "DocumentoResponse": {
+        "type": "object",
+        "description": "Documento v2",
+        "properties": {
+          "solicitud_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador de la tramitación"
+          },
+          "documento_principal": {
+            "$ref": "#/components/schemas/DocumentoPrincipal",
+            "description": "Documento principal"
+          },
+          "documentos_anexos": {
+            "type": "array",
+            "description": "Listado de documentos anexos",
+            "items": {
+              "$ref": "#/components/schemas/DocumentoAnexo"
+            }
+          },
+          "info_creador": {
+            "$ref": "#/components/schemas/Usuario",
+            "description": "Datos usuario creador del documento"
+          },
+          "info_visaciones": {
+            "$ref": "#/components/schemas/Visaciones",
+            "description": "Información de visaciones del documento"
+          },
+          "info_firmas": {
+            "$ref": "#/components/schemas/Firmas",
+            "description": "Información de firmas del documento"
+          },
+          "destinatarios": {
+            "$ref": "#/components/schemas/DistribucionDestinatario",
+            "description": "Destinatarios del documento"
+          },
+          "entidad_creadora_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador Entidad Creadora"
+          },
+          "resumen_entidades_destinatarias": {
+            "type": "array",
+            "description": "Listado de identificadores de entidades destinatarias",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "tipo_tramitacion": {
+            "type": "string",
+            "description": "Tipo de tramitación del documento <b>[NUEVO ATRIBUTO]</b>",
+            "enum": [
+              "COMUNICACION_OFICIAL",
+              "COMUNICACION_INTERNA",
+              "GENERACION_DOCUMENTO_FEA"
+            ]
+          },
+          "estado_tramitacion": {
+            "type": "string",
+            "description": "Estado de la tramitación <b>[NUEVO ATRIBUTO]</b>",
+            "enum": [
+              "BORRADOR",
+              "PENDIENTE_VISACION",
+              "PENDIENTE_FIRMA",
+              "OPS_PENDIENTE_DESPACHO",
+              "OPS_RESUELTO_ENVIADO",
+              "OPS_RECHAZADO",
+              "RECHAZADO_VISACION",
+              "RECHAZADO_FIRMA",
+              "OPE_RECIBIDO_PARCIALMENTE",
+              "OPE_DEVUELTO_PARCIALMENTE",
+              "OPE_RECIBIDO_PARCIALMENTE_CON_DEVOLUCION",
+              "OPE_RECEPCION_TOTAL",
+              "OPE_DEVOLUCION_TOTAL",
+              "OPE_RECEPCION_TOTAL_CON_DEVOLUCION",
+              "DOCUMENTO_FIRMADO",
+              "CANCELADO_ADMINISTRADOR"
+            ]
+          }
+        }
+      },
+      "EntidadDestinataria": {
+        "type": "object",
+        "properties": {
+          "entidad_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificador entidad"
+          },
+          "entidad_nombre": {
+            "type": "string",
+            "description": "Nombre entidad"
+          },
+          "entidad_padre_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Identificador entidad padre"
+          },
+          "organismo": {
+            "$ref": "#/components/schemas/Organismo",
+            "description": "Organismo"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado"
+          },
+          "motivo": {
+            "type": "string",
+            "description": "Motivo"
+          }
+        }
+      },
+      "Firmas": {
+        "type": "object",
+        "description": "Firma",
+        "properties": {
+          "firmantes": {
+            "type": "array",
+            "description": "Listado de usuarios firmantes",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Usuario"
+              }
+            }
+          },
+          "layout_id": {
+            "type": "integer",
+            "format": "int32",
+            "deprecated": true,
+            "description": "[ATRIBUTO DEPRECADO]"
+          },
+          "pagina_numero": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de firma del documento <b>[NUEVO ATRIBUTO]</b>"
+          }
+        }
+      },
+      "Visaciones": {
+        "type": "object",
+        "description": "Visación",
+        "properties": {
+          "visadores": {
+            "type": "array",
+            "description": "Usuarios visadores",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Usuario"
+              }
+            }
+          },
+          "tipo_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Identificador tipo de visación"
+          },
+          "tipo_descripcion": {
+            "type": "string",
+            "description": "Descripción tipo de visación <b>[NUEVO ATRIBUTO]</b>"
+          }
+        }
+      },
+      "BaseResponseV2String": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "string",
+            "description": "Resultado o retorno de la operación"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "BaseResponseV2DocumentStatus": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "$ref": "#/components/schemas/DocumentStatus",
+            "description": "Resultado o retorno de la operación"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      },
+      "DocumentStatus": {
+        "type": "object",
+        "properties": {
+          "documento_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "documento_estado": {
+            "type": "string"
+          },
+          "documento_estado_fecha": {
+            "type": "string"
+          },
+          "documento_historial": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentoHistory"
+            }
+          }
+        }
+      },
+      "DocumentoHistory": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string"
+          },
+          "evento": {
+            "type": "string"
+          },
+          "usuario_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "usuario_nombre": {
+            "type": "string"
+          },
+          "usuario_entidad": {
+            "type": "string"
+          }
+        }
+      },
+      "BaseResponseV2ListDocumentoResponse": {
+        "type": "object",
+        "description": "Respuesta común endpoints APIv2",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación (http status code)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje del estado de la operación. En caso exitoso su valor es OK"
+          },
+          "errorCode": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Código de estado operación en caso de error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalle del estado de la operación en caso de error."
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Cantidad de registros retornados o afectados por la operación"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Fecha/hora de la operación"
+          },
+          "result": {
+            "type": "array",
+            "description": "Resultado o retorno de la operación",
+            "items": {
+              "$ref": "#/components/schemas/DocumentoResponse"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total de registros encontrados <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total de páginas de datos <b>[NUEVO ATRIBUTO]</b>"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Página de datos retornada <b>[NUEVO ATRIBUTO]</b>"
+          }
+        },
+        "required": [
+          "count",
+          "message",
+          "page",
+          "status",
+          "total_count",
+          "total_pages"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT obtenido desde el endpoint /oauth/token. Debe enviarse en la cabecera Authorization utilizando el esquema Bearer.\n\nEjemplo:\nAuthorization: Bearer eyJhbGciOi..."
+      }
+    }
+  }
+}

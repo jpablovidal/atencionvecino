@@ -14,18 +14,18 @@ use App\Services\AuditoriaService;
 use App\Services\DocumentoService;
 use App\Services\ExpedienteService;
 use App\Services\Interop\ComunicacionService;
-use App\Services\Interop\DocDigital\DocDigitalClient;
 use App\Services\Interop\DocDigital\DocDigitalException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Tests\Support\DocDigitalApi;
 use Tests\Support\Escenario;
 use Tests\TestCase;
 
 /** Ciclo completo: recibir por DocDigital → expediente → acuse → gestión → respuesta (decreto/oficio/…) → despacho. */
 class RecepcionDocDigitalTest extends TestCase
 {
-    use Escenario, RefreshDatabase;
+    use DocDigitalApi, Escenario, RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -36,23 +36,26 @@ class RecepcionDocDigitalTest extends TestCase
 
     private function modo(string $m): void
     {
-        config(['sgd.docdigital.mode' => $m, 'sgd.docdigital.url_demo' => 'https://demodoc.ejemplo.gob.cl', 'sgd.docdigital.api_token' => 'tok', 'sgd.docdigital.path_enviar' => '/api/v2/enviar',
-            'sgd.docdigital.path_recibidos' => '/api/v2/recibidos', 'sgd.docdigital.path_acuse' => '/api/v2/acuse']);
-        $this->app->forgetInstance(DocDigitalClient::class);
-        $this->app->forgetInstance(ComunicacionService::class);
+        $this->ddConfig($m);
     }
 
-    private function recibir(array $ids = ['IN-1']): void
+    /** @param list<int> $ids */
+    private function recibir(array $ids = [101]): void
     {
-        $docs = array_map(fn ($id) => ['id' => $id, 'asunto' => "Oficio {$id} del GORE", 'origen' => ['codigo' => 'DEMO-GORE-VAL', 'nombre' => 'Gobierno Regional de Valparaíso'], 'archivo' => ['content' => base64_encode($this->pdfValido("<<$id>>"))]], $ids);
-        Http::fake(['demodoc.ejemplo.gob.cl/api/v2/recibidos' => Http::response(['documentos' => $docs], 200)]);
+        $asuntos = [];
+        $pdfs = [];
+        foreach ($ids as $id) {
+            $asuntos[$id] = "Oficio {$id} del GORE";
+            $pdfs[$id] = $this->pdfValido("<<$id>>");
+        }
+        $this->ddFake($asuntos, $pdfs);
         app(ComunicacionService::class)->sincronizarRecibidos();
     }
 
     public function test_cada_comunicacion_recibida_crea_un_expediente_con_identificador_unico(): void
     {
         $this->modo('demo');
-        $this->recibir(['IN-1', 'IN-2', 'IN-3']);
+        $this->recibir([101, 102, 103]);
         $exps = Expediente::query()->where('origen', 'docdigital')->orderBy('id')->get();
         $this->assertCount(3, $exps);
         $this->assertCount(3, $exps->pluck('codigo')->unique());
@@ -73,7 +76,7 @@ class RecepcionDocDigitalTest extends TestCase
         $this->assertSame('docdigital', $a->ambito);
         $this->assertStringNotContainsString('%PDF', (string) file_get_contents(config('sgd.storage_path').'/'.$a->ruta));
         // idempotente: no duplica expedientes
-        $this->recibir(['IN-1', 'IN-2', 'IN-3']);
+        $this->recibir([101, 102, 103]);
         $this->assertSame(3, Expediente::query()->where('origen', 'docdigital')->count());
         // convive con los expedientes de solicitudes sin colisión de códigos
         $s = app(ExpedienteService::class)->crearDesdeSolicitud($this->solicitudDOM(), $this->usuario('funcionario', 1));
@@ -84,7 +87,7 @@ class RecepcionDocDigitalTest extends TestCase
     {
         $this->modo('demo');
         config(['sgd.docdigital.unidad_recepcion' => 'NO-EXISTE']);
-        Http::fake(['demodoc.ejemplo.gob.cl/*' => Http::response(['documentos' => []], 200)]);
+        $this->ddFake();
         $this->expectException(DocDigitalException::class);
         app(ComunicacionService::class)->sincronizarRecibidos();
     }
@@ -95,7 +98,7 @@ class RecepcionDocDigitalTest extends TestCase
         $mock = $this->partialMock(ExpedienteService::class, fn ($m) => $m->shouldReceive('crearDesdeComunicacion')->andThrow(new \RuntimeException('boom')));
         $this->app->instance(ExpedienteService::class, $mock);
         $this->app->forgetInstance(ComunicacionService::class);
-        Http::fake(['demodoc.ejemplo.gob.cl/*' => Http::response(['documentos' => [['id' => 'X1', 'asunto' => 'A', 'archivo' => ['content' => base64_encode($this->pdfValido())]]]], 200)]);
+        $this->ddFake([201 => 'A'], [201 => $this->pdfValido()]);
         try {
             app(ComunicacionService::class)->sincronizarRecibidos();
             $this->fail('debe propagar');
@@ -120,12 +123,12 @@ class RecepcionDocDigitalTest extends TestCase
         } catch (FlujoException $ex) {
             $this->assertStringContainsString('acusar recibo', $ex->getMessage());
         }
-        Http::fake(['demodoc.ejemplo.gob.cl/api/v2/acuse' => Http::response(['id' => 'ACUSE-55'], 200)]);
+        $this->ddFake();
         $c = ComunicacionOficial::query()->findOrFail($e->comunicacion_id);
         $this->comoFuncionario($sec)->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('ok');
         $c->refresh();
-        $this->assertSame(['registrado', 'api', 'ACUSE-55', $sec->id], [$c->acuse_estado, $c->acuse_tipo, $c->acuse_evidencia, $c->acuse_por_id]);
-        Http::assertSent(fn ($r) => str_contains($r->url(), '/api/v2/acuse') && $r['id'] === 'IN-1' && $r->header('Authorization')[0] === 'Bearer tok');
+        $this->assertSame(['registrado', 'api', 'acuse-101-tarea-77', $sec->id], [$c->acuse_estado, $c->acuse_tipo, $c->acuse_evidencia, $c->acuse_por_id]);
+        Http::assertSent(fn ($r) => $r->method() === 'PUT' && str_ends_with($r->url(), '/documentos/recibidos/101/acusorecibo') && $r->header('Authorization')[0] === 'Bearer tok-dd');
         $this->assertSame('borrador', $ds->crear($e->refresh(), $tipo, null, 'Respuesta', $sec)->estado);
         // un segundo acuse no es posible
         $this->comoFuncionario($sec)->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('error');
@@ -137,7 +140,7 @@ class RecepcionDocDigitalTest extends TestCase
         $this->recibir();
         $e = Expediente::query()->where('origen', 'docdigital')->firstOrFail();
         $c = ComunicacionOficial::query()->findOrFail($e->comunicacion_id);
-        Http::fake(['demodoc.ejemplo.gob.cl/api/v2/acuse' => Http::response([], 500)]);
+        $this->ddFake([], [], [$this->dd.'/documentos/recibidos/*/acusorecibo' => Http::response([], 500)]);
         $this->comoFuncionario($this->usuario('secretario'))->post("/app/comunicaciones/{$c->id}/acuse")->assertSessionHas('error');
         $this->assertSame('pendiente', $c->refresh()->acuse_estado);
         foreach (['funcionario', 'admin', 'auditor'] as $rol) { // otra unidad, admin y auditor no acusan
@@ -198,7 +201,7 @@ class RecepcionDocDigitalTest extends TestCase
         $this->comoFuncionario($this->usuario('funcionario', 1))->post("/app/expedientes/{$e->id}/asignarme")->assertForbidden();
 
         // acuse
-        Http::fake(['demodoc.ejemplo.gob.cl/api/v2/acuse' => Http::response(['id' => 'ACUSE-1'], 200)]);
+        $this->ddFake();
         $this->comoFuncionario($sec)->post("/app/comunicaciones/{$entrante->id}/acuse")->assertSessionHas('ok');
 
         // gestión interna: derivar a otro funcionario y comentar
@@ -218,19 +221,19 @@ class RecepcionDocDigitalTest extends TestCase
         $html = $this->comoFuncionario($sec)->get("/app/expedientes/{$e->id}")->getContent();
         $this->assertMatchesRegularExpression('/<option value="DEMO-GORE-VAL"\s+selected/', $html);
         Queue::fake();
-        $this->comoFuncionario($sec)->post("/app/expedientes/{$e->id}/comunicaciones", ['documento_id' => $doc->id, 'institucion_codigo' => 'DEMO-GORE-VAL', 'asunto' => 'Responde Oficio IN-1'])->assertSessionHas('ok');
+        $this->comoFuncionario($sec)->post("/app/expedientes/{$e->id}/comunicaciones", ['documento_id' => $doc->id, 'institucion_codigo' => 'DEMO-GORE-VAL', 'asunto' => 'Responde Oficio 101'])->assertSessionHas('ok');
         $this->comoFuncionario($sec)->post("/app/expedientes/{$e->id}/comunicaciones", ['documento_id' => $doc->id, 'institucion_codigo' => 'DEMO-SEGPRES', 'asunto' => 'Con copia a SEGPRES'])->assertSessionHas('ok');
         Queue::assertPushed(EnviarComunicacionDocDigital::class, 2);
         $salientes = ComunicacionOficial::query()->where('direccion', 'saliente')->orderBy('id')->get();
         $this->assertSame([$entrante->id, $entrante->id], $salientes->pluck('responde_a_id')->all());
         $this->assertSame(['DEMO-GORE-VAL', 'DEMO-SEGPRES'], $salientes->pluck('institucion_codigo')->all());
 
-        Http::fake(['demodoc.ejemplo.gob.cl/api/v2/enviar' => Http::sequence()->push(['id' => 'OUT-1'], 200)->push(['id' => 'OUT-2'], 200)]);
+        $this->ddFake([], [], [$this->dd.'/documentos/firmado/ingresar' => Http::sequence()->push($this->ddOk(['id_documento' => 1001, 'id_solicitud' => 1]), 200)->push($this->ddOk(['id_documento' => 1002, 'id_solicitud' => 2]), 200)]);
         foreach ($salientes as $s) {
             (new EnviarComunicacionDocDigital($s->id))->handle(app(ComunicacionService::class));
         }
         $this->assertSame(['enviada', 'enviada'], ComunicacionOficial::query()->where('direccion', 'saliente')->pluck('estado')->all());
-        Http::assertSent(fn ($r) => str_contains($r->url(), '/enviar') && $r['referencia'] === 'IN-1' && in_array($r['destinatarios'][0]['codigo_institucion'], ['DEMO-GORE-VAL', 'DEMO-SEGPRES'], true));
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/documentos/firmado/ingresar') && in_array($r['listado_id_entidades_destinatarias'][0], [7001, 7002], true) && $r['id_entidad_creadora'] === 5001 && $r['tipo_id'] === 3);
 
         // cierre y página sin solicitante sigue funcionando; no se notifica a un ciudadano inexistente
         $this->comoFuncionario($sec)->post("/app/expedientes/{$e->id}/cerrar")->assertSessionHas('ok');

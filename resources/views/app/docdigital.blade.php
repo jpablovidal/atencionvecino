@@ -10,7 +10,7 @@
     <dt class="col-md-3">Modo</dt><dd class="col-md-9"><span class="estado {{ in_array($modo,['prod','demo'],true) ? 'estado-vigente' : 'estado-pendiente' }}">{{ $modoEtq }}</span> @if($modo==='mock')<span class="sim">SIMULADO</span>@endif</dd>
     <dt class="col-md-3">Servidor</dt><dd class="col-md-9">{{ $host ?? 'sin definir' }}</dd>
     <dt class="col-md-3">Credenciales</dt><dd class="col-md-9">{{ $credenciales ?? 'sin definir' }} <span class="small text-muted">(los valores no se muestran)</span></dd>
-    <dt class="col-md-3">Rutas de la API</dt><dd class="col-md-9">{{ $rutas ? 'configuradas (enviar, recibidos y acuse)' : 'incompletas' }}</dd>
+    <dt class="col-md-3">API</dt><dd class="col-md-9">DocDigital API v3 (OAuth2 con Client ID y Client Secret; rutas fijas según la especificación)</dd>
     <dt class="col-md-3">Unidad receptora</dt><dd class="col-md-9"><code>{{ $unidadRecepcion }}</code></dd>
     <dt class="col-md-3">Última sincronización</dt><dd class="col-md-9">
       @if($estado['ultima_sync']){{ \Illuminate\Support\Carbon::parse($estado['ultima_sync'])->format('d-m-Y H:i') }} — @if($estado['error'])<strong class="text-danger">con error:</strong> {{ $estado['error'] }}@else {{ $estado['nuevas'] }} nueva(s), {{ $estado['omitidas'] }} omitida(s)@endif
@@ -24,6 +24,7 @@
     <form method="post" action="{{ route('app.docdigital.reintentar') }}" class="mb-2" data-confirm="¿Reintentar los envíos fallidos (hasta 20)?">@csrf<button class="btn btn-outline-secondary">Reintentar envíos fallidos</button></form>
   </div>
   @endif
+  @if($puedeGestionar)<p class="small mb-2"><a href="{{ route('app.docdigital.entidades') }}">Buscar entidades de DocDigital y sus ids</a> (necesarias para enviar documentos a otras instituciones).</p>@endif
   @if($diagnostico)
   <div class="mt-2" role="status"><h3 class="h6">Resultado del diagnóstico</h3>
     <ul class="list-unstyled mb-0">@foreach($diagnostico as [$etq,$okk,$det])<li><span class="estado {{ $okk ? 'estado-vigente' : 'estado-fallida' }}">{{ $okk ? 'OK' : 'Falla' }}</span> {{ $etq }}: {{ $det }}</li>@endforeach</ul></div>

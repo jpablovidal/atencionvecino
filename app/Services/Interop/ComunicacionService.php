@@ -8,6 +8,7 @@ use App\Models\Archivo;
 use App\Models\ComunicacionOficial;
 use App\Models\Documento;
 use App\Models\Expediente;
+use App\Models\Institucion;
 use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\Admin\CodificacionService;
@@ -85,9 +86,10 @@ class ComunicacionService
             $ruta = $d->pdf_firmado_ruta ?: $d->pdf_ruta;
             $sha = $d->pdf_firmado_ruta ? $d->pdf_firmado_sha256 : $d->pdf_sha256;
             $pdf = $this->vault->get((string) $ruta, (string) $sha); // verifica integridad antes de enviar
+            $inst = Institucion::query()->where('codigo', (string) $c->institucion_codigo)->first();
             $r = $this->client->enviar($pdf, 'documento-'.$d->numero.'-'.$d->anio.'.pdf', [
-                'asunto' => $c->asunto, 'destino_codigo' => (string) $c->institucion_codigo, 'origen_codigo' => CodificacionService::institucion(),
-                'numero' => $d->numeroFormateado(), 'tipo' => $d->tipo->nombre,
+                'asunto' => $c->asunto, 'destino_codigo' => (string) $c->institucion_codigo, 'destino_nombre' => $inst?->nombre ?? $c->institucion_nombre, 'destino_entidad_id' => $inst?->docdigital_entidad_id,
+                'origen_codigo' => CodificacionService::institucion(), 'numero' => $d->numeroFormateado(), 'tipo' => $d->tipo->nombre, 'reservado' => (bool) ($d->sensible || $d->restringido),
                 'referencia' => $c->responde_a_id ? ComunicacionOficial::query()->where('id', $c->responde_a_id)->value('evidencia') : null, // A VALIDAR
             ]);
         } catch (\Throwable $e) {
@@ -150,8 +152,9 @@ class ComunicacionService
                     ]);
                     $this->firmas->analizar($a, $r['pdf']); // las comunicaciones del Estado suelen venir con firma electrónica: se reconoce y se verifica
                     $a->save();
+                    $origenCodigo = $r['origen_codigo'] ?? (! empty($r['origen_entidad_id']) ? Institucion::query()->where('docdigital_entidad_id', (int) $r['origen_entidad_id'])->value('codigo') : null);
                     $c = ComunicacionOficial::query()->create([
-                        'direccion' => 'entrante', 'institucion_codigo' => $r['origen_codigo'] ? mb_substr($r['origen_codigo'], 0, 40) : null,
+                        'direccion' => 'entrante', 'institucion_codigo' => $origenCodigo ? mb_substr((string) $origenCodigo, 0, 40) : null,
                         'institucion_nombre' => $r['origen_nombre'] ? mb_substr($r['origen_nombre'], 0, 190) : null, 'asunto' => mb_substr($r['asunto'], 0, 190), 'estado' => 'recibida',
                         'evidencia_tipo' => 'docdigital_id', 'evidencia' => $r['id'], 'evidencia_en' => now(), 'archivo_id' => $a->id, 'unidad_id' => $unidad->id, 'acuse_estado' => 'pendiente',
                     ]);
@@ -189,6 +192,29 @@ class ComunicacionService
         }
 
         return $this->marcarAcuse($c, $u, $r['simulado'] ? 'simulado' : 'api', $r['evidencia']);
+    }
+
+    /** Devuelve/rechaza una comunicación recibida (PUT /documentos/recibidos/{id}/devolver). Solo en modo API; el motivo queda registrado. */
+    public function devolver(ComunicacionOficial $c, Usuario $u, string $motivo): ComunicacionOficial
+    {
+        $this->validarAcuse($c);
+        $motivo = trim(preg_replace('/\s+/u', ' ', $motivo) ?? '');
+        if (mb_strlen($motivo) < 3 || mb_strlen($motivo) > 255) {
+            throw new FlujoException('Indique el motivo de la devolución (entre 3 y 255 caracteres).');
+        }
+        if (! $this->modoApi()) {
+            throw new FlujoException('DocDigital está en modo outbox: la devolución se hace en DocDigital.');
+        }
+        try {
+            $r = $this->client->devolver((string) $c->evidencia, $motivo);
+        } catch (DocDigitalException $e) {
+            $this->audit->registrar('docdigital.devolucion_fallo', 'comunicacion', $c->id);
+            throw new FlujoException($e->getMessage(), 0, $e);
+        }
+        $c->forceFill(['acuse_estado' => 'devuelto', 'acuse_tipo' => $r['simulado'] ? 'simulado' : 'api', 'acuse_evidencia' => mb_substr($r['evidencia'].' · '.$motivo, 0, 255), 'acuse_en' => now(), 'acuse_por_id' => $u->id])->save();
+        $this->audit->registrar('docdigital.devolucion', 'comunicacion', $c->id, ['motivo' => $motivo]);
+
+        return $c;
     }
 
     public function acusarManual(ComunicacionOficial $c, Usuario $u, string $evidencia): ComunicacionOficial

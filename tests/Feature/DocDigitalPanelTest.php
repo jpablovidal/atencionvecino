@@ -11,15 +11,17 @@ use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Interop\DocDigitalEstado;
 use App\Support\ProductionGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Tests\Support\DocDigitalApi;
 use Tests\Support\Escenario;
 use Tests\TestCase;
 
 class DocDigitalPanelTest extends TestCase
 {
-    use Escenario, RefreshDatabase;
+    use DocDigitalApi, Escenario, RefreshDatabase;
 
     private const CID = 'uapi_test_cliente';
 
@@ -35,9 +37,8 @@ class DocDigitalPanelTest extends TestCase
 
     private function oauth(string $modo = 'demo'): void
     {
-        config(['sgd.docdigital.mode' => $modo, 'sgd.docdigital.url_demo' => 'https://demodoc.ejemplo.gob.cl', 'sgd.docdigital.url_prod' => 'https://prod.ejemplo.gob.cl', 'sgd.docdigital.api_token' => null,
-            'sgd.docdigital.client_id' => self::CID, 'sgd.docdigital.client_secret' => self::SEC, 'sgd.docdigital.token_url' => 'https://auth.ejemplo.gob.cl/oauth/token',
-            'sgd.docdigital.path_enviar' => '/api/v2/enviar', 'sgd.docdigital.path_recibidos' => '/api/v2/recibidos', 'sgd.docdigital.path_acuse' => '/api/v2/acuse']);
+        config(['sgd.docdigital.mode' => $modo, 'sgd.docdigital.url_demo' => $this->dd, 'sgd.docdigital.url_prod' => 'https://prod.ejemplo.gob.cl/api', 'sgd.docdigital.api_token' => null,
+            'sgd.docdigital.client_id' => self::CID, 'sgd.docdigital.client_secret' => self::SEC, 'sgd.docdigital.token_url' => null, 'sgd.docdigital.entidad_id' => null, 'sgd.docdigital.tipo_documento_id' => null]);
         $this->app->forgetInstance(DocDigitalClient::class);
         $this->app->forgetInstance(ComunicacionService::class);
     }
@@ -45,6 +46,7 @@ class DocDigitalPanelTest extends TestCase
     /** Apunta el token a otro servidor de autorización que responde 401 (las simulaciones HTTP se evalúan en orden). */
     private function token401(): void
     {
+        Http::swap(new Factory);
         Http::fake(['auth401.ejemplo.gob.cl/*' => Http::response([], 401)]);
         config(['sgd.docdigital.token_url' => 'https://auth401.ejemplo.gob.cl/oauth/token']);
         $this->app->forgetInstance(DocDigitalClient::class);
@@ -65,21 +67,20 @@ class DocDigitalPanelTest extends TestCase
     public function test_oauth_client_credentials_obtiene_token_y_lo_usa_en_las_llamadas(): void
     {
         $this->oauth();
-        Http::fake(['auth.ejemplo.gob.cl/*' => Http::response(['access_token' => 'TOK-ABC', 'token_type' => 'Bearer', 'expires_in' => 3600], 200),
-            'demodoc.ejemplo.gob.cl/api/v2/recibidos' => Http::response(['documentos' => []], 200)]);
+        $this->ddFake();
         $c = new HttpDocDigitalClient(config('sgd.docdigital'), 'demo');
         $c->recibidos();
         $c->recibidos(); // el segundo uso sale del caché
         Http::assertSentCount(3); // 1 token + 2 consultas
-        Http::assertSent(fn ($r) => str_contains($r->url(), 'auth.ejemplo.gob.cl') && $r['grant_type'] === 'client_credentials'
-            && $r->hasHeader('Authorization', 'Basic '.base64_encode(self::CID.':'.self::SEC)));
-        Http::assertSent(fn ($r) => str_contains($r->url(), '/api/v2/recibidos') && $r->hasHeader('Authorization', 'Bearer TOK-ABC'));
+        // según la especificación: POST /oauth/token con HTTP Basic (Client_Id:Client_Secret), sin cuerpo
+        Http::assertSent(fn ($r) => $r->method() === 'POST' && str_ends_with($r->url(), '/api/oauth/token') && $r->hasHeader('Authorization', 'Basic '.base64_encode(self::CID.':'.self::SEC)) && $r->body() === '');
+        Http::assertSent(fn ($r) => $r->method() === 'GET' && str_contains($r->url(), '/api/documentos/recibidos') && $r->hasHeader('Authorization', 'Bearer TOK-ABC'));
     }
 
     public function test_errores_de_autorizacion_no_filtran_el_secreto_ni_el_token(): void
     {
         $this->oauth();
-        Http::fake(['auth.ejemplo.gob.cl/*' => Http::response(['error' => 'invalid_client', 'detalle' => self::SEC], 401)]);
+        Http::fake([$this->dd.'/oauth/token' => Http::response(['error' => 'invalid_client', 'detalle' => self::SEC], 401)]);
         try {
             (new HttpDocDigitalClient(config('sgd.docdigital'), 'demo'))->recibidos();
             $this->fail('debía fallar');
@@ -97,10 +98,19 @@ class DocDigitalPanelTest extends TestCase
         }
     }
 
-    public function test_exige_https_para_el_token_y_sin_credenciales_falla_cerrado(): void
+    public function test_exige_https_y_credenciales_y_falla_cerrado(): void
     {
         $this->oauth();
-        config(['sgd.docdigital.token_url' => 'http://auth.ejemplo.gob.cl/oauth/token']); // http: no se usa OAuth
+        config(['sgd.docdigital.url_demo' => 'http://demodoc.ejemplo.gob.cl/api']); // http: no se usa
+        Http::fake();
+        try {
+            (new HttpDocDigitalClient(config('sgd.docdigital'), 'demo'))->recibidos();
+            $this->fail('debía fallar');
+        } catch (DocDigitalException) {
+            Http::assertNothingSent();
+        }
+        $this->oauth();
+        config(['sgd.docdigital.client_id' => null]);
         $c = new HttpDocDigitalClient(config('sgd.docdigital'), 'demo');
         $this->assertFalse($c->tieneCredenciales());
         $this->expectException(DocDigitalException::class);
@@ -111,7 +121,7 @@ class DocDigitalPanelTest extends TestCase
     {
         $this->oauth();
         config(['sgd.docdigital.client_id' => null, 'sgd.docdigital.api_token' => 'TOK-FIJO']);
-        Http::fake(['demodoc.ejemplo.gob.cl/*' => Http::response(['documentos' => []], 200)]);
+        $this->ddFake();
         (new HttpDocDigitalClient(config('sgd.docdigital'), 'demo'))->recibidos();
         Http::assertSent(fn ($r) => $r->hasHeader('Authorization', 'Bearer TOK-FIJO'));
     }
@@ -144,10 +154,10 @@ class DocDigitalPanelTest extends TestCase
     public function test_diagnostico_informa_cada_paso_sin_datos(): void
     {
         $this->oauth();
-        Http::fake(['auth.ejemplo.gob.cl/*' => Http::response(['access_token' => 'T', 'expires_in' => 600], 200), 'demodoc.ejemplo.gob.cl/*' => Http::response(['documentos' => [['asunto' => 'SECRETO']]], 200)]);
+        $this->ddFake([55 => 'SECRETO']);
         $r = $this->comoFuncionario($this->secretario())->post('/app/docdigital/diagnosticar')->assertRedirect();
         $diag = $r->getSession()->get('diagnostico');
-        $this->assertSame(['URL base (https)', 'Credenciales', 'Autorización (token)', 'Consulta de recibidos'], array_column($diag, 0));
+        $this->assertSame(['URL base (https)', 'Credenciales', 'Autorización (token)', 'Entidad asociada al token', 'Tipos de documento', 'Consulta de recibidos'], array_column($diag, 0));
         $this->assertTrue(collect($diag)->every(fn ($f) => $f[1]));
         $this->assertStringNotContainsString('SECRETO', json_encode($diag));
         $this->assertDatabaseHas('audit_log', ['accion' => 'docdigital.diagnostico']);
@@ -164,9 +174,7 @@ class DocDigitalPanelTest extends TestCase
     public function test_sincronizar_desde_el_panel_registra_el_estado(): void
     {
         $this->oauth();
-        $pdf = $this->pdfValido('doc');
-        Http::fake(['auth.ejemplo.gob.cl/*' => Http::response(['access_token' => 'T', 'expires_in' => 600], 200),
-            'demodoc.ejemplo.gob.cl/api/v2/recibidos' => Http::response(['documentos' => [['id' => 'IN-9', 'asunto' => 'Oficio 9 del GORE', 'origen' => ['codigo' => 'DEMO-GORE-VAL', 'nombre' => 'GORE'], 'archivo' => ['content' => base64_encode($pdf)]]]], 200)]);
+        $this->ddFake([9 => 'Oficio 9 del GORE'], [9 => $this->pdfValido('doc')]);
         $this->comoFuncionario($this->secretario())->post('/app/docdigital/sincronizar')->assertSessionHas('ok');
         $this->assertSame(1, ComunicacionOficial::query()->where('direccion', 'entrante')->count());
         $e = DocDigitalEstado::leer();
@@ -203,7 +211,7 @@ class DocDigitalPanelTest extends TestCase
     {
         $this->oauth();
         Log::spy();
-        Http::fake(['auth.ejemplo.gob.cl/*' => Http::response(['access_token' => 'TOK-XYZ', 'expires_in' => 600], 200), 'demodoc.ejemplo.gob.cl/*' => Http::response(['documentos' => []], 200)]);
+        $this->ddFake([], [], [$this->dd.'/oauth/token' => Http::response(['access_token' => 'TOK-XYZ', 'expires_in' => 600], 200)]);
         $this->comoFuncionario($this->secretario())->post('/app/docdigital/diagnosticar');
         $this->comoFuncionario($this->secretario())->post('/app/docdigital/sincronizar');
         foreach (AuditLog::query()->get() as $a) {
@@ -214,9 +222,9 @@ class DocDigitalPanelTest extends TestCase
 
     public function test_produccion_exige_credenciales(): void
     {
-        config(['sgd.docdigital.mode' => 'prod', 'sgd.docdigital.url_prod' => 'https://prod.ejemplo.gob.cl', 'sgd.docdigital.api_token' => null, 'sgd.docdigital.client_id' => 'x', 'sgd.docdigital.client_secret' => null, 'sgd.docdigital.token_url' => null]);
-        $this->assertStringContainsString('DocDigital prod sin URL ni credenciales', (string) ProductionGuard::docdigitalProblema());
-        config(['sgd.docdigital.client_secret' => 'y', 'sgd.docdigital.token_url' => 'https://auth.ejemplo.gob.cl/token']);
+        config(['sgd.docdigital.mode' => 'prod', 'sgd.docdigital.url_prod' => 'https://prod.ejemplo.gob.cl/api', 'sgd.docdigital.api_token' => null, 'sgd.docdigital.client_id' => 'x', 'sgd.docdigital.client_secret' => null]);
+        $this->assertStringContainsString('DocDigital prod sin URL https ni credenciales', (string) ProductionGuard::docdigitalProblema());
+        config(['sgd.docdigital.client_secret' => 'y']);
         $this->assertNull(ProductionGuard::docdigitalProblema());
     }
 }

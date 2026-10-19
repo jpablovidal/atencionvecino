@@ -5,17 +5,18 @@ namespace App\Services\Interop\DocDigital;
 interface DocDigitalClient
 {
     /**
-     * Envía un documento (PDF con firma electrónica avanzada) a una institución destinataria.
+     * Despacha un documento firmado (PDF con firma electrónica avanzada) a una entidad destinataria
+     * (POST /documentos/firmado/ingresar de DocDigital API v3).
      *
-     * @param  array{asunto:string,destino_codigo:string,origen_codigo:?string,numero:?string,tipo:string,referencia?:?string}  $meta
-     * @return array{id:string,simulado:bool}
+     * @param  array{asunto:string,destino_codigo:string,destino_nombre?:?string,destino_entidad_id?:?int,origen_codigo:?string,numero:?string,tipo:string,tipo_id?:?int,reservado?:bool,referencia?:?string}  $meta
+     * @return array{id:string,simulado:bool,solicitud_id?:?string}
      *
      * @throws DocDigitalException
      */
     public function enviar(string $pdf, string $nombre, array $meta): array;
 
     /**
-     * Acuse de recibo de una comunicación recibida (contrato A VALIDAR).
+     * Acuse de recibo de un documento recibido (PUT /documentos/recibidos/{id}/acusorecibo).
      *
      * @return array{evidencia:string,simulado:bool}
      *
@@ -24,9 +25,18 @@ interface DocDigitalClient
     public function acusarRecibo(string $id): array;
 
     /**
-     * Bandeja de comunicaciones recibidas.
+     * Devuelve/rechaza un documento recibido (PUT /documentos/recibidos/{id}/devolver).
      *
-     * @return array<int,array{id:string,asunto:string,origen_codigo:?string,origen_nombre:?string,pdf:string}>
+     * @return array{evidencia:string,simulado:bool}
+     *
+     * @throws DocDigitalException
+     */
+    public function devolver(string $id, string $motivo): array;
+
+    /**
+     * Documentos recibidos por la entidad asociada al token, pendientes de acuse (GET /documentos/recibidos).
+     *
+     * @return array<int,array{id:string,asunto:string,origen_codigo:?string,origen_nombre:?string,origen_entidad_id:?int,pdf:string}>
      *
      * @throws DocDigitalException
      */

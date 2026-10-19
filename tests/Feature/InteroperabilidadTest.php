@@ -17,7 +17,6 @@ use App\Services\ExpedienteService;
 use App\Services\FileVault;
 use App\Services\Interop\CodificadorService;
 use App\Services\Interop\ComunicacionService;
-use App\Services\Interop\DocDigital\DocDigitalClient;
 use App\Services\Interop\PiseeService;
 use App\Support\ProductionGuard;
 use App\Support\Run;
@@ -25,12 +24,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Tests\Support\DocDigitalApi;
 use Tests\Support\Escenario;
 use Tests\TestCase;
 
 class InteroperabilidadTest extends TestCase
 {
-    use Escenario, RefreshDatabase;
+    use DocDigitalApi, Escenario, RefreshDatabase;
 
     private Expediente $exp;
 
@@ -205,10 +205,7 @@ class InteroperabilidadTest extends TestCase
 
     private function modo(string $m, bool $url = true): void
     {
-        config(['sgd.docdigital.mode' => $m, 'sgd.docdigital.url_demo' => $url ? 'https://demodoc.ejemplo.gob.cl' : null, 'sgd.docdigital.api_token' => 'tok-dd',
-            'sgd.docdigital.path_enviar' => '/api/v2/enviar', 'sgd.docdigital.path_recibidos' => '/api/v2/recibidos']);
-        $this->app->forgetInstance(DocDigitalClient::class);
-        $this->app->forgetInstance(ComunicacionService::class);
+        $this->ddConfig($m, $url ? [] : ['sgd.docdigital.url_demo' => null]);
     }
 
     public function test_docdigital_outbox_queda_pendiente_hasta_registrar_evidencia(): void
@@ -236,18 +233,24 @@ class InteroperabilidadTest extends TestCase
         $d = $this->docVigente(true);
         $c = app(ComunicacionService::class)->crearSaliente($this->exp, $d, 'DEMO-SEGPRES', 'Remite decreto', $this->usuario('funcionario', 1));
         Queue::assertPushed(EnviarComunicacionDocDigital::class);
-        Http::fake(['demodoc.ejemplo.gob.cl/*' => Http::response(['id' => 'DD-77'], 200)]);
+        $this->ddFake();
         (new EnviarComunicacionDocDigital($c->id))->handle(app(ComunicacionService::class));
         (new EnviarComunicacionDocDigital($c->id))->handle(app(ComunicacionService::class)); // idempotente
         $c->refresh();
-        $this->assertSame(['enviada', 'docdigital_id', 'DD-77'], [$c->estado, $c->evidencia_tipo, $c->evidencia]);
-        Http::assertSentCount(1);
+        $this->assertSame(['enviada', 'docdigital_id', '987654'], [$c->estado, $c->evidencia_tipo, $c->evidencia]);
+        Http::assertSentCount(1); // token fijo: solo el despacho
         Http::assertSent(function ($req) {
+            $this->assertSame('POST', $req->method());
+            $this->assertStringEndsWith('/documentos/firmado/ingresar', $req->url());
             $this->assertSame('Bearer tok-dd', $req->header('Authorization')[0]);
-            $this->assertSame('DEMO-SEGPRES', $req['destinatarios'][0]['codigo_institucion']);
-            $this->assertSame('application/pdf', $req['archivo']['content-type']);
-            $this->assertStringStartsWith('%PDF', base64_decode($req['archivo']['content']));
-            $this->assertSame(hash('sha256', base64_decode($req['archivo']['content'])), $req['archivo']['checksum']);
+            $this->assertSame([7002], $req['listado_id_entidades_destinatarias']);
+            $this->assertSame(5001, $req['id_entidad_creadora']);
+            $this->assertSame(3, $req['tipo_id']);
+            $this->assertSame('Remite decreto', $req['materia']);
+            $this->assertFalse($req['es_reservado']);
+            $this->assertNotSame('', (string) $req['folio']);
+            $this->assertStringStartsWith('%PDF', base64_decode($req['documento']));
+            $this->assertStringEndsWith('.pdf', $req['nombre']);
 
             return true;
         });
@@ -272,7 +275,7 @@ class InteroperabilidadTest extends TestCase
         $d = $this->docVigente(true);
         $svc = app(ComunicacionService::class);
         $c = $svc->crearSaliente($this->exp, $d, 'DEMO-SEGPRES', 'Remite', $this->usuario('funcionario', 1));
-        Http::fake(['demodoc.ejemplo.gob.cl/*' => Http::sequence()->push(['e' => 1], 500)->push(['id' => 'DD-9'], 200)]);
+        $this->ddFake([], [], [$this->dd.'/documentos/firmado/ingresar' => Http::sequence()->push(['status' => 500, 'message' => 'Error', 'error' => 'falla interna'], 500)->push($this->ddOk(['id_documento' => 9, 'id_solicitud' => 1]), 200)]);
         try {
             $svc->enviar($c);
             $this->fail('debe propagar');
@@ -319,12 +322,7 @@ class InteroperabilidadTest extends TestCase
     {
         $this->modo('demo');
         $pdf = $this->pdfValido();
-        $lista = ['documentos' => [
-            ['id' => 'IN-1', 'asunto' => 'Oficio entrante', 'origen' => ['codigo' => 'DEMO-GORE-VAL', 'nombre' => 'GORE'], 'archivo' => ['content' => base64_encode($pdf)]],
-            ['id' => 'IN-2', 'asunto' => 'Malicioso', 'archivo' => ['content' => base64_encode("%PDF-1.4\n<</JS(x)>>\n%%EOF")]],
-            ['id' => 'IN-3', 'asunto' => 'No PDF', 'archivo' => ['content' => base64_encode("MZ\x90\x00 exe")]],
-        ]];
-        Http::fake(['demodoc.ejemplo.gob.cl/*' => Http::response($lista, 200)]);
+        $this->ddFake([1 => 'Oficio entrante', 2 => 'Malicioso', 3 => 'No PDF'], [1 => $pdf, 2 => "%PDF-1.4\n<</JS(x)>>\n%%EOF", 3 => "MZ\x90\x00 exe"]);
         $svc = app(ComunicacionService::class);
         $this->assertSame(['nuevas' => 1, 'omitidas' => 2], $svc->sincronizarRecibidos());
         $this->assertSame(['nuevas' => 0, 'omitidas' => 2], $svc->sincronizarRecibidos()); // sin duplicar

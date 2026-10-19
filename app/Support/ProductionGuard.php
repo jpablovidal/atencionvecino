@@ -11,8 +11,8 @@ class ProductionGuard
     public static function docdigitalProblema(): ?string
     {
         $c = config('sgd.docdigital');
-        if ($c['mode'] === 'prod' && (! $c['url_prod'] || ! ($c['api_token'] || ($c['client_id'] && $c['client_secret'] && $c['token_url'])))) {
-            return 'DocDigital prod sin URL ni credenciales (token o client id/secret + URL de token)';
+        if ($c['mode'] === 'prod' && (! str_starts_with((string) $c['url_prod'], 'https://') || ! ($c['api_token'] || ($c['client_id'] && $c['client_secret'])))) {
+            return 'DocDigital prod sin URL https ni credenciales (token o Client ID + Client Secret)';
         }
 
         return null;

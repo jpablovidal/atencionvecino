@@ -25,12 +25,12 @@ class DocDigitalController extends Controller
         $cfg = config('sgd.docdigital');
         $modo = (string) $cfg['mode'];
         $url = (string) ($modo === 'prod' ? $cfg['url_prod'] : $cfg['url_demo']);
-        $oauth = $cfg['client_id'] && $cfg['client_secret'] && str_starts_with((string) $cfg['token_url'], 'https://');
+        $oauth = $cfg['client_id'] && $cfg['client_secret'];
         $veContenido = $u->tienePermiso('comunicaciones.ver') && ($u->operaExpedientes() || $u->rolBase() === 'auditor');
         $scope = fn ($q) => $u->rolBase() === 'auditor' ? $q : $q->where('unidad_id', $u->unidad_id);
         $datos = [
             'u' => $u, 'modo' => $modo, 'modoEtq' => self::MODOS[$modo] ?? $modo, 'host' => str_starts_with($url, 'https://') ? parse_url($url, PHP_URL_HOST) : null,
-            'credenciales' => $oauth ? 'OAuth2 (Client ID y Client Secret)' : ($cfg['api_token'] ? 'Token fijo' : null), 'rutas' => (bool) ($cfg['path_enviar'] && $cfg['path_recibidos'] && $cfg['path_acuse']),
+            'credenciales' => $oauth ? 'OAuth2 (Client ID y Client Secret)' : ($cfg['api_token'] ? 'Token fijo' : null),
             'estado' => DocDigitalEstado::leer(), 'veContenido' => $veContenido, 'puedeGestionar' => $u->tienePermiso('docdigital.gestionar'), 'unidadRecepcion' => $cfg['unidad_recepcion'],
             'diagnostico' => session('diagnostico'),
         ];
@@ -64,6 +64,28 @@ class DocDigitalController extends Controller
         $this->audit->registrar('docdigital.diagnostico', null, null, ['modo' => $modo, 'ok' => collect($res)->every(fn ($f) => $f[1])]);
 
         return back()->with('diagnostico', $res);
+    }
+
+    /** Busca entidades en DocDigital (GET /entidades/) para copiar su id a la institución del Codificador. */
+    public function entidades(Request $r)
+    {
+        $d = $r->validate(['q' => 'nullable|string|min:3|max:100']);
+        $cfg = config('sgd.docdigital');
+        $modo = (string) $cfg['mode'];
+        $filas = null;
+        $error = null;
+        if (! in_array($modo, ['demo', 'prod'], true)) {
+            $error = 'DocDigital no está en modo DemoDoc ni Producción.';
+        } elseif (! empty($d['q'])) {
+            try {
+                $filas = (new HttpDocDigitalClient($cfg, $modo))->buscarEntidades($d['q'], 30);
+            } catch (DocDigitalException $e) {
+                $error = $e->getMessage();
+            }
+        }
+        $this->audit->registrar('docdigital.buscar_entidades', null, null, ['modo' => $modo]);
+
+        return view('app.docdigital_entidades', ['q' => $d['q'] ?? '', 'filas' => $filas, 'error' => $error]);
     }
 
     public function sincronizar(Request $r, ComunicacionService $svc)

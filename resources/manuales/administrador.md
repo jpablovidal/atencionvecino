@@ -39,7 +39,7 @@ La solicitud llega a la bandeja de **todas** las direcciones responsables; la pr
 
 > **Archivo municipal (microformas):** sus cuatro permisos (`archivo.ver`, `archivo.gestionar`, `archivo.certificar`, `archivo.disposicion`) **no están disponibles para el rol administrador** (no lee el contenido del archivo). Cree roles personalizados con base funcionario, secretario o alcalde (la autorización de disposición solo admite secretario o alcalde) y asígnelos; para separar funciones use al menos un rol que registra y otro que certifica. La auditoría puede *ver* por defecto. El módulo guarda archivos cifrados, hash de conjunto y cadena de custodia; no reemplaza la certificación legal.
 
-> **DocDigital:** las credenciales (Client ID y Client Secret entregados por la institución), la URL del servidor, la URL para obtener el token y las rutas de la API se configuran en *APIs e integraciones → DocDigital* (o en el `.env`). El secreto se guarda cifrado si la opción de secretos en BD está activa, o solo en el `.env`; **no se vuelve a mostrar**. Después use *DocDigital → Probar conexión*. Las credenciales de producción no deben usarse desde el ambiente de pruebas con envíos reales; si comparte credenciales por chat o correo, **rótelas** al terminar.
+> **DocDigital:** las credenciales (Client ID y Client Secret entregados por la institución), la URL del servidor, el id de la entidad y el tipo de documento por defecto se configuran en *APIs e integraciones → DocDigital* (o en el `.env`). El secreto se guarda cifrado si la opción de secretos en BD está activa, o solo en el `.env`; **no se vuelve a mostrar**. Después use *DocDigital → Probar conexión*. Las credenciales de producción no deben usarse desde el ambiente de pruebas con envíos reales; si comparte credenciales por chat o correo, **rótelas** al terminar.
 
 ## 5. Tipos de documento y reglas de firma
 
@@ -92,7 +92,7 @@ Las instituciones del catálogo son las opciones de **destinatario** al despacha
 
 ## 8. DocDigital
 
-Todo se configura en el `.env` (ver README): `DOCDIGITAL_MODE` (`outbox` por defecto; `demo` para DemoDoc; `prod`), URL, token y rutas de la guía API MW V2, y `DOCDIGITAL_UNIDAD_RECEPCION` (unidad que recibe lo entrante).
+Todo se configura en el `.env` (ver README): `DOCDIGITAL_MODE` (`outbox` por defecto; `demo` para DemoDoc; `prod`), URL, Client ID/Secret, `DOCDIGITAL_ENTIDAD_ID`, `DOCDIGITAL_TIPO_DOCUMENTO_ID` y `DOCDIGITAL_UNIDAD_RECEPCION` (unidad que recibe lo entrante).
 
 - Requisitos de la Secretaría de Gobierno Digital: alta de la institución, **Administrador Principal** e interlocutor.
 - El sistema solo envía PDF con **firma electrónica avanzada real**.

@@ -692,4 +692,8 @@ alter table `documento_version_eventos` add index `documento_version_eventos_doc
 
 alter table `documentos` add `identificador` varchar(120) null;
 
+alter table `instituciones` add `docdigital_entidad_id` bigint unsigned null;
+
+alter table `instituciones` add index `instituciones_docdigital_entidad_id_index`(`docdigital_entidad_id`);
+
 SET FOREIGN_KEY_CHECKS = 1;
