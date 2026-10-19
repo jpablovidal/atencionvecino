@@ -9,7 +9,7 @@ Gobierno Digital exige usar **su botón y logo oficiales sin modificarlos**. Est
 2. Copie el SVG como `public/assets/img/claveunica/boton-claveunica.svg` (y opcionalmente `boton-claveunica-blanco.svg` para fondos oscuros).
 3. No se toca código: el componente lo detecta y reemplaza el botón de texto provisional.
 
-Mientras no esté el archivo se muestra un botón **de texto** (sin logo, para no imitar el oficial). **Ese botón no sirve para certificar.**
+Mientras no esté el archivo se muestra un botón provisional: texto «Ingresa con ClaveÚnica» con el **glifo de ClaveÚnica del kit de Gobierno Digital** (`@gobdigital-cl/gob.cl`, MIT; solo el ícono, el kit no incluye el botón completo ni sus pautas de color/tamaño). **Ese botón no sirve para certificar:** el color y las proporciones del provisional son una aproximación **A VALIDAR**.
 
 ## Checklist (marcar con el kit oficial a la vista)
 - [ ] Botón y logo oficiales sin deformar ni recolorear.

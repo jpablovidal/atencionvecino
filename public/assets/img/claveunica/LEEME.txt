@@ -11,3 +11,7 @@ Qué hacer:
 
 Mientras el archivo no exista se muestra un botón de TEXTO (sin logo) con la leyenda «Ingresa con ClaveÚnica». Ese botón es provisional
 y NO reemplaza al botón oficial en la certificación. Ver docs/CLAVEUNICA_BOTON.md (checklist, estado A VALIDAR).
+
+Nota sobre el glifo: el botón provisional incluye el glifo de ClaveÚnica tomado del kit de Gobierno Digital (@gobdigital-cl/gob.cl, licencia MIT,
+src/svg/claveunica.svg). Es solo el ícono: el kit NO trae el botón completo con sus colores y pautas, así que sigue pendiente el archivo oficial
+boton-claveunica.svg para certificar. No se nombró así ningún archivo del proyecto para no hacer pasar el provisional por el oficial.
