@@ -156,7 +156,7 @@ return [
     'docdigital' => [
         'mode' => env('DOCDIGITAL_MODE', 'outbox'),
         'url_demo' => env('DOCDIGITAL_URL_DEMO', 'https://api-demodoc.digital.gob.cl/api'), // servidor DEMO de la especificación OpenAPI v3.2.514
-        'url_prod' => env('DOCDIGITAL_URL_PROD'), // no figura en la especificación: A VALIDAR con Gobierno Digital
+        'url_prod' => env('DOCDIGITAL_URL_PROD', 'https://api-doc.digital.gob.cl/api'), // servidor «Generated server url» del Swagger de producción; A VALIDAR con Gobierno Digital
         'api_token' => env('DOCDIGITAL_API_TOKEN'),
         // OAuth2: POST {url}/oauth/token con HTTP Basic (Client_Id:Client_Secret). `token_url` es opcional (por defecto {url}/oauth/token).
         'client_id' => env('DOCDIGITAL_CLIENT_ID'),
@@ -167,6 +167,8 @@ return [
         'unidad_recepcion' => env('DOCDIGITAL_UNIDAD_RECEPCION', 'SECMUN'), // código de unidad que recibe lo entrante
         'timeout' => 30,
         'max_bytes' => 20 * 1024 * 1024, // la especificación admite hasta 20 MB en el archivo principal
+        'max_bytes_anexo' => 50 * 1024 * 1024, // y hasta 50 MB por anexo
+        'max_anexos' => (int) env('DOCDIGITAL_MAX_ANEXOS', 10), // anexos por comunicación (enviados y recibidos)
     ],
 
     // Validación pública

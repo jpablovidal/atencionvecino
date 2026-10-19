@@ -44,10 +44,10 @@ class InteropController extends Controller
     {
         $this->permiso('comunicaciones.despachar');
         $this->authorize('operar', $expediente);
-        $d = $r->validate(['documento_id' => 'required|integer', 'institucion_codigo' => 'required|string|max:40', 'asunto' => 'required|string|min:3|max:190']);
+        $d = $r->validate(['documento_id' => 'required|integer', 'institucion_codigo' => 'required|string|max:40', 'asunto' => 'required|string|min:3|max:190', 'anexos' => 'nullable|array|max:50', 'anexos.*' => 'integer']);
         $doc = Documento::query()->where('expediente_id', $expediente->id)->findOrFail($d['documento_id']);
         try {
-            $svc->crearSaliente($expediente, $doc, $d['institucion_codigo'], $d['asunto'], $r->user());
+            $svc->crearSaliente($expediente, $doc, $d['institucion_codigo'], $d['asunto'], $r->user(), array_map('intval', $d['anexos'] ?? []));
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }

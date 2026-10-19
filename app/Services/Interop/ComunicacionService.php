@@ -5,12 +5,14 @@ namespace App\Services\Interop;
 use App\Exceptions\FlujoException;
 use App\Jobs\EnviarComunicacionDocDigital;
 use App\Models\Archivo;
+use App\Models\ComunicacionAnexo;
 use App\Models\ComunicacionOficial;
 use App\Models\Documento;
 use App\Models\Expediente;
 use App\Models\Institucion;
 use App\Models\Unidad;
 use App\Models\Usuario;
+use App\Services\AccesoRestringidoService;
 use App\Services\Admin\CodificacionService;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
@@ -19,7 +21,9 @@ use App\Services\Firma\ArchivoFirmaService;
 use App\Services\Interop\DocDigital\DocDigitalClient;
 use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Support\UploadValidator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Comunicaciones oficiales del Estado vía DocDigital. Mismo principio que las notificaciones: el sistema NUNCA afirma
@@ -35,6 +39,7 @@ class ComunicacionService
         private readonly CodificadorService $codificador,
         private readonly ExpedienteService $expedientes,
         private readonly ArchivoFirmaService $firmas,
+        private readonly AccesoRestringidoService $restringidos,
     ) {}
 
     public function modoApi(): bool
@@ -42,8 +47,10 @@ class ComunicacionService
         return in_array(config('sgd.docdigital.mode'), ['mock', 'demo', 'prod'], true);
     }
 
-    public function crearSaliente(Expediente $e, Documento $d, string $institucionCodigo, string $asunto, Usuario $u): ComunicacionOficial
+    /** @param list<int> $archivoIds archivos del expediente que se envían como anexos (máx. DOCDIGITAL_MAX_ANEXOS) */
+    public function crearSaliente(Expediente $e, Documento $d, string $institucionCodigo, string $asunto, Usuario $u, array $archivoIds = []): ComunicacionOficial
     {
+        $archivos = $this->validarAnexos($e, $u, $archivoIds);
         $asunto = trim($asunto);
         if (mb_strlen($asunto) < 3 || mb_strlen($asunto) > 190 || preg_match('/[\r\n]/', $asunto)) {
             throw new FlujoException('El asunto debe tener entre 3 y 190 caracteres, en una línea.');
@@ -67,12 +74,49 @@ class ComunicacionService
             'responde_a_id' => $origen?->id, 'direccion' => 'saliente', 'expediente_id' => $e->id, 'documento_id' => $d->id, 'institucion_codigo' => $inst->codigo, 'institucion_nombre' => $inst->nombre,
             'asunto' => $asunto, 'estado' => 'pendiente', 'creado_por' => $u->id, 'unidad_id' => $e->unidad_id,
         ]);
-        $this->audit->registrar('docdigital.crear', 'comunicacion', $c->id, ['destino' => $inst->codigo, 'documento' => $d->id]);
+        foreach ($archivos as $a) {
+            ComunicacionAnexo::query()->create(['comunicacion_id' => $c->id, 'archivo_id' => $a->id, 'nombre' => $a->nombre_original, 'estado' => 'pendiente', 'tamano' => $a->tamano]);
+        }
+        $this->audit->registrar('docdigital.crear', 'comunicacion', $c->id, ['destino' => $inst->codigo, 'documento' => $d->id, 'anexos' => count($archivos)]);
         if ($this->modoApi()) {
             EnviarComunicacionDocDigital::dispatch($c->id);
         }
 
         return $c;
+    }
+
+    /**
+     * Anexos de una comunicación saliente: archivos del propio expediente, con acceso del usuario (restringidos), sin comprobantes,
+     * sin repetir, y dentro del máximo y del tamaño que admite DocDigital (50 MB c/u).
+     *
+     * @param  list<int>  $ids
+     * @return list<Archivo>
+     */
+    private function validarAnexos(Expediente $e, Usuario $u, array $ids): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        $max = max(0, min(50, (int) config('sgd.docdigital.max_anexos', 10)));
+        if (count($ids) > $max) {
+            throw new FlujoException("Puede enviar hasta $max anexos por comunicación.");
+        }
+        $out = [];
+        foreach ($ids as $id) {
+            $a = Archivo::query()->where('expediente_id', $e->id)->where('ambito', '!=', 'comprobante')->find($id);
+            if (! $a) {
+                throw new FlujoException('Uno de los anexos no pertenece al expediente.');
+            }
+            if ($a->tamano > (int) config('sgd.docdigital.max_bytes_anexo', 50 * 1048576)) {
+                throw new FlujoException('El anexo «'.$a->nombre_original.'» excede los 50 MB que admite DocDigital.');
+            }
+            try {
+                $this->restringidos->exigirArchivo($u, $a, 'anexar_docdigital');
+            } catch (HttpException|HttpResponseException) {
+                throw new FlujoException('No tiene autorización para enviar el archivo «'.$a->nombre_original.'» (restringido).');
+            }
+            $out[] = $a;
+        }
+
+        return $out;
     }
 
     /** Envío idempotente (lo invoca el job). Falla cerrada: ante error queda "fallida" y se reintenta. */
@@ -87,9 +131,11 @@ class ComunicacionService
             $sha = $d->pdf_firmado_ruta ? $d->pdf_firmado_sha256 : $d->pdf_sha256;
             $pdf = $this->vault->get((string) $ruta, (string) $sha); // verifica integridad antes de enviar
             $inst = Institucion::query()->where('codigo', (string) $c->institucion_codigo)->first();
+            $filasAnexo = ComunicacionAnexo::query()->with('archivo')->where('comunicacion_id', $c->id)->orderBy('id')->get();
+            $anexos = $filasAnexo->filter(fn ($x) => $x->archivo)->map(fn ($x) => ['nombre' => $x->archivo->nombre_original, 'bytes' => $this->vault->get($x->archivo->ruta, $x->archivo->sha256)])->values()->all(); // verifica integridad
             $r = $this->client->enviar($pdf, 'documento-'.$d->numero.'-'.$d->anio.'.pdf', [
                 'asunto' => $c->asunto, 'destino_codigo' => (string) $c->institucion_codigo, 'destino_nombre' => $inst?->nombre ?? $c->institucion_nombre, 'destino_entidad_id' => $inst?->docdigital_entidad_id,
-                'origen_codigo' => CodificacionService::institucion(), 'numero' => $d->numeroFormateado(), 'tipo' => $d->tipo->nombre, 'reservado' => (bool) ($d->sensible || $d->restringido),
+                'origen_codigo' => CodificacionService::institucion(), 'numero' => $d->numeroFormateado(), 'tipo' => $d->tipo->nombre, 'reservado' => (bool) ($d->sensible || $d->restringido), 'anexos' => $anexos,
                 'referencia' => $c->responde_a_id ? ComunicacionOficial::query()->where('id', $c->responde_a_id)->value('evidencia') : null, // A VALIDAR
             ]);
         } catch (\Throwable $e) {
@@ -98,9 +144,19 @@ class ComunicacionService
             throw $e;
         }
         $c->forceFill(['estado' => 'enviada', 'evidencia_tipo' => $r['simulado'] ? 'simulado' : 'docdigital_id', 'evidencia' => $r['id'], 'evidencia_en' => now(), 'ultimo_error' => null])->save();
+        $this->marcarAnexosEnviados($c, $r['anexos'] ?? []);
         $this->audit->registrar('docdigital.enviada', 'comunicacion', $c->id, ['simulado' => $r['simulado']], false, ['run' => null, 'rol' => 'sistema']);
 
         return $c;
+    }
+
+    /** @param list<array{id:?string,nombre:string}> $devueltos anexos tal como los devolvió DocDigital */
+    private function marcarAnexosEnviados(ComunicacionOficial $c, array $devueltos): void
+    {
+        foreach (ComunicacionAnexo::query()->where('comunicacion_id', $c->id)->orderBy('id')->get() as $i => $fila) {
+            $d = collect($devueltos)->firstWhere('nombre', $fila->nombre) ?? ($devueltos[$i] ?? null);
+            $fila->forceFill(['estado' => 'enviado', 'id_externo' => $d['id'] ?? null])->save();
+        }
     }
 
     public function registrarEvidencia(ComunicacionOficial $c, string $folio): ComunicacionOficial
@@ -113,6 +169,7 @@ class ComunicacionService
             throw new FlujoException('En modo API la evidencia la registra el sistema.');
         }
         $c->forceFill(['estado' => 'enviada', 'evidencia_tipo' => 'docdigital_manual', 'evidencia' => $folio, 'evidencia_en' => now(), 'ultimo_error' => null])->save();
+        ComunicacionAnexo::query()->where('comunicacion_id', $c->id)->where('estado', 'pendiente')->update(['estado' => 'enviado']);
         $this->audit->registrar('docdigital.evidencia', 'comunicacion', $c->id);
 
         return $c;
@@ -141,11 +198,12 @@ class ComunicacionService
 
                 continue;
             }
-            $ruta = null;
+            $anexosRecibidos = $this->bajarAnexos($r); // fuera de la transacción: son llamadas de red
+            $rutas = [];
             try {
-                DB::transaction(function () use ($r, $unidad, &$res, &$ruta) {
+                DB::transaction(function () use ($r, $unidad, &$res, &$rutas, $anexosRecibidos) {
                     $f = $this->vault->put($r['pdf']);
-                    $ruta = $f['ruta'];
+                    $rutas[] = $f['ruta'];
                     $a = new Archivo([
                         'ambito' => 'docdigital', 'nombre_original' => 'docdigital-'.preg_replace('/[^A-Za-z0-9_.-]/', '_', $r['id']).'.pdf', 'mime' => 'application/pdf', 'tamano' => $f['tamano'],
                         'sha256' => $f['sha256'], 'ruta' => $f['ruta'], 'titulo' => mb_substr($r['asunto'], 0, 190), 'nivel_acceso' => 'reservado', 'sensible' => true, 'subido_por' => 'docdigital',
@@ -162,10 +220,13 @@ class ComunicacionService
                     $e = $this->expedientes->crearDesdeComunicacion($c, $unidad);
                     $c->forceFill(['expediente_id' => $e->id])->save();
                     $a->forceFill(['expediente_id' => $e->id])->save();
+                    foreach ($anexosRecibidos as $x) {
+                        $this->guardarAnexoRecibido($c, $e, $x, $rutas);
+                    }
                     $res['nuevas']++;
                 });
             } catch (\Throwable $t) {
-                if ($ruta) {
+                foreach ($rutas as $ruta) {
                     $this->vault->delete($ruta);
                 }
                 throw $t;
@@ -175,6 +236,73 @@ class ComunicacionService
         DocDigitalEstado::registrar($res);
 
         return $res;
+    }
+
+    /**
+     * Descarga y revisa los anexos de un documento recibido. Solo se aceptan los formatos que el administrador habilitó (validación por
+     * contenido, sin macros ni código); lo demás se OMITE y queda registrado con el motivo. Nunca se visitan URLs que venga en la respuesta.
+     *
+     * @param  array<string,mixed>  $r
+     * @return list<array{nombre:string,id:string,bytes:?string,mime:?string,motivo:?string}>
+     */
+    private function bajarAnexos(array $r): array
+    {
+        $out = [];
+        $max = max(0, min(50, (int) config('sgd.docdigital.max_anexos', 10)));
+        foreach (array_slice((array) ($r['anexos'] ?? []), 0, $max + 20) as $i => $a) {
+            $base = ['nombre' => (string) $a['nombre'], 'id' => (string) $a['id'], 'bytes' => null, 'mime' => null, 'motivo' => null];
+            if ($i >= $max) {
+                $out[] = ['motivo' => "excede el máximo de $max anexos por comunicación"] + $base;
+
+                continue;
+            }
+            if (($a['tipo'] ?? 'anexo') !== 'anexo') {
+                $out[] = ['motivo' => 'enlace externo: no se descarga'] + $base;
+
+                continue;
+            }
+            try {
+                $bytes = $this->client->descargarAnexo((string) $r['id'], (string) $a['id']);
+            } catch (DocDigitalException) {
+                $bytes = null;
+            }
+            if ($bytes === null) {
+                $out[] = ['motivo' => 'no se pudo descargar (vacío, excede 50 MB o error de DocDigital)'] + $base;
+
+                continue;
+            }
+            try {
+                $t = UploadValidator::validarBytes($bytes);
+            } catch (\InvalidArgumentException $e) {
+                $out[] = ['motivo' => mb_substr($e->getMessage(), 0, 180)] + $base;
+                $this->audit->registrar('docdigital.anexo_rechazado', null, null, ['documento' => $r['id'], 'anexo' => $a['id']], false, ['run' => null, 'rol' => 'sistema']);
+
+                continue;
+            }
+            $out[] = ['bytes' => $bytes, 'mime' => $t['mime']] + $base;
+        }
+
+        return $out;
+    }
+
+    /** @param array{nombre:string,id:string,bytes:?string,mime:?string,motivo:?string} $x @param list<string> $rutas */
+    private function guardarAnexoRecibido(ComunicacionOficial $c, Expediente $e, array $x, array &$rutas): void
+    {
+        $nombre = mb_substr(preg_replace('/[^\w.\- ]+/u', '_', basename($x['nombre'])) ?: 'anexo', 0, 190);
+        if ($x['bytes'] === null) {
+            ComunicacionAnexo::query()->create(['comunicacion_id' => $c->id, 'nombre' => $nombre, 'id_externo' => $x['id'], 'estado' => 'omitido', 'motivo' => $x['motivo']]);
+
+            return;
+        }
+        $f = $this->vault->put($x['bytes']);
+        $rutas[] = $f['ruta'];
+        $a = new Archivo([
+            'expediente_id' => $e->id, 'ambito' => 'dd_anexo', 'nombre_original' => $nombre, 'mime' => $x['mime'], 'tamano' => $f['tamano'], 'sha256' => $f['sha256'], 'ruta' => $f['ruta'],
+            'titulo' => mb_substr('Anexo: '.$nombre, 0, 190), 'nivel_acceso' => 'reservado', 'sensible' => true, 'subido_por' => 'docdigital',
+        ]);
+        $this->firmas->analizar($a, $x['bytes']);
+        $a->save();
+        ComunicacionAnexo::query()->create(['comunicacion_id' => $c->id, 'archivo_id' => $a->id, 'nombre' => $nombre, 'id_externo' => $x['id'], 'estado' => 'recibido', 'tamano' => $f['tamano']]);
     }
 
     /** Acuse de recibo por la API (o simulado en mock). En outbox use acusarManual(). */

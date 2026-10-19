@@ -696,4 +696,10 @@ alter table `instituciones` add `docdigital_entidad_id` bigint unsigned null;
 
 alter table `instituciones` add index `instituciones_docdigital_entidad_id_index`(`docdigital_entidad_id`);
 
+create table `comunicacion_anexos` (`id` bigint unsigned not null auto_increment primary key, `comunicacion_id` bigint unsigned not null, `archivo_id` bigint unsigned null, `nombre` varchar(190) not null, `id_externo` varchar(100) null, `estado` varchar(10) not null, `motivo` varchar(190) null, `tamano` int unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `comunicacion_anexos` add constraint `comunicacion_anexos_comunicacion_id_foreign` foreign key (`comunicacion_id`) references `comunicaciones_oficiales` (`id`) on delete cascade;
+
+alter table `comunicacion_anexos` add index `comunicacion_anexos_archivo_id_index`(`archivo_id`);
+
 SET FOREIGN_KEY_CHECKS = 1;

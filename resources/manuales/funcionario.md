@@ -226,5 +226,8 @@ En **Mis firmas** (y desde el aviso «Firmar o visar por lote» de su Inicio) ve
 - **Qué cambió:** cada versión muestra quién la subió, cuándo, el motivo, un resumen de **qué cambió respecto de la versión anterior** (tamaño, páginas, líneas agregadas o quitadas en texto) y las firmas electrónicas que trae el archivo. Para imágenes y documentos ofimáticos el contenido no se compara automáticamente y el resumen lo indica.
 - **Historial de un documento:** junto a cada documento del expediente, **Historial** muestra por versión qué párrafos cambiaron y quién **editó, visó, rechazó o firmó**.
 
+## Anexos en DocDigital
+Al **crear una comunicación** puede marcar los **archivos del expediente** que se envían como anexos (hasta 10 por defecto, máx. 50 MB cada uno; se envía la versión vigente). Los anexos que **recibe** quedan en el expediente, en «Anexos recibidos»; si alguno no se pudo guardar (formato no habilitado, con contenido activo, enlace externo o falla de descarga) se muestra con el motivo: pídalo de nuevo por DocDigital si lo necesita.
+
 ## Panel de DocDigital
 En **DocDigital** verá, además del estado de la conexión, un panel con las comunicaciones recibidas y enviadas de su dirección, los **acuses atrasados**, los envíos fallidos, el **tiempo medio para registrar el acuse** y para responder lo recibido, el movimiento de los últimos 6 meses y las instituciones con más movimiento. Auditoría ve toda la municipalidad.

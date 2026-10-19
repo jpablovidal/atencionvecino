@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,6 +40,12 @@ class ComunicacionOficial extends Model
     protected $guarded = ['id'];
 
     protected $casts = ['evidencia_en' => 'datetime'];
+
+    /** @return HasMany<ComunicacionAnexo, $this> */
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(ComunicacionAnexo::class, 'comunicacion_id')->orderBy('id');
+    }
 
     /** @return BelongsTo<Documento, $this> */
     public function documento(): BelongsTo

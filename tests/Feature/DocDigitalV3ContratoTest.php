@@ -62,7 +62,7 @@ class DocDigitalV3ContratoTest extends TestCase
     {
         $this->ddFake();
         $r = $this->cliente()->enviar($this->pdfValido(), 'o.pdf', ['asunto' => 'A', 'destino_codigo' => 'x', 'destino_entidad_id' => 7002, 'origen_codigo' => null, 'numero' => null, 'tipo' => 'Oficio']);
-        $this->assertSame(['id' => '987654', 'simulado' => false, 'solicitud_id' => '555'], $r);
+        $this->assertSame(['id' => '987654', 'simulado' => false, 'solicitud_id' => '555', 'anexos' => []], $r);
         Http::assertSent(fn ($req) => $req['folio'] === 'S/N'); // folio es obligatorio en la especificación
     }
 

@@ -33,10 +33,10 @@ trait DocDigitalApi
     }
 
     /** @return array<string,mixed> un DocumentoResponse mínimo y válido según la especificación */
-    protected function ddRecibido(int $id, string $asunto, int $entidad = 7001, string $nombre = 'Gobierno Regional de Valparaíso'): array
+    protected function ddRecibido(int $id, string $asunto, int $entidad = 7001, string $nombre = 'Gobierno Regional de Valparaíso', array $anexos = []): array
     {
         return ['solicitud_id' => 9000 + $id, 'documento_principal' => ['id' => "A-$id", 'materia' => $asunto, 'documento_id' => $id, 'nombre_archivo' => "oficio-$id.pdf", 'tipo_id' => 3, 'tipo' => 'Oficio'],
-            'documentos_anexos' => [], 'info_creador' => ['usuario_id' => 1, 'usuario_run' => '1-9', 'usuario_nombre' => 'Persona Creadora', 'entidad_id' => $entidad, 'entidad_nombre' => $nombre],
+            'documentos_anexos' => $anexos, 'info_creador' => ['usuario_id' => 1, 'usuario_run' => '1-9', 'usuario_nombre' => 'Persona Creadora', 'entidad_id' => $entidad, 'entidad_nombre' => $nombre],
             'tipo_tramitacion' => 'COMUNICACION_OFICIAL', 'estado_tramitacion' => 'OPS_RESUELTO_ENVIADO'];
     }
 
@@ -47,11 +47,15 @@ trait DocDigitalApi
      * @param  array<int,string>  $pdfs
      * @param  array<string,mixed>  $extra  respuestas específicas (tienen prioridad)
      */
-    protected function ddFake(array $recibidos = [], array $pdfs = [], array $extra = []): void
+    protected function ddFake(array $recibidos = [], array $pdfs = [], array $extra = [], array $anexos = []): void
     {
         $lista = [];
         foreach ($recibidos as $id => $asunto) {
-            $lista[] = $this->ddRecibido($id, $asunto);
+            $meta = [];
+            foreach ($anexos[$id] ?? [] as $aid => $a) {
+                $meta[] = ['id' => (string) $aid, 'correlativo' => count($meta) + 1, 'tipo' => $a['tipo'] ?? 'anexo', 'nombre_archivo' => $a['nombre'], 'url_descarga' => 'https://evil.example/'.$aid];
+            }
+            $lista[] = $this->ddRecibido($id, $asunto, 7001, 'Gobierno Regional de Valparaíso', $meta);
         }
         $base = $this->dd;
         Http::swap(new Factory); // cada llamada parte de cero: las simulaciones anteriores no pisan a las nuevas
@@ -63,8 +67,14 @@ trait DocDigitalApi
             "$base/documentos/recibidos/*/acusorecibo" => Http::response($this->ddOk(['completada' => true, 'tareaSiguienteId' => 77]), 200),
             "$base/documentos/recibidos/*/devolver" => Http::response($this->ddOk(['completada' => true, 'tareaSiguienteId' => 78]), 200),
             "$base/documentos/recibidos*" => Http::response($this->ddOk($lista), 200),
-            "$base/documentos/*/archivo/descargar*" => function (Request $r) use ($pdfs) {
+            "$base/documentos/*/archivo/descargar*" => function (Request $r) use ($pdfs, $anexos) {
                 preg_match('#/documentos/(\d+)/archivo/descargar#', $r->url(), $m);
+                parse_str((string) parse_url($r->url(), PHP_URL_QUERY), $q);
+                if (isset($q['archivo_id'])) { // anexo
+                    $a = $anexos[(int) ($m[1] ?? 0)][$q['archivo_id']] ?? null;
+
+                    return $a === null || ! array_key_exists('bytes', $a) || $a['bytes'] === null ? Http::response('', 404) : Http::response($a['bytes'], 200);
+                }
 
                 return Http::response($pdfs[(int) ($m[1] ?? 0)] ?? "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n% recibido {$m[1]}\ntrailer<</Root 1 0 R>>\n%%EOF", 200);
             },

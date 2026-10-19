@@ -24,4 +24,9 @@ class MockDocDigitalClient implements DocDigitalClient
     {
         return [];
     }
+
+    public function descargarAnexo(string $documentoId, string $anexoId): ?string
+    {
+        return null;
+    }
 }

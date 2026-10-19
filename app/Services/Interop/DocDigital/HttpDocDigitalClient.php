@@ -34,6 +34,9 @@ class HttpDocDigitalClient implements DocDigitalClient
     /** Tamaño máximo del archivo principal según la especificación (20 MB). */
     public const MAX_PDF = 20 * 1024 * 1024;
 
+    /** Tamaño máximo de cada anexo según la especificación (50 MB). */
+    public const MAX_ANEXO = 50 * 1024 * 1024;
+
     private const PAGINA = 50;
 
     private const MAX_PAGINAS = 4;
@@ -294,6 +297,18 @@ class HttpDocDigitalClient implements DocDigitalClient
             'folio' => mb_substr((string) ($meta['numero'] ?: 'S/N'), 0, 100),
             'listado_id_entidades_destinatarias' => [$this->entidadDestino($meta)],
         ];
+        $anexos = (array) ($meta['anexos'] ?? []);
+        if (count($anexos) > $this->maxAnexos()) {
+            throw new DocDigitalException('Demasiados anexos: el máximo por comunicación es '.$this->maxAnexos().'.');
+        }
+        foreach ($anexos as $a) {
+            if (strlen((string) $a['bytes']) > min(self::MAX_ANEXO, (int) ($this->cfg['max_bytes_anexo'] ?? self::MAX_ANEXO))) {
+                throw new DocDigitalException('El anexo «'.mb_substr((string) $a['nombre'], 0, 60).'» excede el tamaño máximo permitido por DocDigital (50 MB).');
+            }
+        }
+        if ($anexos) {
+            $cuerpo['documentos_anexos'] = array_map(fn ($a) => ['nombre_archivo' => mb_substr((string) $a['nombre'], 0, 255), 'tipo' => 'anexo', 'contenido' => base64_encode((string) $a['bytes'])], $anexos);
+        }
         $r = $this->llamar(fn () => $this->http()->asJson()->post($base.self::P_INGRESAR, $cuerpo));
         $id = $r->successful() ? $r->json('result.id_documento') : null;
         if (! is_int($id) && ! (is_string($id) && $id !== '')) {
@@ -301,7 +316,14 @@ class HttpDocDigitalClient implements DocDigitalClient
         }
         $sol = $r->json('result.id_solicitud');
 
-        return ['id' => (string) $id, 'simulado' => false, 'solicitud_id' => is_scalar($sol) ? (string) $sol : null];
+        $ax = [];
+        foreach ((array) $r->json('result.anexos', []) as $a) {
+            if (is_array($a) && isset($a['nombre_anexo'])) {
+                $ax[] = ['id' => isset($a['id_documento_anexo']) && is_scalar($a['id_documento_anexo']) ? mb_substr((string) $a['id_documento_anexo'], 0, 100) : null, 'nombre' => mb_substr((string) $a['nombre_anexo'], 0, 190)];
+            }
+        }
+
+        return ['id' => (string) $id, 'simulado' => false, 'solicitud_id' => is_scalar($sol) ? (string) $sol : null, 'anexos' => $ax];
     }
 
     /** Con varias entidades asociadas al token, el acuse y la devolución indican la entidad destinataria (si se configuró DOCDIGITAL_ENTIDAD_ID). */
@@ -312,6 +334,11 @@ class HttpDocDigitalClient implements DocDigitalClient
         }
 
         return $cuerpo ?: new \stdClass;
+    }
+
+    public function maxAnexos(): int
+    {
+        return max(0, min(50, (int) ($this->cfg['max_anexos'] ?? 10)));
     }
 
     private function idSeguro(string $id): string
@@ -371,7 +398,7 @@ class HttpDocDigitalClient implements DocDigitalClient
                 $cr = is_array($d['info_creador'] ?? null) ? $d['info_creador'] : [];
                 $out[] = ['id' => $docId, 'asunto' => mb_substr((string) ($princ['materia'] ?? $princ['descripcion'] ?? 'Documento recibido'), 0, 190),
                     'origen_codigo' => null, 'origen_nombre' => isset($cr['entidad_nombre']) ? mb_substr((string) $cr['entidad_nombre'], 0, 190) : null,
-                    'origen_entidad_id' => isset($cr['entidad_id']) && is_numeric($cr['entidad_id']) ? (int) $cr['entidad_id'] : null, 'pdf' => $pdf];
+                    'origen_entidad_id' => isset($cr['entidad_id']) && is_numeric($cr['entidad_id']) ? (int) $cr['entidad_id'] : null, 'pdf' => $pdf, 'anexos' => $this->anexosDe($d)];
             }
             $paginas = (int) ($r->json('total_pages') ?? 1);
             if (count($docs) < self::PAGINA || $p + 1 >= $paginas) {
@@ -382,11 +409,35 @@ class HttpDocDigitalClient implements DocDigitalClient
         return $out;
     }
 
-    /** GET /documentos/{id}/archivo/descargar (bytes del archivo principal). Null si no se pudo descargar. */
-    private function descargar(string $id): ?string
+    /** @param array<string,mixed> $d @return list<array{id:string,nombre:string,tipo:string}> anexos informados en el documento recibido */
+    private function anexosDe(array $d): array
+    {
+        $o = [];
+        foreach ((array) ($d['documentos_anexos'] ?? []) as $a) {
+            $id = is_array($a) ? ($a['id'] ?? $a['anexo_id'] ?? null) : null;
+            if (is_scalar($id) && preg_match('/^[A-Za-z0-9._-]{1,100}$/', (string) $id)) {
+                $o[] = ['id' => (string) $id, 'nombre' => mb_substr((string) ($a['nombre_archivo'] ?? 'anexo'), 0, 190), 'tipo' => ($a['tipo'] ?? 'anexo') === 'url' ? 'url' : 'anexo'];
+            }
+        }
+
+        return $o;
+    }
+
+    public function descargarAnexo(string $documentoId, string $anexoId): ?string
+    {
+        $documentoId = $this->idSeguro($documentoId);
+        if (! preg_match('/^[A-Za-z0-9._-]{1,100}$/', $anexoId)) {
+            throw new DocDigitalException('Identificador de anexo DocDigital inválido.');
+        }
+
+        return $this->descargar($documentoId, $anexoId, self::MAX_ANEXO);
+    }
+
+    /** GET /documentos/{id}/archivo/descargar (bytes del archivo principal o, con $anexoId, de un anexo). Null si no se pudo descargar. */
+    private function descargar(string $id, ?string $anexoId = null, int $max = self::MAX_PDF): ?string
     {
         try {
-            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->withToken($this->token())->get($this->base().'/documentos/'.$id.'/archivo/descargar');
+            $r = Http::timeout((int) $this->cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->withToken($this->token())->get($this->base().'/documentos/'.$id.'/archivo/descargar', $anexoId !== null ? ['archivo_id' => $anexoId] : []);
         } catch (DocDigitalException $e) {
             throw $e;
         } catch (\Throwable) {
@@ -394,6 +445,6 @@ class HttpDocDigitalClient implements DocDigitalClient
         }
         $b = $r->successful() ? $r->body() : '';
 
-        return $b !== '' && strlen($b) <= self::MAX_PDF ? $b : null;
+        return $b !== '' && strlen($b) <= $max ? $b : null;
     }
 }
