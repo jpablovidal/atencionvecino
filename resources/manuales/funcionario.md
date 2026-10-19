@@ -219,3 +219,9 @@ En **Mis firmas** (y desde el aviso «Firmar o visar por lote» de su Inicio) ve
 - **Para firmar:** elija el tipo de firma (**avanzada** con un código OTP de 6 dígitos, o **simple** en los documentos que la admiten), confirme que revisó los documentos y presione **Firmar lo seleccionado**. Con firma avanzada, si el servicio de firma rechaza un documento el lote se detiene (lo ya firmado queda firmado) y se le informa el resultado de cada uno.
 - **Para visar:** presione **Visar lo seleccionado** (puede dejar un comentario común). Para **rechazar** un documento, ábralo y rechácelo con su comentario.
 - Los documentos **restringidos** a los que usted no está autorizado(a) aparecen sin título y no se pueden firmar por lote.
+
+## Archivos con versiones y visor
+- **Ver un archivo:** al hacer clic en un archivo del expediente se abre en una **ventana (modal)**; el botón **Abrir en una pestaña nueva** lo despliega a pantalla completa y **Descargar** lo guarda. PDF, imágenes JPG/PNG y texto se ven en el navegador; Word, Excel y similares solo se descargan.
+- **Subir un cambio:** en el archivo, entre a **Versiones** y use **Subir una versión nueva**: adjunte el archivo corregido e indique el **motivo del cambio**. El sistema no pisa el anterior: crea la versión 2, 3… y conserva todas.
+- **Qué cambió:** cada versión muestra quién la subió, cuándo, el motivo, un resumen de **qué cambió respecto de la versión anterior** (tamaño, páginas, líneas agregadas o quitadas en texto) y las firmas electrónicas que trae el archivo. Para imágenes y documentos ofimáticos el contenido no se compara automáticamente y el resumen lo indica.
+- **Historial de un documento:** junto a cada documento del expediente, **Historial** muestra por versión qué párrafos cambiaron y quién **editó, visó, rechazó o firmó**.

@@ -3,7 +3,7 @@
 @section('contenido')
 <h1>Codificación y normas técnicas</h1>
 <p class="lead-sub">La codificación de documentos y expedientes se basa en el <strong>Codificador del Estado</strong> y las normas técnicas de la Ley 21.180. Elija a qué institución corresponde su municipio y cómo se arma el identificador.</p>
-<div class="alert alert-warning" role="note"><strong>A VALIDAR:</strong> el texto de las normas técnicas y el contrato de la API del Codificador no pudieron leerse desde el entorno de desarrollo. Los patrones son configurables y deben contrastarse con la norma vigente antes de operar.</div>
+<div class="alert alert-info" role="note"><strong>A VALIDAR:</strong> el texto de las normas técnicas y el contrato de la API del Codificador no pudieron leerse desde el entorno de desarrollo. Los patrones son configurables y deben contrastarse con la norma vigente antes de operar.</div>
 
 <section class="card mb-4" aria-labelledby="mu"><div class="card-body"><h2 class="h5" id="mu">Municipio en el Codificador</h2>
 <p>Actual: @if($municipio['codigo'])<strong>{{ $municipio['nombre'] ?? 'Sin nombre en el catálogo' }}</strong> (código <code>{{ $municipio['codigo'] }}</code>, origen: {{ $municipio['origen'] }})@else <strong>sin configurar</strong> (se usa «SGD»)@endif.</p>

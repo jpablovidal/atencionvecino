@@ -32,7 +32,7 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 > **Con Terminal de cPanel (recomendado, 2 pasos):** suba `sgd-release.zip` y ejecute `cd ~ && unzip -q -o sgd-release.zip && rm -f sgd-release.zip && bash ~/sgd/scripts/instalar-cpanel.sh` (instala o actualiza: subdominio, `.env`, tablas, cuentas de prueba, cron y verificación). Detalle en `docs/INSTALACION_GESTOR.md`. Lo que sigue es la guía general **sin Terminal**.
 
 ### Ambientes
-`SGD_AMBIENTE=produccion` (por defecto): solo ClaveÚnica y servicios reales; los modos simulados están prohibidos y la aplicación se niega a arrancar si faltan. `SGD_AMBIENTE=pruebas`: permite modos simulados y el ingreso con usuario/contraseña (`pruebas:credenciales`) **solo hasta `SGD_ACCESO_PRUEBAS_HASTA`** (máx. 45 días), con aviso permanente. No use datos reales en pruebas.
+`SGD_AMBIENTE=produccion` (por defecto): solo ClaveÚnica y servicios reales; los modos simulados están prohibidos y la aplicación se niega a arrancar si faltan. `SGD_AMBIENTE=pruebas`: permite modos simulados y el ingreso con usuario/contraseña (`pruebas:credenciales`) **solo hasta `SGD_ACCESO_PRUEBAS_HASTA`** (máx. 45 días), con aviso permanente. No use datos reales en pruebas. Desde **Administración › Pruebas y producción** el administrador (con segundo factor) puede cargar datos simulados (`php artisan sgd:simular`) y **pasar a producción**: acción irreversible que borra todos los procesos y expedientes de prueba y conserva la configuración y la bitácora de auditoría. Antes se deja el `.env` con ClaveÚnica/FirmaGob reales, correo real y `SGD_ADMIN_2FA=true`.
 
 Todo se instala **subiendo archivos + importando SQL + editando `.env`**. No se necesita `php artisan` en el servidor.
 
@@ -231,6 +231,12 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 
 | Módulo | Ruta | Qué permite |
 |---|---|---|
+| Segundo factor | `/app/2fa` | TOTP obligatorio para administradores (QR, códigos de respaldo, un solo uso por código). `SGD_ADMIN_2FA=true` es exigido en producción. |
+| Archivos: pesos y formatos | `/app/admin/archivos` | Formatos admitidos (PDF siempre; ofimática/TXT/CSV opcionales) y peso máximo por ámbito, acotado por los límites de PHP. Validación por contenido sin macros. |
+| Áreas del municipio | `/app/admin/areas` | Municipal, salud, educación y corporación; cada usuario en una o más áreas y cada unidad en una. Organizan; no restringen acceso. |
+| Codificación y normas | `/app/admin/codificacion` | Municipio ante el Codificador del Estado, patrones de identificador y matriz de normas técnicas (Decretos 7, 8, 10, 11 y 12; **A VALIDAR**). |
+| Versiones y visor | Expediente › archivo › Versiones | Cada cambio es una versión nueva con motivo, diferencias y firmas; historial de documentos con quién editó, visó y firmó; visor en modal con «Abrir en pestaña nueva». |
+| Pruebas y producción | `/app/admin/produccion` | Datos simulados (`php artisan sgd:simular`) y paso irreversible a producción que borra los procesos de prueba (con requisitos, 2FA y frase de confirmación). |
 | Apariencia | `/app/admin/apariencia` | Diseño tipo intranet (barra superior oscura, menú lateral, ingreso centrado) sobre el Framework kit de Gobierno. Logo (PNG/JPG/WebP re-codificado; sin SVG; por defecto el escudo municipal), colores con **validación de contraste WCAG ≥ 4,5:1**, encabezado y pie (textos y enlaces https/internos). |
 | Barra de menú | `/app/admin/menu` | Renombrar, reordenar u ocultar ítems del sistema (los protegidos no se ocultan) y agregar enlaces propios por área/rol. El menú **no concede ni quita permisos**. |
 | APIs e integraciones | `/app/admin/api` | Ver estado, editar URL/modo, probar conexión y volver a `.env` para ClaveÚnica, FirmaGob, casilla, Gmail, DocDigital, PISEE, Codificador, LLM y repositorio. Los secretos **no se muestran**; solo se guardan en BD si `SGD_API_SECRETOS_EN_BD=1`. |

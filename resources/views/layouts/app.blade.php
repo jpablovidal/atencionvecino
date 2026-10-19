@@ -56,7 +56,7 @@
             @if($dual ?? false)<p class="mb-1"><a class="btn btn-sm btn-primary btn-block" href="{{ route('ciudadano.index') }}">Ir a mis trámites (vecino/a)</a></p>@endif
             <form method="post" action="{{ route('salir') }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @else
-        <a class="btn btn-sm btn-light" href="{{ route('ingreso') }}">Ingresar con ClaveÚnica</a>
+        @include('partials.boton_claveunica', ['href' => route('ingreso'), 'oscuro' => true])
       @endif
     </div>
   </div>

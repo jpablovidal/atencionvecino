@@ -6,7 +6,7 @@
 @if(! $persona)
 <div class="card card-body mb-4"><h2 class="h5">Primero, ingrese con ClaveÚnica</h2>
  <p>Para proteger la información de pago, la consulta exige identificarse con <strong>ClaveÚnica</strong>. Usted ingresa como persona (quien consulta queda registrada); luego indica el RUT de la empresa y los datos de la factura.</p>
- <p><a class="btn btn-primary" href="{{ route('proveedores.pagos.ingresar') }}">Ingresar con ClaveÚnica</a></p></div>
+ <p>@include('partials.boton_claveunica', ['href' => route('proveedores.pagos.ingresar'), 'contexto' => 'para consultar sus pagos'])</p></div>
 @else
 <p class="small mb-2">Consulta como <strong>{{ $persona['nombre'] }}</strong> (RUN {{ $persona['run'] }}).</p>
 <form method="post" action="{{ route('proveedores.pagos.consultar') }}" class="card card-body mb-4" novalidate>@csrf

@@ -157,3 +157,23 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - El lote firma documentos **sin abrirlos**: la casilla «revisé los documentos» es una declaración; la lista muestra título, tipo y expediente, y cada documento tiene su enlace para revisarlo.
 - Cada firma de un lote es una transacción independiente (no hay «todo o nada»): si algo falla a la mitad, lo anterior queda firmado.
 - Máximo 25 documentos por lote por defecto (configurable hasta 100); con más pendientes se repite.
+
+## Administración: archivos, 2FA, áreas, codificación
+- **Normas técnicas (Decretos 7, 8, 10, 11 y 12) y API del Codificador: no verificadas.** El entorno de desarrollo no pudo abrir `wikiguias.digital.gob.cl` ni `codificador.digital.gob.cl` (red bloqueada). El patrón de identificador, los metadatos y la matriz de cumplimiento son una **propuesta configurable marcada A VALIDAR**; no se afirma cumplimiento de artículos concretos. Para cerrarlo, habilitar esos hosts en la red del entorno o adjuntar los textos y revisar `docs/NORMAS_TECNICAS.md`.
+- La sincronización con el Codificador sigue usando una forma de JSON **supuesta** (ver decisión 104); la carga por CSV es el camino verificado.
+- **Segundo factor:** TOTP estándar. No hay SMS ni llave física (WebAuthn). Si un administrador pierde su teléfono y sus códigos de respaldo, otro administrador debe restablecerle el factor (queda en auditoría); si fuera el único administrador, se recupera por consola (`php artisan tinker` o SQL) con acceso al servidor.
+- **Pesos máximos:** el límite real también depende de PHP (`upload_max_filesize`, `post_max_size`) y del hosting; el panel lo muestra pero **no puede cambiarlo** (en cPanel: «Select PHP Version › Options»).
+- **Formatos ofimáticos:** se rechazan macros y objetos incrustados y se valida la estructura, pero **no hay antivirus** ni análisis de contenido de documentos (enlaces externos, fórmulas de planilla). Se descargan, no se muestran en el navegador. Un CSV abierto en una planilla puede ejecutar fórmulas: advertido en el panel.
+- **Diferencias entre versiones de archivos:** solo se calculan para texto (líneas), PDF (páginas aproximadas) y datos generales (tamaño, nombre, formato). Para imágenes y documentos ofimáticos **no se compara el contenido** y el historial lo dice. Un cambio en un PDF que no altere páginas ni tamaño se registra, pero no se describe.
+- **Visor en modal:** depende de que el navegador muestre PDF dentro de un marco (Chrome, Edge y Firefox lo hacen; algunos navegadores móviles lo reemplazan por una descarga). «Abrir en una pestaña nueva» y «Descargar» siempre están. TIFF y ofimática no se previsualizan.
+- **Historial de documentos anteriores a esta versión:** conservan sus versiones, pero las visaciones y firmas previas al registro de eventos no se reconstruyen (solo la edición).
+- **Áreas:** organizan, no restringen. No hay todavía separación de correlativos, plantillas ni informes por área.
+
+## Botón ClaveÚnica
+- Los **activos oficiales** (botón y logo) y las pautas de uso de Gobierno Digital **no pudieron descargarse**. Se entrega el componente listo y el directorio `public/assets/img/claveunica/` donde copiar el SVG oficial; mientras no esté se muestra un botón de **texto** provisional que **no** sirve para certificar. Checklist en `docs/CLAVEUNICA_BOTON.md` (A VALIDAR).
+
+## Datos simulados y paso a producción
+- El simulador no envía correos ni notificaciones reales; el despacho de la respuesta final depende de la Casilla Única y de Gmail configurados (si no lo están, la respuesta queda «instruida»).
+- **Irreversible:** el paso a producción no puede deshacerse desde el panel; quien quiera conservar los datos de prueba debe respaldar antes (base de datos y carpeta de archivos). Los archivos cifrados se borran del repositorio; en una **unidad de Google Drive** se piden a la API (si falla alguno se informa el conteo).
+- El borrado cubre las tablas conocidas hoy (una prueba obliga a clasificar las nuevas). Datos fuera de la base y del repositorio (correos ya enviados, registros del servidor web, respaldos) no se tocan.
+- Tras el paso, `SGD_AMBIENTE` del `.env` puede seguir diciendo `pruebas`: manda el estado de la base. Se recomienda corregir el `.env` a `produccion` en la misma ventana de mantención.

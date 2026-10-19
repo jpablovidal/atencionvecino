@@ -483,3 +483,11 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .sgd-anuncio-medio{display:block;max-width:100%;height:auto;max-height:60vh;margin:0 auto 1rem}
 .sgd-anuncio-texto{white-space:normal;overflow-wrap:anywhere}
 .sgd-anuncio-item + .sgd-anuncio-item{border-top:1px solid #d9d9d9;margin-top:1rem;padding-top:1rem}
+
+/* Botón ClaveÚnica (provisional de texto mientras no esté el botón oficial en assets/img/claveunica/). Alto táctil ≥ 44 px. */
+.btn-claveunica{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.5rem 1.25rem;background:#0f69c4;color:#fff;border:2px solid #0f69c4;border-radius:4px;font-weight:700;text-decoration:none;line-height:1.2}
+.btn-claveunica:hover,.btn-claveunica:focus{background:#0b4f95;color:#fff;border-color:#0b4f95;text-decoration:none}
+.btn-claveunica:focus-visible{outline:3px solid #f2c728;outline-offset:2px}
+.btn-claveunica-bloque{display:flex;width:100%}
+.btn-claveunica-oficial{background:transparent;border:0;padding:0;min-height:44px}
+.btn-claveunica-oficial img{display:block;height:44px;width:auto}

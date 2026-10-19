@@ -21,6 +21,7 @@ use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Interop\DocDigital\MockDocDigitalClient;
 use App\Services\Sistema\ConexionesService;
+use App\Support\Ambiente;
 use App\Support\Espacio;
 use App\Support\HashedDatabaseSessionHandler;
 use App\Support\ProductionGuard;
@@ -77,6 +78,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ApiConfigService::aplicar(); // la configuración de BD prevalece sobre .env
+        Ambiente::aplicarOverride();
         ProductionGuard::verificar();
         Paginator::useBootstrapFour();
 

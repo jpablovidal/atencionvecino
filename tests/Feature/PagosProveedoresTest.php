@@ -140,7 +140,7 @@ class PagosProveedoresTest extends TestCase
     {
         $f = now('America/Santiago')->subDays(10)->format('Y-m-d');
         $this->emitir($this->decreto());
-        $this->get('/pagos-proveedores')->assertOk()->assertSee('Primero, ingrese con ClaveÚnica')->assertSee('Ingresar con ClaveÚnica')->assertDontSee('Número de factura')->assertHeader('Cache-Control', 'no-store, private');
+        $this->get('/pagos-proveedores')->assertOk()->assertSee('Primero, ingrese con ClaveÚnica')->assertSee('Ingresa con ClaveÚnica')->assertDontSee('Número de factura')->assertHeader('Cache-Control', 'no-store, private');
         $this->post('/pagos-proveedores', ['rut' => $this->rut, 'factura' => 'F-0123', 'fecha' => $f])->assertRedirect('/pagos-proveedores')->assertSessionHas('aviso');
         $this->get('/pagos-proveedores/ingresar')->assertRedirect('/ingreso/ciudadano')->assertSessionHas('retorno_pago');
     }

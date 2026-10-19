@@ -1,0 +1,13 @@
+Botón ClaveÚnica — activos oficiales
+
+Para certificar la integración, Gobierno Digital exige usar el botón y el logo OFICIALES de ClaveÚnica sin modificarlos
+(proporciones, colores, texto). Este entorno no pudo descargarlos (sin acceso a los sitios de Gobierno Digital).
+
+Qué hacer:
+  1. Descargue el kit oficial de botones ClaveÚnica desde el sitio de Gobierno Digital / ClaveÚnica.
+  2. Copie aquí el botón en formato SVG con el nombre exacto:   boton-claveunica.svg
+     (opcional, para fondos oscuros:                             boton-claveunica-blanco.svg)
+  3. No hace falta tocar código: el componente resources/views/partials/boton_claveunica.blade.php detecta el archivo y lo usa solo.
+
+Mientras el archivo no exista se muestra un botón de TEXTO (sin logo) con la leyenda «Ingresa con ClaveÚnica». Ese botón es provisional
+y NO reemplaza al botón oficial en la certificación. Ver docs/CLAVEUNICA_BOTON.md (checklist, estado A VALIDAR).

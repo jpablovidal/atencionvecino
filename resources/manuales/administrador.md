@@ -233,3 +233,20 @@ En **Accesos a restringidos** ve quién vio —o intentó ver— expedientes, do
 
 ## Decreto de pago: correlativo y firmantes
 En **Decreto de pago: correlativo y firmantes** configure, para el **decreto de pago** y para el **egreso**: el **correlativo propio** (formato, dígitos, número inicial, reinicio anual y ajuste del contador solo hacia arriba, con motivo) y la lista de **visadores y firmantes en orden**, con su cargo y su tipo de firma (avanzada; en el egreso también simple o a elección). La cantidad de firmantes activos debe coincidir con la que exige el tipo de documento (flujo ágil o clásico). Usted configura pero **no ve** los decretos ni sus montos.
+
+## Segundo factor (obligatorio para administradores)
+Todo administrador debe tener **doble factor** (TOTP). La primera vez que ingrese, el sistema lo lleva a **Segundo factor**: escanee el código QR con Google Authenticator, Microsoft Authenticator, FreeOTP u otra aplicación, escriba el código de 6 dígitos y **guarde los 8 códigos de respaldo** (sirven una sola vez; no se vuelven a mostrar). En cada ingreso se pide un código nuevo. Si otra persona administradora pierde su teléfono, puede restablecerle el factor desde su ficha de usuario; queda en la bitácora. En el servidor, `SGD_ADMIN_2FA=true` es obligatorio en producción.
+
+## Archivos: pesos y formatos
+En **Archivos: pesos y formatos** elija qué formatos admite el sistema y el peso máximo por archivo para la ciudadanía y para los funcionarios (1 a 100 MB), y cuántos archivos se pueden adjuntar a una solicitud. **PDF siempre está permitido.** Todo archivo se revisa por su contenido: se rechazan macros, objetos incrustados y código. El panel muestra el límite del servidor PHP; el peso real nunca lo supera (en cPanel se sube en «Select PHP Version › Options»). Los formatos ofimáticos (Word, Excel, PowerPoint, OpenDocument), TXT y CSV vienen **desactivados** por defecto.
+
+## Áreas del municipio
+En **Áreas del municipio** marque cuáles existen en su comuna: **municipal** (siempre), **salud**, **educación** y **corporación**. Asigne cada unidad a un área y, en la ficha de cada usuario, marque **una o más áreas** a las que pertenece. Las áreas organizan listados y codificación; **no cambian quién puede ver un expediente**. No se puede deshabilitar un área que tiene usuarios o unidades.
+
+## Codificación y normas técnicas
+En **Codificación y normas** elija su municipio entre las instituciones del **Codificador del Estado** (cargue primero el catálogo desde «Codificador»; si está vacío puede ingresar el código a mano) y, si corresponde, un código distinto para salud, educación o corporación (en **Áreas**). Configure el **patrón** del identificador de expedientes y documentos con los marcadores `{institucion}`, `{codigo}`, `{tipo}`, `{anio}`, `{numero}`, `{area}` y `{unidad}`. Allí mismo están los enlaces a los Decretos 7, 8, 10, 11 y 12 y la **matriz de cumplimiento**, que queda **A VALIDAR** contra el texto vigente (ver `docs/NORMAS_TECNICAS.md`).
+
+## Pruebas y producción
+En **Pruebas y producción** puede:
+1. **Cargar datos simulados** (solo en pruebas): vecinos ficticios con solicitudes, expedientes en distintos estados, oficios con versiones, firmas, una respuesta final y un decreto de pago con egreso. También por consola: `php artisan sgd:simular`.
+2. **Pasar a producción** (irreversible). Antes revise los **requisitos**: segundo factor verificado, un administrador real (no de demostración) con segundo factor, y la configuración del servidor lista para producción (ClaveÚnica y FirmaGob reales, correo real, HTTPS, sin depuración). Al confirmar —frase exacta, confirmación de respaldo y un código nuevo del segundo factor— el sistema **borra todos los procesos y expedientes de prueba** con sus archivos, reinicia los correlativos, desactiva los usuarios de demostración y deja de aceptar el ingreso de pruebas. Se conservan la configuración y la bitácora de auditoría. **Respalde antes** si quiere conservar los datos de prueba.

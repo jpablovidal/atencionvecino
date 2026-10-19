@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\ConfigSitio;
 use Illuminate\Support\Carbon;
 
 /**
@@ -12,6 +13,19 @@ class Ambiente
 {
     /** El acceso de pruebas no puede quedar habilitado por más de estos días desde hoy. */
     public const MAX_DIAS = 45;
+
+    /** Si el panel ya pasó el sistema a producción, ese estado (guardado en la base) manda sobre SGD_AMBIENTE del .env. */
+    public static function aplicarOverride(): void
+    {
+        try {
+            $j = json_decode((string) ConfigSitio::query()->where('clave', 'ambiente_produccion')->value('valor'), true);
+        } catch (\Throwable) {
+            return; // sin base de datos (instalación, comandos previos a migrar): se respeta el .env
+        }
+        if (is_array($j) && ($j['ambiente'] ?? null) === 'produccion') {
+            config(['sgd.ambiente' => 'produccion']);
+        }
+    }
 
     public static function esPruebas(): bool
     {

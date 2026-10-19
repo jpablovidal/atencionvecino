@@ -34,8 +34,21 @@ class ProductionGuard
         if (! app()->isProduction() || app()->runningInConsole() && ! app()->runningUnitTests() && in_array($_SERVER['argv'][1] ?? '', ['list', 'help', 'about'], true)) {
             return;
         }
+        $e = self::errores(Ambiente::esPruebas());
+        if ($e) {
+            throw new RuntimeException('Configuración insegura para producción: '.implode('; ', $e));
+        }
+    }
+
+    /**
+     * Problemas de configuración para el ambiente indicado. `$pruebas = false` evalúa cómo quedaría el sistema en PRODUCCIÓN
+     * (el paso de pruebas a producción lo exige vacío para no dejar la aplicación inaccesible).
+     *
+     * @return list<string>
+     */
+    public static function errores(bool $pruebas): array
+    {
         $e = [];
-        $pruebas = Ambiente::esPruebas();
         if ($pruebas && Ambiente::pruebasHasta() && Ambiente::pruebasHasta()->greaterThan(now()->addDays(Ambiente::MAX_DIAS))) {
             $e[] = 'SGD_ACCESO_PRUEBAS_HASTA no puede superar '.Ambiente::MAX_DIAS.' días desde hoy';
         }
@@ -90,8 +103,7 @@ class ProductionGuard
         if (config('mail.default') === 'gmail_api' && (! config('sgd.google.service_account_json') || ! is_file((string) config('sgd.google.service_account_json')))) {
             $e[] = 'GOOGLE_SERVICE_ACCOUNT_JSON no existe';
         }
-        if ($e) {
-            throw new RuntimeException('Configuración insegura para producción: '.implode('; ', $e));
-        }
+
+        return $e;
     }
 }

@@ -29,6 +29,7 @@ use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\PlantillasController;
+use App\Http\Controllers\ProduccionController;
 use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\RecursosController;
@@ -306,6 +307,12 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         Route::get('/', [AdminConfigController::class, 'codificacion']);
         Route::post('/municipio', [AdminConfigController::class, 'elegirMunicipio'])->name('.municipio');
         Route::post('/patrones', [AdminConfigController::class, 'guardarPatrones'])->name('.patrones');
+    });
+
+    Route::middleware(['permiso:produccion.gestionar', 'throttle:20,1'])->prefix('admin/produccion')->name('admin.produccion')->group(function () {
+        Route::get('/', [ProduccionController::class, 'index']);
+        Route::post('/simular', [ProduccionController::class, 'simular'])->middleware('permiso:simulacion.gestionar')->name('.simular');
+        Route::post('/pasar', [ProduccionController::class, 'pasar'])->name('.pasar');
     });
 
     // ---- Administrador de feriados (no cuentan como días administrativos en los plazos)
