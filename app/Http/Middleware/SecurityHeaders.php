@@ -13,7 +13,7 @@ class SecurityHeaders
         $r = $next($request);
         // style-src 'unsafe-inline': TinyMCE aplica estilos en línea; los SCRIPTS en línea están prohibidos.
         $csp = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; "
-            ."frame-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'";
+            ."frame-src 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.claveunica.gob.cl; base-uri 'none'; object-src 'none'"; // ClaveÚnica: el cierre de sesión redirige desde un formulario POST
         $h = $r->headers;
         // Visor de archivos: el propio archivo (PDF, imagen, texto) puede mostrarse en un marco de ESTA misma aplicación; nunca de otro origen.
         $embebible = $h->has('X-SGD-Embebible');

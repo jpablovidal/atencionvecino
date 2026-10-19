@@ -485,13 +485,6 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .sgd-anuncio-item + .sgd-anuncio-item{border-top:1px solid #d9d9d9;margin-top:1rem;padding-top:1rem}
 
 /* Botón ClaveÚnica (provisional de texto mientras no esté el botón oficial en assets/img/claveunica/). Alto táctil ≥ 44 px. */
-.btn-claveunica{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.5rem 1.25rem;background:#0f69c4;color:#fff;border:2px solid #0f69c4;border-radius:4px;font-weight:700;text-decoration:none;line-height:1.2}
-.btn-claveunica:hover,.btn-claveunica:focus{background:#0b4f95;color:#fff;border-color:#0b4f95;text-decoration:none}
-.btn-claveunica:focus-visible{outline:3px solid #f2c728;outline-offset:2px}
-.btn-claveunica-bloque{display:flex;width:100%}
-.btn-claveunica-oficial{background:transparent;border:0;padding:0;min-height:44px}
-.btn-claveunica-oficial img{display:block;height:44px;width:auto}
-.btn-claveunica-ico{flex:none;margin-right:.6rem}
 
 /* Ficha de trámite (inspirada en el portal de trámites municipal): acordeones, canales, etiquetas y relacionados */
 .portal-migas-et{display:block;font-size:.85rem;color:#33414d;margin-bottom:.15rem}
@@ -524,3 +517,5 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .portal-temas li{padding:1.2rem 1.4rem;border-bottom:1px solid #c5d3df}.portal-temas li:last-child{border-bottom:0}
 .portal-temas h3 a{color:#0a4f8a}
 .portal-todos{border:1px solid #0a5a96;text-align:center;padding:1rem;margin:1.2rem 0 0}
+/* Botón oficial ClaveÚnica (claveunica.css): solo separación entre botones; el diseño del botón no se modifica */
+.btn-cu{margin:0}.btn-cu+.btn-cu{margin-top:.5rem}

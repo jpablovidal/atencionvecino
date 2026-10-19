@@ -15,9 +15,9 @@ class ApiCatalogo
         return [
             'repositorio' => ['etiqueta' => 'Repositorio de documentos (Google Drive)', 'descripcion' => 'Dónde se guardan los archivos cifrados. Se administra en la sección Repositorio.', 'campos' => [
                 'modo' => ['Modo de almacenamiento', 'select', 'sgd.repositorio.modo', ['opciones' => ['local' => 'Disco del servidor (fuera del docroot)', 'drive' => 'Unidad compartida de Google Drive']]],
-                'drive_sa_json' => ['Archivo JSON de la cuenta de servicio de Drive', 'path', 'sgd.repositorio.drive_sa_json', ['ayuda' => 'Ruta absoluta fuera del docroot, permisos 600 (p. ej. /home/USUARIO/sgd_secrets/drive-sa.json). La clave NO se pega en el sistema.']],
-                'drive_shared_drive_id' => ['ID de la unidad compartida', 'text', 'sgd.repositorio.drive_shared_drive_id', ['ayuda' => 'Se ve en la URL de la unidad compartida: drive.google.com/drive/folders/<ID>.']],
-                'drive_root_folder_id' => ['ID de la carpeta raíz del repositorio', 'text', 'sgd.repositorio.drive_root_folder_id', ['ayuda' => 'Carpeta dentro de la unidad compartida donde se crearán año/mes.']],
+                'drive_sa_json' => ['Archivo JSON de la cuenta de servicio de Drive', 'path', 'sgd.repositorio.drive_sa_json', ['subida' => 'drive', 'ayuda' => 'Ruta absoluta fuera del docroot, permisos 600 (p. ej. /home/USUARIO/sgd_secrets/drive-sa.json). La clave NO se pega en el sistema.']],
+                'drive_shared_drive_id' => ['ID de la unidad compartida', 'text', 'sgd.repositorio.drive_shared_drive_id', ['id_drive' => true, 'ayuda' => 'Se ve en la URL de la unidad compartida: drive.google.com/drive/folders/<ID>.']],
+                'drive_root_folder_id' => ['ID de la carpeta raíz del repositorio', 'text', 'sgd.repositorio.drive_root_folder_id', ['id_drive' => true, 'ayuda' => 'Carpeta dentro de la unidad compartida donde se crearán año/mes.']],
             ]],
             'claveunica' => ['etiqueta' => 'ClaveÚnica (OIDC)', 'descripcion' => 'Autenticación de ciudadanos y funcionarios.', 'campos' => [
                 'mode' => ['Modo', 'select', 'sgd.claveunica.mode', ['opciones' => ['real' => 'Real', 'mock' => 'Simulado (SOLO desarrollo)']]],
@@ -43,7 +43,7 @@ class ApiCatalogo
             ]],
             'google_mail' => ['etiqueta' => 'Correo institucional (Gmail API)', 'descripcion' => 'Cuenta de servicio con delegación de dominio (alcance gmail.send).', 'campos' => [
                 'sender' => ['Buzón remitente', 'text', 'sgd.google.sender', ['ayuda' => 'p. ej. no-responder@santodomingo.cl']],
-                'service_account_json' => ['Archivo JSON de la cuenta de servicio', 'path', 'sgd.google.service_account_json'],
+                'service_account_json' => ['Archivo JSON de la cuenta de servicio', 'path', 'sgd.google.service_account_json', ['subida' => 'gmail']],
                 'rate_per_minute' => ['Máximo de correos por minuto', 'number', 'sgd.google.rate_per_minute'],
             ]],
             'docdigital' => ['etiqueta' => 'DocDigital (comunicaciones oficiales)', 'descripcion' => 'API Middleware V2. Rutas A VALIDAR con la guía de integración.', 'campos' => [

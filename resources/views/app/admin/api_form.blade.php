@@ -4,7 +4,7 @@
 <p><a href="{{ route('app.admin.api') }}">&larr; APIs e integraciones</a></p>
 <h1>{{ $d['etiqueta'] }}</h1>
 <p>{{ $d['descripcion'] }}</p>
-<form method="post" action="{{ route('app.admin.api.actualizar',$clave) }}" class="col-lg-9 px-0" autocomplete="off">@csrf
+<form method="post" action="{{ route('app.admin.api.actualizar',$clave) }}" class="col-lg-9 px-0" autocomplete="off" enctype="multipart/form-data">@csrf
 <div class="custom-control custom-checkbox mb-3"><input class="custom-control-input" type="checkbox" id="activo" name="activo" value="1" @checked(old('activo',$estado['activo']))><label class="custom-control-label" for="activo">Usar esta configuración de la base de datos (si no, se usa <code>.env</code>)</label></div>
 @foreach($d['campos'] as $k => $def)
 @php [$etq,$tipo,$path] = $def; $op = $def[3] ?? []; $secreto = $op['secreto'] ?? false; $val = old($k, $estado['valores'][$k] ?? ($secreto ? null : config($path))); @endphp
@@ -17,6 +17,12 @@
   <small id="s-{{ $k }}" class="form-text text-muted">El valor nunca se muestra.</small>
   @if(in_array($k,$estado['secretos_bd']))<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="b-{{ $k }}" name="borrar[]" value="{{ $k }}"><label class="custom-control-label" for="b-{{ $k }}">Eliminar el valor guardado en la BD</label></div>@endif
 @else
+  @if(!empty($op['subida']))
+  @php $cuenta = \App\Services\Repositorio\CredencialDriveService::resumen($val ?: config($path)); @endphp
+  <label for="archivo_{{ $k }}">Cargar la clave JSON de la cuenta de servicio</label>
+  <input type="file" class="form-control-file mb-1" id="archivo_{{ $k }}" name="archivo_{{ $k }}" accept=".json,application/json" aria-describedby="f-{{ $k }}">
+  <small id="f-{{ $k }}" class="form-text text-muted mb-2">Suba el archivo JSON descargado de Google Cloud (máx. 20 KB): se valida y se guarda en el servidor fuera del sitio web, con permisos 600, y <strong>la clave nunca se muestra</strong>; al guardar, la ruta de abajo se completa sola.@if($cuenta) <strong>Cuenta cargada:</strong> {{ $cuenta['email'] }} (proyecto {{ $cuenta['proyecto'] }}).@else Aún no hay una clave cargada.@endif</small>
+  @endif
   <label for="{{ $k }}">{{ $etq }}</label>
   @if($tipo==='select')<select class="form-control" id="{{ $k }}" name="{{ $k }}">@foreach($op['opciones'] as $v=>$l)<option value="{{ $v }}" @selected($val===$v)>{{ $l }}</option>@endforeach</select>
   @else<input class="form-control" type="{{ $tipo==='number' ? 'number' : 'text' }}" id="{{ $k }}" name="{{ $k }}" value="{{ $val }}" maxlength="500" @if(!empty($op['ayuda'])) aria-describedby="a-{{ $k }}" @endif>@endif

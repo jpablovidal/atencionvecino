@@ -31,7 +31,9 @@ class SeguridadHttpTest extends TestCase
             $this->assertStringContainsString($d, $csp);
         }
         $this->assertStringNotContainsString("script-src 'self' 'unsafe", $csp);
-        $this->assertStringNotContainsString('https://', $csp, 'sin CDN ni orígenes externos');
+        // única excepción: el cierre de sesión de ClaveÚnica redirige desde un formulario POST (solo form-action)
+        $this->assertStringContainsString("form-action 'self' https://accounts.claveunica.gob.cl;", $csp);
+        $this->assertStringNotContainsString('https://', str_replace('https://accounts.claveunica.gob.cl', '', $csp), 'sin CDN ni otros orígenes externos');
         $r->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('Referrer-Policy')->assertHeader('Permissions-Policy');
         $this->assertStringContainsString('max-age=', $r->headers->get('Strict-Transport-Security'));
     }

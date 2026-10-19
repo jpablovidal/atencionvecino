@@ -1,0 +1,127 @@
+/*
+	BTN Clave Única.
+	Estilos gráficos para el botón de ClaveÚnica.
+	V 2.0
+	por @pyanez
+	11/10/2024
+*/
+
+/* Boton estilo de base */
+.btn-cu {
+	display: flex;
+	justify-content: center;
+	font-family: "Roboto", sans-serif;
+	font-weight:bold;
+	text-align: center;
+	text-decoration:none;
+	vertical-align: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	border-radius: 0;
+	border:0;
+}
+.btn-cu:hover{
+	text-decoration: none;
+}
+
+/*Icono ClaveÚnica*/
+.btn-cu .cl-claveunica {
+	text-indent: -9999px;
+	background: url(../img/claveunica/cu-blanco.svg);
+	/* Esta URL debe ser modificada según donde 
+	    quede disponible el archivo */
+}
+/*Texto ClaveÚnica*/
+.btn-cu .text {
+	padding-left: 4px;
+	text-decoration:none;
+	font-size: 1rem;
+	text-rendering:geometricPrecision;
+}
+/*si no tienes disponible unidades rem usa px*/
+.btn-cu .text-px{
+	font-size: 16px;
+	text-decoration: none;
+	padding-left:4px;
+	text-rendering: optimizeLegibility;
+}
+/* Color Estandar */
+.btn-cu.btn-color-estandar {
+	background-color: #0F69C4;
+	color: #FFF;
+}
+.btn-cu.btn-color-estandar:hover {
+	background-color: #0B4E91;
+	color: #FFF;
+}
+
+.btn-cu.btn-color-estandar:active {
+	background-color: #07305A;
+	color: #FFF;
+}
+
+.btn-cu.btn-color-estandar:focus {
+	background-color: #0B4E91;
+	color: #FFF;
+	outline: 4px solid #FFBE5C;
+	outline-offset: 0;
+}
+
+/* Tamaño M */
+.btn-cu.btn-m {
+	width:fit-content;
+	min-height:48x;
+	padding: 8px 14px 8px 14px !important;
+	font-size: 16px;
+	line-height:2rem;
+}
+
+.btn-cu.btn-m .cl-claveunica {
+	width: 24px;
+	height: 24px;
+	background-size: 24px 24px;
+	margin:auto 4px auto 0px;
+}
+
+/*Bordes redondeados*/
+.btn-cu.rounded-none{
+	border-radius: 0%;
+}
+.btn-cu.rounded-middle{
+	border-radius: 4px 4px;
+}
+.btn-cu.rounded-full{
+	border-radius:99px 99px;
+}
+
+/*Alto contraste o dark mode*/
+.btn-cu.btn-color-highContrast {
+	background-color: #625AF6;
+	color: #FFF;
+}
+.btn-cu.btn-color-highContrast:hover {
+	background-color: #4943B6;
+	color: #FFF;
+}
+
+.btn-cu.btn-color-highContrast:active {
+	background-color: #2D2971;
+	color: #FFF;
+}
+
+.btn-cu.btn-color-highContrast:focus {
+	background-color: #4943B6;
+	color: #FFF;
+	outline: 4px solid rgba(216,215,250,1);
+	outline-offset: 0;
+}
+
+/* Tamaño fluid-width */
+.btn-cu.btn-fw {
+	max-width: 550px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}

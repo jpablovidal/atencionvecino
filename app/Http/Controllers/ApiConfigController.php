@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Exceptions\FlujoException;
 use App\Services\Admin\ApiCatalogo;
 use App\Services\Admin\ApiConfigService;
+use App\Services\AuditoriaService;
+use App\Services\Repositorio\CredencialDriveService;
 use Illuminate\Http\Request;
 
 class ApiConfigController extends Controller
 {
-    public function __construct(private readonly ApiConfigService $svc) {}
+    public function __construct(private readonly ApiConfigService $svc, private readonly AuditoriaService $audit, private readonly CredencialDriveService $cred) {}
 
     private function servicio(string $s): array
     {
@@ -41,14 +43,31 @@ class ApiConfigController extends Controller
 
     public function actualizar(Request $r, string $servicio)
     {
-        $this->servicio($servicio);
+        $d = $this->servicio($servicio);
+        $datos = $r->except(['_token', 'borrar', 'activo']);
+        $subida = false;
         try {
-            $this->svc->guardar($servicio, $r->except(['_token', 'borrar', 'activo']), $r->boolean('activo'), (array) $r->input('borrar', []), $r->user());
+            foreach ($d['campos'] as $k => $def) {
+                $op = $def[3] ?? [];
+                if (! empty($op['id_drive']) && isset($datos[$k])) {
+                    $datos[$k] = CredencialDriveService::extraerId((string) $datos[$k]); // se acepta pegar la URL de Drive
+                }
+                if (! empty($op['subida']) && $r->hasFile('archivo_'.$k)) {
+                    $r->validate(['archivo_'.$k => 'file|max:20']);
+                    $c = $this->cred->guardar($r->file('archivo_'.$k), (string) $op['subida']);
+                    $datos[$k] = $c['ruta'];
+                    $subida = true;
+                    $this->audit->registrar('api.credencial_subida', 'api_config', $servicio, ['campo' => $k, 'cuenta' => $c['email'], 'proyecto' => $c['proyecto']]);
+                }
+                unset($datos['archivo_'.$k]);
+            }
+            $this->svc->guardar($servicio, $datos, $r->boolean('activo'), (array) $r->input('borrar', []), $r->user());
         } catch (FlujoException $e) {
             return back()->withInput($r->except(['_token']) + [])->with('error', $e->getMessage());
         }
+        $msg = 'Configuración guardada.'.($subida ? ' La clave JSON se cargó y guardó en el servidor.' : '').($subida && ! $r->boolean('activo') ? ' Marque «Usar esta configuración de la base de datos» y guarde de nuevo para que se aplique.' : '');
 
-        return redirect()->route('app.admin.api.editar', $servicio)->with('ok', 'Configuración guardada.');
+        return redirect()->route('app.admin.api.editar', $servicio)->with('ok', $msg);
     }
 
     public function volverEnv(Request $r, string $servicio)

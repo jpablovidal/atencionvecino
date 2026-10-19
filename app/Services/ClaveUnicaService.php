@@ -18,6 +18,17 @@ class ClaveUnicaService
         ], '', '&', PHP_QUERY_RFC3986);
     }
 
+    /**
+     * Cierre de sesión de ClaveÚnica (GET a pantalla completa, nunca en iframe ni popup: así lo exige el manual). El parámetro
+     * «redirect» solo funciona si la Logout URI está registrada ante ClaveÚnica; por defecto se usa la portada del sitio.
+     */
+    public function urlCierre(): string
+    {
+        $uri = (string) ($this->cfg['logout_uri'] ?? '') ?: rtrim((string) config('app.url'), '/').'/';
+
+        return ($this->cfg['logout_url'] ?? 'https://accounts.claveunica.gob.cl/api/v1/accounts/app/logout').'?'.http_build_query(['redirect' => $uri], '', '&', PHP_QUERY_RFC3986);
+    }
+
     /** @return array{run:string,nombres:string,apellidos:string} */
     public function identificar(string $code, string $state): array
     {

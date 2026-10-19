@@ -1,17 +1,11 @@
 Botón ClaveÚnica — activos oficiales
 
-Para certificar la integración, Gobierno Digital exige usar el botón y el logo OFICIALES de ClaveÚnica sin modificarlos
-(proporciones, colores, texto). Este entorno no pudo descargarlos (sin acceso a los sitios de Gobierno Digital).
+Archivos del kit oficial de Gobierno Digital (manual de integración ClaveÚnica 6.5, «Uso del botón oficial»):
+  - public/assets/css/claveunica.css      → cu.css del kit, SIN cambios salvo la ruta del ícono (la propia hoja indica que debe ajustarse):
+                                            url(../icon/cu-blanco.svg)  →  url(../img/claveunica/cu-blanco.svg)
+  - public/assets/img/claveunica/cu-blanco.svg → ícono oficial (blanco, 24 px) que usa el botón.
 
-Qué hacer:
-  1. Descargue el kit oficial de botones ClaveÚnica desde el sitio de Gobierno Digital / ClaveÚnica.
-  2. Copie aquí el botón en formato SVG con el nombre exacto:   boton-claveunica.svg
-     (opcional, para fondos oscuros:                             boton-claveunica-blanco.svg)
-  3. No hace falta tocar código: el componente resources/views/partials/boton_claveunica.blade.php detecta el archivo y lo usa solo.
-
-Mientras el archivo no exista se muestra un botón de TEXTO (sin logo) con la leyenda «Ingresa con ClaveÚnica». Ese botón es provisional
-y NO reemplaza al botón oficial en la certificación. Ver docs/CLAVEUNICA_BOTON.md (checklist, estado A VALIDAR).
-
-Nota sobre el glifo: el botón provisional incluye el glifo de ClaveÚnica tomado del kit de Gobierno Digital (@gobdigital-cl/gob.cl, licencia MIT,
-src/svg/claveunica.svg). Es solo el ícono: el kit NO trae el botón completo con sus colores y pautas, así que sigue pendiente el archivo oficial
-boton-claveunica.svg para certificar. No se nombró así ningún archivo del proyecto para no hacer pasar el provisional por el oficial.
+El marcado del botón es el del kit (index.html): <a class="btn-cu btn-m btn-color-estandar"> con el ícono y el texto «Iniciar sesión»
+(o «ClaveÚnica»). Sobre fondo oscuro se usa la variante oficial de alto contraste (btn-color-highContrast).
+Un solo componente lo emite: resources/views/partials/boton_claveunica.blade.php. No modifique colores, proporciones ni textos.
+Fuente Roboto: se sirve localmente (assets/fonts), sin CDN. Ver docs/CLAVEUNICA_BOTON.md.

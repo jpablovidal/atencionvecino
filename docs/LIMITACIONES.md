@@ -170,7 +170,7 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Áreas:** organizan, no restringen. No hay todavía separación de correlativos, plantillas ni informes por área.
 
 ## Botón ClaveÚnica
-- Los **activos oficiales** (botón y logo) y las pautas de uso de Gobierno Digital **no pudieron descargarse**. Se entrega el componente listo y el directorio `public/assets/img/claveunica/` donde copiar el SVG oficial; mientras no esté se muestra un botón de **texto** provisional que **no** sirve para certificar. Checklist en `docs/CLAVEUNICA_BOTON.md` (A VALIDAR).
+- *(Superado)* El botón oficial ya está instalado (kit entregado por Gobierno Digital); vea «ClaveÚnica: botón y certificación» más abajo.
 
 ## Datos simulados y paso a producción
 - El simulador no envía correos ni notificaciones reales; el despacho de la respuesta final depende de la Casilla Única y de Gmail configurados (si no lo están, la respuesta queda «instruida»).
@@ -204,3 +204,13 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Con modo `prod` el cron `docdigital:sincronizar` (cada 10 minutos) **importa documentos reales** a la base; en un ambiente de pruebas eso mezcla datos reales con los de prueba. Nada se acusa ni devuelve solo.
 - Nada de esto se probó contra DemoDoc ni producción reales; las pruebas usan respuestas simuladas.
 
+## ClaveÚnica: botón y certificación
+- El botón es el del kit oficial entregado; **no se comparó con Figma ni con los lineamientos** (no se recibieron): hágalo antes de certificar.
+- El cierre de sesión de ClaveÚnica y la Logout URI se implementaron según el manual 6.5, pero **no se probaron contra el servicio real** (A VALIDAR en sandbox). Sin la Logout URI registrada, ClaveÚnica no redirige de vuelta.
+- El manual exige dominio «.gob.cl» para la Redirect URI de producción; `gestor.santodomingo.cl` no lo cumple (riesgo de certificación, consultar a Gobierno Digital).
+- Los endpoints se mantienen en `config/sgd.php`; el servicio real no es accesible desde el entorno de desarrollo, por lo que las pruebas usan respuestas simuladas.
+
+## Carga de claves JSON desde el panel
+- La clave queda como **archivo en el servidor** (600, fuera del sitio web), igual que si se hubiera subido por el administrador de archivos: quien tenga acceso al servidor o a un respaldo del directorio puede leerla. No se cifra aparte porque los clientes de Google la leen del disco.
+- Al reemplazar la clave de Drive se descarta el token en caché; la clave anterior **no** se revoca en Google (hágalo en Google Cloud).
+- Solo se valida la forma de la clave, no que Google la acepte: use «Probar conexión» después de cargarla.

@@ -90,11 +90,11 @@ class AuthController extends Controller
             return $this->fallo();
         }
 
-        return $this->iniciar($request, $pend['via'], $id);
+        return $this->iniciar($request, $pend['via'], $id, $cu);
     }
 
     /** @param array{run:string,nombres:string,apellidos:string} $id */
-    private function iniciar(Request $request, string $via, array $id)
+    private function iniciar(Request $request, string $via, array $id, ?ClaveUnicaService $cu = null)
     {
         $u = null;
         if ($via === 'funcionario') {
@@ -102,14 +102,17 @@ class AuthController extends Controller
             if (! $u) {
                 $this->audit->registrar('auth.fallo', null, null, ['motivo' => 'run_no_habilitado', 'run' => Run::enmascarar($id['run'])], false, ['run' => $id['run'], 'rol' => null]);
 
-                return $this->fallo('Su RUN no está habilitado en el sistema. Contacte al administrador.');
+                $msg = 'Su RUN no está habilitado en el sistema. Contacte al administrador.';
+
+                // el manual de ClaveÚnica pide cerrar también su sesión cuando el RUN autenticado no existe en el sistema
+                return $cu !== null && config('sgd.claveunica.mode') !== 'mock' ? redirect()->away($cu->urlCierre())->with('error', $msg) : $this->fallo($msg);
             }
         }
         $pendiente = $request->session()->get('tramite_pendiente'); // se conserva solo para ciudadanos (ver abajo)
         $retornoPago = $request->session()->get('retorno_pago'); // idem: vuelve a la consulta de pago a proveedores
         $request->session()->invalidate(); // sesión nueva (anti fijación)
         $request->session()->regenerateToken();
-        $request->session()->put(['login_at' => time(), 'last_seen' => time()]);
+        $request->session()->put(['login_at' => time(), 'last_seen' => time()] + ($cu !== null && config('sgd.claveunica.mode') !== 'mock' ? ['via_cu' => true] : []));
         if ($u !== null) {
             Auth::login($u);
             $u->forceFill(['ultimo_acceso' => now()])->save();
@@ -148,14 +151,16 @@ class AuthController extends Controller
         return redirect()->route('ingreso')->with('error', $msg);
     }
 
-    public function salir(Request $request)
+    public function salir(Request $request, ClaveUnicaService $cu)
     {
+        $viaClaveUnica = (bool) $request->session()->get('via_cu');
         $this->audit->registrar('auth.logout');
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('inicio');
+        // quien entró con ClaveÚnica también cierra su sesión allá (redirección a pantalla completa)
+        return $viaClaveUnica ? redirect()->away($cu->urlCierre()) : redirect()->route('inicio');
     }
 
     // ---- SOLO DESARROLLO (modo mock de ClaveÚnica; ruta inexistente en producción)

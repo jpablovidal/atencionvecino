@@ -49,6 +49,9 @@ return [
     ],
 
     // ClaveÚnica (OIDC)
+    // Carpeta (fuera del docroot) donde el panel guarda claves JSON subidas; por defecto «sgd_secrets» junto a la carpeta de la aplicación
+    'secrets_path' => env('SGD_SECRETS_PATH'),
+
     'claveunica' => [
         'mode' => env('CLAVEUNICA_MODE', 'real'), // mock|real  (mock prohibido en producción)
         'client_id' => env('CLAVEUNICA_CLIENT_ID'),
@@ -56,7 +59,9 @@ return [
         'redirect_uri' => env('CLAVEUNICA_REDIRECT_URI'),
         'authorize_url' => 'https://accounts.claveunica.gob.cl/openid/authorize/',
         'token_url' => 'https://accounts.claveunica.gob.cl/openid/token/',
-        'userinfo_url' => 'https://www.claveunica.gob.cl/openid/userinfo/',
+        'userinfo_url' => 'https://accounts.claveunica.gob.cl/openid/userinfo/', // el manual (6.5) exige que todos los endpoints sean accounts.claveunica.gob.cl
+        'logout_url' => 'https://accounts.claveunica.gob.cl/api/v1/accounts/app/logout',
+        'logout_uri' => env('CLAVEUNICA_LOGOUT_URI'), // Logout URI registrada ante ClaveÚnica (obligatoria desde el manual 6.4); por defecto la portada del sitio
         'scope' => 'openid run name',
     ],
 
