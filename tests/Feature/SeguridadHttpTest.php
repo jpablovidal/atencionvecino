@@ -255,7 +255,7 @@ class SeguridadHttpTest extends TestCase
     {
         $this->app['env'] = 'production';
         config(['app.debug' => false, 'app.url' => 'https://sgd.santodomingo.cl', 'sgd.claveunica.mode' => 'real', 'sgd.firmagob.mode' => 'prod',
-            'mail.default' => 'log', 'sgd.llm.enabled' => false]);
+            'mail.default' => 'log', 'sgd.llm.enabled' => false, 'sgd.admin_2fa' => true]);
         ProductionGuard::verificar(); // configuración correcta: no lanza
         foreach ([['sgd.firmagob.mode', 'mock'], ['sgd.claveunica.mode', 'mock'], ['app.debug', true], ['app.url', 'http://x.cl'], ['sgd.audit_hmac_key', 'corta'], ['sgd.file_keys', '']] as [$k, $v]) {
             $prev = config($k);

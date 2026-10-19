@@ -8,6 +8,7 @@ use App\Models\Expediente;
 use App\Models\Solicitud;
 use App\Models\Unidad;
 use App\Models\Usuario;
+use App\Services\Admin\CodificacionService;
 use Illuminate\Support\Facades\DB;
 
 class ExpedienteService
@@ -26,7 +27,7 @@ class ExpedienteService
                 throw new FlujoException('La solicitud no corresponde a su unidad.');
             }
             $exp = Expediente::query()->create([
-                'codigo' => 'TMP', 'solicitud_id' => $s->id, 'unidad_id' => $u->unidad_id, 'responsable_id' => $u->id, 'estado' => 'abierto', 'metadatos' => [],
+                'codigo' => 'TMP', 'solicitud_id' => $s->id, 'unidad_id' => $u->unidad_id, 'area_id' => $u->unidad?->area_id, 'responsable_id' => $u->id, 'estado' => 'abierto', 'metadatos' => [],
             ]);
             $exp->forceFill(['codigo' => sprintf('EXP-%d-%06d', now('America/Santiago')->year, $exp->id)])->save();
             $exp->forceFill(['metadatos' => $this->mgdee($exp->refresh(), $s)])->save();
@@ -46,7 +47,7 @@ class ExpedienteService
      */
     public function identificador(Expediente $e): string
     {
-        return ((string) config('sgd.institucion_codigo') ?: 'SGD').'-'.$e->codigo;
+        return app(CodificacionService::class)->identificadorExpediente($e);
     }
 
     /** Crea el expediente de una comunicación oficial recibida por DocDigital (sin responsable hasta que alguien se la asigne). */
@@ -54,13 +55,13 @@ class ExpedienteService
     {
         return DB::transaction(function () use ($c, $unidad) {
             $e = Expediente::query()->create([
-                'codigo' => 'TMP', 'solicitud_id' => null, 'unidad_id' => $unidad->id, 'responsable_id' => null, 'estado' => 'abierto',
+                'codigo' => 'TMP', 'solicitud_id' => null, 'unidad_id' => $unidad->id, 'area_id' => $unidad->area_id, 'responsable_id' => null, 'estado' => 'abierto',
                 'origen' => 'docdigital', 'comunicacion_id' => $c->id, 'metadatos' => [],
             ]);
             $e->forceFill(['codigo' => sprintf('EXP-%d-%06d', now('America/Santiago')->year, $e->id)])->save();
             $now = now('America/Santiago')->toIso8601String();
             $e->forceFill(['metadatos' => [
-                'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => config('sgd.institucion_codigo'),
+                'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => CodificacionService::institucion($e->area_id ?? $e->unidad?->area_id),
                     'nombre' => 'Comunicación oficial: '.$c->asunto, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $unidad->nombre],
                 'descripcion' => ['resumen' => mb_substr($c->asunto, 0, 500), 'folio_docdigital' => $c->evidencia],
                 'temporalidad' => ['fecha_apertura' => $now, 'fecha_cierre' => null, 'fecha_recepcion' => $c->evidencia_en?->toIso8601String()],
@@ -103,7 +104,7 @@ class ExpedienteService
         $now = now('America/Santiago')->toIso8601String();
 
         return [
-            'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => config('sgd.institucion_codigo'), 'nombre' => $s->tramite->nombre.' - '.$s->nombres.' '.$s->apellidos, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $e->unidad->nombre ?? null],
+            'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => CodificacionService::institucion($e->area_id ?? $e->unidad?->area_id), 'nombre' => $s->tramite->nombre.' - '.$s->nombres.' '.$s->apellidos, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $e->unidad->nombre ?? null],
             'descripcion' => ['resumen' => mb_substr($s->detalle, 0, 500), 'folio_solicitud' => $s->folio],
             'temporalidad' => ['fecha_apertura' => $now, 'fecha_cierre' => null, 'plazo_dias' => $s->tramite->plazo_dias],
             'caracterizacion' => ['tipo_expediente' => 'Solicitud ciudadana', 'serie_documental' => $s->tramite->codigo_interno],

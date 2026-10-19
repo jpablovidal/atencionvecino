@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\FlujoException;
 use App\Models\Rol;
 use App\Models\Unidad;
 use App\Models\Usuario;
+use App\Services\Admin\AreaService;
 use App\Services\AuditoriaService;
 use App\Support\Run;
 use Illuminate\Http\Request;
@@ -14,7 +16,7 @@ use Illuminate\Validation\Rule;
 /** Administración de usuarios funcionarios: roles dinámicos, búsqueda y resguardos (último administrador, autoprotección). */
 class UsuariosController extends Controller
 {
-    public function __construct(private readonly AuditoriaService $audit) {}
+    public function __construct(private readonly AuditoriaService $audit, private readonly AreaService $areas) {}
 
     public function index(Request $r)
     {
@@ -48,7 +50,8 @@ class UsuariosController extends Controller
     private function datos(?Usuario $u): array
     {
         return ['fila' => $u, 'roles' => Rol::query()->where(fn ($w) => $w->where('activo', true)->when($u, fn ($x) => $x->orWhere('clave', $u->rol)))->orderBy('nombre')->get(),
-            'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get()];
+            'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(),
+            'areas' => $this->areas->habilitadas(), 'areaIds' => $u ? $u->areas()->pluck('areas.id')->all() : []];
     }
 
     public function guardar(Request $r, ?Usuario $usuario = null)
@@ -62,8 +65,10 @@ class UsuariosController extends Controller
             'run' => ['required', Rule::unique('usuarios', 'run')->ignore($usuario?->id)],
             'nombres' => 'required|string|max:120', 'apellidos' => 'required|string|max:120', 'correo' => 'required|email|max:190',
             'cargo' => 'nullable|string|max:120', 'rol' => ['required', Rule::exists('roles', 'clave')->where('activo', true)],
-            'unidad_id' => 'nullable|integer|exists:unidades,id', 'puede_firmar' => 'nullable|boolean',
+            'unidad_id' => 'nullable|integer|exists:unidades,id', 'puede_firmar' => 'nullable|boolean', 'areas' => 'nullable|array', 'areas.*' => 'integer',
         ]);
+        $areaIds = array_map('intval', (array) ($d['areas'] ?? []));
+        unset($d['areas']);
         $d = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $d);
         $base = (string) Rol::query()->where('clave', $d['rol'])->value('rol_base');
         $actor = $r->user();
@@ -80,6 +85,11 @@ class UsuariosController extends Controller
         $cambioRol = $usuario && $usuario->rol !== $d['rol'];
         $u = $usuario ?? new Usuario(['activo' => true]);
         $u->fill($d)->save();
+        try {
+            $this->areas->asignarUsuario($u, $areaIds);
+        } catch (FlujoException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
         if ($cambioRol) {
             DB::table('sessions')->where('user_id', $u->id)->delete(); // el nuevo rol rige desde un ingreso nuevo
         }

@@ -11,6 +11,7 @@ use App\Models\Expediente;
 use App\Models\Plantilla;
 use App\Models\TipoDocumento;
 use App\Models\Usuario;
+use App\Services\Admin\CodificacionService;
 use App\Services\Firma\FirmaClient;
 use App\Services\Firma\FirmaException;
 use App\Support\PlantillaEstructura;
@@ -110,6 +111,7 @@ class DocumentoService
         $doc->forceFill(['html' => $html, 'version_actual' => $v, 'pdf_ruta' => $f['ruta'], 'pdf_sha256' => $f['sha256']])->save();
         // un documento editado invalida cualquier flujo previo
         $doc->pasos()->delete();
+        app(DocumentoHistorialService::class)->registrar($doc, 'editado', $autor, $v === 1 ? 'Versión inicial' : 'Nueva versión del texto', $v);
 
         return $ver;
     }
@@ -206,6 +208,7 @@ class DocumentoService
                 $doc->forceFill(['estado' => 'borrador'])->save(); // vuelve a edición; el flujo se redefine
             }
             $this->audit->registrar($aprobar ? 'documento.visar' : 'documento.rechazar', 'documento', $doc->id);
+            app(DocumentoHistorialService::class)->registrar($doc, $aprobar ? 'visado' : 'rechazado', $u, $comentario);
 
             return $doc->refresh();
         });
@@ -271,6 +274,7 @@ class DocumentoService
             }
             $paso->forceFill(['estado' => 'completado', 'simulada' => false, 'firma_tipo' => 'simple', 'checksum_original' => hash('sha256', $pdf), 'completado_en' => now()])->save();
             $this->audit->registrar('documento.firmar', 'documento', $doc->id, ['tipo' => 'simple'], true);
+            app(DocumentoHistorialService::class)->registrar($doc, 'firmado', $paso->usuario ?? Usuario::query()->findOrFail($paso->usuario_id), 'Firma electrónica simple');
         });
     }
 
@@ -296,6 +300,7 @@ class DocumentoService
                 $doc->forceFill(['pdf_ruta' => $nuevo['ruta'], 'pdf_sha256' => $nuevo['sha256'], 'pdf_firmado_ruta' => $nuevo['ruta'], 'pdf_firmado_sha256' => $nuevo['sha256']])->save();
             }
             $this->audit->registrar('documento.firmar', 'documento', $doc->id, ['simulada' => $res['simulada']], true);
+            app(DocumentoHistorialService::class)->registrar($doc, 'firmado', Usuario::query()->findOrFail($paso->usuario_id), $res['simulada'] ? 'Firma electrónica avanzada (simulada, ambiente de pruebas)' : 'Firma electrónica avanzada (FirmaGob)');
         });
     }
 
@@ -317,6 +322,7 @@ class DocumentoService
                     $codigo = CorrelativoService::generarCodigo();
                 } while (Documento::query()->where('codigo_validacion', $codigo)->exists());
                 $doc->forceFill(['numero' => $n, 'anio' => $a, 'folio' => $this->folios->formatear($doc->tipo, $n, $a), 'codigo_validacion' => $codigo, 'fecha_firma' => now('America/Santiago'), 'estado' => 'vigente']);
+                $doc->forceFill(['identificador' => app(CodificacionService::class)->identificadorDocumento($doc)]);
                 $sha = hash('sha256', $doc->html);
                 $copia = $this->pdf->copiaPublica($doc, $sha);
                 $f = $this->vault->put($copia);

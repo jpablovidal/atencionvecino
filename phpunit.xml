@@ -19,6 +19,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="SGD_ADMIN_2FA" value="false"/>
         <env name="CLAVEUNICA_MODE" value="mock"/>
         <env name="FIRMAGOB_MODE" value="mock"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

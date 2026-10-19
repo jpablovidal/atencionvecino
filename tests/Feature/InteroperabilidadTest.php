@@ -352,7 +352,7 @@ class InteroperabilidadTest extends TestCase
     public function test_guard_de_produccion_con_interoperabilidad(): void
     {
         $this->app['env'] = 'production';
-        config(['app.debug' => false, 'app.url' => 'https://sgd.santodomingo.cl', 'sgd.claveunica.mode' => 'real', 'sgd.firmagob.mode' => 'prod', 'mail.default' => 'log', 'sgd.llm.enabled' => false]);
+        config(['app.debug' => false, 'app.url' => 'https://sgd.santodomingo.cl', 'sgd.claveunica.mode' => 'real', 'sgd.firmagob.mode' => 'prod', 'mail.default' => 'log', 'sgd.llm.enabled' => false, 'sgd.admin_2fa' => true]);
         ProductionGuard::verificar();
         foreach ([['sgd.docdigital.mode', 'mock'], ['sgd.docdigital.mode', 'demo'], ['sgd.pisee.mode', 'mock']] as [$k, $v]) {
             config([$k => $v]);

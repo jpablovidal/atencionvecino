@@ -10,6 +10,7 @@ use App\Models\Documento;
 use App\Models\Expediente;
 use App\Models\Unidad;
 use App\Models\Usuario;
+use App\Services\Admin\CodificacionService;
 use App\Services\AuditoriaService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
@@ -85,7 +86,7 @@ class ComunicacionService
             $sha = $d->pdf_firmado_ruta ? $d->pdf_firmado_sha256 : $d->pdf_sha256;
             $pdf = $this->vault->get((string) $ruta, (string) $sha); // verifica integridad antes de enviar
             $r = $this->client->enviar($pdf, 'documento-'.$d->numero.'-'.$d->anio.'.pdf', [
-                'asunto' => $c->asunto, 'destino_codigo' => (string) $c->institucion_codigo, 'origen_codigo' => config('sgd.institucion_codigo'),
+                'asunto' => $c->asunto, 'destino_codigo' => (string) $c->institucion_codigo, 'origen_codigo' => CodificacionService::institucion(),
                 'numero' => $d->numeroFormateado(), 'tipo' => $d->tipo->nombre,
                 'referencia' => $c->responde_a_id ? ComunicacionOficial::query()->where('id', $c->responde_a_id)->value('evidencia') : null, // A VALIDAR
             ]);

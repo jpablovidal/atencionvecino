@@ -8,6 +8,7 @@ use App\Models\Devolucion;
 use App\Models\Solicitud;
 use App\Models\Tramite;
 use App\Models\Usuario;
+use App\Services\Admin\ArchivoConfigService;
 use App\Services\Firma\ArchivoFirmaService;
 use App\Support\Plazos;
 use App\Support\UploadValidator;
@@ -42,13 +43,13 @@ class SolicitudService
         foreach ($extras as $f) {
             $archivos[] = [$f, 'Anexo adicional'];
         }
-        if (count($archivos) > config('sgd.upload_max_files')) {
-            throw new FlujoException('Máximo '.config('sgd.upload_max_files').' archivos por solicitud.');
+        if (count($archivos) > ArchivoConfigService::maxArchivos()) {
+            throw new FlujoException('Máximo '.ArchivoConfigService::maxArchivos().' archivos por solicitud.');
         }
         $validados = [];
         foreach ($archivos as [$f, $titulo]) {
             try {
-                $validados[] = [$f, $titulo, UploadValidator::validar($f)];
+                $validados[] = [$f, $titulo, UploadValidator::validar($f, 'ciudadano')];
             } catch (\InvalidArgumentException $e) {
                 throw new FlujoException($f->getClientOriginalName().': '.$e->getMessage());
             }
@@ -158,12 +159,12 @@ class SolicitudService
         $validados = [];
         foreach ($archivos as $f) {
             try {
-                $validados[] = [$f, UploadValidator::validar($f)];
+                $validados[] = [$f, UploadValidator::validar($f, 'ciudadano')];
             } catch (\InvalidArgumentException $e) {
                 throw new FlujoException($f->getClientOriginalName().': '.$e->getMessage());
             }
         }
-        if (count($validados) > config('sgd.upload_max_files')) {
+        if (count($validados) > ArchivoConfigService::maxArchivos()) {
             throw new FlujoException('Demasiados archivos.');
         }
         try {

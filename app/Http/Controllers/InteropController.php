@@ -12,6 +12,7 @@ use App\Models\Institucion;
 use App\Models\PiseeServicio;
 use App\Models\ProcesoCodificador;
 use App\Services\AccesoRestringidoService;
+use App\Services\Admin\CodificacionService;
 use App\Services\AuditoriaService;
 use App\Services\FileVault;
 use App\Services\Interop\CodificadorService;
@@ -136,7 +137,7 @@ class InteropController extends Controller
 
         return view('app.codificador', [
             'inst' => Institucion::query()->count(), 'proc' => ProcesoCodificador::query()->count(),
-            'modo' => config('sgd.codificador.mode'), 'miCodigo' => config('sgd.institucion_codigo'), 'resultado' => session('resultado'),
+            'modo' => config('sgd.codificador.mode'), 'miCodigo' => CodificacionService::municipio()['codigo'], 'resultado' => session('resultado'),
         ]);
     }
 

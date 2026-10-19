@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AnunciosController;
 use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ArchivoMunicipalController;
+use App\Http\Controllers\ArchivoVisorController;
+use App\Http\Controllers\AreasController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CasillaController;
@@ -11,6 +14,7 @@ use App\Http\Controllers\CatalogoTramitesController;
 use App\Http\Controllers\CiudadanoController;
 use App\Http\Controllers\DocDigitalController;
 use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\DosFactoresController;
 use App\Http\Controllers\EspacioController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\FeriadosController;
@@ -99,6 +103,10 @@ Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadan
 
 // ---- Funcionarios
 Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->group(function () {
+    // Segundo factor del administrador (las rutas app.2fa* están exentas de la exigencia).
+    Route::get('/2fa', [DosFactoresController::class, 'index'])->name('2fa');
+    Route::post('/2fa', [DosFactoresController::class, 'verificar'])->middleware('throttle:login')->name('2fa.verificar');
+    Route::post('/2fa/restablecer/{usuario}', [DosFactoresController::class, 'restablecer'])->whereNumber('usuario')->middleware('permiso:mantenedores.gestionar')->name('2fa.restablecer');
     Route::get('/', [FuncionarioController::class, 'bandeja'])->name('bandeja');
     Route::get('/vigentes', [FuncionarioController::class, 'vigentes'])->name('vigentes');
     Route::get('/firmas', [FirmasMasivasController::class, 'index'])->name('firmas');
@@ -121,6 +129,11 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::post('/expedientes/{expediente}/derivar', [ExpedienteController::class, 'derivar'])->name('expediente.derivar');
     Route::post('/expedientes/{expediente}/archivos', [ExpedienteController::class, 'subir'])->name('expediente.subir');
     Route::get('/expedientes/{expediente}/archivos/{archivo}', [ExpedienteController::class, 'archivo'])->name('expediente.archivo');
+    Route::get('/expedientes/{expediente}/archivos/{archivo}/ver/{numero?}', [ArchivoVisorController::class, 'ver'])->whereNumber('numero')->name('expediente.archivo.ver');
+    Route::get('/expedientes/{expediente}/archivos/{archivo}/versiones', [ArchivoVisorController::class, 'historial'])->name('expediente.archivo.versiones');
+    Route::get('/expedientes/{expediente}/archivos/{archivo}/versiones/{numero}/descargar', [ArchivoVisorController::class, 'descargarVersion'])->whereNumber('numero')->name('expediente.archivo.version.descargar');
+    Route::post('/expedientes/{expediente}/archivos/{archivo}/versiones', [ArchivoVisorController::class, 'nuevaVersion'])->middleware('throttle:30,1')->name('expediente.archivo.version.nueva');
+    Route::get('/expedientes/{expediente}/documentos/{documento}/historial', [ArchivoVisorController::class, 'documentoHistorial'])->name('expediente.documento.historial');
     Route::post('/expedientes/{expediente}/cerrar', [ExpedienteController::class, 'cerrar'])->name('expediente.cerrar');
     Route::post('/expedientes/{expediente}/reabrir', [ExpedienteController::class, 'reabrir'])->name('expediente.reabrir');
     Route::get('/expedientes/{expediente}/exportar', [ExpedienteController::class, 'exportar'])->name('expediente.exportar');
@@ -278,6 +291,21 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::post('/expedientes/{expediente}/autorizar', [RestringidosController::class, 'autorizar'])->name('restringidos.autorizar');
             Route::post('/autorizaciones/{autorizacion}/revocar', [RestringidosController::class, 'revocar'])->whereNumber('autorizacion')->name('restringidos.revocar');
         });
+    });
+
+    // ---- Configuración del administrador: archivos, áreas, codificación y normas técnicas
+    Route::middleware(['permiso:archivos.configurar', 'throttle:60,1'])->prefix('admin/archivos')->name('admin.archivos')->group(function () {
+        Route::get('/', [AdminConfigController::class, 'archivosForm']);
+        Route::post('/', [AdminConfigController::class, 'archivosGuardar'])->name('.guardar');
+    });
+    Route::middleware(['permiso:areas.gestionar', 'throttle:60,1'])->prefix('admin/areas')->name('admin.areas')->group(function () {
+        Route::get('/', [AreasController::class, 'index']);
+        Route::post('/', [AreasController::class, 'guardar'])->name('.guardar');
+    });
+    Route::middleware(['permiso:codificacion.configurar', 'throttle:60,1'])->prefix('admin/codificacion')->name('admin.codificacion')->group(function () {
+        Route::get('/', [AdminConfigController::class, 'codificacion']);
+        Route::post('/municipio', [AdminConfigController::class, 'elegirMunicipio'])->name('.municipio');
+        Route::post('/patrones', [AdminConfigController::class, 'guardarPatrones'])->name('.patrones');
     });
 
     // ---- Administrador de feriados (no cuentan como días administrativos en los plazos)

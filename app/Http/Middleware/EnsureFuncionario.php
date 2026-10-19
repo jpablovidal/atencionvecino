@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Admin\TotpService;
 use App\Support\Espacio;
 use Closure;
 use Illuminate\Http\Request;
@@ -23,6 +24,11 @@ class EnsureFuncionario
         }
 
         Espacio::fijar(Espacio::APP);
+
+        // Los administradores del sistema deben tener el segundo factor (TOTP) configurado y verificado en esta sesión.
+        if (TotpService::exigido($u) && ! $request->routeIs('app.2fa*') && (int) $request->session()->get('totp_ok') !== (int) $u->id) {
+            return redirect()->route('app.2fa');
+        }
 
         return $next($request);
     }

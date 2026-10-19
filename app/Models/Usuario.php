@@ -8,6 +8,7 @@ use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 
 /**
@@ -41,6 +42,12 @@ class Usuario extends Model implements AuthenticatableContract
     public function unidad(): BelongsTo
     {
         return $this->belongsTo(Unidad::class);
+    }
+
+    /** @return BelongsToMany<Area, $this> */
+    public function areas(): BelongsToMany
+    {
+        return $this->belongsToMany(Area::class, 'usuario_areas', 'usuario_id', 'area_id')->orderBy('areas.orden');
     }
 
     /** Iniciales (primer nombre y apellidos): se usan en la cadena de responsabilidad de los documentos. */

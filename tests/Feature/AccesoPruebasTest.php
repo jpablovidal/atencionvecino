@@ -129,7 +129,7 @@ class AccesoPruebasTest extends TestCase
     {
         $this->app['env'] = 'production';
         config(['app.debug' => false, 'app.url' => 'https://gestor.santodomingo.cl', 'sgd.claveunica.mode' => 'mock', 'sgd.firmagob.mode' => 'mock', 'sgd.pisee.mode' => 'mock',
-            'sgd.docdigital.mode' => 'mock', 'mail.default' => 'log', 'sgd.llm.enabled' => false]);
+            'sgd.docdigital.mode' => 'mock', 'mail.default' => 'log', 'sgd.llm.enabled' => false, 'sgd.admin_2fa' => true]);
         // producción real: los modos simulados siguen prohibidos
         config(['sgd.ambiente' => 'produccion']);
         $this->falla();

@@ -173,7 +173,10 @@ class DocumentoController extends Controller
         $this->authorize('ver', $documento);
         $this->audit->registrar('documento.pdf', 'documento', $documento->id, [], true);
 
-        return descarga($this->svc->leerPdf($documento), 'documento-'.$documento->id.'.pdf', 'application/pdf', true);
+        $resp = descarga($this->svc->leerPdf($documento), 'documento-'.$documento->id.'.pdf', 'application/pdf', true);
+        $resp->headers->set('X-SGD-Embebible', '1'); // visor en modal del expediente (mismo origen)
+
+        return $resp;
     }
 
     public function llm(Request $r, LlmAsistente $llm)

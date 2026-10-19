@@ -644,4 +644,52 @@ alter table `decretos_pago` add `factura_fecha` date null;
 
 alter table `decretos_pago` add index `decretos_pago_proveedor_run_factura_fecha_index`(`proveedor_run`, `factura_fecha`);
 
+create table `areas` (`id` bigint unsigned not null auto_increment primary key, `codigo` varchar(20) not null, `nombre` varchar(80) not null, `habilitada` tinyint(1) not null default '0', `institucion_codigo` varchar(30) null, `orden` smallint unsigned not null default '10', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `areas` add unique `areas_codigo_unique`(`codigo`);
+
+insert ignore into `areas` (`codigo`, `nombre`, `habilitada`, `orden`, `created_at`, `updated_at`) values ('municipal', 'Área municipal', 1, 1, '2025-12-05 00:00:00', '2025-12-05 00:00:00');
+
+insert ignore into `areas` (`codigo`, `nombre`, `habilitada`, `orden`, `created_at`, `updated_at`) values ('salud', 'Área de salud', 0, 2, '2025-12-05 00:00:00', '2025-12-05 00:00:00');
+
+insert ignore into `areas` (`codigo`, `nombre`, `habilitada`, `orden`, `created_at`, `updated_at`) values ('educacion', 'Área de educación', 0, 3, '2025-12-05 00:00:00', '2025-12-05 00:00:00');
+
+insert ignore into `areas` (`codigo`, `nombre`, `habilitada`, `orden`, `created_at`, `updated_at`) values ('corporacion', 'Corporación municipal', 0, 4, '2025-12-05 00:00:00', '2025-12-05 00:00:00');
+
+create table `usuario_areas` (`usuario_id` bigint unsigned not null, `area_id` bigint unsigned not null, primary key (`usuario_id`, `area_id`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `usuario_areas` add constraint `usuario_areas_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`) on delete cascade;
+
+alter table `usuario_areas` add constraint `usuario_areas_area_id_foreign` foreign key (`area_id`) references `areas` (`id`) on delete cascade;
+
+alter table `unidades` add `area_id` bigint unsigned null;
+
+alter table `expedientes` add `area_id` bigint unsigned null;
+
+alter table `usuarios` add `totp_secreto` text null;
+
+alter table `usuarios` add `totp_confirmado_en` timestamp null;
+
+alter table `usuarios` add `totp_ultimo_paso` bigint unsigned null;
+
+alter table `usuarios` add `totp_respaldo` text null;
+
+create table `archivo_versiones` (`id` bigint unsigned not null auto_increment primary key, `archivo_id` bigint unsigned not null, `numero` int unsigned not null, `nombre_original` varchar(190) not null, `mime` varchar(60) not null, `tamano` int unsigned not null, `sha256` varchar(64) not null, `ruta` varchar(80) not null, `motivo` text null, `resumen_cambios` text null, `creado_por` bigint unsigned null, `autor_nombre` varchar(160) null, `autor_run` varchar(12) null, `firma_estado` varchar(30) null, `firma_detalle` text null, `created_at` timestamp not null default CURRENT_TIMESTAMP) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `archivo_versiones` add constraint `archivo_versiones_archivo_id_foreign` foreign key (`archivo_id`) references `archivos` (`id`);
+
+alter table `archivo_versiones` add unique `archivo_versiones_archivo_id_numero_unique`(`archivo_id`, `numero`);
+
+alter table `archivos` add `version` int unsigned not null default '1';
+
+create table `documento_version_eventos` (`id` bigint unsigned not null auto_increment primary key, `documento_id` bigint unsigned not null, `version` int unsigned not null, `evento` varchar(12) not null, `usuario_id` bigint unsigned not null, `detalle` varchar(300) null, `created_at` timestamp not null default CURRENT_TIMESTAMP) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `documento_version_eventos` add constraint `documento_version_eventos_documento_id_foreign` foreign key (`documento_id`) references `documentos` (`id`);
+
+alter table `documento_version_eventos` add constraint `documento_version_eventos_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`);
+
+alter table `documento_version_eventos` add index `documento_version_eventos_documento_id_version_index`(`documento_id`, `version`);
+
+alter table `documentos` add `identificador` varchar(120) null;
+
 SET FOREIGN_KEY_CHECKS = 1;

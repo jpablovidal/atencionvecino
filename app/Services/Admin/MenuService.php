@@ -65,6 +65,9 @@ class MenuService
             'pagos_config' => $i('Decreto de pago: correlativo y firmantes', 'app.pagos.config', 'app/pagos/configuracion*', ['app'], 'decretopago.configurar', $a, 137),
             'respuestas' => $i('Respuestas finales', 'app.respuestas', 'app/respuestas*', ['app'], 'respuestas.despachar', null, 24),
             'anuncios' => $i('Anuncios', 'app.anuncios', 'app/anuncios*', ['app'], 'anuncios.gestionar', $a, 136),
+            'archivos_cfg' => $i('Archivos: pesos y formatos', 'app.admin.archivos', 'app/admin/archivos*', ['app'], 'archivos.configurar', $a, 138),
+            'areas' => $i('Áreas del municipio', 'app.admin.areas', 'app/admin/areas*', ['app'], 'areas.gestionar', $a, 139),
+            'codificacion' => $i('Codificación y normas', 'app.admin.codificacion', 'app/admin/codificacion*', ['app'], 'codificacion.configurar', $a, 141),
             'feriados' => $i('Feriados', 'app.feriados', 'app/feriados*', ['app'], 'feriados.gestionar', $a, 135),
             'tipos' => $i('Tipos de documento', 'app.admin.index:tipos', 'app/admin/tipos*', ['app'], 'mantenedores.gestionar', $a, 130),
             'plantillas' => $i('Plantillas', 'app.admin.plantillas', 'app/admin/plantillas*', ['app'], 'plantillas.gestionar', $a, 140),
@@ -101,7 +104,7 @@ class MenuService
 
     /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
     public const ICONOS = [
-        'espacio' => 'switch', 'seguimiento' => 'search', 'feriados' => 'clock', 'anuncios' => 'bell', 'respuestas' => 'send', 'pagos' => 'file-check', 'firmas' => 'pen', 'alcaldia' => 'activity', 'pagos_tablero' => 'activity', 'pagos_prov' => 'search', 'pagos_config' => 'file-check', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
+        'espacio' => 'switch', 'archivos_cfg' => 'database', 'areas' => 'building', 'codificacion' => 'hash', 'seguimiento' => 'search', 'feriados' => 'clock', 'anuncios' => 'bell', 'respuestas' => 'send', 'pagos' => 'file-check', 'firmas' => 'pen', 'alcaldia' => 'activity', 'pagos_tablero' => 'activity', 'pagos_prov' => 'search', 'pagos_config' => 'file-check', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',

@@ -57,6 +57,9 @@ class ProductionGuard
         if (! $pruebas && config('sgd.firmagob.mode') === 'mock') {
             $e[] = 'FIRMAGOB_MODE=mock está prohibido';
         }
+        if (! config('sgd.admin_2fa')) {
+            $e[] = 'SGD_ADMIN_2FA debe estar activo: el administrador del sistema exige segundo factor (TOTP)';
+        }
         if (strlen((string) config('sgd.audit_hmac_key')) < 32) {
             $e[] = 'AUDIT_HMAC_KEY ausente o corta';
         }
