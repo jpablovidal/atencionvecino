@@ -45,7 +45,7 @@ class FuncionarioController extends Controller
         $expedientes = $mios->limit(100)->get();
         $kpis = [];
         if ($u->operaExpedientes()) {
-            $kpis[] = ['icono' => 'pen', 'valor' => $pasos->count(), 'etiqueta' => 'Visaciones y firmas pendientes', 'nivel' => $pasos->isNotEmpty() ? 'aviso' : 'ok'];
+            $kpis[] = ['icono' => 'pen', 'valor' => $pasos->count(), 'etiqueta' => 'Visaciones y firmas pendientes', 'nivel' => $pasos->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas')];
             $kpis[] = ['icono' => 'inbox', 'valor' => $entrantes->count(), 'etiqueta' => 'Solicitudes por asignar', 'nivel' => $entrantes->isNotEmpty() ? 'info' : 'ok'];
             if ($porAsignar->isNotEmpty() || $u->tienePermiso('comunicaciones.ver')) {
                 $kpis[] = ['icono' => 'mail', 'valor' => $porAsignar->count(), 'etiqueta' => 'Comunicaciones por gestionar', 'nivel' => $porAsignar->isNotEmpty() ? 'info' : 'ok'];

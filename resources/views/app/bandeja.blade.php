@@ -8,6 +8,7 @@
 
 @if($pasos->isNotEmpty() || $entrantes->isNotEmpty() || $porAsignar->isNotEmpty())
 <h2 class="seccion">Requieren su atención</h2>
+@if($pasos->count() > 1)<p><a class="btn btn-primary" href="{{ route('app.firmas') }}">Firmar o visar por lote ({{ $pasos->count() }} pendientes)</a></p>@endif
 <div class="dash-alertas">
 @foreach($pasos as $p)
   <a class="alerta-card alerta-aviso" href="{{ route('app.documento',$p->documento_id) }}"><span class="alerta-chip">{{ $p->tipo==='firma' ? 'Firmar' : 'Visar' }}</span>

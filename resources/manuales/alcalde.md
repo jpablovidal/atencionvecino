@@ -63,3 +63,6 @@ En **Panel de Alcaldía** (y en su Inicio) ve, de un vistazo:
 - **Solicitudes** de toda la municipalidad: activas, con plazo vencido, por vencer, terminadas, por etapa, por dirección y por mes (cada indicador lleva al seguimiento detallado).
 - **Pagos**: decretos por estado, antigüedad de lo por pagar (alerta de 30 días, referencial), lo que falta por egresar y los egresos del mes.
 Usted solo consulta los pagos: no crea decretos ni egresos.
+
+## Firmar por lote
+En **Mis firmas** puede firmar o visar de una vez varios documentos (o todos los pendientes) en lugar de uno por uno: marque los documentos, elija firma avanzada (código OTP) y presione **Firmar lo seleccionado**. Revise los documentos antes (cada uno tiene su enlace); las firmas por delegación siguen las mismas reglas. El Panel de Alcaldía enlaza directo a esta pantalla.

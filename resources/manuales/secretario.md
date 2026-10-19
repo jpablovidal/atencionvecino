@@ -47,3 +47,6 @@ Usted ve los expedientes de su unidad y aquellos en los que participa. El admini
 | "DocDigital exige un PDF con firma electrónica avanzada" | El documento no tiene firma real (por ejemplo, fue firmado en ambiente de pruebas). Debe firmarse con FirmaGob real. |
 | El envío quedó "fallida" | Use **Reintentar**; si persiste, avise al administrador (credenciales o servicio de DocDigital). |
 | Quiero usar otro tipo de documento | El administrador puede crear nuevos tipos y plantillas. |
+
+## Firmar y visar por lote
+En **Mis firmas** puede resolver varios documentos a la vez (o todos los pendientes de su turno): marque los documentos, elija el tipo de firma y confirme que los revisó. Con firma avanzada se usa un mismo código OTP para el lote; si el servicio de firma rechaza uno, el lote se detiene y se le informa. La visación por lote solo aprueba: para rechazar, abra el documento.

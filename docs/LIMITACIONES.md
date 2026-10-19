@@ -151,3 +151,9 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Las **firmas delegadas** (cuando firma un delegado vigente) aparecen en el panel de quien firma y en «quién tiene hoy los documentos»; el alcalde no ve un listado aparte de lo que firmaron sus delegados.
 - Los montos y proveedores de los pagos son visibles para el alcalde (`decretopago.ver`); si la institución prefiere solo totales, se le puede quitar ese permiso en el rol.
 - El panel se calcula al abrirlo (instantánea de ese momento): no hay histórico ni alertas por correo.
+
+## Firma y visación por lote
+- **OTP:** el comportamiento de la FirmaGob real con un mismo código para varios documentos es **A VALIDAR**. El simulador acepta el mismo OTP en todo el lote; el servicio real podría exigir uno por documento (el lote se detiene y se repite con un código nuevo) o ofrecer firma masiva propia (no integrada).
+- El lote firma documentos **sin abrirlos**: la casilla «revisé los documentos» es una declaración; la lista muestra título, tipo y expediente, y cada documento tiene su enlace para revisarlo.
+- Cada firma de un lote es una transacción independiente (no hay «todo o nada»): si algo falla a la mitad, lo anterior queda firmado.
+- Máximo 25 documentos por lote por defecto (configurable hasta 100); con más pendientes se repite.

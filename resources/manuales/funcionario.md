@@ -213,3 +213,9 @@ En la sección **Expedientes y microformas asociados** (dentro del expediente ab
 
 ## Decreto de pago (si su rol lo permite)
 Desde el expediente de pago use **Crear decreto de pago** (o el menú **Decretos de pago**). Siga tres pasos: (1) elija el expediente de pago y, si corresponde, el **código del expediente del proceso de compra** (queda asociado); (2) ingrese proveedor, RUT, concepto y monto; (3) orden de compra, factura e imputación. Luego, en el decreto: **genere el PDF con la plantilla** (queda como borrador editable y se envía a visación y firma con los firmantes configurados) o **cargue el PDF ya emitido** indicando su número y fecha. Cuando el decreto está firmado queda **emitido** y Tesorería genera el egreso.
+
+## Mis firmas: firmar o visar por lote
+En **Mis firmas** (y desde el aviso «Firmar o visar por lote» de su Inicio) ve los documentos en los que **ya le toca** firmar o visar. Marque **uno o varios** documentos, use la casilla del encabezado para **seleccionar todos** los de la lista, o marque «**todos los pendientes**» (se procesa un tramo de hasta 25 por vez; repita si quedan más). Antes, abra los documentos que quiera revisar con su enlace.
+- **Para firmar:** elija el tipo de firma (**avanzada** con un código OTP de 6 dígitos, o **simple** en los documentos que la admiten), confirme que revisó los documentos y presione **Firmar lo seleccionado**. Con firma avanzada, si el servicio de firma rechaza un documento el lote se detiene (lo ya firmado queda firmado) y se le informa el resultado de cada uno.
+- **Para visar:** presione **Visar lo seleccionado** (puede dejar un comentario común). Para **rechazar** un documento, ábralo y rechácelo con su comentario.
+- Los documentos **restringidos** a los que usted no está autorizado(a) aparecen sin título y no se pueden firmar por lote.

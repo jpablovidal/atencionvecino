@@ -243,6 +243,7 @@ Todos requieren el rol **administrador** (o el permiso específico) y quedan en 
 | **Portal del vecino** | `/`, `/tramites` | Portal estilo trámites en línea: buscador con sugerencias, trámites más solicitados, exploración por dirección, catálogo con filtros y orden, ficha con requisitos y «Mis solicitudes». |
 | **Feriados** | `/app/feriados` | Administrador de feriados: los días registrados no cuentan como días administrativos en los plazos de los trámites y servicios; simulador y carga masiva. |
 | **Decretos de pago** | `/app/pagos` | Expediente de pago + proceso de compra, decreto de pago (generado con plantilla o cargado), egreso de Tesorería con firma simple o avanzada; correlativo y firmantes configurables (`/app/pagos/configuracion`). |
+| **Mis firmas** | `/app/firmas` | Firma y visación por lote: elegir uno, varios o todos los documentos en los que ya le toca; firma avanzada (OTP) o simple; resultado por documento. |
 | **Panel de Alcaldía** | `/app/alcaldia` | Firmas y visaciones pendientes del alcalde, decretos de pago en firma, solicitudes de toda la municipalidad y pagos. |
 | **Tablero de pagos** | `/app/pagos/tablero` | Tablero de Tesorería: decretos por egresar, facturas con más de 30 días, egresos en firma y del mes, por medio de pago; exportación CSV. |
 | **Pago a proveedores** | `/pagos-proveedores` | Consulta con ClaveÚnica: el proveedor ingresa RUT de su empresa, número y fecha de la factura y ve su situación de pago (sin datos bancarios); queda registrado quién consulta. |

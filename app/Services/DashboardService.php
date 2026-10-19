@@ -198,9 +198,9 @@ class DashboardService
             })->take(10)->values()->all();
         }
         $kpis = [
-            ['icono' => 'pen', 'valor' => $ahoraFirmo->count(), 'etiqueta' => 'Documentos por firmar o visar (su turno)', 'nivel' => $ahoraFirmo->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.bandeja')],
-            ['icono' => 'file-check', 'valor' => $decretosMios->count(), 'etiqueta' => 'Decretos de pago por firmar', 'nivel' => $decretosMios->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.bandeja')],
-            ['icono' => 'clock', 'valor' => $mios->where('turno', true)->where('dias', '>', 3)->count(), 'etiqueta' => 'Esperando su firma hace más de 3 días', 'nivel' => $mios->where('turno', true)->where('dias', '>', 3)->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.bandeja')],
+            ['icono' => 'pen', 'valor' => $ahoraFirmo->count(), 'etiqueta' => 'Documentos por firmar o visar (su turno)', 'nivel' => $ahoraFirmo->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas')],
+            ['icono' => 'file-check', 'valor' => $decretosMios->count(), 'etiqueta' => 'Decretos de pago por firmar', 'nivel' => $decretosMios->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas')],
+            ['icono' => 'clock', 'valor' => $mios->where('turno', true)->where('dias', '>', 3)->count(), 'etiqueta' => 'Esperando su firma hace más de 3 días', 'nivel' => $mios->where('turno', true)->where('dias', '>', 3)->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas')],
             ['icono' => 'file-text', 'valor' => Documento::query()->where('estado', 'en_flujo')->count(), 'etiqueta' => 'Documentos en visación y firma en la institución', 'nivel' => 'info', 'url' => null],
         ];
         $bloques = [

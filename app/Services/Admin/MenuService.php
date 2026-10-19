@@ -58,6 +58,7 @@ class MenuService
             'roles' => $i('Roles y permisos', 'app.admin.roles', 'app/admin/roles*', ['app'], 'roles.gestionar', $a, 115),
             'tramites' => $i('Trámites y servicios', 'app.tramites.index', 'app/tramites*', ['app'], 'tramites.gestionar', $a, 120),
             'restringidos' => $i('Accesos a restringidos', 'app.restringidos', 'app/restringidos*', ['app'], 'restringidos.auditar', $s, 305),
+            'firmas' => $i('Mis firmas', 'app.firmas', 'app/firmas*', ['app'], 'expedientes.operar', null, 11),
             'alcaldia' => $i('Panel de Alcaldía', 'app.alcaldia', 'app/alcaldia*', ['app'], 'alcaldia.panel', null, 12),
             'pagos_tablero' => $i('Tablero de pagos', 'app.pagos.tablero', 'app/pagos/tablero*', ['app'], 'decretopago.ver', null, 25),
             'pagos' => $i('Decretos de pago', 'app.pagos', 'app/pagos*', ['app'], 'decretopago.ver', null, 26),
@@ -100,7 +101,7 @@ class MenuService
 
     /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
     public const ICONOS = [
-        'espacio' => 'switch', 'seguimiento' => 'search', 'feriados' => 'clock', 'anuncios' => 'bell', 'respuestas' => 'send', 'pagos' => 'file-check', 'alcaldia' => 'activity', 'pagos_tablero' => 'activity', 'pagos_prov' => 'search', 'pagos_config' => 'file-check', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
+        'espacio' => 'switch', 'seguimiento' => 'search', 'feriados' => 'clock', 'anuncios' => 'bell', 'respuestas' => 'send', 'pagos' => 'file-check', 'firmas' => 'pen', 'alcaldia' => 'activity', 'pagos_tablero' => 'activity', 'pagos_prov' => 'search', 'pagos_config' => 'file-check', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
@@ -112,6 +113,7 @@ class MenuService
         'transparencia' => 'Consultas de acceso a la información: gestión, plazos, prórrogas y derivaciones.', 'transp_activa' => 'Calendario mensual de publicaciones obligatorias.', 'transp_plazos' => 'Feriados y parámetros de los plazos de transparencia.', 'transp_reportes' => 'Reportes de transparencia pasiva y activa, exportables.', 'transp_req' => 'Requerimientos de información dirigidos a su dirección.',
         'restringidos' => 'Quién vio o intentó ver expedientes, documentos y archivos restringidos.',
         'pagos_config' => 'Correlativo propio y firmantes del decreto de pago y del egreso.',
+        'firmas' => 'Documentos que le toca firmar o visar, para resolverlos uno a uno o por lote.',
         'alcaldia' => 'Firmas pendientes, decretos de pago y solicitudes de toda la municipalidad.',
         'pagos_tablero' => 'Decretos por egresar, antigüedad de las facturas, egresos del mes y por medio de pago.',
         'pagos_prov' => 'Consulte la situación de pago de su factura con el RUT de su empresa.',

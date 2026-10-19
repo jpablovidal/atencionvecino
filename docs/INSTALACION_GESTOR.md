@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `873d3742466194d48835176d94a524e30aac101f369e8de9d03e6d5f13a04b0c`).
+- Archivo **`sgd-release.zip`** (SHA-256 `19be5c1818f037ab5e097e576dfc9e570d3f56bd693f684b1d9151c38bebeb47`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -115,6 +115,12 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 - Se le agregó, por defecto, el permiso de **solo lectura** de pagos (`decretopago.ver`). Si no desea que vea montos y proveedores, quítelo en *Administración → Roles* (el rol «alcalde» es del sistema: cree un rol personalizado con base alcalde sin ese permiso).
 - Para entregar el panel al secretario municipal u otra persona de apoyo, asigne el permiso `alcaldia.panel` en un rol personalizado.
 - No hay pasos manuales al actualizar (no hay cambios de base de datos).
+
+## Novedades: firma y visación por lote («Mis firmas»)
+- Menú **Mis firmas** (y aviso en el Inicio): quien firma o visa elige **uno, varios o todos** los documentos en los que ya le toca, en vez de uno por uno. Cada documento sigue las reglas de la firma individual (turno, restricción, tipo de firma, correlativo, auditoría). Máximo **25 por lote** (cambie `SGD_FIRMA_LOTE_MAX` en `~/sgd/.env`, hasta 100).
+- **Firma avanzada con FirmaGob**: el lote usa el **mismo OTP** para todos los documentos y se **detiene** si el servicio rechaza uno. Si la FirmaGob real exige un código por documento (o tiene firma masiva propia), **A VALIDAR** con la documentación vigente: en ese caso repita con un código nuevo para el resto.
+- La visación por lote solo aprueba; rechazar se hace documento por documento. Los documentos restringidos sin autorización no se firman por lote.
+- Para probar: ingrese como Secretaria (`10000003-2`) o Alcalde (`10000002-4`) con documentos en flujo y use *Mis firmas*. No hay pasos manuales al actualizar.
 
 ## Operación
 ```bash

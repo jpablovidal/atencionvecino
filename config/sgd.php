@@ -82,6 +82,9 @@ return [
     ],
 
     // Casilla Única
+    // Máximo de documentos por lote en la firma y visación masivas (1 a 100)
+    'firma_lote_max' => (int) env('SGD_FIRMA_LOTE_MAX', 25),
+
     // Avisos al ciudadano por cada movimiento de su solicitud (Casilla Única + copia por correo)
     'avisos' => [
         'movimientos' => (bool) env('SGD_AVISOS_MOVIMIENTOS', true),

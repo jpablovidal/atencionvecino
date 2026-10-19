@@ -15,6 +15,7 @@ use App\Http\Controllers\EspacioController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\FeriadosController;
 use App\Http\Controllers\FirmasController;
+use App\Http\Controllers\FirmasMasivasController;
 use App\Http\Controllers\FoliosController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\InteropController;
@@ -100,6 +101,9 @@ Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadan
 Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->group(function () {
     Route::get('/', [FuncionarioController::class, 'bandeja'])->name('bandeja');
     Route::get('/vigentes', [FuncionarioController::class, 'vigentes'])->name('vigentes');
+    Route::get('/firmas', [FirmasMasivasController::class, 'index'])->name('firmas');
+    Route::post('/firmas/firmar', [FirmasMasivasController::class, 'firmar'])->middleware('throttle:firma')->name('firmas.firmar');
+    Route::post('/firmas/visar', [FirmasMasivasController::class, 'visar'])->middleware('throttle:firma')->name('firmas.visar');
     Route::get('/alcaldia', [FuncionarioController::class, 'alcaldia'])->middleware('permiso:alcaldia.panel')->name('alcaldia');
     Route::get('/formatos', [PlantillasController::class, 'catalogo'])->name('formatos');
     Route::get('/formatos/{plantilla}', [PlantillasController::class, 'ver'])->whereNumber('plantilla')->name('formato');
