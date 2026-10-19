@@ -702,4 +702,8 @@ alter table `comunicacion_anexos` add constraint `comunicacion_anexos_comunicaci
 
 alter table `comunicacion_anexos` add index `comunicacion_anexos_archivo_id_index`(`archivo_id`);
 
+alter table `comunicaciones_oficiales` add `dd_estado` varchar(50) null;
+
+alter table `comunicaciones_oficiales` add `dd_estado_en` timestamp null;
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -79,6 +79,11 @@ class AppServiceProvider extends ServiceProvider
                     {
                         return null;
                     }
+
+                    public function estado(string $documentoId): ?array
+                    {
+                        return null;
+                    }
                 },
             };
         });

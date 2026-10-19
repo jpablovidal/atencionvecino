@@ -123,12 +123,23 @@ class HttpDocDigitalClient implements DocDigitalClient
         }
     }
 
-    /** Mensaje corto y seguro del cuerpo de error estándar {status, message, errorCode, error}. */
+    /**
+     * Mensaje corto y seguro. DocDigital responde errores como JSON estándar {status, message, errorCode, error} o como TEXTO PLANO
+     * (p. ej. 400 «No existe documento 60088 en estado pendiente para dar acuse.»). El 403 trae el RUN del usuario de la integración:
+     * no se reproduce, se explica.
+     */
     private function detalle(Response $r): string
     {
+        if ($r->status() === 403) {
+            return 'HTTP 403: el usuario de la integración no tiene permiso para esta operación en DocDigital (pida a Gobierno Digital que se lo otorgue)';
+        }
         $m = $r->json('error') ?: $r->json('message');
+        if (! is_string($m) || $m === '' || $m === 'OK') {
+            $cuerpo = trim((string) $r->body());
+            $m = $r->json() === null && $cuerpo !== '' && ! str_starts_with($cuerpo, '<') ? $cuerpo : null;
+        }
 
-        return 'HTTP '.$r->status().(is_string($m) && $m !== '' && $m !== 'OK' ? ': '.mb_substr(preg_replace('/[\r\n]+/', ' ', $m) ?? '', 0, 100) : '');
+        return 'HTTP '.$r->status().(is_string($m) && $m !== '' ? ': '.mb_substr(preg_replace('/[\r\n]+/', ' ', strip_tags($m)) ?? '', 0, 120) : '');
     }
 
     /**
@@ -334,6 +345,27 @@ class HttpDocDigitalClient implements DocDigitalClient
         }
 
         return $cuerpo ?: new \stdClass;
+    }
+
+    public function estado(string $documentoId): ?array
+    {
+        $documentoId = $this->idSeguro($documentoId);
+        $r = $this->llamar(fn () => $this->http()->get($this->base().'/documentos/'.$documentoId));
+        if (! $r->successful()) {
+            throw new DocDigitalException('No se pudo consultar el estado del documento ('.$this->detalle($r).').');
+        }
+        $est = $r->json('result.estado_tramitacion');
+        if (! is_string($est) || ! preg_match('/^[A-Z_]{3,50}$/', $est)) {
+            return null;
+        }
+        $dest = [];
+        foreach ((array) $r->json('result.destinatarios.con_copia.entidades', []) as $d) {
+            if (is_array($d) && isset($d['estado'])) {
+                $dest[] = ['entidad_id' => isset($d['entidad_id']) && is_numeric($d['entidad_id']) ? (int) $d['entidad_id'] : null, 'nombre' => mb_substr((string) ($d['entidad_nombre'] ?? ''), 0, 190), 'estado' => mb_substr((string) $d['estado'], 0, 60)];
+            }
+        }
+
+        return ['estado' => $est, 'destinatarios' => $dest];
     }
 
     public function maxAnexos(): int

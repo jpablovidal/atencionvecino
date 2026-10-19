@@ -48,4 +48,14 @@ interface DocDigitalClient
      * @throws DocDigitalException
      */
     public function descargarAnexo(string $documentoId, string $anexoId): ?string;
+
+    /**
+     * Estado de tramitación de un documento (GET /documentos/{id}): OPS_PENDIENTE_DESPACHO, OPS_RESUELTO_ENVIADO, OPE_RECEPCION_TOTAL, etc.
+     * Null si DocDigital no lo informa.
+     *
+     * @return array{estado:string,destinatarios:list<array{entidad_id:?int,nombre:string,estado:string}>}|null
+     *
+     * @throws DocDigitalException
+     */
+    public function estado(string $documentoId): ?array;
 }

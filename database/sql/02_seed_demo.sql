@@ -7,7 +7,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 insert into `unidades` (`activo`, `codigo`, `created_at`, `id`, `nombre`, `updated_at`) values (1, 'ALC', '2026-01-01 00:00:00', 1, 'Alcaldía', '2026-01-01 00:00:00'), (1, 'SECMUN', '2026-01-01 00:00:00', 2, 'Secretaría Municipal', '2026-01-01 00:00:00'), (1, 'DOM', '2026-01-01 00:00:00', 3, 'Dirección de Obras Municipales', '2026-01-01 00:00:00'), (1, 'DIDECO', '2026-01-01 00:00:00', 4, 'Dirección de Desarrollo Comunitario', '2026-01-01 00:00:00'), (1, 'ARCH', '2026-01-01 00:00:00', 5, 'Archivo Municipal', '2026-01-01 00:00:00'), (1, 'TRANSP', '2026-01-01 00:00:00', 6, 'Unidad de Transparencia', '2026-01-01 00:00:00'), (1, 'OPARTES', '2026-01-01 00:00:00', 7, 'Oficina de Partes', '2026-01-01 00:00:00'), (1, 'DAF', '2026-01-01 00:00:00', 8, 'Dirección de Administración y Finanzas', '2026-01-01 00:00:00');
-insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (12, 'dir_tramites', 'Director(a) de trámites', 'Crea, edita, publica y deshabilita los trámites de su dirección.', 'funcionario', 0, 1, '2026-10-19 10:58:57', '2026-10-19 10:58:57');
+insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (12, 'dir_tramites', 'Director(a) de trámites', 'Crea, edita, publica y deshabilita los trámites de su dirección.', 'funcionario', 0, 1, '2026-10-19 13:56:33', '2026-10-19 13:56:33');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'expedientes.operar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'expedientes.derivar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'expedientes.devolver');
@@ -28,7 +28,7 @@ insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'restringidos.gesti
 insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'llm.usar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'tramites.gestionar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (12, 'tramites.publicar');
-insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (13, 'edit_tramites', 'Redactor(a) de trámites', 'Crea y edita borradores de trámites de su dirección; no puede publicarlos.', 'funcionario', 0, 1, '2026-10-19 10:58:57', '2026-10-19 10:58:57');
+insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (13, 'edit_tramites', 'Redactor(a) de trámites', 'Crea y edita borradores de trámites de su dirección; no puede publicarlos.', 'funcionario', 0, 1, '2026-10-19 13:56:33', '2026-10-19 13:56:33');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'expedientes.operar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'expedientes.derivar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'expedientes.devolver');
@@ -48,7 +48,7 @@ insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'respuestas.instrui
 insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'restringidos.gestionar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'llm.usar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (13, 'tramites.gestionar');
-insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (14, 'arch_gestion', 'Encargado(a) de archivo', 'Registra microformas, carga sus archivos e índice y gestiona la disposición de originales.', 'funcionario', 0, 1, '2026-10-19 10:58:57', '2026-10-19 10:58:57');
+insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (14, 'arch_gestion', 'Encargado(a) de archivo', 'Registra microformas, carga sus archivos e índice y gestiona la disposición de originales.', 'funcionario', 0, 1, '2026-10-19 13:56:33', '2026-10-19 13:56:33');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'expedientes.operar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'expedientes.derivar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'expedientes.devolver');
@@ -69,7 +69,7 @@ insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'restringidos.gesti
 insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'llm.usar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'archivo.ver');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (14, 'archivo.gestionar');
-insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (15, 'arch_cert', 'Ministro(a) de fe del archivo', 'Certifica microformas (acta) y autoriza la disposición de originales.', 'secretario', 0, 1, '2026-10-19 10:58:57', '2026-10-19 10:58:57');
+insert into `roles` (`id`, `clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values (15, 'arch_cert', 'Ministro(a) de fe del archivo', 'Certifica microformas (acta) y autoriza la disposición de originales.', 'secretario', 0, 1, '2026-10-19 13:56:33', '2026-10-19 13:56:33');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (15, 'expedientes.operar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (15, 'expedientes.derivar');
 insert into `rol_permisos` (`rol_id`, `permiso`) values (15, 'expedientes.devolver');
@@ -99,11 +99,11 @@ insert into `instituciones` (`activo`, `codigo`, `codigo_padre`, `created_at`, `
 insert into `procesos_codificador` (`activo`, `codigo`, `created_at`, `institucion_codigo`, `nombre`, `origen`, `sincronizado_en`, `updated_at`) values (1, 'DEMO-PROC-EDIF', '2026-01-01 00:00:00', 'DEMO-MUN-SD', 'Permisos de edificación (EJEMPLO)', 'manual', null, '2026-01-01 00:00:00'), (1, 'DEMO-PROC-CERT', '2026-01-01 00:00:00', 'DEMO-MUN-SD', 'Certificados municipales (EJEMPLO)', 'manual', null, '2026-01-01 00:00:00');
 insert into `tramites` (`activo`, `codigo_cpat`, `codigo_interno`, `created_at`, `descripcion`, `es_transparencia`, `id`, `nombre`, `plazo_dias`, `plazo_habiles`, `updated_at`) values (1, null, 'TRANSP-SAI', '2026-01-01 00:00:00', 'Solicite información que obre en poder de la municipalidad. Se responde en 20 días hábiles (prorrogables una vez).', 1, 5, 'Solicitud de acceso a la información pública (Ley 20.285)', 20, 1, '2026-01-01 00:00:00');
 update `tramites` set `proceso_codigo` = 'DEMO-PROC-EDIF' where `id` = 1;
-update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 3, `publicado_en` = '2026-10-19 10:58:57', `version` = 0 where `id` = 1;
-update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 3, `publicado_en` = '2026-10-19 10:58:57', `version` = 0 where `id` = 2;
-update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 4, `publicado_en` = '2026-10-19 10:58:57', `version` = 0 where `id` = 3;
-update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 1, `publicado_en` = '2026-10-19 10:58:57', `version` = 0 where `id` = 4;
-update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 6, `publicado_en` = '2026-10-19 10:58:57', `version` = 0 where `id` = 5;
+update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 3, `publicado_en` = '2026-10-19 13:56:33', `version` = 0 where `id` = 1;
+update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 3, `publicado_en` = '2026-10-19 13:56:33', `version` = 0 where `id` = 2;
+update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 4, `publicado_en` = '2026-10-19 13:56:33', `version` = 0 where `id` = 3;
+update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 1, `publicado_en` = '2026-10-19 13:56:33', `version` = 0 where `id` = 4;
+update `tramites` set `estado` = 'publicado', `activo` = 1, `unidad_propietaria_id` = 6, `publicado_en` = '2026-10-19 13:56:33', `version` = 0 where `id` = 5;
 insert into `pisee_servicios` (`activo`, `codigo`, `created_at`, `descripcion`, `institucion_codigo`, `metodo`, `nombre`, `param_run`, `ruta`, `updated_at`) values (1, 'DEMO-CONSULTA', '2026-01-01 00:00:00', 'Servicio ficticio solo para desarrollo.', 'DEMO-SEGPRES', 'GET', 'Consulta de ejemplo (SIN contrato real)', 'run', '/demo/v1/consulta', '2026-01-01 00:00:00');
 insert into `tramite_unidad` (`tramite_id`, `unidad_id`) values (1, 3), (2, 3), (3, 4), (4, 1), (4, 2), (5, 6);
 insert into `tramite_anexos` (`activo`, `id`, `nombre`, `obligatorio`, `tramite_id`) values (1, 1, 'Planos de arquitectura', 1, 1), (1, 2, 'Certificado de dominio vigente', 1, 1), (1, 3, 'Fotografías del terreno', 0, 1), (1, 4, 'Copia de cédula de identidad', 1, 2), (1, 5, 'Ficha de protección social', 0, 3);

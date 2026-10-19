@@ -29,7 +29,7 @@ class DocDigitalSincronizar extends Command
 
             return self::FAILURE;
         }
-        $this->info("Nuevas: {$r['nuevas']} · omitidas: {$r['omitidas']}");
+        $this->info("Nuevas: {$r['nuevas']} · omitidas: {$r['omitidas']} · estados consultados: ".$svc->refrescarEstados());
 
         return self::SUCCESS;
     }

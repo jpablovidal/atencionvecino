@@ -42,12 +42,14 @@ class DocDigitalDashboardService
         $atrasados = $ent->filter(fn ($c) => $c->acuse_estado === 'pendiente' && $fecha($c)->lt($ahora->copy()->subDays(self::ACUSE_ATRASADO_DIAS)))->count();
         $sinResponder = $ent->filter(fn ($c) => ! $sal->contains('responde_a_id', $c->id))->count();
         $fallidas = $sal->where('estado', 'fallida')->count();
+        $sinDespachar = $sal->where('dd_estado', 'OPS_PENDIENTE_DESPACHO')->count();
 
         $kpis = [
             ['icono' => 'inbox', 'valor' => $ent->count(), 'etiqueta' => 'Comunicaciones recibidas', 'nivel' => 'ok'],
             ['icono' => 'send', 'valor' => $sal->count(), 'etiqueta' => 'Comunicaciones enviadas', 'nivel' => 'ok'],
             ['icono' => 'alert', 'valor' => $atrasados, 'etiqueta' => 'Acuses atrasados (más de '.self::ACUSE_ATRASADO_DIAS.' días)', 'nivel' => $atrasados ? 'aviso' : 'ok'],
             ['icono' => 'alert', 'valor' => $fallidas, 'etiqueta' => 'Envíos fallidos', 'nivel' => $fallidas ? 'aviso' : 'ok'],
+            ['icono' => 'clock', 'valor' => $sinDespachar, 'etiqueta' => 'Cargadas en DocDigital, pendientes de despacho', 'nivel' => $sinDespachar ? 'aviso' : 'ok'],
             ['icono' => 'clock', 'valor' => $horasAcuse === null ? '—' : number_format($horasAcuse, 1, ',', '.').' h', 'etiqueta' => 'Tiempo medio para registrar el acuse', 'nivel' => 'info'],
             ['icono' => 'clock', 'valor' => $diasRespuesta === null ? '—' : number_format($diasRespuesta, 1, ',', '.').' días', 'etiqueta' => 'Tiempo medio en responder lo recibido', 'nivel' => 'info'],
         ];
@@ -65,6 +67,9 @@ class DocDigitalDashboardService
             ['Envíos pendientes', $sal->where('estado', 'pendiente')->count(), null],
             ['Envíos realizados', $sal->where('estado', 'enviada')->count(), null],
             ['Envíos fallidos', $fallidas, null],
+            ['Cargadas, pendientes de despacho en DocDigital', $sinDespachar, null],
+            ['Despachadas, pendientes de acuse del destinatario', $sal->where('dd_estado', 'OPS_RESUELTO_ENVIADO')->count(), null],
+            ['Recibidas por el destinatario', $sal->where('dd_estado', 'OPE_RECEPCION_TOTAL')->count(), null],
         ];
         $inst = fn (Collection $c) => $c->groupBy(fn ($x) => (string) ($x->institucion_nombre ?? $x->institucion_codigo ?? 'Sin institución'))->map->count()->sortDesc()->take(8)
             ->map(fn ($n, $k) => [$k, $n, null])->values()->all();

@@ -29,4 +29,9 @@ class MockDocDigitalClient implements DocDigitalClient
     {
         return null;
     }
+
+    public function estado(string $documentoId): ?array
+    {
+        return null;
+    }
 }

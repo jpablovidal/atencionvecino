@@ -78,6 +78,8 @@ trait DocDigitalApi
 
                 return Http::response($pdfs[(int) ($m[1] ?? 0)] ?? "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n% recibido {$m[1]}\ntrailer<</Root 1 0 R>>\n%%EOF", 200);
             },
+            "$base/documentos/*" => Http::response($this->ddOk(['solicitud_id' => 1, 'tipo_tramitacion' => 'COMUNICACION_OFICIAL', 'estado_tramitacion' => 'OPS_PENDIENTE_DESPACHO',
+                'destinatarios' => ['reservado' => false, 'con_copia' => ['entidades' => [['entidad_id' => 7002, 'entidad_nombre' => 'SEGPRES', 'estado' => 'Pendiente acuse']]]]]), 200),
         ]);
     }
 }

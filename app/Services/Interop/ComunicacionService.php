@@ -145,9 +145,44 @@ class ComunicacionService
         }
         $c->forceFill(['estado' => 'enviada', 'evidencia_tipo' => $r['simulado'] ? 'simulado' : 'docdigital_id', 'evidencia' => $r['id'], 'evidencia_en' => now(), 'ultimo_error' => null])->save();
         $this->marcarAnexosEnviados($c, $r['anexos'] ?? []);
+        $this->refrescarEstado($c); // best-effort: DocDigital deja el documento «pendiente de despacho» hasta que la Oficina de Partes lo despache
         $this->audit->registrar('docdigital.enviada', 'comunicacion', $c->id, ['simulado' => $r['simulado']], false, ['run' => null, 'rol' => 'sistema']);
 
         return $c;
+    }
+
+    /** Consulta el estado de tramitación en DocDigital. Nunca lanza: un fallo de consulta no invalida el envío. */
+    public function refrescarEstado(ComunicacionOficial $c): void
+    {
+        if ($c->direccion !== 'saliente' || $c->evidencia_tipo !== 'docdigital_id' || ! $this->modoApi()) {
+            return;
+        }
+        try {
+            $e = $this->client->estado((string) $c->evidencia);
+        } catch (\Throwable) {
+            return;
+        }
+        if ($e !== null && $e['estado'] !== $c->dd_estado) {
+            $c->forceFill(['dd_estado' => $e['estado'], 'dd_estado_en' => now()])->save();
+            $this->audit->registrar('docdigital.estado', 'comunicacion', $c->id, ['estado' => $e['estado']], false, ['run' => null, 'rol' => 'sistema']);
+        }
+    }
+
+    /** Actualiza el estado de lo enviado que aún puede cambiar (despacho, recepción, devolución). @return int cantidad consultada */
+    public function refrescarEstados(int $limite = 50): int
+    {
+        if (! $this->modoApi()) {
+            return 0;
+        }
+        $n = 0;
+        $q = ComunicacionOficial::query()->where('direccion', 'saliente')->where('evidencia_tipo', 'docdigital_id')->where('estado', 'enviada')
+            ->where(fn ($w) => $w->whereNull('dd_estado')->orWhereNotIn('dd_estado', ComunicacionOficial::DD_FINALES))->orderBy('dd_estado_en')->orderBy('id')->limit($limite);
+        foreach ($q->get() as $c) {
+            $this->refrescarEstado($c);
+            $n++;
+        }
+
+        return $n;
     }
 
     /** @param list<array{id:?string,nombre:string}> $devueltos anexos tal como los devolvió DocDigital */

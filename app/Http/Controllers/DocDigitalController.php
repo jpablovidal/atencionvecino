@@ -106,6 +106,8 @@ class DocDigitalController extends Controller
             return back()->with('error', 'No fue posible sincronizar con DocDigital. Revise el diagnóstico.');
         }
 
+        $svc->refrescarEstados();
+
         return back()->with('ok', "Sincronización terminada: {$res['nuevas']} nueva(s), {$res['omitidas']} omitida(s).");
     }
 

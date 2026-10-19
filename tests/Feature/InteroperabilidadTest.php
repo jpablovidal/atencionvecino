@@ -238,8 +238,11 @@ class InteroperabilidadTest extends TestCase
         (new EnviarComunicacionDocDigital($c->id))->handle(app(ComunicacionService::class)); // idempotente
         $c->refresh();
         $this->assertSame(['enviada', 'docdigital_id', '987654'], [$c->estado, $c->evidencia_tipo, $c->evidencia]);
-        Http::assertSentCount(1); // token fijo: solo el despacho
+        Http::assertSentCount(2); // token fijo: el despacho y la consulta del estado
         Http::assertSent(function ($req) {
+            if ($req->method() !== 'POST') {
+                return false; // la consulta del estado posterior es otro GET
+            }
             $this->assertSame('POST', $req->method());
             $this->assertStringEndsWith('/documentos/firmado/ingresar', $req->url());
             $this->assertSame('Bearer tok-dd', $req->header('Authorization')[0]);
