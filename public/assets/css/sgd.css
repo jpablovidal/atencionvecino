@@ -492,3 +492,35 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .btn-claveunica-oficial{background:transparent;border:0;padding:0;min-height:44px}
 .btn-claveunica-oficial img{display:block;height:44px;width:auto}
 .btn-claveunica-ico{flex:none;margin-right:.6rem}
+
+/* Ficha de trámite (inspirada en el portal de trámites municipal): acordeones, canales, etiquetas y relacionados */
+.portal-migas-et{display:block;font-size:.85rem;color:#33414d;margin-bottom:.15rem}
+.portal-actualizado{color:#33414d;margin:-.2rem 0 1.2rem}
+.portal-canales{list-style:none;display:flex;gap:1.5rem;padding:0;margin:.4rem 0 1rem}
+.portal-canales li{display:flex;flex-direction:column;align-items:center;gap:.25rem;font-weight:700;border-bottom:4px solid #cfd6dc;padding-bottom:.3rem;min-width:5.5rem}
+.portal-canales .sgd-ico{width:2.6rem;height:2.6rem;color:#1b7a3a}
+.portal-acordeon{margin:1.2rem 0}
+.portal-acordeon details{background:#fff;border:1px solid #c5d3df;border-left:8px solid #006fb3;border-radius:6px;margin-bottom:.9rem}
+.portal-acordeon summary{cursor:pointer;list-style:none;padding:1.1rem 3rem 1.1rem 1.1rem;font-family:"Roboto Slab",serif;font-size:1.15rem;color:#14232e;position:relative;min-height:44px}
+.portal-acordeon summary::-webkit-details-marker{display:none}
+.portal-acordeon summary::after{content:"";position:absolute;right:1.2rem;top:50%;width:.6rem;height:.6rem;border-right:3px solid #14232e;border-bottom:3px solid #14232e;transform:translateY(-70%) rotate(45deg);transition:transform .15s}
+.portal-acordeon details[open]>summary::after{transform:translateY(-30%) rotate(-135deg)}
+.portal-acordeon summary:focus-visible{outline:3px solid #f2c728;outline-offset:2px}
+.portal-acordeon-cuerpo{padding:0 1.1rem 1.1rem}
+.portal-etiquetas{background:#f4f7fa;border:1px solid #e3e9ee;padding:1rem;margin-top:1.5rem;color:#33414d}
+.portal-tag{display:inline-block;background:#0a5a96;color:#fff;border-radius:999px;padding:.3rem .9rem;font-weight:700;text-decoration:none}
+.portal-tag:hover,.portal-tag:focus{background:#0a2e4d;color:#fff}
+.portal-tag-2{background:#7a4a00}
+.portal-relacionados{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.portal-rel{background:#fff;border:1px solid #d6dee5;border-radius:10px;padding:1rem}
+
+/* Inicio: «Lo más buscado» y «Servicios municipales por temas» */
+.portal-masbuscado{list-style:none;padding:0;margin:0;display:grid;gap:1.4rem}
+.portal-masbuscado a{display:flex;align-items:center;gap:1rem;color:#14232e;font-family:"Roboto Slab",serif;font-size:1.2rem;text-decoration:none}
+.portal-masbuscado a:hover span:last-child,.portal-masbuscado a:focus span:last-child{text-decoration:underline}
+.portal-masbuscado small{display:block;font-family:inherit;font-size:.85rem;color:#4a5864}
+.portal-ico-g{width:3.6rem;height:3.6rem;flex:none;background:transparent;color:#0a5a96}.portal-ico-g .sgd-ico{width:2.6rem;height:2.6rem}
+.portal-temas{list-style:none;padding:0;margin:0;border:1px solid #c5d3df;background:#eaf2fb}
+.portal-temas li{padding:1.2rem 1.4rem;border-bottom:1px solid #c5d3df}.portal-temas li:last-child{border-bottom:0}
+.portal-temas h3 a{color:#0a4f8a}
+.portal-todos{border:1px solid #0a5a96;text-align:center;padding:1rem;margin:1.2rem 0 0}

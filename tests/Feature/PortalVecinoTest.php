@@ -20,7 +20,7 @@ class PortalVecinoTest extends TestCase
     public function test_el_inicio_es_un_portal_con_buscador_populares_y_direcciones(): void
     {
         $h = $this->get('/')->assertOk()->getContent();
-        foreach (['portal-hero', 'role="search"', 'role="combobox"', 'Trámites más solicitados', 'Explore por dirección municipal', '¿Cómo funciona?', 'Otros servicios para el vecino', 'Más buscados'] as $t) {
+        foreach (['portal-hero', 'role="search"', 'role="combobox"', 'Lo más buscado', 'Servicios municipales por temas', 'Preguntas frecuentes', '¿Cómo funciona?', 'Otros servicios para el vecino', 'Más buscados'] as $t) {
             $this->assertStringContainsString($t, $h, $t);
         }
         $this->assertSame(1, substr_count($h, '<h1'), 'un solo h1');
@@ -75,7 +75,7 @@ class PortalVecinoTest extends TestCase
     public function test_la_ficha_muestra_requisitos_pasos_migas_y_relacionados(): void
     {
         $h = $this->get('/tramites/1/permiso-de-edificacion')->assertOk()->getContent();
-        foreach (['Ruta de navegación', '¿Qué necesito?', '¿Cómo lo hago?', 'Realizar este trámite en línea', 'Dirección responsable', 'Otros trámites de esta dirección', 'Certificado de número'] as $t) {
+        foreach (['Usted está en:', 'Última actualización:', '¿Cómo se puede realizar este trámite?', 'Online', 'Presencial', 'Descripción:', '¿Qué documentos debe presentar?', '¿Cómo lo hago en línea?', 'Realizar este trámite en línea', 'Dirección responsable', 'Publicado en:', 'Trámites relacionados:', 'Certificado de número'] as $t) {
             $this->assertStringContainsString($t, $h, $t);
         }
         $this->assertStringNotContainsString('DOM-PE', $h);

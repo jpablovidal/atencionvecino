@@ -23,7 +23,10 @@ class PublicoController extends Controller
         $direcciones = Unidad::query()->whereIn('id', Tramite::query()->publicados()->whereNotNull('unidad_propietaria_id')->select('unidad_propietaria_id'))
             ->withCount(['propietariaDe as publicados_count' => fn ($c) => $c->publicados()])->orderBy('nombre')->get(['id', 'codigo', 'nombre']);
 
-        return view('publico.inicio', ['destacados' => $populares, 'direcciones' => $direcciones, 'totalTramites' => Tramite::query()->publicados()->count()]);
+        $ejemplos = Tramite::query()->publicados()->whereNotNull('unidad_propietaria_id')->orderBy('nombre')->get(['id', 'nombre', 'unidad_propietaria_id'])->groupBy('unidad_propietaria_id')
+            ->map(fn ($g) => $g->take(3)->pluck('nombre')->all());
+
+        return view('publico.inicio', ['ejemplos' => $ejemplos, 'destacados' => $populares, 'direcciones' => $direcciones, 'totalTramites' => Tramite::query()->publicados()->count()]);
     }
 
     /** Listado público: solo vigentes marcados públicos y no sensibles. */

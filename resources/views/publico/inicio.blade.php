@@ -21,29 +21,26 @@
 @section('contenido')
 @if($destacados->isNotEmpty())
 <section aria-labelledby="pop-t" class="portal-seccion">
-  <div class="portal-seccion-cab"><h2 id="pop-t">Trámites más solicitados</h2><a href="{{ route('catalogo') }}">Ver todos los trámites y servicios</a></div>
-  <div class="portal-tarjetas">
+  <div class="portal-seccion-cab"><h2 id="pop-t">Lo más buscado</h2><a href="{{ route('catalogo') }}">Ver todos los trámites y servicios</a></div>
+  <ul class="portal-masbuscado">
   @foreach($destacados as $t)
-    <article class="portal-tarjeta"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-clipboard"/></svg></span>
-      <h3><a href="{{ $ficha($t) }}">{{ $t->nombre }}</a></h3>
-      <p class="chips"><span class="chip">{{ $t->propietaria?->nombre }}</span><span class="chip chip-claro">Respuesta en {{ $t->plazo_dias }} días{{ $t->plazo_habiles ? ' hábiles' : '' }}</span></p>
-      @if($t->descripcion)<p class="portal-desc">{{ \Illuminate\Support\Str::limit($t->descripcion, 120) }}</p>@endif
-      <a class="btn btn-sm btn-outline-primary" href="{{ $ficha($t) }}">Ver trámite<span class="sr-only"> {{ $t->nombre }}</span></a>
-    </article>
+    <li><a href="{{ $ficha($t) }}"><span class="portal-ico portal-ico-g" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-{{ $iconos[$t->propietaria?->codigo] ?? 'clipboard' }}"/></svg></span><span>{{ $t->nombre }}<small>{{ $t->propietaria?->nombre }}</small></span></a></li>
   @endforeach
-  </div>
+  </ul>
 </section>
 @endif
 
 @if($direcciones->isNotEmpty())
 <section aria-labelledby="dir-t" class="portal-seccion">
-  <div class="portal-seccion-cab"><h2 id="dir-t">Explore por dirección municipal</h2></div>
-  <ul class="portal-direcciones">
+  <div class="portal-seccion-cab"><h2 id="dir-t">Servicios municipales por temas</h2></div>
+  <ul class="portal-temas">
   @foreach($direcciones as $d)
-    <li><a href="{{ route('catalogo', ['direccion' => $d->id]) }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-{{ $iconos[$d->codigo] ?? 'building' }}"/></svg></span>
-      <span><strong>{{ $d->nombre }}</strong><small>{{ $d->publicados_count }} {{ $d->publicados_count === 1 ? 'trámite' : 'trámites' }}</small></span></a></li>
+    <li><h3 class="h5"><a href="{{ route('catalogo', ['direccion' => $d->id]) }}">{{ $d->nombre }}</a></h3>
+      @php $ej = $ejemplos[$d->id] ?? []; $txt = $ej ? implode(', ', $ej).($d->publicados_count > count($ej) ? ', entre otros.' : '.') : $d->publicados_count.($d->publicados_count === 1 ? ' trámite.' : ' trámites.'); @endphp
+      <p class="mb-0">{{ $txt }}</p></li>
   @endforeach
   </ul>
+  <p class="portal-todos"><a href="{{ route('catalogo') }}">Conoce todos los servicios municipales por temas</a></p>
 </section>
 @endif
 
@@ -55,6 +52,16 @@
     <li><span class="paso-n" aria-hidden="true">3</span><strong>Complete y adjunte</strong><span>Un formulario por pasos con revisión final antes de enviar.</span></li>
     <li><span class="paso-n" aria-hidden="true">4</span><strong>Reciba su folio y siga su avance</strong><span>Descargue su comprobante y vea el estado en «Mis solicitudes».</span></li>
   </ol>
+</section>
+
+<section aria-labelledby="faq-t" class="portal-seccion">
+  <div class="portal-seccion-cab"><h2 id="faq-t">Preguntas frecuentes</h2></div>
+  <div class="portal-acordeon">
+    <details><summary>¿Necesito ClaveÚnica para hacer un trámite?</summary><div class="portal-acordeon-cuerpo"><p class="mb-0">Sí. Su identidad la verifica ClaveÚnica y no puede modificarse. Puede revisar los requisitos de cualquier trámite sin ingresar.</p></div></details>
+    <details><summary>¿Cómo sé en qué estado está mi solicitud?</summary><div class="portal-acordeon-cuerpo"><p class="mb-0">Al enviar recibirá un folio y un comprobante. En «Mis solicitudes» ve cada movimiento con su fecha y la dirección municipal responsable, y recibe aviso por cada cambio.</p></div></details>
+    <details><summary>¿Puedo hacer mi trámite de forma presencial?</summary><div class="portal-acordeon-cuerpo"><p class="mb-0">Sí. Todos los trámites pueden hacerse también en las oficinas municipales.</p></div></details>
+    <details><summary>¿Cuánto demora la respuesta?</summary><div class="portal-acordeon-cuerpo"><p class="mb-0">Cada trámite indica su plazo de respuesta en días (hábiles o corridos). Los feriados registrados por el municipio no cuentan como días administrativos.</p></div></details>
+  </div>
 </section>
 
 <section aria-labelledby="serv-t" class="portal-seccion">

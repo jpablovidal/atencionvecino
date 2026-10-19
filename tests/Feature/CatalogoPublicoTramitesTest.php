@@ -65,7 +65,7 @@ class CatalogoPublicoTramitesTest extends TestCase
 
     public function test_enlaces_desde_inicio_y_menu_y_throttle(): void
     {
-        $this->get('/')->assertOk()->assertSee('Trámites más solicitados')->assertSee('role="search"', false)->assertSee('/tramites', false);
+        $this->get('/')->assertOk()->assertSee('Lo más buscado')->assertSee('role="search"', false)->assertSee('/tramites', false);
         config(['sgd.validar_rate_per_minute' => 2]);
         $this->get('/tramites')->assertOk();
         $this->get('/tramites')->assertOk();

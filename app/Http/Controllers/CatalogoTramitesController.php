@@ -81,7 +81,7 @@ class CatalogoTramitesController extends Controller
         }
         $this->audit->registrar('publico.tramite', 'tramite', $t->id, [], false, ['run' => null, 'rol' => 'publico']);
 
-        $relacionados = Tramite::query()->publicados()->where('id', '!=', $t->id)->where('unidad_propietaria_id', $t->unidad_propietaria_id)->orderBy('nombre')->limit(5)->get(['id', 'nombre']);
+        $relacionados = Tramite::query()->publicados()->where('id', '!=', $t->id)->where('unidad_propietaria_id', $t->unidad_propietaria_id)->orderBy('nombre')->limit(4)->get(['id', 'nombre', 'descripcion']);
 
         return view('publico.tramite', ['tramite' => $t, 'relacionados' => $relacionados]);
     }
