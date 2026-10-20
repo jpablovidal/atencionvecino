@@ -85,6 +85,13 @@ class UsuariosController extends Controller
         $cambioRol = $usuario && $usuario->rol !== $d['rol'];
         $u = $usuario ?? new Usuario(['activo' => true]);
         $u->fill($d)->save();
+        if ($actor->esSuperadmin() && $r->has('superadmin_form')) { // solo un superadministrador otorga o quita la condición (y no a sí mismo)
+            $quiere = $r->boolean('superadmin') && $base === 'admin';
+            if ($u->id !== $actor->id && (bool) $u->superadmin !== $quiere) {
+                $u->forceFill(['superadmin' => $quiere])->save();
+                $this->audit->registrar('usuario.superadmin', 'usuario', $u->id, ['superadmin' => $quiere, 'via' => 'pantalla'], true);
+            }
+        }
         try {
             $this->areas->asignarUsuario($u, $areaIds);
         } catch (FlujoException $e) {

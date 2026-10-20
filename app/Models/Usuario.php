@@ -34,9 +34,9 @@ class Usuario extends Model implements AuthenticatableContract
 
     protected $table = 'usuarios';
 
-    protected $guarded = ['id'];
+    protected $guarded = ['id', 'superadmin']; // el superadministrador solo se asigna con forceFill (comando o pantalla de usuarios), nunca por asignación masiva
 
-    protected $casts = ['puede_firmar' => 'boolean', 'activo' => 'boolean'];
+    protected $casts = ['puede_firmar' => 'boolean', 'activo' => 'boolean', 'superadmin' => 'boolean', 'directorio' => 'boolean'];
 
     /** @return BelongsTo<Unidad, $this> */
     public function unidad(): BelongsTo
@@ -90,6 +90,9 @@ class Usuario extends Model implements AuthenticatableContract
         if (! $this->activo) {
             return false;
         }
+        if ($this->esSuperadmin()) {
+            return array_key_exists($permiso, Permisos::catalogo()); // todas las vistas y acciones del catálogo
+        }
         if ($this->permisosCache === null) {
             $base = $this->rolBase();
             $techo = Permisos::techo($base);
@@ -111,6 +114,24 @@ class Usuario extends Model implements AuthenticatableContract
     }
 
     /** Roles que operan expedientes (admin, auditor, autoridad y OIRS no). */
+    /** Administrador con acceso a todas las vistas del sistema (debe tener base «admin»: mantiene el segundo factor obligatorio y no ve lo restringido). */
+    public function esSuperadmin(): bool
+    {
+        return (bool) $this->activo && (bool) $this->superadmin && $this->rolBase() === 'admin';
+    }
+
+    /** Lectura de todo el contenido: auditoría y superadministración. */
+    public function veTodo(): bool
+    {
+        return $this->rolBase() === 'auditor' || $this->esSuperadmin();
+    }
+
+    /** Puede abrir las vistas de contenido (de su unidad si opera, o de todo si lo ve todo). */
+    public function puedeVerContenido(): bool
+    {
+        return $this->operaExpedientes() || $this->veTodo();
+    }
+
     public function operaExpedientes(): bool
     {
         return $this->esRol('funcionario', 'alcalde', 'secretario', 'transparencia');

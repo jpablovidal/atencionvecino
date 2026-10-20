@@ -219,3 +219,14 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - No hay todavía «firma de prueba» con el certificado real ni firma **desatendida** (la integración de FirmaGob es atendida, con OTP del firmante).
 - Los datos para Cerofilas (contactos, nombre de la aplicación) son informativos: no se envían a Gobierno Digital.
 - ClaveÚnica sandbox/QA solo acepta los RUN de prueba del manual; no sirve para ciudadanos reales.
+
+## Superadministrador
+- Concentra visibilidad sobre todo el contenido (salvo lo **restringido**): se recomienda asignarlo a muy pocas personas y retirarlo (`sgd:superadmin RUN --quitar`) cuando termine la etapa de pruebas. Toda concesión y retiro queda en la auditoría.
+- «Ver todas las vistas» no significa operar por otros: firmar, visar o derivar sigue exigiendo ser el firmante o pertenecer a la unidad. Algunas pantallas personales (p. ej. «Mis firmas») se abren vacías.
+
+## Directorio de funcionarios (sistemas_usuarios)
+- **Seguridad de la base externa:** la tabla `sistemas_users` tiene una columna `password` (hasta 40 caracteres) que parece guardar **contraseñas en texto plano**, además de `pass` (hash). El sistema no las lee, pero deberían eliminarse o rotarse, y la conexión debe usar un usuario **solo de lectura** limitado a esa tabla.
+- El cargo especial (alcalde, secretario(a), tesorería…), la habilitación de firma y la pertenencia a áreas **no** vienen del directorio: se asignan en Administración → Usuarios. La unidad se toma de la «dirección» por nombre exacto (sin distinguir mayúsculas); si no existe se crea.
+- El estado se evalúa al ingresar: una baja en el directorio rige desde el siguiente ingreso (las sesiones abiertas no se cortan hasta entonces; se cierran las del usuario dado de baja que el sistema detecte).
+- Si un RUN figura más de una vez, se usa la primera fila habilitada y vigente. No se sincronizan las áreas ni el jefe/director de la base.
+- No probado contra su base real (solo con una tabla simulada de igual estructura).

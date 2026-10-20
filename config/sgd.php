@@ -53,6 +53,14 @@ return [
     // Carpeta (fuera del docroot) donde el panel guarda claves JSON subidas; por defecto «sgd_secrets» junto a la carpeta de la aplicación
     'secrets_path' => env('SGD_SECRETS_PATH'),
 
+    // Directorio institucional de funcionarios (base «sistemas_usuarios»): quien entra con ClaveÚnica y figura en él es funcionario(a). Se configura desde el panel.
+    'directorio' => [
+        'enabled' => (bool) env('DIRECTORIO_ENABLED', false),
+        'host' => env('DIRECTORIO_HOST'), 'port' => env('DIRECTORIO_PORT', 3306), 'database' => env('DIRECTORIO_DATABASE', 'sistemas_usuarios'),
+        'username' => env('DIRECTORIO_USERNAME'), 'password' => env('DIRECTORIO_PASSWORD'), 'tabla' => env('DIRECTORIO_TABLA', 'sistemas_users'),
+        'rol_defecto' => env('DIRECTORIO_ROL_DEFECTO', 'funcionario'), 'crear_unidades' => (bool) env('DIRECTORIO_CREAR_UNIDADES', true),
+    ],
+
     'claveunica' => [
         'mode' => env('CLAVEUNICA_MODE', 'real'), // mock|real  (mock prohibido en producción)
         'client_id' => env('CLAVEUNICA_CLIENT_ID'),

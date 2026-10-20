@@ -13,7 +13,7 @@ class FirmasMasivasController extends Controller
 
     public function index(Request $r)
     {
-        abort_unless($r->user()->operaExpedientes(), 403);
+        abort_unless($r->user()->puedeVerContenido(), 403);
         $u = $r->user();
 
         return view('app.firmas', ['firmas' => $this->svc->pendientes($u, 'firma'), 'visaciones' => $this->svc->pendientes($u, 'visacion'), 'lote' => FirmaMasivaService::loteMax(), 'puedeFirmar' => $u->puede_firmar,

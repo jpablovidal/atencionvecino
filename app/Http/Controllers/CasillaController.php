@@ -22,7 +22,7 @@ class CasillaController extends Controller
         $u = $r->user();
         $q = Notificacion::query()->where('canal', 'casilla_unica');
 
-        return $u->rolBase() === 'auditor' ? $q : $q->whereHas('expediente', fn ($e) => $e->where('unidad_id', $u->unidad_id));
+        return $u->veTodo() ? $q : $q->whereHas('expediente', fn ($e) => $e->where('unidad_id', $u->unidad_id));
     }
 
     public function index(Request $r)

@@ -22,7 +22,7 @@ class DocDigitalDashboardService
     public function para(Usuario $u): array
     {
         $q = ComunicacionOficial::query();
-        if ($u->rolBase() !== 'auditor') {
+        if (! $u->veTodo()) {
             $q->where('unidad_id', $u->unidad_id);
         }
         $todas = $q->get();

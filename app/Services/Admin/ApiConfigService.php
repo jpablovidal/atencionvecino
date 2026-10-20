@@ -5,9 +5,11 @@ namespace App\Services\Admin;
 use App\Exceptions\FlujoException;
 use App\Mail\GmailApiTransport;
 use App\Models\ApiConfig;
+use App\Models\Rol;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
+use App\Services\Directorio\DirectorioFuncionarios;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Repositorio\DriveClient;
 use App\Services\Repositorio\RepositorioService;
@@ -159,7 +161,7 @@ class ApiConfigService
             'url' => $this->url($etiqueta, $v, (bool) ($op['privada'] ?? false)),
             'number' => ctype_digit($v) && (int) $v <= 100000 ? $v : throw new FlujoException("«{$etiqueta}»: debe ser un número entero."),
             'path' => $this->ruta($etiqueta, $v),
-            default => $v,
+            default => (! empty($op['regex']) && ! preg_match($op['regex'], $v)) ? throw new FlujoException("«{$etiqueta}»: valor con formato no permitido.") : $v,
         };
     }
 
@@ -219,6 +221,9 @@ class ApiConfigService
                 }
             }
         }
+        if ($servicio === 'directorio' && ! empty($v['rol_defecto']) && Rol::query()->where('clave', $v['rol_defecto'])->where('activo', true)->value('rol_base') !== 'funcionario') {
+            throw new FlujoException('El rol de los funcionarios nuevos debe existir y tener base «funcionario».');
+        }
         if ($servicio === 'repositorio' && ($v['modo'] ?? null) === 'drive') {
             foreach (['drive_sa_json', 'drive_shared_drive_id', 'drive_root_folder_id'] as $c) {
                 if (empty($v[$c]) && empty(config('sgd.repositorio.'.$c))) {
@@ -243,6 +248,9 @@ class ApiConfigService
         $cat = ApiCatalogo::servicios()[$servicio] ?? throw new FlujoException('Servicio desconocido.');
         if (in_array($servicio, ['claveunica', 'firmagob', 'docdigital'], true)) {
             return $this->diagnostico($servicio);
+        }
+        if ($servicio === 'directorio') {
+            return app(DirectorioFuncionarios::class)->probar();
         }
         $extra = [];
         $out = [];

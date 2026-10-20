@@ -89,6 +89,17 @@ class ApiCatalogo
                 'tipo_documento_id' => ['Id del tipo de documento por defecto en DemoDoc (opcional)', 'text', 'sgd.docdigital.tipo_documento_id', ['ayuda' => 'Vea los tipos disponibles en «Probar conexión». Si se omite se busca el tipo por nombre.']],
                 'unidad_recepcion' => ['Código de la unidad receptora', 'text', 'sgd.docdigital.unidad_recepcion'],
             ]],
+            'directorio' => ['etiqueta' => 'Directorio de funcionarios (base sistemas_usuarios)', 'descripcion' => 'Quien entra con ClaveÚnica y figura habilitado y vigente en el directorio es funcionario(a); si no, es vecino(a). Solo se leen identificación y cargo, nunca las contraseñas.', 'campos' => [
+                'enabled' => ['Activar el directorio de funcionarios', 'bool', 'sgd.directorio.enabled'],
+                'rol_defecto' => ['Rol de los funcionarios nuevos', 'text', 'sgd.directorio.rol_defecto', ['regex' => '/^[a-z0-9_]{2,40}$/', 'ayuda' => 'Clave de un rol de base «funcionario» (p. ej. «funcionario»). Los cargos especiales (alcalde, secretario…) se asignan después en Usuarios.']],
+                'crear_unidades' => ['Crear la unidad (dirección) si no existe', 'bool', 'sgd.directorio.crear_unidades'],
+                'host' => ['Servidor de la base de datos', 'text', 'sgd.directorio.host', ['regex' => '/^[A-Za-z0-9.\-]{1,190}$/', 'ayuda' => 'Nombre o IP del servidor MySQL/MariaDB donde está la base (en el mismo hosting suele ser «localhost»).']],
+                'port' => ['Puerto', 'number', 'sgd.directorio.port'],
+                'database' => ['Nombre de la base de datos', 'text', 'sgd.directorio.database', ['regex' => '/^[A-Za-z0-9_]{1,64}$/']],
+                'username' => ['Usuario de la base (solo lectura recomendado)', 'text', 'sgd.directorio.username', ['regex' => '/^[A-Za-z0-9_.\-]{1,80}$/']],
+                'password' => ['Contraseña de la base', 'text', 'sgd.directorio.password', ['secreto' => true]],
+                'tabla' => ['Tabla de usuarios', 'text', 'sgd.directorio.tabla', ['regex' => '/^[A-Za-z0-9_]{1,64}$/', 'ayuda' => 'Por defecto «sistemas_users».']],
+            ]],
             'pisee' => ['etiqueta' => 'PISEE (interoperabilidad)', 'descripcion' => 'Nodo de interoperabilidad de la municipalidad.', 'campos' => [
                 'mode' => ['Modo', 'select', 'sgd.pisee.mode', ['opciones' => ['disabled' => 'Deshabilitado', 'api' => 'API', 'mock' => 'Simulado (SOLO desarrollo)']]],
                 'base_url' => ['URL del nodo', 'url', 'sgd.pisee.base_url', ['privada' => true, 'ayuda' => 'El nodo puede estar en una IP privada de la red municipal.']],
@@ -145,6 +156,10 @@ class ApiCatalogo
                 ['titulo' => 'DemoDoc (pruebas)', 'intro' => 'Credenciales del ambiente de certificación. Los ids de entidad y de tipo de documento difieren de los de producción.', 'campos' => ['url_demo', 'client_id', 'client_secret', 'entidad_id', 'tipo_documento_id'], 'boton' => 'Guardar credenciales de DemoDoc'],
                 ['titulo' => 'Producción', 'intro' => 'Requiere la integración certificada por la Secretaría de Gobierno Digital.', 'campos' => ['url_prod', 'prod_client_id', 'prod_client_secret', 'prod_entidad_id', 'prod_tipo_documento_id'], 'boton' => 'Guardar credenciales de producción'],
                 ['titulo' => 'Avanzado', 'campos' => ['token_url', 'api_token']],
+            ],
+            'directorio' => [
+                ['titulo' => 'Activación', 'intro' => 'Con el directorio activo, al entrar con ClaveÚnica el sistema revisa si el RUN figura habilitado y vigente (habilitado «si», credencial «Vigente» y sin fecha de término vencida). Si figura, la persona entra como funcionario(a) y además conserva su espacio de vecino(a); si deja de figurar, pierde el acceso de funcionario(a) en su próximo ingreso. Las cuentas creadas a mano (administración) no dependen del directorio.', 'campos' => ['enabled', 'rol_defecto', 'crear_unidades']],
+                ['titulo' => 'Conexión a la base sistemas_usuarios', 'campos' => ['host', 'port', 'database', 'username', 'password', 'tabla'], 'boton' => 'Guardar conexión'],
             ],
             'repositorio' => [
                 ['titulo' => 'Almacenamiento', 'campos' => ['modo']],

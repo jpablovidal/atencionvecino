@@ -10,7 +10,7 @@ En el portal (página de inicio) use el **buscador**: al escribir 2 o más letra
 
 ## 1. Cómo ingresar
 
-1. Entre a la página principal y presione **Ingresar** y, en la página "Iniciar sesión", el botón **Ingresa con ClaveÚnica** de la sección «Soy vecino(a)».
+1. Entre a la página principal y presione **Ingresar** y, en la página "Iniciar sesión", el botón **Iniciar sesión** (ClaveÚnica).
 2. Se abrirá el sitio de ClaveÚnica. Ingrese su RUN y clave. Es ClaveÚnica, no el municipio, quien verifica su identidad.
 3. Volverá al sistema, a **Mis solicitudes**.
 

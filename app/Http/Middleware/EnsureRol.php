@@ -10,7 +10,7 @@ class EnsureRol
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        abort_unless($request->user()?->esRol(...$roles), 403);
+        abort_unless($request->user()?->esRol(...$roles) || $request->user()?->esSuperadmin(), 403);
 
         return $next($request);
     }

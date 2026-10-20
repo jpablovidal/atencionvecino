@@ -119,9 +119,9 @@ class FuncionarioController extends Controller
     {
         $this->permiso('vigentes.ver');
         $u = $r->user();
-        abort_unless($u->operaExpedientes() || $u->rolBase() === 'auditor', 403);
+        abort_unless($u->puedeVerContenido(), 403);
         $q = Documento::query()->with(['tipo', 'expediente'])->where('estado', 'vigente');
-        if ($u->rolBase() !== 'auditor') {
+        if (! $u->veTodo()) {
             $q->whereHas('expediente', fn ($e) => $e->where('unidad_id', $u->unidad_id)->orWhere('responsable_id', $u->id)
                 ->orWhereHas('derivaciones', fn ($d) => $d->where('a_usuario_id', $u->id))
                 ->orWhereHas('documentos.pasos', fn ($p) => $p->where('usuario_id', $u->id)));

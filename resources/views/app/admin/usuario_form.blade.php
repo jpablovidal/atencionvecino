@@ -13,6 +13,9 @@
   @if($areas->count())<fieldset class="form-group"><legend class="h6">Áreas a las que pertenece</legend>
   @foreach($areas as $ar)<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="ar{{ $ar->id }}" name="areas[]" value="{{ $ar->id }}" @checked(in_array($ar->id, old('areas', $areaIds ?? [])))><label class="custom-control-label" for="ar{{ $ar->id }}">{{ $ar->nombre }}</label></div>@endforeach
   <small class="form-text text-muted">Puede pertenecer a una o más. Las áreas organizan; no restringen el acceso.</small></fieldset>@endif
+  @if(auth()->user()->esSuperadmin() && (! isset($fila->id) || $fila->id !== auth()->id()))
+  <div class="form-group"><input type="hidden" name="superadmin_form" value="1"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="superadmin" name="superadmin" value="1" @checked(old('superadmin', $fila->superadmin ?? false))><label class="custom-control-label" for="superadmin">Superadministrador(a): acceso a todas las vistas del sistema (solo con rol de administración)</label></div></div>
+  @endif
   <div class="form-group"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="puede_firmar" name="puede_firmar" value="1" @checked(old('puede_firmar', $fila->puede_firmar ?? false))><label class="custom-control-label" for="puede_firmar">Habilitado para firmar (no aplica a administradores ni auditores)</label></div></div>
   <button class="btn btn-primary">Guardar</button> <a class="btn btn-link" href="{{ route('app.admin.index', 'usuarios') }}">Cancelar</a>
 </form>

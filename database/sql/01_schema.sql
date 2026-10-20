@@ -710,4 +710,8 @@ create table `docdigital_evidencias` (`id` bigint unsigned not null auto_increme
 
 alter table `docdigital_evidencias` add index `docdigital_evidencias_creado_en_index`(`creado_en`);
 
+alter table `usuarios` add `superadmin` tinyint(1) not null default '0';
+
+alter table `usuarios` add `directorio` tinyint(1) not null default '0';
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -127,9 +127,9 @@ class InteropController extends Controller
     {
         $this->permiso('comunicaciones.ver');
         $u = $r->user();
-        abort_unless($u->operaExpedientes() || $u->rolBase() === 'auditor', 403);
+        abort_unless($u->puedeVerContenido(), 403);
         $q = ComunicacionOficial::query()->where('direccion', 'entrante')->orderByDesc('id');
-        if ($u->rolBase() !== 'auditor') {
+        if (! $u->veTodo()) {
             $q->where('unidad_id', $u->unidad_id);
         }
 
@@ -139,7 +139,7 @@ class InteropController extends Controller
     public function archivo(Request $r, ComunicacionOficial $comunicacion, FileVault $vault)
     {
         $u = $r->user();
-        abort_unless($comunicacion->direccion === 'entrante' && $comunicacion->archivo_id && ($u->rolBase() === 'auditor' || ($u->operaExpedientes() && $u->unidad_id === $comunicacion->unidad_id)), 404);
+        abort_unless($comunicacion->direccion === 'entrante' && $comunicacion->archivo_id && ($u->veTodo() || ($u->operaExpedientes() && $u->unidad_id === $comunicacion->unidad_id)), 404);
         $a = Archivo::query()->findOrFail($comunicacion->archivo_id);
         app(AccesoRestringidoService::class)->exigirArchivo($u, $a, 'descargar_comunicacion');
         $this->audit->registrar('docdigital.descarga', 'comunicacion', $comunicacion->id, [], true);

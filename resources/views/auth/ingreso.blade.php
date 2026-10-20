@@ -6,10 +6,8 @@
 <h1>Iniciar sesión</h1>
 @if($claveunica)
 <p class="text-center small text-muted">El acceso se realiza únicamente con ClaveÚnica. Su RUN y nombre se obtienen de ClaveÚnica y no pueden modificarse.</p>
-<h2 class="h6 mb-1">Soy vecino(a)</h2>
-<div class="mb-3">@include('partials.boton_claveunica', ['href' => route('ingreso.via','ciudadano'), 'bloque' => true, 'contexto' => 'como vecino(a)'])</div>
-<h2 class="h6 mb-1">Soy funcionario(a) municipal</h2>
-<div class="mb-2">@include('partials.boton_claveunica', ['href' => route('ingreso.via','funcionario'), 'bloque' => true, 'contexto' => 'como funcionario(a)'])</div>
+<p class="text-center small text-muted">Si usted es funcionario(a) municipal, el sistema lo reconoce solo y podrá elegir entre su trabajo y su espacio de vecino(a).</p>
+<div class="mb-2">@include('partials.boton_claveunica', ['href' => route('ingreso.via','auto'), 'bloque' => true])</div>
 @endif
 @if($pruebas)
 <div class="border-top pt-3 mt-3">

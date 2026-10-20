@@ -113,7 +113,7 @@ class TransparenciaController extends Controller
     {
         $u = $r->user();
         $q = TransparenciaRequerimiento::query()->with(['solicitud:id,folio,detalle,tramite_id', 'solicitud.tramite:id,nombre', 'unidad:id,nombre', 'respondidoPor:id,nombres,apellidos']);
-        $todos = $u->tienePermiso('transparencia.ver');
+        $todos = $u->tienePermiso('transparencia.ver') || $u->veTodo();
         if (! $todos) {
             $q->where('unidad_id', (int) $u->unidad_id);
         }

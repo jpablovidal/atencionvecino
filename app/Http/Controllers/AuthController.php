@@ -7,6 +7,7 @@ use App\Models\Tramite;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
+use App\Services\Directorio\DirectorioFuncionarios;
 use App\Support\Ambiente;
 use App\Support\Espacio;
 use App\Support\Run;
@@ -90,7 +91,12 @@ class AuthController extends Controller
             return $this->fallo();
         }
 
-        return $this->iniciar($request, $pend['via'], $id, $cu);
+        $via = $pend['via'];
+        if ($via === 'auto') { // un solo ingreso: si el RUN figura como funcionario(a) (directorio o cuenta local) entra como tal, y además conserva su espacio de vecino(a)
+            $via = app(DirectorioFuncionarios::class)->resolver($id['run']) ? 'funcionario' : 'ciudadano';
+        }
+
+        return $this->iniciar($request, $via, $id, $cu);
     }
 
     /** @param array{run:string,nombres:string,apellidos:string} $id */
@@ -98,7 +104,7 @@ class AuthController extends Controller
     {
         $u = null;
         if ($via === 'funcionario') {
-            $u = Usuario::query()->where('run', $id['run'])->where('activo', true)->first();
+            $u = app(DirectorioFuncionarios::class)->resolver($id['run']);
             if (! $u) {
                 $this->audit->registrar('auth.fallo', null, null, ['motivo' => 'run_no_habilitado', 'run' => Run::enmascarar($id['run'])], false, ['run' => $id['run'], 'rol' => null]);
 

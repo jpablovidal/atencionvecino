@@ -28,8 +28,8 @@ class DocDigitalController extends Controller
         $modo = (string) $cfg['mode'];
         $url = (string) ($modo === 'prod' ? $cfg['url_prod'] : $cfg['url_demo']);
         $oauth = $cfg['client_id'] && $cfg['client_secret'];
-        $veContenido = $u->tienePermiso('comunicaciones.ver') && ($u->operaExpedientes() || $u->rolBase() === 'auditor');
-        $scope = fn ($q) => $u->rolBase() === 'auditor' ? $q : $q->where('unidad_id', $u->unidad_id);
+        $veContenido = $u->tienePermiso('comunicaciones.ver') && $u->puedeVerContenido();
+        $scope = fn ($q) => $u->veTodo() ? $q : $q->where('unidad_id', $u->unidad_id);
         $datos = [
             'u' => $u, 'modo' => $modo, 'modoEtq' => self::MODOS[$modo] ?? $modo, 'host' => str_starts_with($url, 'https://') ? parse_url($url, PHP_URL_HOST) : null,
             'credenciales' => $oauth ? 'OAuth2 (Client ID y Client Secret)' : ($cfg['api_token'] ? 'Token fijo' : null),
