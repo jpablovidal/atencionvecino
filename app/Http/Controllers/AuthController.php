@@ -62,8 +62,9 @@ class AuthController extends Controller
         return $this->iniciar($request, $c->tipo, ['run' => $c->run, 'nombres' => $c->nombres, 'apellidos' => $c->apellidos]);
     }
 
-    public function redirigir(Request $request, string $via, ClaveUnicaService $cu)
+    public function redirigir(Request $request, ClaveUnicaService $cu)
     {
+        $via = 'auto'; // funcionario(a) o vecino(a) se decide al volver de ClaveÚnica, según el directorio
         $state = bin2hex(random_bytes(32));
         $request->session()->put('cu', ['state' => hash('sha256', $state), 'via' => $via, 'exp' => time() + 600]);
         if (config('sgd.claveunica.mode') === 'mock') {
@@ -91,17 +92,15 @@ class AuthController extends Controller
             return $this->fallo();
         }
 
-        $via = $pend['via'];
-        if ($via === 'auto') { // un solo ingreso: si el RUN figura como funcionario(a) (directorio o cuenta local) entra como tal, y además conserva su espacio de vecino(a)
-            $via = app(DirectorioFuncionarios::class)->resolver($id['run']) ? 'funcionario' : 'ciudadano';
-        }
-
-        return $this->iniciar($request, $via, $id, $cu);
+        return $this->iniciar($request, $pend['via'], $id, $cu);
     }
 
     /** @param array{run:string,nombres:string,apellidos:string} $id */
     private function iniciar(Request $request, string $via, array $id, ?ClaveUnicaService $cu = null)
     {
+        if ($via === 'auto') { // un solo ingreso: si el RUN figura como funcionario(a) (directorio o cuenta local) entra como tal y conserva su espacio de vecino(a)
+            $via = app(DirectorioFuncionarios::class)->resolver($id['run']) ? 'funcionario' : 'ciudadano';
+        }
         $u = null;
         if ($via === 'funcionario') {
             $u = app(DirectorioFuncionarios::class)->resolver($id['run']);
@@ -174,13 +173,13 @@ class AuthController extends Controller
     {
         abort_unless(config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'testing']), 404);
 
-        return view('auth.dev', ['via' => $request->query('via', 'ciudadano'), 'state' => (string) $request->query('state')]);
+        return view('auth.dev', ['via' => $request->query('via', 'auto'), 'state' => (string) $request->query('state')]);
     }
 
     public function devLogin(Request $request)
     {
         abort_unless(config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'testing']), 404);
-        $d = $request->validate(['run' => 'required|string|max:15', 'nombres' => 'required|string|max:120', 'apellidos' => 'required|string|max:120', 'via' => 'required|in:ciudadano,funcionario', 'state' => 'required|string']);
+        $d = $request->validate(['run' => 'required|string|max:15', 'nombres' => 'required|string|max:120', 'apellidos' => 'required|string|max:120', 'via' => 'required|in:ciudadano,funcionario,auto', 'state' => 'required|string']);
         $pend = $request->session()->pull('cu');
         if (! is_array($pend) || ! hash_equals($pend['state'], hash('sha256', $d['state'])) || $pend['exp'] < time()) {
             return $this->fallo();

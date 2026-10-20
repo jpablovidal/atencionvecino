@@ -142,7 +142,7 @@ class PagosProveedoresTest extends TestCase
         $this->emitir($this->decreto());
         $this->get('/pagos-proveedores')->assertOk()->assertSee('Primero, ingrese con ClaveÚnica')->assertSee('Iniciar sesión con ClaveÚnica')->assertDontSee('Número de factura')->assertHeader('Cache-Control', 'no-store, private');
         $this->post('/pagos-proveedores', ['rut' => $this->rut, 'factura' => 'F-0123', 'fecha' => $f])->assertRedirect('/pagos-proveedores')->assertSessionHas('aviso');
-        $this->get('/pagos-proveedores/ingresar')->assertRedirect('/ingreso/ciudadano')->assertSessionHas('retorno_pago');
+        $this->get('/pagos-proveedores/ingresar')->assertRedirect('/login')->assertSessionHas('retorno_pago');
     }
 
     public function test_tras_ingresar_con_clave_unica_vuelve_a_la_consulta_y_es_de_un_solo_uso(): void

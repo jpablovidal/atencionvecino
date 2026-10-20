@@ -79,7 +79,11 @@ Route::get('/ayuda/{perfil}', [AyudaController::class, 'manual'])->where('perfil
 Route::get('/ingreso', [AuthController::class, 'ingreso'])->name('ingreso');
 Route::get('/ingreso/pruebas', [AuthController::class, 'pruebasForm'])->name('ingreso.pruebas');
 Route::post('/ingreso/pruebas', [AuthController::class, 'pruebasLogin'])->middleware('throttle:login')->name('ingreso.pruebas.entrar');
-Route::get('/ingreso/{via}', [AuthController::class, 'redirigir'])->where('via', 'ciudadano|funcionario|auto')->middleware('throttle:login')->name('ingreso.via');
+// Un solo ingreso con ClaveÚnica: que la persona sea funcionario(a) o vecino(a) lo decide el directorio (base «sistemas_usuarios») al volver de ClaveÚnica
+Route::get('/login', [AuthController::class, 'redirigir'])->middleware('throttle:login')->name('login');
+Route::permanentRedirect('/ingreso/ciudadano', '/login');
+Route::permanentRedirect('/ingreso/funcionario', '/login');
+Route::permanentRedirect('/ingreso/auto', '/login');
 Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback');
 Route::post('/salir', [AuthController::class, 'salir'])->name('salir');
 if (config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'testing'])) { // jamás en staging/producción

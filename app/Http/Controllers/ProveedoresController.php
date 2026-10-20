@@ -46,7 +46,7 @@ class ProveedoresController extends Controller
     {
         $r->session()->put('retorno_pago', ['exp' => time() + 1800]);
 
-        return redirect()->route('ingreso.via', 'ciudadano');
+        return redirect()->route('login');
     }
 
     public function consultar(Request $r)

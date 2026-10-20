@@ -163,9 +163,9 @@ class SeguridadHttpTest extends TestCase
     {
         RateLimiter::clear('login');
         for ($i = 0; $i < 10; $i++) {
-            $this->get('/ingreso/ciudadano')->assertRedirect();
+            $this->get('/login')->assertRedirect();
         }
-        $this->get('/ingreso/ciudadano')->assertStatus(429);
+        $this->get('/login')->assertStatus(429);
         for ($i = 0; $i < 30; $i++) {
             $this->get('/validar/SDD-AAAA-BBBB-CCCC')->assertOk();
         }
@@ -200,7 +200,7 @@ class SeguridadHttpTest extends TestCase
 
     public function test_login_state_de_un_solo_uso_y_sesion_nueva(): void
     {
-        $r = $this->get('/ingreso/ciudadano');
+        $r = $this->get('/login');
         parse_str(parse_url($r->headers->get('Location'), PHP_URL_QUERY), $q);
         $this->assertGreaterThanOrEqual(64, strlen($q['state'])); // 256 bits
         $r->assertSessionHas('cu');

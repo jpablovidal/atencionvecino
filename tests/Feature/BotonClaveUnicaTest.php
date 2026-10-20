@@ -18,7 +18,7 @@ class BotonClaveUnicaTest extends TestCase
         $r = $this->get('/ingreso')->assertOk();
         $this->assertSame(1, substr_count($r->getContent(), 'data-claveunica'), 'un solo ingreso: el sistema reconoce al funcionario(a)');
         $r->assertSee('btn-cu btn-m btn-color-estandar', false)->assertSee('class="cl-claveunica" aria-hidden="true"', false)->assertSee('assets/css/claveunica.css', false);
-        $r->assertSee('aria-label="Iniciar sesión con ClaveÚnica"', false)->assertSee(route('ingreso.via', 'auto'), false);
+        $r->assertSee('aria-label="Iniciar sesión con ClaveÚnica"', false)->assertSee(route('login'), false);
         $this->get('/pagos-proveedores')->assertSee('btn-cu', false);
         $this->get('/')->assertSee('btn-color-highContrast', false); // encabezado oscuro: variante de alto contraste del kit
     }

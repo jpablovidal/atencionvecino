@@ -7,7 +7,7 @@
 @if($claveunica)
 <p class="text-center small text-muted">El acceso se realiza únicamente con ClaveÚnica. Su RUN y nombre se obtienen de ClaveÚnica y no pueden modificarse.</p>
 <p class="text-center small text-muted">Si usted es funcionario(a) municipal, el sistema lo reconoce solo y podrá elegir entre su trabajo y su espacio de vecino(a).</p>
-<div class="mb-2">@include('partials.boton_claveunica', ['href' => route('ingreso.via','auto'), 'bloque' => true])</div>
+<div class="mb-2">@include('partials.boton_claveunica', ['href' => route('login'), 'bloque' => true])</div>
 @endif
 @if($pruebas)
 <div class="border-top pt-3 mt-3">

@@ -67,7 +67,7 @@
 <section aria-labelledby="serv-t" class="portal-seccion">
   <div class="portal-seccion-cab"><h2 id="serv-t">Otros servicios para el vecino</h2></div>
   <div class="portal-servicios">
-    <a href="{{ route('ingreso.via','ciudadano') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-folder"/></svg></span><strong>Mis solicitudes</strong><small>Ingrese con ClaveÚnica y siga el estado de lo que ha presentado.</small></a>
+    <a href="{{ route('login') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-folder"/></svg></span><strong>Mis solicitudes</strong><small>Ingrese con ClaveÚnica y siga el estado de lo que ha presentado.</small></a>
     <a href="{{ route('validar.form') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-check-circle"/></svg></span><strong>Validar un documento</strong><small>Compruebe su autenticidad con el código SDD.</small></a>
     <a href="{{ route('publico.listado') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-file-text"/></svg></span><strong>Documentos públicos</strong><small>Decretos, ordenanzas y otros documentos vigentes.</small></a>
     <a href="{{ route('ayuda') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-help"/></svg></span><strong>Ayuda y manuales</strong><small>Guías paso a paso y declaración de accesibilidad.</small></a>
@@ -75,5 +75,4 @@
 </section>
 
 <aside class="portal-aviso" aria-label="Atención presencial"><strong>¿Prefiere atención presencial?</strong> Todos los trámites también pueden hacerse en las oficinas municipales. Si tiene dificultades para usar el sistema, solicite ayuda al personal.</aside>
-<p class="mt-3 small"><a href="{{ route('ingreso.via','funcionario') }}">Acceso funcionarios</a></p>
 @endsection
