@@ -8,6 +8,7 @@ use App\Services\Admin\ApiConfigService;
 use App\Services\AuditoriaService;
 use App\Services\Repositorio\CredencialDriveService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ApiConfigController extends Controller
 {
@@ -83,5 +84,24 @@ class ApiConfigController extends Controller
         $this->servicio($servicio);
 
         return back()->with('pruebas', $this->svc->probar($servicio));
+    }
+
+    /** Envía un correo de prueba con el método de envío vigente y muestra el resultado (sin detalles internos ni secretos). */
+    public function correoPrueba(Request $r)
+    {
+        $d = $r->validate(['destino' => 'required|email:rfc|max:190']);
+        $metodo = (string) config('mail.default');
+        try {
+            Mail::raw('Correo de prueba del Sistema de Gestión Documental de la I. Municipalidad de Santo Domingo. Si lo recibe, el envío funciona.', fn ($m) => $m->to($d['destino'])->subject('Prueba de correo — SGD Santo Domingo'));
+            $ok = true;
+            $det = $metodo === 'log' ? 'El método es «solo registro»: el mensaje quedó en el registro del servidor y no salió ningún correo.' : 'Enviado a '.$d['destino'].' con el método «'.$metodo.'». Revise la bandeja (y el spam).';
+        } catch (\Throwable $e) {
+            report($e);
+            $ok = false;
+            $det = 'No se pudo enviar (método «'.$metodo.'»). Revise la cuenta de servicio, la delegación de dominio y el remitente.';
+        }
+        $this->audit->registrar('correo.prueba', null, null, ['metodo' => $metodo, 'ok' => $ok]);
+
+        return back()->with('pruebas', [['Correo de prueba', $ok, $det]]);
     }
 }

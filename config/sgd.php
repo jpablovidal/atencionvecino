@@ -4,7 +4,8 @@ return [
     'nombre' => 'SGD - I. Municipalidad de Santo Domingo',
 
     // Permite guardar secretos (cifrados con APP_KEY) en la BD desde el mantenedor de APIs. Apagado por defecto: usar .env.
-    'api_secretos_en_bd' => (bool) env('SGD_API_SECRETOS_EN_BD', false),
+    // Los secretos de las integraciones se pueden ingresar desde el panel y se guardan CIFRADOS con APP_KEY (nunca se muestran). SGD_API_SECRETOS_EN_BD=0 los deja solo en .env.
+    'api_secretos_en_bd' => (bool) env('SGD_API_SECRETOS_EN_BD', true),
 
     // Accesibilidad: canal de contacto para reportar barreras (declaración de accesibilidad)
     'accesibilidad_contacto' => env('SGD_ACCESIBILIDAD_CONTACTO', 'accesibilidad@santodomingo.cl'),
@@ -61,6 +62,18 @@ return [
         'token_url' => 'https://accounts.claveunica.gob.cl/openid/token/',
         'userinfo_url' => 'https://accounts.claveunica.gob.cl/openid/userinfo/', // el manual (6.5) exige que todos los endpoints sean accounts.claveunica.gob.cl
         'logout_url' => 'https://accounts.claveunica.gob.cl/api/v1/accounts/app/logout',
+        // Ambiente activo y credenciales por ambiente (sandbox / qa / produccion); si las del ambiente activo faltan se usan las generales de arriba
+        'ambiente' => env('CLAVEUNICA_AMBIENTE', 'produccion'),
+        'sandbox_client_id' => env('CLAVEUNICA_SANDBOX_CLIENT_ID'), 'sandbox_client_secret' => env('CLAVEUNICA_SANDBOX_CLIENT_SECRET'),
+        'sandbox_redirect_uri' => env('CLAVEUNICA_SANDBOX_REDIRECT_URI'), 'sandbox_logout_uri' => env('CLAVEUNICA_SANDBOX_LOGOUT_URI'),
+        'qa_client_id' => env('CLAVEUNICA_QA_CLIENT_ID'), 'qa_client_secret' => env('CLAVEUNICA_QA_CLIENT_SECRET'),
+        'qa_redirect_uri' => env('CLAVEUNICA_QA_REDIRECT_URI'), 'qa_logout_uri' => env('CLAVEUNICA_QA_LOGOUT_URI'),
+        'produccion_client_id' => env('CLAVEUNICA_PRODUCCION_CLIENT_ID'), 'produccion_client_secret' => env('CLAVEUNICA_PRODUCCION_CLIENT_SECRET'),
+        'produccion_redirect_uri' => env('CLAVEUNICA_PRODUCCION_REDIRECT_URI'), 'produccion_logout_uri' => env('CLAVEUNICA_PRODUCCION_LOGOUT_URI'),
+        // Datos informativos del trámite «Solicitud de Credenciales de Integración» (Cerofilas); no se envían a ningún servicio
+        'institucion' => env('CLAVEUNICA_INSTITUCION', 'I. Municipalidad de Santo Domingo'), 'app_nombre' => env('CLAVEUNICA_APP_NOMBRE'),
+        'contacto_admin_nombre' => null, 'contacto_admin_correo' => null, 'contacto_admin_telefono' => null,
+        'contacto_tec_nombre' => null, 'contacto_tec_correo' => null, 'contacto_tec_telefono' => null,
         'logout_uri' => env('CLAVEUNICA_LOGOUT_URI'), // Logout URI registrada ante ClaveÚnica (obligatoria desde el manual 6.4); por defecto la portada del sitio
         'scope' => 'openid run name',
     ],
@@ -68,6 +81,9 @@ return [
     // FirmaGob v2
     'firmagob' => [
         'mode' => env('FIRMAGOB_MODE', 'prod'), // mock|test|prod  (mock prohibido en producción)
+        // Credenciales propias de cada ambiente (reemplazan a las generales según el ambiente activo: test | prod)
+        'test_api_token_key' => env('FIRMAGOB_TEST_API_TOKEN_KEY'), 'test_secret' => env('FIRMAGOB_TEST_SECRET'),
+        'prod_api_token_key' => env('FIRMAGOB_PROD_API_TOKEN_KEY'), 'prod_secret' => env('FIRMAGOB_PROD_SECRET'),
         'api_token_key' => env('FIRMAGOB_API_TOKEN_KEY'),
         'secret' => env('FIRMAGOB_SECRET'), // clave HS256 del JWT
         'entity' => env('FIRMAGOB_ENTITY', 'I. Municipalidad de Santo Domingo'),

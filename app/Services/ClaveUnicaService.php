@@ -8,7 +8,28 @@ use Illuminate\Support\Facades\Http;
 /** OIDC ClaveÚnica: authorize -> token -> userinfo. Endpoints fijos, sin redirecciones, timeouts explícitos. */
 class ClaveUnicaService
 {
-    public function __construct(private readonly array $cfg) {}
+    /** @var array<string,mixed> */
+    private readonly array $cfg;
+
+    /**
+     * Las credenciales del ambiente activo (sandbox, qa o produccion) reemplazan a las generales cuando están definidas;
+     * sin ellas se usan las generales (instalaciones anteriores).
+     *
+     * @param  array<string,mixed>  $cfg
+     */
+    public function __construct(array $cfg)
+    {
+        $amb = in_array($cfg['ambiente'] ?? null, ['sandbox', 'qa', 'produccion'], true) ? $cfg['ambiente'] : 'produccion';
+        foreach (['client_id', 'client_secret', 'redirect_uri', 'logout_uri'] as $k) {
+            if (! empty($cfg[$amb.'_'.$k])) {
+                $cfg[$k] = $cfg[$amb.'_'.$k];
+            }
+        }
+        if (! empty($cfg[$amb.'_client_id']) && empty($cfg[$amb.'_client_secret'])) {
+            $cfg['client_secret'] = null; // nunca mezclar el client_id de un ambiente con el secreto de otro
+        }
+        $this->cfg = $cfg;
+    }
 
     public function urlAutorizacion(string $state): string
     {

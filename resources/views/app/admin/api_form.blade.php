@@ -4,39 +4,81 @@
 <p><a href="{{ route('app.admin.api') }}">&larr; APIs e integraciones</a></p>
 <h1>{{ $d['etiqueta'] }}</h1>
 <p>{{ $d['descripcion'] }}</p>
-<form method="post" action="{{ route('app.admin.api.actualizar',$clave) }}" class="col-lg-9 px-0" autocomplete="off" enctype="multipart/form-data">@csrf
-<div class="custom-control custom-checkbox mb-3"><input class="custom-control-input" type="checkbox" id="activo" name="activo" value="1" @checked(old('activo',$estado['activo']))><label class="custom-control-label" for="activo">Usar esta configuración de la base de datos (si no, se usa <code>.env</code>)</label></div>
-@foreach($d['campos'] as $k => $def)
-@php [$etq,$tipo,$path] = $def; $op = $def[3] ?? []; $secreto = $op['secreto'] ?? false; $val = old($k, $estado['valores'][$k] ?? ($secreto ? null : config($path))); @endphp
+@php $grupos = \App\Services\Admin\ApiCatalogo::grupos($clave); $activoDef = old('activo', $estado['existe'] ? $estado['activo'] : true); @endphp
+<form method="post" action="{{ route('app.admin.api.actualizar',$clave) }}" class="col-lg-10 px-0" autocomplete="off" enctype="multipart/form-data">@csrf
+<div class="card mb-3"><div class="card-body">
+<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="activo" name="activo" value="1" @checked($activoDef)><label class="custom-control-label" for="activo">Usar esta configuración de la base de datos (si no, se usa <code>.env</code>)</label></div>
+@if(! $secretosBd)<p class="small text-muted mb-0 mt-2">El guardado de secretos en la base está desactivado en este servidor (<code>SGD_API_SECRETOS_EN_BD=0</code>): los secretos deben definirse en <code>.env</code>.</p>@else<p class="small text-muted mb-0 mt-2">Los secretos que escriba aquí se guardan <strong>cifrados</strong> en la base de datos y <strong>nunca se vuelven a mostrar</strong>. Déjelos en blanco para conservar el actual.</p>@endif
+</div></div>
+@foreach($grupos as $gi => $g)
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">{{ $g['titulo'] }}</h2>
+@if(!empty($g['intro']))<p class="small text-muted">{{ $g['intro'] }}</p>@endif
+@foreach($g['campos'] as $k)
+@php $def = $d['campos'][$k]; [$etq,$tipo,$path] = $def; $op = $def[3] ?? []; $secreto = $op['secreto'] ?? false; $val = old($k, $estado['valores'][$k] ?? ($secreto ? null : config($path))); @endphp
 <div class="form-group">
 @if($tipo==='bool')
   <div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="{{ $k }}" name="{{ $k }}" value="1" @checked($val)><label class="custom-control-label" for="{{ $k }}">{{ $etq }}</label></div>
 @elseif($secreto)
-  <label for="{{ $k }}">{{ $etq }} <span class="estado">{{ in_array($k,$estado['secretos_bd']) ? 'definido en la BD' : ($ef[$k]['definido'] ? 'definido en .env' : 'sin definir') }}</span></label>
-  <input class="form-control" type="password" id="{{ $k }}" name="{{ $k }}" autocomplete="new-password" @disabled(! $secretosBd) aria-describedby="s-{{ $k }}" placeholder="{{ $secretosBd ? 'Escriba para reemplazar (vacío = no cambiar)' : 'Desactivado: defínalo en .env' }}">
-  <small id="s-{{ $k }}" class="form-text text-muted">El valor nunca se muestra.</small>
+  <label for="{{ $k }}">{{ $etq }} <span class="estado {{ in_array($k,$estado['secretos_bd']) || $ef[$k]['definido'] ? 'estado-vigente' : '' }}">{{ in_array($k,$estado['secretos_bd']) ? 'guardado, cifrado' : ($ef[$k]['definido'] ? 'definido en .env' : 'sin definir') }}</span></label>
+  <input class="form-control" type="password" id="{{ $k }}" name="{{ $k }}" autocomplete="new-password" @disabled(! $secretosBd) aria-describedby="s-{{ $k }}" placeholder="{{ $secretosBd ? 'Dejar en blanco para conservar el actual' : 'Desactivado: defínalo en .env' }}">
+  <small id="s-{{ $k }}" class="form-text text-muted">Se guarda cifrado y no se vuelve a mostrar.</small>
   @if(in_array($k,$estado['secretos_bd']))<div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="b-{{ $k }}" name="borrar[]" value="{{ $k }}"><label class="custom-control-label" for="b-{{ $k }}">Eliminar el valor guardado en la BD</label></div>@endif
 @else
   @if(!empty($op['subida']))
   @php $cuenta = \App\Services\Repositorio\CredencialDriveService::resumen($val ?: config($path)); @endphp
-  <label for="archivo_{{ $k }}">Cargar la clave JSON de la cuenta de servicio</label>
+  <label for="archivo_{{ $k }}">Archivo de clave JSON de la cuenta de servicio</label>
   <input type="file" class="form-control-file mb-1" id="archivo_{{ $k }}" name="archivo_{{ $k }}" accept=".json,application/json" aria-describedby="f-{{ $k }}">
-  <small id="f-{{ $k }}" class="form-text text-muted mb-2">Suba el archivo JSON descargado de Google Cloud (máx. 20 KB): se valida y se guarda en el servidor fuera del sitio web, con permisos 600, y <strong>la clave nunca se muestra</strong>; al guardar, la ruta de abajo se completa sola.@if($cuenta) <strong>Cuenta cargada:</strong> {{ $cuenta['email'] }} (proyecto {{ $cuenta['proyecto'] }}).@else Aún no hay una clave cargada.@endif</small>
+  <small id="f-{{ $k }}" class="form-text text-muted mb-2">Suba el archivo JSON descargado de Google Cloud (máx. 20 KB): se valida y se guarda en el servidor fuera del sitio web, con permisos 600, y <strong>la clave nunca se muestra</strong>; al guardar, la ruta de abajo se completa sola. @if($cuenta)<strong>Cuenta cargada:</strong> {{ $cuenta['email'] }} (proyecto {{ $cuenta['proyecto'] }}).@else Aún no hay una clave cargada.@endif</small>
   @endif
   <label for="{{ $k }}">{{ $etq }}</label>
-  @if($tipo==='select')<select class="form-control" id="{{ $k }}" name="{{ $k }}">@foreach($op['opciones'] as $v=>$l)<option value="{{ $v }}" @selected($val===$v)>{{ $l }}</option>@endforeach</select>
+  @if($tipo==='select')<select class="form-control" id="{{ $k }}" name="{{ $k }}" @if(!empty($op['ayuda'])) aria-describedby="a-{{ $k }}" @endif>@foreach($op['opciones'] as $v=>$l)<option value="{{ $v }}" @selected($val===$v)>{{ $l }}</option>@endforeach</select>
   @else<input class="form-control" type="{{ $tipo==='number' ? 'number' : 'text' }}" id="{{ $k }}" name="{{ $k }}" value="{{ $val }}" maxlength="500" @if(!empty($op['ayuda'])) aria-describedby="a-{{ $k }}" @endif>@endif
   @if(!empty($op['ayuda']))<small id="a-{{ $k }}" class="form-text text-muted">{{ $op['ayuda'] }}</small>@endif
 @endif
 </div>
 @endforeach
-<button class="btn btn-primary">Guardar</button>
+<button class="btn btn-primary">{{ $g['boton'] ?? 'Guardar' }}</button>
+</div></div>
+@endforeach
 </form>
-<div class="mt-3 d-flex">
-<form method="post" action="{{ route('app.admin.api.probar',$clave) }}" class="mr-2">@csrf<button class="btn btn-outline-primary">Validar configuración</button></form>
-@if($estado['activo'])<form method="post" action="{{ route('app.admin.api.env',$clave) }}" data-confirm="¿Volver a usar la configuración del archivo .env?">@csrf<button class="btn btn-outline-secondary">Volver a .env</button></form>@endif
+
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">Verificar</h2>
+@if($clave==='docdigital')<p class="small text-muted">Hace la consulta de solo lectura de «Probar conexión» (token, entidad y tipos de documento) con el modo guardado; no envía ni descarga documentos.</p>
+@elseif($clave==='claveunica')<p class="small text-muted">Revisa que el ambiente activo tenga sus datos completos y cumpla las pautas del manual (HTTPS, Redirect URI sin query ni IP, Logout URI, endpoints). No inicia sesión en ClaveÚnica.</p>
+@elseif($clave==='firmagob')<p class="small text-muted">Revisa que el ambiente activo tenga sus credenciales, la entidad y el propósito. No firma ningún documento.</p>@endif
+<div class="d-flex flex-wrap">
+<form method="post" action="{{ route('app.admin.api.probar',$clave) }}" class="mr-2 mb-2">@csrf<button class="btn btn-outline-primary">{{ $clave==='docdigital' ? 'Probar conexión' : 'Validar configuración' }}</button></form>
+@if($estado['activo'])<form method="post" action="{{ route('app.admin.api.env',$clave) }}" class="mb-2" data-confirm="¿Volver a usar la configuración del archivo .env?">@csrf<button class="btn btn-outline-secondary">Volver a .env</button></form>@endif
 </div>
-@if($pruebas)<h2 class="h5 mt-4">Resultado de la validación</h2>
-<table class="table table-sm"><caption class="sr-only">Validación</caption><thead><tr><th scope="col">Campo</th><th scope="col">Resultado</th><th scope="col">Detalle</th></tr></thead><tbody>
+@if($pruebas)<h3 class="h6 mt-3">Resultado</h3>
+<table class="table table-sm"><caption class="sr-only">Validación</caption><thead><tr><th scope="col">Punto</th><th scope="col">Resultado</th><th scope="col">Detalle</th></tr></thead><tbody>
 @foreach($pruebas as [$n,$ok,$det])<tr><td>{{ $n }}</td><td><span class="estado {{ $ok ? 'estado-vigente' : 'estado-fallida' }}">{{ $ok ? 'OK' : 'REVISAR' }}</span></td><td>{{ $det }}</td></tr>@endforeach</tbody></table>@endif
+</div></div>
+
+@if($clave==='google_mail')
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">Enviar correo de prueba</h2>
+<p class="small text-muted">Envía un correo de prueba con la configuración guardada y muestra si salió bien o cuál fue el problema. Método vigente: <strong>{{ config('mail.default') }}</strong>.</p>
+<form method="post" action="{{ route('app.admin.api.correo_prueba') }}" class="form-inline">@csrf
+<label class="sr-only" for="destino">Correo de destino</label><input class="form-control mr-2 mb-2" type="email" id="destino" name="destino" placeholder="destino@ejemplo.cl" required maxlength="190" value="{{ auth()->user()->correo }}">
+<button class="btn btn-primary mb-2">Enviar correo de prueba</button></form>
+</div></div>
+@endif
+
+@if($clave==='claveunica')
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">Referencia rápida (manual de integración)</h2>
+<table class="table table-sm"><caption class="sr-only">Referencia de ClaveÚnica</caption><tbody>
+<tr><th scope="row">Endpoint de autorización</th><td><code>{{ config('sgd.claveunica.authorize_url') }}</code></td></tr>
+<tr><th scope="row">Endpoint de token</th><td><code>{{ config('sgd.claveunica.token_url') }}</code></td></tr>
+<tr><th scope="row">Endpoint de datos de usuario</th><td><code>{{ config('sgd.claveunica.userinfo_url') }}</code></td></tr>
+<tr><th scope="row">Endpoint de logout</th><td><code>{{ config('sgd.claveunica.logout_url') }}</code></td></tr>
+<tr><th scope="row">Scope</th><td><code>{{ config('sgd.claveunica.scope') }}</code></td></tr>
+<tr><th scope="row">RUN de prueba (sandbox/QA)</th><td><code>44.444.444-4 / 55.555.555-5 / 88.888.888-8 / 99.999.999-9</code>, clave <code>testing</code></td></tr>
+</tbody></table>
+<p class="small text-muted mb-0">Antes de solicitar la certificación verifique los requisitos del manual: botón oficial, HTTPS, flujo a pantalla completa sin iframe ni popup, state dinámico, llamadas del backend a token/ y userinfo/, y cierre de sesión funcional. Detalle en <code>docs/CLAVEUNICA_BOTON.md</code>.</p>
+</div></div>
+@endif
 @endsection

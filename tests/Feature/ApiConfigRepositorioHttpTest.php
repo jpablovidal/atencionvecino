@@ -93,7 +93,9 @@ class ApiConfigRepositorioHttpTest extends TestCase
 
     public function test_los_secretos_solo_en_bd_si_se_habilita_nunca_se_muestran_y_van_cifrados(): void
     {
-        // por defecto el almacenamiento de secretos en BD está apagado
+        // el almacenamiento de secretos en BD está encendido por defecto; con SGD_API_SECRETOS_EN_BD=0 se rechaza
+        $this->assertTrue(ApiConfigService::secretosEnBd());
+        config(['sgd.api_secretos_en_bd' => false]);
         $this->admin()->post('/app/admin/api/firmagob', ['activo' => 1, 'mode' => 'test', 'secret' => 'super-secreto-hs256'])->assertSessionHas('error');
         $this->assertSame(0, ApiConfig::query()->count());
 
@@ -110,7 +112,7 @@ class ApiConfigRepositorioHttpTest extends TestCase
         $html = $this->admin()->get('/app/admin/api/firmagob')->getContent();
         $this->assertStringNotContainsString('super-secreto', $html);
         $this->assertStringNotContainsString('tok-abc-123', $html);
-        $this->assertStringContainsString('definido en la BD', $html);
+        $this->assertStringContainsString('guardado, cifrado', $html);
         $this->assertStringContainsString('type="password"', $html);
         $this->assertStringNotContainsString('super-secreto', json_encode(DB::table('audit_log')->get()));
 

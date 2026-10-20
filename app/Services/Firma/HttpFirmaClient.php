@@ -11,7 +11,26 @@ use Illuminate\Support\Facades\Http;
  */
 class HttpFirmaClient implements FirmaClient
 {
-    public function __construct(private readonly array $cfg, private readonly string $ambiente) {}
+    /** @var array<string,mixed> */
+    private readonly array $cfg;
+
+    /**
+     * Cada ambiente (test | prod) puede tener sus propias credenciales (`test_*`, `prod_*`); sin ellas se usan las generales.
+     *
+     * @param  array<string,mixed>  $cfg
+     */
+    public function __construct(array $cfg, private readonly string $ambiente)
+    {
+        foreach (['api_token_key', 'secret'] as $k) {
+            if (! empty($cfg[$ambiente.'_'.$k])) {
+                $cfg[$k] = $cfg[$ambiente.'_'.$k];
+            }
+        }
+        if (! empty($cfg[$ambiente.'_api_token_key']) && empty($cfg[$ambiente.'_secret'])) {
+            $cfg['secret'] = null; // no mezclar el token de un ambiente con el secreto de otro
+        }
+        $this->cfg = $cfg;
+    }
 
     public function firmar(string $pdf, string $run, ?string $otp, string $descripcion): array
     {

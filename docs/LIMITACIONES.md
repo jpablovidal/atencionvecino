@@ -41,7 +41,7 @@ Ver `DECISIONES.md` #1, #2 y #5 (ágil=1 / clásico=2 por defecto; primera firma
 - **Google Drive (unidad compartida):** probado solo contra un **Drive simulado** (`tests/Support/FakeDrive.php`) que reproduce el contrato de la API v3 (`supportsAllDrives`, carpetas, md5). **No se ha probado contra Google real**: valide con *Probar conexión* y una migración piloto. Dependencia: disponibilidad/cuotas de Drive; las escrituras fallan cerradas.
 - **Cifrado + Drive:** si se pierden las claves de `sgd_secrets`, los archivos en Drive no se pueden recuperar. El respaldo de claves es responsabilidad de la institución.
 - **Firmas en la copia pública:** el sello visual (estilo/posición) se estampa en la copia pública. **No** reemplaza la firma electrónica avanzada: el PDF firmado por FirmaGob conserva su propia representación y sus coordenadas en el proveedor son **A VALIDAR**.
-- **Secretos en BD (opcional):** `SGD_API_SECRETOS_EN_BD=1` guarda secretos cifrados con `APP_KEY`; quien obtenga BD **y** `.env` los descifra. Por defecto está apagado y los secretos viven solo en `.env`/`sgd_secrets`.
+- **Secretos en BD:** los secretos ingresados desde el panel se guardan cifrados con `APP_KEY` (`SGD_API_SECRETOS_EN_BD=1`, por defecto); quien obtenga la base **y** el `.env` (APP_KEY) los descifra. Si se rota `APP_KEY` hay que volver a ingresarlos. Con `SGD_API_SECRETOS_EN_BD=0` solo valen los de `.env`.
 - **Roles personalizados:** el techo por rol base y los permisos fijos del sistema son una decisión de diseño; no existen permisos por expediente ni por unidad (la visibilidad por unidad sigue las reglas de acceso existentes).
 - **Usuarios conectados:** se basa en la tabla de sesiones (actividad dentro del tiempo de vida de sesión); no detecta usuarios con la pestaña abierta pero inactiva más allá de ese plazo.
 - **Log de aplicación:** la redacción es por patrones (RUN, correos, tokens, rutas); puede dejar pasar datos con formatos no previstos. Revíselo antes de compartirlo fuera de la institución.
@@ -214,3 +214,9 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La clave queda como **archivo en el servidor** (600, fuera del sitio web), igual que si se hubiera subido por el administrador de archivos: quien tenga acceso al servidor o a un respaldo del directorio puede leerla. No se cifra aparte porque los clientes de Google la leen del disco.
 - Al reemplazar la clave de Drive se descarta el token en caché; la clave anterior **no** se revoca en Google (hágalo en Google Cloud).
 - Solo se valida la forma de la clave, no que Google la acepte: use «Probar conexión» después de cargarla.
+
+## Configuración por pantalla
+- «Validar configuración» de ClaveÚnica y FirmaGob solo revisa datos y formato; **no** inicia sesión ni firma (no se puede sin el servicio real). La prueba real de DocDigital sí hace consultas de solo lectura; el correo de prueba **envía un correo** al destino indicado.
+- No hay todavía «firma de prueba» con el certificado real ni firma **desatendida** (la integración de FirmaGob es atendida, con OTP del firmante).
+- Los datos para Cerofilas (contactos, nombre de la aplicación) son informativos: no se envían a Gobierno Digital.
+- ClaveÚnica sandbox/QA solo acepta los RUN de prueba del manual; no sirve para ciudadanos reales.

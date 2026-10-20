@@ -6,6 +6,7 @@ use App\Exceptions\FlujoException;
 use App\Models\ApiConfig;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
+use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Repositorio\DriveClient;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -67,7 +68,7 @@ class ApiConfigService
             }
         }
 
-        return ['activo' => (bool) $c?->activo, 'valores' => (array) json_decode((string) $c?->valores, true), 'secretos_bd' => $sec];
+        return ['existe' => $c !== null, 'activo' => (bool) $c?->activo, 'valores' => (array) json_decode((string) $c?->valores, true), 'secretos_bd' => $sec];
     }
 
     /** Valor efectivo actual (BD si aplica, si no .env) de los campos NO secretos; para los secretos solo indica el origen. */
@@ -237,6 +238,9 @@ class ApiConfigService
     public function probar(string $servicio): array
     {
         $cat = ApiCatalogo::servicios()[$servicio] ?? throw new FlujoException('Servicio desconocido.');
+        if (in_array($servicio, ['claveunica', 'firmagob', 'docdigital'], true)) {
+            return $this->diagnostico($servicio);
+        }
         $out = [];
         foreach ($cat['campos'] as $clave => $def) {
             [$etiqueta, $tipo, $path, $op] = $def + [3 => []];
@@ -257,5 +261,65 @@ class ApiConfigService
         }
 
         return $out;
+    }
+
+    /**
+     * Verificación por servicio (sin enviar datos): ClaveÚnica y FirmaGob revisan la configuración del ambiente activo;
+     * DocDigital hace además la consulta de solo lectura de «Probar conexión» (token, entidad y tipos de documento).
+     *
+     * @return list<array{0:string,1:bool,2:string}>
+     */
+    private function diagnostico(string $servicio): array
+    {
+        $ok = fn (string $n, bool $b, string $d) => [$n, $b, $d];
+        $out = [];
+        if ($servicio === 'claveunica') {
+            $c = config('sgd.claveunica');
+            $amb = in_array($c['ambiente'] ?? null, ['sandbox', 'qa', 'produccion'], true) ? $c['ambiente'] : 'produccion';
+            $v = fn (string $k) => (string) (($c[$amb.'_'.$k] ?? '') ?: ($c[$k] ?? ''));
+            $out[] = $ok('Modo', ($c['mode'] ?? '') === 'real', ($c['mode'] ?? '') === 'real' ? 'Real' : 'Simulado: el botón de ClaveÚnica no llama al servicio real');
+            $out[] = $ok('Ambiente activo', true, ['sandbox' => 'Sandbox / Testing (solo RUN de prueba)', 'qa' => 'QA (solo RUN de prueba)', 'produccion' => 'Producción'][$amb]);
+            $out[] = $ok('client_id', $v('client_id') !== '', $v('client_id') !== '' ? 'definido' : 'sin definir');
+            $secreto = ! empty($c[$amb.'_client_id']) ? ! empty($c[$amb.'_client_secret']) : ! empty($c['client_secret']);
+            $out[] = $ok('client_secret', $secreto, $secreto ? 'definido' : 'sin definir');
+            $red = $v('redirect_uri');
+            $p = parse_url($red) ?: [];
+            $redOk = $red !== '' && ($p['scheme'] ?? '') === 'https' && ! isset($p['query']) && ! isset($p['fragment']) && ! filter_var($p['host'] ?? '', FILTER_VALIDATE_IP);
+            $out[] = $ok('Redirect URI', $redOk, $red === '' ? 'sin definir' : ($redOk ? $red : 'debe ser https, sin query ni fragmento y sin dirección IP'));
+            $out[] = $ok('Dominio «.gob.cl» de la Redirect URI (exigido en producción)', $red !== '' && str_ends_with(strtolower((string) ($p['host'] ?? '')), '.gob.cl'), $amb === 'produccion' ? 'el manual exige dominio .gob.cl para la URI de producción' : 'solo se exige en producción');
+            $lo = $v('logout_uri');
+            $lp = parse_url($lo) ?: [];
+            $loOk = $lo !== '' && ($lp['scheme'] ?? '') === 'https' && ! isset($lp['query']);
+            $out[] = $ok('Logout URI (obligatoria; debe estar registrada ante ClaveÚnica)', $loOk, $lo === '' ? 'sin definir: se usará la portada del sitio' : ($loOk ? $lo : 'debe ser https y sin query'));
+            $out[] = $ok('Endpoints en accounts.claveunica.gob.cl', collect(['authorize_url', 'token_url', 'userinfo_url', 'logout_url'])->every(fn ($k) => str_starts_with((string) ($c[$k] ?? ''), 'https://accounts.claveunica.gob.cl/')), 'authorize, token, userinfo y logout');
+
+            return $out;
+        }
+        if ($servicio === 'firmagob') {
+            $c = config('sgd.firmagob');
+            $m = (string) ($c['mode'] ?? '');
+            $out[] = $ok('Ambiente', in_array($m, ['test', 'prod'], true), ['test' => 'Pruebas (firmas sin validez)', 'prod' => 'Producción (certificado real)', 'mock' => 'Simulado: no se llama a FirmaGob'][$m] ?? 'sin definir');
+            if (in_array($m, ['test', 'prod'], true)) {
+                $tk = ! empty($c[$m.'_api_token_key']) || ! empty($c['api_token_key']);
+                $sc = ! empty($c[$m.'_api_token_key']) ? ! empty($c[$m.'_secret']) : ! empty($c['secret']);
+                $out[] = $ok('api_token_key del ambiente', $tk, $tk ? 'definido' : 'sin definir');
+                $out[] = $ok('Secret del ambiente', $sc, $sc ? 'definido' : 'sin definir');
+            }
+            $out[] = $ok('Entidad', ! empty($c['entity']), (string) ($c['entity'] ?: 'sin definir'));
+            $out[] = $ok('Propósito', ! empty($c['purpose']), (string) ($c['purpose'] ?: 'sin definir'));
+            $out[] = $ok('URL del servicio', str_starts_with((string) ($c['urls'][$m] ?? ''), 'https://'), (string) parse_url((string) ($c['urls'][$m] ?? ''), PHP_URL_HOST));
+
+            return $out;
+        }
+        $d = config('sgd.docdigital');
+        $m = (string) ($d['mode'] ?? 'outbox');
+        if (! in_array($m, ['demo', 'prod'], true)) {
+            return [$ok('Modo', false, 'El modo actual ('.$m.') no se conecta a DocDigital: elija DemoDoc o Producción.')];
+        }
+        try {
+            return (new HttpDocDigitalClient($d, $m))->diagnosticar();
+        } catch (\Throwable) {
+            return [$ok('Diagnóstico de DocDigital', false, 'No fue posible completar la consulta.')];
+        }
     }
 }

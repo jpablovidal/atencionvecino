@@ -102,6 +102,9 @@ class ProduccionService
         $reales = Usuario::query()->where('activo', true)->where('correo', 'not like', '%'.self::DOMINIO_DEMO)->get()->filter(fn ($u) => $u->rolBase() === 'admin');
         $add('admin_real', 'Existe al menos un administrador real (no de demostración) con segundo factor', $reales->contains(fn ($u) => $this->totp->configurado($u)),
             'Cree un administrador real con «php artisan sgd:crear-admin» e inscriba su segundo factor; las cuentas de demostración se desactivan.');
+        $amb = (string) config('sgd.claveunica.ambiente', 'produccion');
+        $add('claveunica_ambiente', 'ClaveÚnica usa el ambiente de producción (no sandbox ni QA)', $amb === 'produccion', 'En Administración → APIs e integraciones → ClaveÚnica, elija «Producción» como ambiente activo (sandbox y QA solo aceptan RUN de prueba).');
+        $add('firmagob_ambiente', 'FirmaGob firma en el ambiente de producción (no en pruebas)', config('sgd.firmagob.mode') === 'prod', 'En Administración → APIs e integraciones → FirmaGob, elija el ambiente «Producción»: en pruebas las firmas no tienen validez.');
         foreach (ProductionGuard::errores(false) as $i => $e) {
             $add('guardia_'.$i, 'Configuración de producción: '.$e, false, 'Corrija el archivo .env del servidor (guía de instalación) y recargue esta página.');
         }
