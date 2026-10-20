@@ -142,6 +142,18 @@ class DirectorioFuncionariosTest extends TestCase
         $this->assertNull(Usuario::query()->where('run', '19142479-'.$dv)->first());
     }
 
+    public function test_una_cuenta_desactivada_a_mano_no_se_recrea_ni_se_reactiva(): void
+    {
+        $dv = Run::dv('19142479');
+        $this->fila(['dv' => $dv]);
+        $this->entrar('19142479', $dv)->assertRedirect(route('espacio'));
+        $u = Usuario::query()->where('run', '19142479-'.$dv)->firstOrFail();
+        $u->forceFill(['activo' => false])->save();
+        $this->entrar('19142479', $dv)->assertRedirect(route('ciudadano.index')); // sigue en el directorio, pero administración la desactivó
+        $this->assertFalse((bool) $u->refresh()->activo);
+        $this->assertSame(1, Usuario::query()->where('run', '19142479-'.$dv)->count());
+    }
+
     public function test_sin_el_directorio_activo_todo_sigue_igual(): void
     {
         config(['sgd.directorio.enabled' => false]);

@@ -6,8 +6,10 @@ use App\Models\Rol;
 use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
+use App\Support\Run;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -75,13 +77,7 @@ class DirectorioFuncionarios
             throw new DirectorioException('No fue posible consultar el directorio de funcionarios.');
         }
         foreach ($filas as $f) {
-            if (strtoupper(trim((string) $f->dv)) !== strtoupper($dv)) {
-                continue;
-            }
-            if (! in_array(mb_strtolower(trim((string) $f->habilitado)), ['si', 'sí', '1', 's'], true) || mb_strtolower(trim((string) $f->credencial)) !== 'vigente') {
-                continue;
-            }
-            if (! empty($f->fecha_termino) && $f->fecha_termino !== '0000-00-00' && strtotime((string) $f->fecha_termino) < strtotime('today')) {
+            if (strtoupper(trim((string) $f->dv)) !== strtoupper($dv) || ! $this->vigente($f)) {
                 continue;
             }
             $t = fn ($v, int $n) => mb_substr(trim((string) $v), 0, $n);
@@ -93,13 +89,54 @@ class DirectorioFuncionarios
         return null;
     }
 
+    /** Habilitado «si», credencial «Vigente» y sin fecha de término vencida. */
+    private function vigente(object $f): bool
+    {
+        if (! in_array(mb_strtolower(trim((string) $f->habilitado)), ['si', 'sí', '1', 's'], true) || mb_strtolower(trim((string) $f->credencial)) !== 'vigente') {
+            return false;
+        }
+
+        return empty($f->fecha_termino) || $f->fecha_termino === '0000-00-00' || strtotime((string) $f->fecha_termino) >= strtotime('today');
+    }
+
+    public static function loginUsuarioHabilitado(): bool
+    {
+        return self::habilitado() && (bool) config('sgd.directorio.login_usuario', true);
+    }
+
+    /**
+     * Ingreso con «username» y contraseña del directorio. La contraseña se verifica SOLO contra el hash bcrypt de la columna `pass`
+     * (nunca contra la columna `password`, que puede estar en texto plano); sin un hash válido no hay ingreso. Devuelve el RUN o null.
+     *
+     * @throws DirectorioException si el directorio no responde
+     */
+    public function autenticar(string $username, string $clave): ?string
+    {
+        $falso = '$2y$12$wugNHhvPcVl3Q/Ov6fLV.ekUSbZV.fXIZ1Wekxz6T1aMXX58cYswW'; // costo constante aunque el usuario no exista
+        try {
+            $filas = $this->conexion()->table($this->tabla())->select(array_merge(self::COLUMNAS, ['username', 'pass']))->whereRaw('lower(username) = ?', [mb_strtolower($username)])->limit(5)->get();
+        } catch (\Throwable) {
+            throw new DirectorioException('No fue posible consultar el directorio de funcionarios.');
+        }
+        $f = $filas->first(fn ($x) => strtolower(trim((string) $x->username)) === strtolower($username) && $this->vigente($x));
+        $hash = $f ? (string) $f->pass : '';
+        $valido = (bool) preg_match('/^\$2[aby]\$\d{2}\$.{53}$/', $hash);
+        $ok = Hash::check($clave, $valido ? $hash : $falso);
+        if (! $f || ! $valido || ! $ok) {
+            return null;
+        }
+
+        return Run::normalizar(trim((string) $f->rut).trim((string) $f->dv));
+    }
+
     /**
      * Usuario funcionario(a) local para este RUN según el directorio: lo crea la primera vez, mantiene sus datos y da de baja a quien dejó de figurar.
      * Los usuarios creados a mano (p. ej. administración) no dependen del directorio.
      */
     public function resolver(string $run): ?Usuario
     {
-        $u = Usuario::query()->where('run', $run)->where('activo', true)->first();
+        $existente = Usuario::query()->where('run', $run)->first();
+        $u = $existente && $existente->activo ? $existente : null; // una cuenta desactivada no se reactiva ni se vuelve a crear
         if (! self::habilitado()) {
             return $u;
         }
@@ -115,7 +152,7 @@ class DirectorioFuncionarios
 
             return null;
         }
-        if (! $u && $f !== null) {
+        if (! $existente && $f !== null) {
             return $this->crear($f);
         }
         if ($u && $u->directorio && $f !== null) {
@@ -184,7 +221,7 @@ class DirectorioFuncionarios
             }
             $sens = array_values(array_intersect(['password', 'pass'], $cols));
             if ($sens) {
-                $out[] = ['Contraseñas en la tabla', false, 'La tabla guarda las columnas «'.implode('», «', $sens).'». El sistema NO las lee, pero conviene eliminarlas de esta base (la columna «password» suele contener contraseñas en texto plano) y usar un usuario de solo lectura.'];
+                $out[] = ['Contraseñas en la tabla', false, 'La tabla guarda las columnas «'.implode('», «', $sens).'». El sistema NO lee «password» (solo el hash «pass» en el ingreso por usuario), pero conviene eliminar «password» de esta base (suele contener contraseñas en texto plano) y usar un usuario de solo lectura.'];
             }
         } catch (\Throwable) {
             $out[] = ['Conexión con la base', false, 'No fue posible conectar: revise servidor, puerto, base, usuario y contraseña (y que el usuario tenga permiso de lectura).'];

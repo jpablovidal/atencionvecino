@@ -2,7 +2,7 @@
 
 Para personas con rol **funcionario** (también aplica, con las particularidades de sus manuales, a secretario(a) municipal y alcalde/alcaldesa). Explica la bandeja, el expediente electrónico, los documentos, el flujo de visación y firma, las notificaciones y las comunicaciones oficiales.
 
-> **Requisito:** su RUN debe estar registrado y activo en el sistema por el administrador. Ingrese por **Iniciar sesión** (ClaveÚnica): el sistema reconoce si usted figura como funcionario(a) en el directorio institucional; no hay un acceso aparte. Solo verá los expedientes de **su unidad** o aquellos en los que participe (derivación, visación o firma).
+> **Requisito:** su RUN debe estar registrado y activo en el sistema por el administrador. Ingrese por **Iniciar sesión** (ClaveÚnica): el sistema reconoce si usted figura como funcionario(a) en el directorio institucional; no hay un acceso aparte. Si lo prefiere, también puede entrar con su **usuario y contraseña** del directorio institucional (enlace «Ingresar con usuario y contraseña» en la página de ingreso; no sirve para la administración). Solo verá los expedientes de **su unidad** o aquellos en los que participe (derivación, visación o firma).
 
 ## 1. Ingreso y bandeja
 

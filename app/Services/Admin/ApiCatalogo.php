@@ -93,6 +93,7 @@ class ApiCatalogo
                 'enabled' => ['Activar el directorio de funcionarios', 'bool', 'sgd.directorio.enabled'],
                 'rol_defecto' => ['Rol de los funcionarios nuevos', 'text', 'sgd.directorio.rol_defecto', ['regex' => '/^[a-z0-9_]{2,40}$/', 'ayuda' => 'Clave de un rol de base «funcionario» (p. ej. «funcionario»). Los cargos especiales (alcalde, secretario…) se asignan después en Usuarios.']],
                 'crear_unidades' => ['Crear la unidad (dirección) si no existe', 'bool', 'sgd.directorio.crear_unidades'],
+                'login_usuario' => ['Permitir ingresar con usuario y contraseña del directorio (sin ClaveÚnica)', 'bool', 'sgd.directorio.login_usuario', ['ayuda' => 'Usa el «username» y el hash de la columna «pass»; nunca la columna «password». No sirve para cuentas de administración.']],
                 'host' => ['Servidor de la base de datos', 'text', 'sgd.directorio.host', ['regex' => '/^[A-Za-z0-9.\-]{1,190}$/', 'ayuda' => 'Nombre o IP del servidor MySQL/MariaDB donde está la base (en el mismo hosting suele ser «localhost»).']],
                 'port' => ['Puerto', 'number', 'sgd.directorio.port'],
                 'database' => ['Nombre de la base de datos', 'text', 'sgd.directorio.database', ['regex' => '/^[A-Za-z0-9_]{1,64}$/']],
@@ -161,7 +162,7 @@ class ApiCatalogo
                 ['titulo' => 'Avanzado', 'campos' => ['token_url', 'api_token']],
             ],
             'directorio' => [
-                ['titulo' => 'Activación', 'intro' => 'Con el directorio activo, al entrar con ClaveÚnica el sistema revisa si el RUN figura habilitado y vigente (habilitado «si», credencial «Vigente» y sin fecha de término vencida). Si figura, la persona entra como funcionario(a) y además conserva su espacio de vecino(a); si deja de figurar, pierde el acceso de funcionario(a) en su próximo ingreso. Las cuentas creadas a mano (administración) no dependen del directorio.', 'campos' => ['enabled', 'rol_defecto', 'crear_unidades']],
+                ['titulo' => 'Activación', 'intro' => 'Con el directorio activo, al entrar con ClaveÚnica el sistema revisa si el RUN figura habilitado y vigente (habilitado «si», credencial «Vigente» y sin fecha de término vencida). Si figura, la persona entra como funcionario(a) y además conserva su espacio de vecino(a); si deja de figurar, pierde el acceso de funcionario(a) en su próximo ingreso. Las cuentas creadas a mano (administración) no dependen del directorio.', 'campos' => ['enabled', 'rol_defecto', 'crear_unidades', 'login_usuario']],
                 ['titulo' => 'Conexión a la base sistemas_usuarios', 'campos' => ['host', 'port', 'database', 'username', 'password', 'tabla'], 'boton' => 'Guardar conexión'],
             ],
             'codificador' => [

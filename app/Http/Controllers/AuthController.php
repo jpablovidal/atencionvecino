@@ -7,6 +7,7 @@ use App\Models\Tramite;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
+use App\Services\Directorio\DirectorioException;
 use App\Services\Directorio\DirectorioFuncionarios;
 use App\Support\Ambiente;
 use App\Support\Espacio;
@@ -22,7 +23,60 @@ class AuthController extends Controller
 
     public function ingreso()
     {
-        return view('auth.ingreso', ['pruebas' => Ambiente::accesoPruebasActivo(), 'claveunica' => config('sgd.claveunica.mode') !== 'mock' || ! app()->isProduction()]);
+        $usuario = DirectorioFuncionarios::loginUsuarioHabilitado();
+
+        return view('auth.ingreso', ['usuario' => $usuario, 'pruebas' => Ambiente::accesoPruebasActivo() && ! $usuario, 'claveunica' => config('sgd.claveunica.mode') !== 'mock' || ! app()->isProduction()]);
+    }
+
+    // ---- Ingreso de funcionarios con «username» y contraseña del directorio (base sistemas_usuarios), sin ClaveÚnica
+    public function usuarioForm()
+    {
+        abort_unless(DirectorioFuncionarios::loginUsuarioHabilitado(), 404);
+
+        return view('auth.usuario');
+    }
+
+    public function usuarioLogin(Request $request, DirectorioFuncionarios $dir)
+    {
+        abort_unless(DirectorioFuncionarios::loginUsuarioHabilitado(), 404);
+        $d = $request->validate(['username' => ['required', 'string', 'max:30', 'regex:/^[A-Za-z0-9._\-]+$/'], 'password' => 'required|string|max:200'], ['username.regex' => 'El usuario solo admite letras, números, punto, guion y guion bajo.']);
+        $usuario = strtolower($d['username']);
+        $clave = 'usuario:'.hash('sha256', $usuario.'|'.$request->ip());
+        $claveU = 'usuario-nombre:'.hash('sha256', $usuario);
+        if (RateLimiter::tooManyAttempts($clave, 5) || RateLimiter::tooManyAttempts($claveU, 15)) {
+            $this->audit->registrar('auth.fallo', null, null, ['motivo' => 'usuario_bloqueo'], false, ['run' => null, 'rol' => null]);
+
+            return back()->withInput(['username' => $d['username']])->with('error', 'Demasiados intentos. Espere 15 minutos.');
+        }
+        $falla = function (string $motivo) use ($clave, $claveU, $d) {
+            RateLimiter::hit($clave, 900);
+            RateLimiter::hit($claveU, 900);
+            $this->audit->registrar('auth.fallo', null, null, ['motivo' => $motivo], false, ['run' => null, 'rol' => null]);
+
+            return back()->withInput(['username' => $d['username']])->with('error', 'Usuario o contraseña incorrectos.');
+        };
+        try {
+            $run = $dir->autenticar($d['username'], $d['password']);
+        } catch (DirectorioException) {
+            return back()->withInput(['username' => $d['username']])->with('error', 'No fue posible validar su ingreso en este momento. Intente nuevamente o use ClaveÚnica.');
+        }
+        if ($run === null) {
+            return $falla('usuario_credenciales');
+        }
+        $u = $dir->resolver($run);
+        if (! $u || $u->rolBase() === 'admin') { // la administración entra solo con ClaveÚnica y segundo factor
+            return $falla($u ? 'usuario_admin_no_permitido' : 'usuario_sin_acceso');
+        }
+        RateLimiter::clear($clave);
+        RateLimiter::clear($claveU);
+        $request->session()->invalidate(); // sesión nueva (anti fijación)
+        $request->session()->regenerateToken();
+        $request->session()->put(['login_at' => time(), 'last_seen' => time()]);
+        Auth::login($u);
+        $u->forceFill(['ultimo_acceso' => now()])->save();
+        $this->audit->registrar('auth.login', 'usuario', $u->id, ['via' => 'usuario_directorio'], false, ['run' => $u->run, 'rol' => $u->rol]);
+
+        return redirect()->route('app.bandeja');
     }
 
     // ---- Acceso de PRUEBAS con usuario y contraseña (solo SGD_AMBIENTE=pruebas y hasta la fecha configurada)

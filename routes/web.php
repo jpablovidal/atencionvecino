@@ -81,6 +81,8 @@ Route::get('/ingreso/pruebas', [AuthController::class, 'pruebasForm'])->name('in
 Route::post('/ingreso/pruebas', [AuthController::class, 'pruebasLogin'])->middleware('throttle:login')->name('ingreso.pruebas.entrar');
 // Un solo ingreso con ClaveÚnica: que la persona sea funcionario(a) o vecino(a) lo decide el directorio (base «sistemas_usuarios») al volver de ClaveÚnica
 Route::get('/login', [AuthController::class, 'redirigir'])->middleware('throttle:login')->name('login');
+Route::get('/login/usuario', [AuthController::class, 'usuarioForm'])->name('login.usuario');
+Route::post('/login/usuario', [AuthController::class, 'usuarioLogin'])->middleware('throttle:login')->name('login.usuario.entrar');
 Route::permanentRedirect('/ingreso/ciudadano', '/login');
 Route::permanentRedirect('/ingreso/funcionario', '/login');
 Route::permanentRedirect('/ingreso/auto', '/login');

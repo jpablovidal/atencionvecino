@@ -9,6 +9,12 @@
 <p class="text-center small text-muted">Si usted es funcionario(a) municipal, el sistema lo reconoce solo y podrá elegir entre su trabajo y su espacio de vecino(a).</p>
 <div class="mb-2">@include('partials.boton_claveunica', ['href' => route('login'), 'bloque' => true])</div>
 @endif
+@if($usuario ?? false)
+<div class="border-top pt-3 mt-3">
+  <p class="small text-muted mb-2">Funcionarios(as) municipales también pueden ingresar con el usuario y la contraseña del directorio institucional.</p>
+  <a class="btn btn-outline-primary btn-block" href="{{ route('login.usuario') }}">Ingresar con usuario y contraseña</a>
+</div>
+@endif
 @if($pruebas)
 <div class="border-top pt-3 mt-3">
   <h2 class="h6">Ingreso de pruebas</h2>

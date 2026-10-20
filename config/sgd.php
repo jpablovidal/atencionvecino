@@ -58,7 +58,7 @@ return [
         'enabled' => (bool) env('DIRECTORIO_ENABLED', false),
         'host' => env('DIRECTORIO_HOST'), 'port' => env('DIRECTORIO_PORT', 3306), 'database' => env('DIRECTORIO_DATABASE', 'sistemas_usuarios'),
         'username' => env('DIRECTORIO_USERNAME'), 'password' => env('DIRECTORIO_PASSWORD'), 'tabla' => env('DIRECTORIO_TABLA', 'sistemas_users'),
-        'rol_defecto' => env('DIRECTORIO_ROL_DEFECTO', 'funcionario'), 'crear_unidades' => (bool) env('DIRECTORIO_CREAR_UNIDADES', true),
+        'rol_defecto' => env('DIRECTORIO_ROL_DEFECTO', 'funcionario'), 'login_usuario' => (bool) env('DIRECTORIO_LOGIN_USUARIO', true), 'crear_unidades' => (bool) env('DIRECTORIO_CREAR_UNIDADES', true),
     ],
 
     'claveunica' => [
