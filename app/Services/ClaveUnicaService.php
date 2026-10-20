@@ -75,7 +75,9 @@ class ClaveUnicaService
             return [true, 'ClaveÚnica aceptó las credenciales (respondió «invalid_grant» porque el código de verificación no es real; es lo esperado).'];
         }
         if (in_array($err, ['invalid_client', 'unauthorized_client'], true) || $r->status() === 401) {
-            return [false, 'ClaveÚnica rechazó el client_id o el client_secret ('.($err !== '' ? $err : 'HTTP '.$r->status()).').'];
+            $desc = mb_substr(trim(strip_tags((string) $r->json('error_description', ''))), 0, 120);
+
+            return [false, 'ClaveÚnica rechazó el client_id o el client_secret ('.($err !== '' ? $err : 'HTTP '.$r->status()).($desc !== '' ? ': '.$desc : '').'). Revise que sean los del ambiente elegido y que no tengan espacios.'];
         }
 
         return [false, 'Respuesta inesperada de ClaveÚnica (HTTP '.$r->status().($err !== '' ? ', '.mb_substr($err, 0, 60) : '').'): revise las credenciales y la Redirect URI.'];

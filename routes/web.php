@@ -86,7 +86,8 @@ Route::post('/login/usuario', [AuthController::class, 'usuarioLogin'])->middlewa
 Route::permanentRedirect('/ingreso/ciudadano', '/login');
 Route::permanentRedirect('/ingreso/funcionario', '/login');
 Route::permanentRedirect('/ingreso/auto', '/login');
-Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback');
+Route::get('/auth/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback'); // Redirect URI registrada ante ClaveÚnica
+Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login'); // ruta anterior: se mantiene por si estaba registrada
 Route::post('/salir', [AuthController::class, 'salir'])->name('salir');
 if (config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'testing'])) { // jamás en staging/producción
     Route::get('/dev/login', [AuthController::class, 'devForm'])->name('dev.login');

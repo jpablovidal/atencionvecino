@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Services\ClaveUnicaService;
+use App\Support\Run;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\Support\Escenario;
 use Tests\TestCase;
 
@@ -47,5 +49,24 @@ class LoginUnicoTest extends TestCase
     {
         config(['sgd.claveunica.mode' => 'mock']);
         $this->get('/login')->assertRedirect()->assertRedirectContains('/dev/login?via=auto');
+    }
+
+    public function test_la_redirect_uri_registrada_es_auth_callback_y_la_ruta_anterior_sigue_funcionando(): void
+    {
+        $this->assertSame('/auth/callback', parse_url(route('claveunica.callback'), PHP_URL_PATH));
+        foreach (['/auth/callback', '/claveunica/callback'] as $u) {
+            $this->get($u.'?code=abc&state=malo')->assertRedirect('/ingreso')->assertSessionHas('error');
+        }
+    }
+
+    public function test_un_ingreso_completo_con_claveunica_por_auth_callback(): void
+    {
+        $this->sembrar();
+        config(['sgd.claveunica.mode' => 'real', 'sgd.claveunica.client_id' => 'cid', 'sgd.claveunica.client_secret' => 's', 'sgd.claveunica.redirect_uri' => 'https://gestor.santodomingo.cl/auth/callback']);
+        $this->app->forgetInstance(ClaveUnicaService::class);
+        Http::fake(['https://accounts.claveunica.gob.cl/openid/token/' => Http::response(['access_token' => 't']),
+            'https://accounts.claveunica.gob.cl/openid/userinfo/' => Http::response(['RolUnico' => ['numero' => 20000001, 'DV' => (string) Run::dv('20000001')], 'name' => ['nombres' => ['Vera'], 'apellidos' => ['Vecina']]])]);
+        $this->withSession(['cu' => ['state' => hash('sha256', 'st'), 'via' => 'auto', 'exp' => time() + 60]])->get('/auth/callback?code=c&state=st')->assertRedirect(route('ciudadano.index'));
+        Http::assertSent(fn ($r) => str_contains($r->url(), '/openid/token/') && $r['redirect_uri'] === 'https://gestor.santodomingo.cl/auth/callback');
     }
 }

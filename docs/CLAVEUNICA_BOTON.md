@@ -20,7 +20,7 @@ Se usa el **kit oficial** de Gobierno Digital (`cu.css`, `cu-blanco.svg` y el ma
 | `client_id` y `client_secret` ocultos | Cumple: solo en `.env` (nunca en el código ni el repositorio). |
 | Cierre de sesión (botón visible + llamada al logout de ClaveÚnica) | Implementado: «Cerrar sesión» cierra la sesión local y redirige a `https://accounts.claveunica.gob.cl/api/v1/accounts/app/logout?redirect=<Logout URI>`; también al autenticarse un RUN **no habilitado** en el sistema. La CSP permite ese destino solo en `form-action`. **A VALIDAR en sandbox.** |
 | Logout URI registrada (obligatoria desde el manual 6.4) | **Debe registrarla usted** al solicitar/actualizar las credenciales; se configura con `CLAVEUNICA_LOGOUT_URI` (por defecto la portada del sitio). Si no está registrada, ClaveÚnica no redirige. |
-| Redirect URI | `https://gestor.santodomingo.cl/claveunica/callback`: solo esquema + autoridad + path, sin query ni IP. La Municipalidad informa que para municipios **no es obligatorio** el dominio «.gob.cl» y que sus credenciales ya están certificadas por Gobierno Digital; el sistema no lo exige ni lo evalúa. |
+| Redirect URI | `https://gestor.santodomingo.cl/auth/callback`: solo esquema + autoridad + path, sin query ni IP. La Municipalidad informa que para municipios **no es obligatorio** el dominio «.gob.cl» y que sus credenciales ya están certificadas por Gobierno Digital; el sistema no lo exige ni lo evalúa. |
 
 ## Pruebas con sandbox
 Las credenciales de sandbox/QA funcionan al instante, solo con RUN de prueba (`44.444.444-4`, `55.555.555-5`, `88.888.888-8`, `99.999.999-9`; contraseña `testing`). Las de producción están bloqueadas hasta certificar (el login muestra «La institución no está habilitada en ClaveÚnica»).

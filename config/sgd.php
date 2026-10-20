@@ -79,7 +79,7 @@ return [
         'produccion_client_id' => env('CLAVEUNICA_PRODUCCION_CLIENT_ID'), 'produccion_client_secret' => env('CLAVEUNICA_PRODUCCION_CLIENT_SECRET'),
         'produccion_redirect_uri' => env('CLAVEUNICA_PRODUCCION_REDIRECT_URI'), 'produccion_logout_uri' => env('CLAVEUNICA_PRODUCCION_LOGOUT_URI'),
         // Datos informativos del trámite «Solicitud de Credenciales de Integración» (Cerofilas); no se envían a ningún servicio
-        'institucion' => env('CLAVEUNICA_INSTITUCION', 'I. Municipalidad de Santo Domingo'), 'app_nombre' => env('CLAVEUNICA_APP_NOMBRE'),
+        'institucion' => env('CLAVEUNICA_INSTITUCION', 'I. Municipalidad de Santo Domingo'), 'sitio_web' => env('CLAVEUNICA_SITIO_WEB', 'https://gestor.santodomingo.cl/login'), 'app_nombre' => env('CLAVEUNICA_APP_NOMBRE'),
         'contacto_admin_nombre' => null, 'contacto_admin_correo' => null, 'contacto_admin_telefono' => null,
         'contacto_tec_nombre' => null, 'contacto_tec_correo' => null, 'contacto_tec_telefono' => null,
         'logout_uri' => env('CLAVEUNICA_LOGOUT_URI'), // Logout URI registrada ante ClaveÚnica (obligatoria desde el manual 6.4); por defecto la portada del sitio
