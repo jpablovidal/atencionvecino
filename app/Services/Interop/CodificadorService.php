@@ -5,6 +5,7 @@ namespace App\Services\Interop;
 use App\Exceptions\FlujoException;
 use App\Models\Institucion;
 use App\Models\ProcesoCodificador;
+use App\Services\Admin\CodificacionService;
 use App\Services\AuditoriaService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -69,6 +70,11 @@ class CodificadorService
                 $datos = ['nombre' => $nombre, 'origen' => $origen, 'sincronizado_en' => now(), 'activo' => true];
                 if ($entidad === 'instituciones') {
                     $datos += ['tipo' => $this->corto($f['tipo'] ?? null, 60), 'codigo_padre' => $this->corto($f['codigo_padre'] ?? null, 40)];
+                    foreach (['codificador_id' => null, 'oid' => 120, 'info_extra' => 4000] as $k => $max) {
+                        if (isset($f[$k]) && $f[$k] !== '') {
+                            $datos[$k] = $max === null ? (int) $f[$k] : $this->corto($f[$k], $max);
+                        }
+                    }
                     $m = Institucion::query()->where('codigo', $codigo)->first();
                 } else {
                     $datos += ['institucion_codigo' => $this->corto($f['institucion_codigo'] ?? null, 40)];
@@ -104,8 +110,15 @@ class CodificadorService
     public function sincronizar(): array
     {
         $c = config('sgd.codificador');
-        if ($c['mode'] !== 'api' || ! str_starts_with((string) $c['api_url'], 'https://')) {
-            throw new FlujoException('Sincronización por API no configurada (CODIFICADOR_MODE=api y CODIFICADOR_API_URL https).');
+        if ($c['mode'] !== 'api') {
+            throw new FlujoException('Sincronización por API no configurada: elija el modo «Sincronización por API» en Administración → APIs → Codificador.');
+        }
+        $api = app(CodificadorApi::class);
+        if ($api->esOficial()) {
+            return $this->sincronizarOficial($api);
+        }
+        if (! str_starts_with((string) $c['api_url'], 'https://')) {
+            throw new FlujoException('La URL de la API del Codificador debe ser https.');
         }
         try {
             $r = Http::timeout((int) $c['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()
@@ -125,6 +138,70 @@ class CodificadorService
         }
 
         return $out;
+    }
+
+    /**
+     * Sincronización con la API oficial del Codificador: trae los códigos de la codificación «Instituciones» (y, si se indicó, la de procedimientos)
+     * y los guarda en el catálogo local con su id, OID, tipo (de info_extra) y código padre. Nunca borra: lo que ya no llega queda como está.
+     *
+     * @return array<string,array{creados:int,actualizados:int,errores:array<int,string>}>
+     */
+    private function sincronizarOficial(CodificadorApi $api): array
+    {
+        $out = [];
+        $cods = $api->codigos();
+        $porId = [];
+        foreach ($cods as $x) {
+            if ($x['id']) {
+                $porId[$x['id']] = $x['codigo'];
+            }
+        }
+        $filas = array_map(fn ($x) => ['codigo' => $x['codigo'], 'nombre' => $x['descripcion'], 'tipo' => $x['info_extra']['tipo'] ?? null,
+            'codigo_padre' => $x['padre'] ? ($porId[$x['padre']] ?? null) : null, 'codificador_id' => $x['id'], 'oid' => $x['identificador'] ?: null,
+            'info_extra' => $x['info_extra'] ? json_encode($x['info_extra'], JSON_UNESCAPED_UNICODE) : null], $cods);
+        $out['instituciones'] = $this->upsert('instituciones', $filas, 'api');
+        $idProc = (int) config('sgd.codificador.id_codificacion_procesos');
+        if ($idProc > 0) {
+            $out['procesos'] = $this->upsert('procesos', array_map(fn ($x) => ['codigo' => $x['codigo'], 'nombre' => $x['descripcion']], $api->codigos([], $idProc)), 'api');
+        }
+
+        return $out;
+    }
+
+    /**
+     * Verificación de solo lectura: la institución configurada existe en el Codificador y la API responde.
+     *
+     * @return list<array{0:string,1:bool,2:string}>
+     */
+    public function probar(): array
+    {
+        $cod = CodificacionService::municipio();
+        $out = [['Código de esta institución', (bool) $cod['codigo'], $cod['codigo'] ? $cod['codigo'].' — '.($cod['nombre'] ?? 'sin nombre en el catálogo local').' ('.$cod['origen'].')' : 'sin definir']];
+        $api = app(CodificadorApi::class);
+        if (! $api->esOficial() || ! $cod['codigo']) {
+            return $out;
+        }
+        try {
+            $r = $api->codigos(['codigo' => $cod['codigo']]);
+            $m = collect($r)->firstWhere('codigo', $cod['codigo']);
+            $out[] = ['La API del Codificador responde', true, $api->base()];
+            $out[] = ['La institución existe en el Codificador', $m !== null, $m ? ($m['descripcion'].' · id '.$m['id'].' · OID '.($m['identificador'] ?: 'sin dato')) : 'no se encontró el código '.$cod['codigo']];
+        } catch (FlujoException $e) {
+            $out[] = ['La API del Codificador responde', false, $e->getMessage()];
+        }
+
+        return $out;
+    }
+
+    /** Deja en el catálogo local a la Municipalidad de Santo Domingo y su institución padre (datos del Codificador). Idempotente. */
+    public function asegurarMunicipioPorDefecto(): void
+    {
+        $base = ['origen' => 'manual', 'activo' => true, 'sincronizado_en' => now()];
+        Institucion::query()->firstOrCreate(['codigo' => 'PE-SUB-00573'], $base + ['nombre' => 'Subsecretaría de Desarrollo Regional y Administrativo', 'tipo' => 'SUB']);
+        $m = Institucion::query()->firstOrCreate(['codigo' => 'PE-MUN-00243'], $base + ['nombre' => 'Municipalidad de Santo Domingo', 'tipo' => 'MUN', 'codigo_padre' => 'PE-SUB-00573']);
+        if ($m->wasRecentlyCreated) {
+            $m->forceFill(['codificador_id' => 243, 'oid' => '1.PE-MUN-00243', 'info_extra' => json_encode(['poder' => 'PE', 'tipo' => 'MUN', 'nivel' => 3, 'region' => 'Valparaíso', 'provincia' => 'San Antonio', 'comuna' => 'Santo Domingo', 'grupo' => 'B'], JSON_UNESCAPED_UNICODE)])->save();
+        }
     }
 
     public function institucionActiva(?string $codigo): ?Institucion

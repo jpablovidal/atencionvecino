@@ -157,14 +157,19 @@ return [
     ],
 
     // Código de ESTA institución en el Codificador de Instituciones y Procesos del Estado (A VALIDAR formato)
-    'institucion_codigo' => env('CODIFICADOR_INSTITUCION_CODIGO'),
+    'institucion_codigo' => env('CODIFICADOR_INSTITUCION_CODIGO', 'PE-MUN-00243'), // por defecto: Municipalidad de Santo Domingo en el Codificador
 
     // Codificador: manual (mantenedor/CSV) | api (sincronización; forma del JSON A VALIDAR)
     'codificador' => [
         'mode' => env('CODIFICADOR_MODE', 'manual'),
-        'api_url' => env('CODIFICADOR_API_URL'),
+        'api_url' => env('CODIFICADOR_API_URL'), // vacío = https://codificacion.digital.gob.cl/api (API pública del Codificador)
+        'version' => env('CODIFICADOR_VERSION', 'v1'),
+        'id_codificacion' => (int) env('CODIFICADOR_ID_CODIFICACION', 1), // id de la codificación «Instituciones» (A VALIDAR)
+        'id_codificacion_procesos' => env('CODIFICADOR_ID_CODIFICACION_PROCESOS'), // opcional: codificación de procedimientos administrativos
         'api_token' => env('CODIFICADOR_API_TOKEN'),
         'timeout' => 20,
+        'timeout_api' => 60,
+        'max_bytes_api' => 20 * 1024 * 1024,
         'max_bytes' => 5 * 1024 * 1024,
     ],
 

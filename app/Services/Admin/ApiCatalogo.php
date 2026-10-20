@@ -110,10 +110,13 @@ class ApiCatalogo
                 'ca' => ['Bundle de CA', 'path', 'sgd.pisee.ca'],
             ]],
             'codificador' => ['etiqueta' => 'Codificador de instituciones y procesos', 'descripcion' => 'Catálogo local; sincronización por API opcional.', 'campos' => [
-                'institucion_codigo' => ['Código de esta institución', 'text', 'sgd.institucion_codigo'],
+                'institucion_codigo' => ['Código de esta institución en el Codificador', 'text', 'sgd.institucion_codigo', ['regex' => '/^[A-Za-z0-9._\-]{1,30}$/', 'ayuda' => 'Por defecto PE-MUN-00243 (Municipalidad de Santo Domingo).']],
                 'mode' => ['Modo', 'select', 'sgd.codificador.mode', ['opciones' => ['manual' => 'Manual (CSV)', 'api' => 'Sincronización por API']]],
-                'api_url' => ['URL de la API', 'url', 'sgd.codificador.api_url'],
-                'api_token' => ['Token de la API', 'text', 'sgd.codificador.api_token', ['secreto' => true]],
+                'api_url' => ['URL de la API', 'url', 'sgd.codificador.api_url', ['ayuda' => 'Vacío = https://codificacion.digital.gob.cl/api (API pública del Codificador).']],
+                'version' => ['Versión de la API', 'text', 'sgd.codificador.version', ['regex' => '/^v?\d{1,3}$/', 'ayuda' => 'Por defecto v1.']],
+                'id_codificacion' => ['Id de la codificación «Instituciones»', 'number', 'sgd.codificador.id_codificacion', ['ayuda' => 'Por defecto 1 (A VALIDAR con «Validar credenciales»).']],
+                'id_codificacion_procesos' => ['Id de la codificación de procedimientos (opcional)', 'number', 'sgd.codificador.id_codificacion_procesos'],
+                'api_token' => ['Token de la API (opcional)', 'text', 'sgd.codificador.api_token', ['secreto' => true]],
             ]],
             'llm' => ['etiqueta' => 'Asistente de redacción (IA)', 'descripcion' => 'Apagado por defecto. Una sola API HTTPS fija.', 'campos' => [
                 'enabled' => ['Habilitado', 'bool', 'sgd.llm.enabled'],
@@ -160,6 +163,10 @@ class ApiCatalogo
             'directorio' => [
                 ['titulo' => 'Activación', 'intro' => 'Con el directorio activo, al entrar con ClaveÚnica el sistema revisa si el RUN figura habilitado y vigente (habilitado «si», credencial «Vigente» y sin fecha de término vencida). Si figura, la persona entra como funcionario(a) y además conserva su espacio de vecino(a); si deja de figurar, pierde el acceso de funcionario(a) en su próximo ingreso. Las cuentas creadas a mano (administración) no dependen del directorio.', 'campos' => ['enabled', 'rol_defecto', 'crear_unidades']],
                 ['titulo' => 'Conexión a la base sistemas_usuarios', 'campos' => ['host', 'port', 'database', 'username', 'password', 'tabla'], 'boton' => 'Guardar conexión'],
+            ],
+            'codificador' => [
+                ['titulo' => 'Esta institución', 'intro' => 'Por defecto la Municipalidad de Santo Domingo (PE-MUN-00243): su código identifica los expedientes y documentos. La institución también se puede elegir en Administración → Codificación.', 'campos' => ['institucion_codigo']],
+                ['titulo' => 'API del Codificador', 'intro' => 'API pública de consulta (sin credenciales). «Manual» solo usa el catálogo cargado por CSV; «Sincronización por API» trae las instituciones desde codificacion.digital.gob.cl.', 'campos' => ['mode', 'api_url', 'version', 'id_codificacion', 'id_codificacion_procesos', 'api_token'], 'boton' => 'Guardar'],
             ],
             'repositorio' => [
                 ['titulo' => 'Almacenamiento', 'campos' => ['modo']],

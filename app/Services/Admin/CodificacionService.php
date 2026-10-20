@@ -53,7 +53,16 @@ class CodificacionService
         }
         $env = (string) config('sgd.institucion_codigo');
 
-        return ['codigo' => $env !== '' ? $env : null, 'nombre' => null, 'origen' => $env !== '' ? 'entorno' : 'sin configurar'];
+        $nombre = null;
+        if ($env !== '') {
+            try {
+                $nombre = Institucion::query()->where('codigo', $env)->value('nombre');
+            } catch (\Throwable) {
+            }
+            $nombre ??= $env === 'PE-MUN-00243' ? 'Municipalidad de Santo Domingo' : null;
+        }
+
+        return ['codigo' => $env !== '' ? $env : null, 'nombre' => $nombre, 'origen' => $env === 'PE-MUN-00243' ? 'predeterminado' : ($env !== '' ? 'entorno' : 'sin configurar')];
     }
 
     /** Código de institución vigente para un área (el del área si lo tiene; si no, el del municipio; si no, «SGD»). */

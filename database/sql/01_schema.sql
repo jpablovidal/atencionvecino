@@ -714,4 +714,10 @@ alter table `usuarios` add `superadmin` tinyint(1) not null default '0';
 
 alter table `usuarios` add `directorio` tinyint(1) not null default '0';
 
+alter table `instituciones` add `codificador_id` bigint unsigned null;
+
+alter table `instituciones` add `oid` varchar(120) null;
+
+alter table `instituciones` add `info_extra` text null;
+
 SET FOREIGN_KEY_CHECKS = 1;

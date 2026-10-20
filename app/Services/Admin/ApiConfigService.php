@@ -10,6 +10,7 @@ use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\ClaveUnicaService;
 use App\Services\Directorio\DirectorioFuncionarios;
+use App\Services\Interop\CodificadorService;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Repositorio\DriveClient;
 use App\Services\Repositorio\RepositorioService;
@@ -248,6 +249,9 @@ class ApiConfigService
         $cat = ApiCatalogo::servicios()[$servicio] ?? throw new FlujoException('Servicio desconocido.');
         if (in_array($servicio, ['claveunica', 'firmagob', 'docdigital'], true)) {
             return $this->diagnostico($servicio);
+        }
+        if ($servicio === 'codificador') {
+            return app(CodificadorService::class)->probar();
         }
         if ($servicio === 'directorio') {
             return app(DirectorioFuncionarios::class)->probar();

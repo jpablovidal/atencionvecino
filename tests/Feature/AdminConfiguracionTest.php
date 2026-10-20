@@ -230,6 +230,6 @@ class AdminConfiguracionTest extends TestCase
         $this->assertNotEmpty(CodificacionService::matrizNormas());
         $this->assertCount(5, CodificacionService::NORMAS);
         $doc = $this->documentoVigente(app(ExpedienteService::class)->crearDesdeSolicitud($this->solicitudDOM(), $dom = $this->usuario('funcionario')), $dom);
-        $this->assertMatchesRegularExpression('/^SGD-[A-Za-z]+-\d{4}-\d{6}$/', (string) $doc->refresh()->identificador);
+        $this->assertMatchesRegularExpression('/^PE-MUN-00243-[A-Za-z]+-\d{4}-\d{6}$/', (string) $doc->refresh()->identificador);
     }
 }
