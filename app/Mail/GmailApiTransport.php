@@ -103,7 +103,14 @@ class GmailApiTransport extends AbstractTransport
             }
             $t = $r->successful() ? $r->json('access_token') : null;
             if (! is_string($t) || $t === '') {
-                throw new TransportException('Google rechazó la delegación de dominio (HTTP '.$r->status().').');
+                $e = (string) $r->json('error');
+                $d = mb_substr((string) $r->json('error_description'), 0, 160);
+                $pista = match ($e) {
+                    'invalid_grant' => ' Pista: el remitente no es un usuario válido del Workspace (debe ser una cuenta real del dominio, no un alias ni un grupo) o la delegación aún no se propaga (puede tardar hasta 24 horas).',
+                    'unauthorized_client' => ' Pista: en la delegación de dominio falta autorizar el ID de cliente de la cuenta de servicio con el alcance '.$this->cfg['scope'].'.',
+                    default => '',
+                };
+                throw new TransportException('Google rechazó la delegación de dominio (HTTP '.$r->status().($e !== '' ? ", $e" : '').($d !== '' ? ": $d" : '').').'.$pista);
             }
 
             return $t;
