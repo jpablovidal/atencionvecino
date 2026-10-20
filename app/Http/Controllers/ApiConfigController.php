@@ -6,7 +6,11 @@ use App\Exceptions\FlujoException;
 use App\Services\Admin\ApiCatalogo;
 use App\Services\Admin\ApiConfigService;
 use App\Services\AuditoriaService;
+use App\Services\Firma\FirmaClient;
+use App\Services\Firma\FirmaException;
 use App\Services\Repositorio\CredencialDriveService;
+use App\Support\Run;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -103,5 +107,37 @@ class ApiConfigController extends Controller
         $this->audit->registrar('correo.prueba', null, null, ['metodo' => $metodo, 'ok' => $ok]);
 
         return back()->with('pruebas', [['Correo de prueba', $ok, $det]]);
+    }
+
+    /**
+     * «Probar la firma»: firma un PDF de ejemplo con la configuración guardada y el OTP del titular, para confirmar que FirmaGob responde.
+     * El resultado no se guarda. Con el ambiente de producción se usa el certificado real, por eso exige confirmación expresa.
+     */
+    public function firmaPrueba(Request $r)
+    {
+        $d = $r->validate(['entiendo' => 'accepted', 'run' => 'required|string|max:14', 'otp' => ['required', 'regex:/^\d{6}$/']], ['entiendo.accepted' => 'Confirme que entiende que se firmará un documento de prueba.', 'otp.regex' => 'El OTP son 6 dígitos.']);
+        $run = Run::normalizar($d['run']);
+        if (! $run) {
+            return back()->with('pruebas', [['Firma de prueba', false, 'El RUN no es válido.']]);
+        }
+        $modo = (string) config('sgd.firmagob.mode');
+        try {
+            $dompdf = new Dompdf;
+            $dompdf->loadHtml('<p>Documento de prueba de firma — SGD Municipalidad de Santo Domingo — '.now('America/Santiago')->format('d-m-Y H:i').'</p>');
+            $dompdf->render();
+            $res = app(FirmaClient::class)->firmar($dompdf->output(), $run, $d['otp'], 'Prueba de firma');
+            $ok = true;
+            $det = ! empty($res['simulada']) ? 'Modo simulado: no se llamó a FirmaGob (no hay firma real).' : 'FirmaGob firmó el documento de prueba (ambiente «'.$modo.'») y la respuesta es válida. El documento no se guardó.';
+        } catch (FirmaException $e) {
+            $ok = false;
+            $det = $e->getMessage();
+        } catch (\Throwable $e) {
+            report($e);
+            $ok = false;
+            $det = 'No se pudo completar la prueba de firma.';
+        }
+        $this->audit->registrar('firma.prueba', null, null, ['modo' => $modo, 'run' => Run::enmascarar($run), 'ok' => $ok]);
+
+        return back()->with('pruebas', [['Firma de prueba (ambiente '.$modo.')', $ok, $det]]);
     }
 }

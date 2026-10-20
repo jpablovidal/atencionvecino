@@ -7,6 +7,7 @@ use App\Services\Admin\ApiConfigService;
 use App\Services\ClaveUnicaService;
 use App\Services\Firma\HttpFirmaClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\Support\DocDigitalApi;
@@ -101,18 +102,40 @@ class ConfiguracionPorPantallaTest extends TestCase
         }
     }
 
-    public function test_validar_claveunica_revisa_el_ambiente_activo_y_el_dominio_gob_cl(): void
+    public function test_validar_claveunica_consulta_a_claveunica_si_acepta_las_credenciales(): void
     {
         config(['sgd.claveunica.mode' => 'real', 'sgd.claveunica.ambiente' => 'produccion', 'sgd.claveunica.produccion_client_id' => 'abc', 'sgd.claveunica.produccion_client_secret' => 'x',
             'sgd.claveunica.produccion_redirect_uri' => 'https://gestor.santodomingo.cl/claveunica/callback', 'sgd.claveunica.produccion_logout_uri' => 'https://gestor.santodomingo.cl/']);
+        // credenciales válidas: el servicio responde invalid_grant al código de verificación
+        Http::fake(['https://accounts.claveunica.gob.cl/openid/token/' => Http::response(['error' => 'invalid_grant'], 400)]);
         $filas = collect($this->admin()->post('/app/admin/api/claveunica/probar')->assertSessionHas('pruebas')->getSession()->get('pruebas'));
-        $gob = $filas->first(fn ($f) => str_contains($f[0], '.gob.cl'));
-        $this->assertFalse($gob[1], 'santodomingo.cl no es .gob.cl');
+        $this->assertTrue($filas->first(fn ($f) => str_starts_with($f[0], 'Credenciales aceptadas'))[1]);
         $this->assertTrue($filas->first(fn ($f) => $f[0] === 'client_id')[1]);
         $this->assertTrue($filas->first(fn ($f) => str_starts_with($f[0], 'Endpoints'))[1]);
+        $this->assertNull($filas->first(fn ($f) => str_contains($f[0], '.gob.cl') && str_contains($f[0], 'Dominio')), 'no se exige dominio .gob.cl');
+        Http::assertSent(fn ($r) => $r['client_id'] === 'abc' && $r['code'] === 'verificacion-de-credenciales');
+        // credenciales rechazadas
+        Http::swap(new Factory);
+        Http::fake(['https://accounts.claveunica.gob.cl/openid/token/' => Http::response(['error' => 'invalid_client'], 401)]);
+        $r = collect($this->admin()->post('/app/admin/api/claveunica/probar')->getSession()->get('pruebas'))->first(fn ($f) => str_starts_with($f[0], 'Credenciales aceptadas'));
+        $this->assertFalse($r[1]);
+        $this->assertStringContainsString('rechazó', $r[2]);
+        // Redirect URI con query no es válida
         config(['sgd.claveunica.produccion_redirect_uri' => 'https://gestor.santodomingo.cl/cb?x=1']);
         $r = collect($this->admin()->post('/app/admin/api/claveunica/probar')->getSession()->get('pruebas'))->first(fn ($f) => $f[0] === 'Redirect URI');
         $this->assertFalse($r[1], 'con query no es válida');
+    }
+
+    public function test_probar_la_firma_exige_confirmacion_y_otp_y_no_guarda_nada(): void
+    {
+        config(['sgd.firmagob.mode' => 'mock']);
+        $this->admin()->post('/app/admin/api-firma-prueba', ['run' => '12345678-5', 'otp' => '123456'])->assertSessionHasErrors('entiendo');
+        $this->admin()->post('/app/admin/api-firma-prueba', ['run' => '12345678-5', 'otp' => '12', 'entiendo' => 1])->assertSessionHasErrors('otp');
+        $f = collect($this->admin()->post('/app/admin/api-firma-prueba', ['run' => '12345678-5', 'otp' => '123456', 'entiendo' => 1])->assertSessionHas('pruebas')->getSession()->get('pruebas'));
+        $this->assertTrue($f->first()[1]);
+        $this->assertStringContainsString('simulado', $f->first()[2]);
+        $this->comoFuncionario($this->usuario('funcionario'))->post('/app/admin/api-firma-prueba', ['run' => '12345678-5', 'otp' => '123456', 'entiendo' => 1])->assertForbidden();
+        $this->assertDatabaseHas('audit_log', ['accion' => 'firma.prueba']);
     }
 
     public function test_probar_docdigital_hace_el_diagnostico_de_solo_lectura(): void

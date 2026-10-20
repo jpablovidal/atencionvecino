@@ -207,7 +207,6 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 ## ClaveÚnica: botón y certificación
 - El botón es el del kit oficial entregado; **no se comparó con Figma ni con los lineamientos** (no se recibieron): hágalo antes de certificar.
 - El cierre de sesión de ClaveÚnica y la Logout URI se implementaron según el manual 6.5, pero **no se probaron contra el servicio real** (A VALIDAR en sandbox). Sin la Logout URI registrada, ClaveÚnica no redirige de vuelta.
-- El manual exige dominio «.gob.cl» para la Redirect URI de producción; `gestor.santodomingo.cl` no lo cumple (riesgo de certificación, consultar a Gobierno Digital).
 - Los endpoints se mantienen en `config/sgd.php`; el servicio real no es accesible desde el entorno de desarrollo, por lo que las pruebas usan respuestas simuladas.
 
 ## Carga de claves JSON desde el panel

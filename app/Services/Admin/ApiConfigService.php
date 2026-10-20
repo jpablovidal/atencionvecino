@@ -3,11 +3,14 @@
 namespace App\Services\Admin;
 
 use App\Exceptions\FlujoException;
+use App\Mail\GmailApiTransport;
 use App\Models\ApiConfig;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
+use App\Services\ClaveUnicaService;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Repositorio\DriveClient;
+use App\Services\Repositorio\RepositorioService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
@@ -210,9 +213,9 @@ class ApiConfigService
     private function validarCoherencia(string $servicio, array $v): void
     {
         if (app()->isProduction()) {
-            foreach (['claveunica' => ['mode', ['mock']], 'firmagob' => ['mode', ['mock']], 'docdigital' => ['mode', ['mock', 'demo']], 'pisee' => ['mode', ['mock']]] as $s => [$campo, $prohibidos]) {
+            foreach (['claveunica' => ['mode', ['mock']], 'firmagob' => ['mode', ['mock']], 'docdigital' => ['mode', ['mock']], 'pisee' => ['mode', ['mock']]] as $s => [$campo, $prohibidos]) {
                 if ($servicio === $s && in_array($v[$campo] ?? null, $prohibidos, true)) {
-                    throw new FlujoException('Ese modo está prohibido en producción.');
+                    throw new FlujoException('El modo simulado no está permitido con la configuración de producción de este servidor: elija el servicio real.');
                 }
             }
         }
@@ -241,6 +244,7 @@ class ApiConfigService
         if (in_array($servicio, ['claveunica', 'firmagob', 'docdigital'], true)) {
             return $this->diagnostico($servicio);
         }
+        $extra = [];
         $out = [];
         foreach ($cat['campos'] as $clave => $def) {
             [$etiqueta, $tipo, $path, $op] = $def + [3 => []];
@@ -255,12 +259,23 @@ class ApiConfigService
                 $out[] = [$etiqueta.': permisos', false, 'el archivo es legible por "otros": use permisos 600/640'];
             }
         }
+        if ($servicio === 'repositorio' && config('sgd.repositorio.modo') === 'drive') {
+            try {
+                $extra = app(RepositorioService::class)->probar();
+            } catch (\Throwable) {
+                $extra = [['Conexión con Google Drive', false, 'No fue posible completar la prueba.']];
+            }
+        }
+        if ($servicio === 'google_mail' && ($f = config('sgd.google.service_account_json')) && is_file((string) $f) && config('sgd.google.sender')) {
+            [$okT, $detT] = (new GmailApiTransport(config('sgd.google')))->probarToken();
+            $extra[] = ['Delegación de dominio (token de Google, sin enviar correo)', $okT, $detT];
+        }
         if ($servicio === 'google_mail' && ($f = config('sgd.google.service_account_json')) && is_file((string) $f)) {
             $j = json_decode((string) file_get_contents((string) $f), true);
             $out[] = ['Contenido del JSON (client_email y private_key)', is_array($j) && ! empty($j['client_email']) && ! empty($j['private_key']) && openssl_pkey_get_private($j['private_key']) !== false, 'estructura de cuenta de servicio'];
         }
 
-        return $out;
+        return array_merge($out, $extra);
     }
 
     /**
@@ -286,11 +301,15 @@ class ApiConfigService
             $p = parse_url($red) ?: [];
             $redOk = $red !== '' && ($p['scheme'] ?? '') === 'https' && ! isset($p['query']) && ! isset($p['fragment']) && ! filter_var($p['host'] ?? '', FILTER_VALIDATE_IP);
             $out[] = $ok('Redirect URI', $redOk, $red === '' ? 'sin definir' : ($redOk ? $red : 'debe ser https, sin query ni fragmento y sin dirección IP'));
-            $out[] = $ok('Dominio «.gob.cl» de la Redirect URI (exigido en producción)', $red !== '' && str_ends_with(strtolower((string) ($p['host'] ?? '')), '.gob.cl'), $amb === 'produccion' ? 'el manual exige dominio .gob.cl para la URI de producción' : 'solo se exige en producción');
             $lo = $v('logout_uri');
             $lp = parse_url($lo) ?: [];
             $loOk = $lo !== '' && ($lp['scheme'] ?? '') === 'https' && ! isset($lp['query']);
             $out[] = $ok('Logout URI (obligatoria; debe estar registrada ante ClaveÚnica)', $loOk, $lo === '' ? 'sin definir: se usará la portada del sitio' : ($loOk ? $lo : 'debe ser https y sin query'));
+            $svc = new ClaveUnicaService($c);
+            if (($c['mode'] ?? '') === 'real') {
+                [$okC, $detC] = $svc->verificarCredenciales();
+                $out[] = $ok('Credenciales aceptadas por ClaveÚnica (consulta real, sin iniciar sesión)', $okC, $detC);
+            }
             $out[] = $ok('Endpoints en accounts.claveunica.gob.cl', collect(['authorize_url', 'token_url', 'userinfo_url', 'logout_url'])->every(fn ($k) => str_starts_with((string) ($c[$k] ?? ''), 'https://accounts.claveunica.gob.cl/')), 'authorize, token, userinfo y logout');
 
             return $out;

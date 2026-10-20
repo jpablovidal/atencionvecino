@@ -64,6 +64,7 @@ class ProductionGuard
         if (! str_starts_with((string) config('app.url'), 'https://')) {
             $e[] = 'APP_URL debe ser https';
         }
+        // Servicios simulados nunca en producción: sin ClaveÚnica real nadie podría entrar y las firmas simuladas no valen (no depende de ninguna «etapa»)
         if (! $pruebas && config('sgd.claveunica.mode') === 'mock') {
             $e[] = 'CLAVEUNICA_MODE=mock está prohibido';
         }
@@ -82,28 +83,42 @@ class ProductionGuard
         if (! config('app.key')) {
             $e[] = 'APP_KEY ausente';
         }
-        if (! $pruebas && in_array(config('sgd.docdigital.mode'), ['mock', 'demo'], true)) {
-            $e[] = 'DOCDIGITAL_MODE mock/demo está prohibido';
-        }
-        if ($p = self::docdigitalProblema()) {
-            $e[] = $p;
-        }
-        if ($p = self::casillaProblema()) {
-            $e[] = $p;
-        }
-        if (! $pruebas && config('sgd.pisee.mode') === 'mock') {
-            $e[] = 'PISEE_MODE=mock está prohibido';
-        }
-        if (config('sgd.pisee.mode') === 'api' && ! str_starts_with((string) config('sgd.pisee.base_url'), 'https://')) {
-            $e[] = 'PISEE_BASE_URL debe ser https';
-        }
         if (config('sgd.llm.enabled') && ! config('sgd.llm.api_key')) {
             $e[] = 'LLM_ENABLED sin LLM_API_KEY';
         }
-        if (config('mail.default') === 'gmail_api' && (! config('sgd.google.service_account_json') || ! is_file((string) config('sgd.google.service_account_json')))) {
-            $e[] = 'GOOGLE_SERVICE_ACCOUNT_JSON no existe';
-        }
 
         return $e;
+    }
+
+    /**
+     * Avisos NO bloqueantes sobre integraciones (el sistema nunca se detiene por ellos ni exige una «etapa»): se muestran en el panel.
+     *
+     * @return list<string>
+     */
+    public static function advertencias(): array
+    {
+        $a = [];
+        foreach (['claveunica' => 'ClaveÚnica', 'firmagob' => 'FirmaGob'] as $k => $n) {
+            if (config("sgd.$k.mode") === 'mock') {
+                $a[] = "$n está en modo simulado: no se conecta al servicio real.";
+            }
+        }
+        if (in_array(config('sgd.docdigital.mode'), ['mock', 'outbox'], true)) {
+            $a[] = 'DocDigital no está conectado por API (modo '.config('sgd.docdigital.mode').').';
+        }
+        if ($p = self::docdigitalProblema()) {
+            $a[] = $p;
+        }
+        if ($p = self::casillaProblema()) {
+            $a[] = $p;
+        }
+        if (config('sgd.pisee.mode') === 'mock') {
+            $a[] = 'PISEE está en modo simulado.';
+        }
+        if (config('mail.default') === 'gmail_api' && ! is_file((string) config('sgd.google.service_account_json'))) {
+            $a[] = 'El correo usa la API de Gmail pero falta el archivo JSON de la cuenta de servicio.';
+        }
+
+        return $a;
     }
 }

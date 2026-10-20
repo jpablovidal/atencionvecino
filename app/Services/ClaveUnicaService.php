@@ -50,6 +50,37 @@ class ClaveUnicaService
         return ($this->cfg['logout_url'] ?? 'https://accounts.claveunica.gob.cl/api/v1/accounts/app/logout').'?'.http_build_query(['redirect' => $uri], '', '&', PHP_QUERY_RFC3986);
     }
 
+    /**
+     * Comprueba con ClaveÚnica que el client_id/client_secret del ambiente activo son aceptados, SIN iniciar sesión de ninguna persona:
+     * se pide el token con un código inexistente; si las credenciales son válidas el servicio responde «invalid_grant», y si no, «invalid_client».
+     * (Criterio A VALIDAR contra el servicio real.)
+     *
+     * @return array{0:bool,1:string}
+     */
+    public function verificarCredenciales(): array
+    {
+        if (empty($this->cfg['client_id']) || empty($this->cfg['client_secret']) || empty($this->cfg['redirect_uri'])) {
+            return [false, 'Faltan el client_id, el client_secret o la Redirect URI del ambiente activo.'];
+        }
+        try {
+            $r = Http::timeout(15)->connectTimeout(5)->withoutRedirecting()->asForm()->post($this->cfg['token_url'], [
+                'client_id' => $this->cfg['client_id'], 'client_secret' => $this->cfg['client_secret'], 'redirect_uri' => $this->cfg['redirect_uri'],
+                'grant_type' => 'authorization_code', 'code' => 'verificacion-de-credenciales', 'state' => 'verificacion',
+            ]);
+        } catch (\Throwable) {
+            return [false, 'No fue posible contactar a ClaveÚnica (accounts.claveunica.gob.cl).'];
+        }
+        $err = (string) $r->json('error', '');
+        if ($err === 'invalid_grant') {
+            return [true, 'ClaveÚnica aceptó las credenciales (respondió «invalid_grant» porque el código de verificación no es real; es lo esperado).'];
+        }
+        if (in_array($err, ['invalid_client', 'unauthorized_client'], true) || $r->status() === 401) {
+            return [false, 'ClaveÚnica rechazó el client_id o el client_secret ('.($err !== '' ? $err : 'HTTP '.$r->status()).').'];
+        }
+
+        return [false, 'Respuesta inesperada de ClaveÚnica (HTTP '.$r->status().($err !== '' ? ', '.mb_substr($err, 0, 60) : '').'): revise las credenciales y la Redirect URI.'];
+    }
+
     /** @return array{run:string,nombres:string,apellidos:string} */
     public function identificar(string $code, string $state): array
     {

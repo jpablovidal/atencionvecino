@@ -46,16 +46,29 @@
 <div class="card mb-3"><div class="card-body">
 <h2 class="h5">Verificar</h2>
 @if($clave==='docdigital')<p class="small text-muted">Hace la consulta de solo lectura de «Probar conexión» (token, entidad y tipos de documento) con el modo guardado; no envía ni descarga documentos.</p>
-@elseif($clave==='claveunica')<p class="small text-muted">Revisa que el ambiente activo tenga sus datos completos y cumpla las pautas del manual (HTTPS, Redirect URI sin query ni IP, Logout URI, endpoints). No inicia sesión en ClaveÚnica.</p>
-@elseif($clave==='firmagob')<p class="small text-muted">Revisa que el ambiente activo tenga sus credenciales, la entidad y el propósito. No firma ningún documento.</p>@endif
+@elseif($clave==='claveunica')<p class="small text-muted">Revisa los datos del ambiente activo y consulta a ClaveÚnica si acepta el client_id y el client_secret (sin iniciar sesión de ninguna persona).</p>
+@elseif($clave==='firmagob')<p class="small text-muted">Revisa que el ambiente activo tenga sus credenciales, la entidad y el propósito. Para confirmar con FirmaGob use «Probar la firma» (más abajo).</p>
+@elseif($clave==='google_mail')<p class="small text-muted">Revisa la cuenta de servicio y pide un token a Google con la delegación de dominio (sin enviar correo); luego puede enviar un correo de prueba.</p>@endif
 <div class="d-flex flex-wrap">
-<form method="post" action="{{ route('app.admin.api.probar',$clave) }}" class="mr-2 mb-2">@csrf<button class="btn btn-outline-primary">{{ $clave==='docdigital' ? 'Probar conexión' : 'Validar configuración' }}</button></form>
+<form method="post" action="{{ route('app.admin.api.probar',$clave) }}" class="mr-2 mb-2">@csrf<button class="btn btn-outline-primary">{{ $clave==='docdigital' ? 'Probar conexión' : 'Validar credenciales' }}</button></form>
 @if($estado['activo'])<form method="post" action="{{ route('app.admin.api.env',$clave) }}" class="mb-2" data-confirm="¿Volver a usar la configuración del archivo .env?">@csrf<button class="btn btn-outline-secondary">Volver a .env</button></form>@endif
 </div>
 @if($pruebas)<h3 class="h6 mt-3">Resultado</h3>
 <table class="table table-sm"><caption class="sr-only">Validación</caption><thead><tr><th scope="col">Punto</th><th scope="col">Resultado</th><th scope="col">Detalle</th></tr></thead><tbody>
 @foreach($pruebas as [$n,$ok,$det])<tr><td>{{ $n }}</td><td><span class="estado {{ $ok ? 'estado-vigente' : 'estado-fallida' }}">{{ $ok ? 'OK' : 'REVISAR' }}</span></td><td>{{ $det }}</td></tr>@endforeach</tbody></table>@endif
 </div></div>
+
+@if($clave==='firmagob')
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">Probar la firma</h2>
+<p class="small text-muted">Firma un PDF de ejemplo con la configuración guardada y confirma que FirmaGob responde. No queda guardado. Ingrese el RUN del titular de la firma y el código OTP vigente de su aplicación de FirmaGob. <strong>Ambiente vigente: {{ config('sgd.firmagob.mode') }}</strong>@if(config('sgd.firmagob.mode')==='prod') (se usa el certificado real del titular)@endif.</p>
+<form method="post" action="{{ route('app.admin.api.firma_prueba') }}">@csrf
+<div class="form-row"><div class="form-group col-md-4"><label for="fp-run">RUN del titular</label><input class="form-control" id="fp-run" name="run" value="{{ old('run', auth()->user()->run) }}" maxlength="14" required></div>
+<div class="form-group col-md-3"><label for="fp-otp">OTP (6 dígitos)</label><input class="form-control" id="fp-otp" name="otp" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code" required></div></div>
+<div class="custom-control custom-checkbox mb-2"><input class="custom-control-input" type="checkbox" id="fp-ok" name="entiendo" value="1" required><label class="custom-control-label" for="fp-ok">Entiendo que se firmará un documento de prueba@if(config('sgd.firmagob.mode')==='prod') con el certificado real@endif.</label></div>
+<button class="btn btn-primary">Probar firma (ambiente {{ config('sgd.firmagob.mode') }})</button></form>
+</div></div>
+@endif
 
 @if($clave==='google_mail')
 <div class="card mb-3"><div class="card-body">
@@ -78,7 +91,7 @@
 <tr><th scope="row">Scope</th><td><code>{{ config('sgd.claveunica.scope') }}</code></td></tr>
 <tr><th scope="row">RUN de prueba (sandbox/QA)</th><td><code>44.444.444-4 / 55.555.555-5 / 88.888.888-8 / 99.999.999-9</code>, clave <code>testing</code></td></tr>
 </tbody></table>
-<p class="small text-muted mb-0">Antes de solicitar la certificación verifique los requisitos del manual: botón oficial, HTTPS, flujo a pantalla completa sin iframe ni popup, state dinámico, llamadas del backend a token/ y userinfo/, y cierre de sesión funcional. Detalle en <code>docs/CLAVEUNICA_BOTON.md</code>.</p>
+<p class="small text-muted mb-0">Detalle del botón y del flujo en <code>docs/CLAVEUNICA_BOTON.md</code>.</p>
 </div></div>
 @endif
 @endsection

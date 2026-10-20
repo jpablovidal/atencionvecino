@@ -67,6 +67,19 @@ class GmailApiTransport extends AbstractTransport
         }
     }
 
+    /** Pide un token a Google con la cuenta de servicio y la delegación de dominio, sin enviar nada. @return array{0:bool,1:string} */
+    public function probarToken(): array
+    {
+        try {
+            Cache::forget('gmail_access_token');
+            $this->accessToken();
+        } catch (\Throwable $e) {
+            return [false, $e->getMessage()];
+        }
+
+        return [true, 'Google entregó un token: la cuenta de servicio y la delegación de dominio funcionan para '.$this->cfg['sender'].'.'];
+    }
+
     private function accessToken(): string
     {
         return Cache::remember('gmail_access_token', 3000, function () {

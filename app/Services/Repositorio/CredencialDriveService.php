@@ -69,15 +69,19 @@ class CredencialDriveService
     /** Resumen sin datos secretos del JSON configurado. @return array{email:string,proyecto:string,fecha:int}|null */
     public static function resumen(?string $ruta): ?array
     {
-        if (! $ruta || ! is_file($ruta) || filesize($ruta) > self::MAX_BYTES) {
-            return null;
-        }
-        $sa = json_decode((string) file_get_contents($ruta), true);
-        if (! is_array($sa) || empty($sa['client_email'])) {
-            return null;
-        }
+        try {
+            if (! $ruta || ! @is_file($ruta) || (int) @filesize($ruta) > self::MAX_BYTES) {
+                return null;
+            }
+            $sa = json_decode((string) @file_get_contents($ruta), true);
+            if (! is_array($sa) || empty($sa['client_email'])) {
+                return null;
+            }
 
-        return ['email' => (string) $sa['client_email'], 'proyecto' => (string) ($sa['project_id'] ?? ''), 'fecha' => (int) filemtime($ruta)];
+            return ['email' => (string) $sa['client_email'], 'proyecto' => (string) ($sa['project_id'] ?? ''), 'fecha' => (int) @filemtime($ruta)];
+        } catch (\Throwable) {
+            return null; // la pantalla nunca debe fallar por un archivo ilegible
+        }
     }
 
     /** Acepta el ID o la URL de Drive (…/folders/ID, …?id=ID) y devuelve solo el ID. */

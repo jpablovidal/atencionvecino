@@ -40,7 +40,7 @@ class ApiCatalogo
                 'qa_logout_uri' => ['Logout URI', 'url', 'sgd.claveunica.qa_logout_uri', ['privada' => true]],
                 'produccion_client_id' => ['client_id', 'text', 'sgd.claveunica.produccion_client_id'],
                 'produccion_client_secret' => ['client_secret', 'text', 'sgd.claveunica.produccion_client_secret', ['secreto' => true]],
-                'produccion_redirect_uri' => ['Redirect URI (callback)', 'url', 'sgd.claveunica.produccion_redirect_uri', ['privada' => true, 'ayuda' => 'En producción el manual exige dominio «.gob.cl» e incluir el nombre o siglas de la institución.']],
+                'produccion_redirect_uri' => ['Redirect URI (callback)', 'url', 'sgd.claveunica.produccion_redirect_uri', ['privada' => true, 'ayuda' => 'Debe coincidir exactamente con la registrada ante ClaveÚnica.']],
                 'produccion_logout_uri' => ['Logout URI', 'url', 'sgd.claveunica.produccion_logout_uri', ['privada' => true]],
                 'client_id' => ['client_id (general)', 'text', 'sgd.claveunica.client_id'],
                 'client_secret' => ['client_secret (general)', 'text', 'sgd.claveunica.client_secret', ['secreto' => true]],

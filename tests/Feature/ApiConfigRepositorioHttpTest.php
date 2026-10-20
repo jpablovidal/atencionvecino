@@ -11,6 +11,7 @@ use App\Services\Repositorio\RepositorioService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Tests\Support\Escenario;
 use Tests\Support\FakeDrive;
@@ -79,7 +80,7 @@ class ApiConfigRepositorioHttpTest extends TestCase
         $this->app['env'] = 'production';
         $svc = app(ApiConfigService::class);
         $u = $this->usuario('admin');
-        foreach ([['claveunica', ['mode' => 'mock']], ['firmagob', ['mode' => 'mock']], ['docdigital', ['mode' => 'demo']], ['pisee', ['mode' => 'mock']]] as [$s, $d]) {
+        foreach ([['claveunica', ['mode' => 'mock']], ['firmagob', ['mode' => 'mock']], ['docdigital', ['mode' => 'mock']], ['pisee', ['mode' => 'mock']]] as [$s, $d]) {
             try {
                 $svc->guardar($s, $d, true, [], $u);
                 $this->fail("debió prohibir $s ".json_encode($d));
@@ -88,6 +89,7 @@ class ApiConfigRepositorioHttpTest extends TestCase
             }
         }
         $svc->guardar('firmagob', ['mode' => 'test'], true, [], $u);
+        $svc->guardar('docdigital', ['mode' => 'demo'], true, [], $u); // los servicios reales (DemoDoc, pruebas, producción) nunca se bloquean por «etapa»
         $this->addToAssertionCount(1);
     }
 
@@ -145,8 +147,10 @@ class ApiConfigRepositorioHttpTest extends TestCase
         $r = app(ApiConfigService::class)->probar('google_mail');
         $this->assertStringContainsString('permisos', json_encode($r, JSON_UNESCAPED_UNICODE));
         chmod($f->saPath, 0600);
+        Http::fake(['*' => Http::response(['access_token' => 'tok'], 200)]);
         $r = collect(app(ApiConfigService::class)->probar('google_mail'));
-        $this->assertTrue($r->last()[1]); // estructura de cuenta de servicio válida
+        $this->assertTrue($r->first(fn ($f) => str_starts_with($f[0], 'Contenido del JSON'))[1]); // estructura de cuenta de servicio válida
+        $this->assertTrue($r->first(fn ($f) => str_starts_with($f[0], 'Delegación de dominio'))[1]); // Google entrega token
     }
 
     // ------------------------------------------------------------------ Repositorio (UI)

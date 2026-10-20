@@ -125,6 +125,7 @@ grep -E "^(APP_URL|APP_ENV|SGD_AMBIENTE|SGD_ACCESO_PRUEBAS_HASTA|DB_DATABASE|DB_
 
 paso "6/7 Base de datos"
 "$PHP" artisan config:clear >/dev/null
+"$PHP" artisan route:clear >/dev/null 2>&1 || true   # rutas nuevas tras actualizar (evita errores 500 por caché vieja)
 "$PHP" artisan migrate --force || fallo "Falló la migración (revise el mensaje anterior)."
 if [ "$ACTUALIZACION" = 0 ]; then
   "$PHP" artisan db:seed --class=DemoSeeder --force || fallo "Falló la carga de datos de demostración."
