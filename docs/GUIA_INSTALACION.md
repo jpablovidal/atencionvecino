@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `20b55032eba35d3b8a81d5228469a99b5882d56d200aa7099c54a3d0257d0a6b`).
+- Archivo **`sgd-release.zip`** (SHA-256 `610cb1cb050b4abd883e885a88764df7664d48b29a55dcbdf1e9cef99f1064b3`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,19 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: documentos vigentes
+- **Documentos vigentes** muestra todos los vigentes (decretos, oficios y demás) en una tabla con N°, fecha, tipo, dirección, materia, tipo de materia, macrotema, expediente y **Ver aquí**. Por defecto carga el **año actual**.
+- Filtros: búsqueda de texto, año, **Decretos / Oficios / un tipo**, dirección, tipo de materia, macrotema y fechas; se ordena haciendo clic en los títulos de columna.
+- Ver que un documento existe no da acceso a su contenido: «Ver aquí» solo aparece si usted puede abrirlo.
+- *Tipo de materia* y *macrotema* son campos opcionales al redactar un documento (los documentos anteriores quedan con esas columnas vacías).
+- Al actualizar se agregan dos columnas a `documentos`. No hay pasos manuales nuevos.
+
+## Novedades: varios roles por usuario y matriz de permisos
+- En **Administración → Matriz de permisos por usuario** (o el botón *Permisos* en la lista de usuarios) se ve cada persona con su rol principal, roles adicionales y permisos efectivos. **Descargar la matriz completa (CSV)** trae una fila por usuario y una columna por permiso.
+- Al elegir una persona: marque sus **roles adicionales** y, por cada permiso, elija *Según sus roles*, *Conceder* o *Denegar*. La tabla indica si el permiso está efectivo y de dónde viene. Guarde: la persona lo ve desde su próximo ingreso.
+- **Reglas:** administración y auditoría no se combinan con otros roles; lo concedido no supera el alcance de sus roles; siempre debe quedar al menos una persona con «Roles y permisos». El administrador puede ajustar sus propios permisos (queda auditado), pero no darse permisos de operación de expedientes.
+- Al actualizar, el instalador crea dos tablas nuevas. No hay otros pasos manuales.
 
 ## Novedades: manuales por perfil, recorrido guiado, datos personales, directorio y favicon
 - **Manuales por perfil:** en el menú de su nombre → *Manuales de usuario* cada persona ve solo los manuales de su perfil (el superadministrador, todos). **Recorrido guiado** (mismo menú, y en Ayuda) abre una presentación a pantalla completa del portal con enlaces al manual; se muestra sola la primera vez.
