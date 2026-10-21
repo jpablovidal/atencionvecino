@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `610cb1cb050b4abd883e885a88764df7664d48b29a55dcbdf1e9cef99f1064b3`).
+- Archivo **`sgd-release.zip`** (SHA-256 `12a604ad16a85ce02165d60b4d0402ed726dd3f88d8cf14fe53ac7a59b219fd0`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,13 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: gestión de comunicaciones recibidas por DocDigital
+- En el expediente de una comunicación recibida: **acusar recibo** (o devolver), **cambiar el estado de gestión** (en gestión, respondida, archivada) y **derivar** a quien debe actuar indicando la **acción** (responder, informar, revisar, etc.) y un **plazo**.
+- La persona derivada ve en su bandeja **«Acciones que le derivaron»** (las vencidas se marcan) y actualiza el estado de su tarea (en proceso, cumplida, devuelta) con una nota. Todo queda como comentario del expediente y en la auditoría.
+- El **superadministrador** puede ahora gestionar cualquier expediente (acusar, derivar, cambiar estados). El administrador común sigue sin operar expedientes.
+- Los estados de gestión son internos: no se envían a DocDigital.
+- Al actualizar se agregan columnas a `derivaciones` y `comunicaciones_oficiales`. No hay pasos manuales nuevos.
 
 ## Novedades: documentos vigentes
 - **Documentos vigentes** muestra todos los vigentes (decretos, oficios y demás) en una tabla con N°, fecha, tipo, dirección, materia, tipo de materia, macrotema, expediente y **Ver aquí**. Por defecto carga el **año actual**.
