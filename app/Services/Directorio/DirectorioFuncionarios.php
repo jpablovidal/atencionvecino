@@ -10,6 +10,7 @@ use App\Support\Run;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -25,6 +26,32 @@ class DirectorioFuncionarios
     private const COLUMNAS = ['rut', 'dv', 'nombre', 'apellido', 'cargo', 'direccion', 'departamento', 'unidad', 'mail', 'habilitado', 'credencial', 'fecha_termino'];
 
     public function __construct(private readonly AuditoriaService $audit) {}
+
+    /** @var array<string,list<string>> */
+    private array $columnasCache = [];
+
+    /**
+     * Columnas de la lista cerrada que existen en la tabla (rut y dv son indispensables; el resto es opcional). Así una columna
+     * ausente (p. ej. «unidad») no impide reconocer a un funcionario.
+     *
+     * @return list<string>
+     */
+    private function columnas(): array
+    {
+        $k = md5(json_encode(config('sgd.directorio.host').config('sgd.directorio.database').$this->tabla()));
+        if (! isset($this->columnasCache[$k])) {
+            $existen = array_map('strtolower', Schema::connection(self::CONEXION)->getColumnListing($this->tabla()));
+            $this->columnasCache[$k] = array_values(array_intersect(self::COLUMNAS, $existen));
+        }
+
+        return $this->columnasCache[$k];
+    }
+
+    /** Lee una propiedad opcional de la fila. */
+    private static function campo(object $f, string $c): string
+    {
+        return isset($f->{$c}) ? (string) $f->{$c} : '';
+    }
 
     public static function habilitado(): bool
     {
@@ -72,18 +99,24 @@ class DirectorioFuncionarios
     {
         [$num, $dv] = array_pad(explode('-', $run, 2), 2, '');
         try {
-            $filas = $this->conexion()->table($this->tabla())->select(self::COLUMNAS)->where('rut', (int) $num)->limit(10)->get();
-        } catch (\Throwable) {
+            $this->conexion();
+            $cols = $this->columnas();
+            if (! in_array('rut', $cols, true) || ! in_array('dv', $cols, true)) {
+                throw new \RuntimeException('La tabla no tiene las columnas rut y dv.');
+            }
+            $filas = $this->conexion()->table($this->tabla())->select($cols)->where('rut', (int) $num)->limit(10)->get();
+        } catch (\Throwable $e) {
+            Log::warning('Directorio de funcionarios: consulta fallida ('.class_basename($e).').');
             throw new DirectorioException('No fue posible consultar el directorio de funcionarios.');
         }
         foreach ($filas as $f) {
-            if (strtoupper(trim((string) $f->dv)) !== strtoupper($dv) || ! $this->vigente($f)) {
+            if (strtoupper(trim(self::campo($f, 'dv'))) !== strtoupper($dv) || ! $this->vigente($f)) {
                 continue;
             }
             $t = fn ($v, int $n) => mb_substr(trim((string) $v), 0, $n);
 
-            return ['run' => $run, 'nombres' => $t($f->nombre, 120), 'apellidos' => $t($f->apellido, 120), 'cargo' => $t($f->cargo, 120), 'direccion' => $t($f->direccion, 120),
-                'departamento' => $t($f->departamento, 120), 'unidad' => $t($f->unidad, 120), 'correo' => $t($f->mail, 190)];
+            return ['run' => $run, 'nombres' => $t(self::campo($f, 'nombre'), 120), 'apellidos' => $t(self::campo($f, 'apellido'), 120), 'cargo' => $t(self::campo($f, 'cargo'), 120), 'direccion' => $t(self::campo($f, 'direccion'), 120),
+                'departamento' => $t(self::campo($f, 'departamento'), 120), 'unidad' => $t(self::campo($f, 'unidad'), 120), 'correo' => $t(self::campo($f, 'mail'), 190)];
         }
 
         return null;
@@ -92,11 +125,67 @@ class DirectorioFuncionarios
     /** Habilitado «si», credencial «Vigente» y sin fecha de término vencida. */
     private function vigente(object $f): bool
     {
-        if (! in_array(mb_strtolower(trim((string) $f->habilitado)), ['si', 'sí', '1', 's'], true) || mb_strtolower(trim((string) $f->credencial)) !== 'vigente') {
-            return false;
+        return $this->motivoNoVigente($f) === null;
+    }
+
+    /** null si está vigente; si no, el motivo (sin datos personales). */
+    private function motivoNoVigente(object $f): ?string
+    {
+        if (! in_array(mb_strtolower(trim(self::campo($f, 'habilitado'))), ['si', 'sí', '1', 's'], true)) {
+            return 'la columna «habilitado» no vale «si»';
+        }
+        if (mb_strtolower(trim(self::campo($f, 'credencial'))) !== 'vigente') {
+            return 'la columna «credencial» no vale «Vigente»';
+        }
+        $t = self::campo($f, 'fecha_termino');
+        if ($t !== '' && $t !== '0000-00-00' && strtotime($t) < strtotime('today')) {
+            return 'la «fecha_termino» ya venció';
         }
 
-        return empty($f->fecha_termino) || $f->fecha_termino === '0000-00-00' || strtotime((string) $f->fecha_termino) >= strtotime('today');
+        return null;
+    }
+
+    /**
+     * Diagnóstico de por qué un RUN es o no reconocido como funcionario(a). No muestra datos personales.
+     *
+     * @return list<array{0:string,1:bool,2:string}>
+     */
+    public function diagnosticarRun(string $run): array
+    {
+        $out = [['Directorio activado y configurado', self::habilitado(), self::habilitado() ? 'sí' : 'No: active el directorio y complete servidor, base de datos, usuario y contraseña (Administración → APIs → Directorio).']];
+        if (! self::habilitado()) {
+            return $out;
+        }
+        [$num, $dv] = array_pad(explode('-', $run, 2), 2, '');
+        try {
+            $this->conexion()->getPdo();
+            $cols = $this->columnas();
+        } catch (\Throwable) {
+            return array_merge($out, [['Conexión con la base', false, 'No fue posible conectar o leer la tabla: revise servidor, base, usuario, contraseña y que el usuario tenga permiso SELECT sobre la tabla.']]);
+        }
+        $out[] = ['Conexión con la base y tabla «'.$this->tabla().'»', true, 'columnas leídas: '.implode(', ', $cols)];
+        if (! in_array('rut', $cols, true) || ! in_array('dv', $cols, true)) {
+            return array_merge($out, [['Columnas rut y dv', false, 'La tabla no las tiene.']]);
+        }
+        try {
+            $filas = $this->conexion()->table($this->tabla())->select($cols)->where('rut', (int) $num)->limit(10)->get();
+        } catch (\Throwable) {
+            return array_merge($out, [['Consulta por RUT', false, 'La consulta falló (revise permisos).']]);
+        }
+        $out[] = ['El RUT figura en la tabla', $filas->isNotEmpty(), $filas->isNotEmpty() ? $filas->count().' fila(s) con ese RUT' : 'No hay ninguna fila con ese RUT: la persona entrará solo como vecino(a).'];
+        if ($filas->isEmpty()) {
+            return $out;
+        }
+        $mismo = $filas->filter(fn ($f) => strtoupper(trim(self::campo($f, 'dv'))) === strtoupper($dv));
+        $out[] = ['El dígito verificador coincide', $mismo->isNotEmpty(), $mismo->isNotEmpty() ? 'sí' : 'No coincide con el «dv» de la tabla.'];
+        if ($mismo->isEmpty()) {
+            return $out;
+        }
+        $motivos = $mismo->map(fn ($f) => $this->motivoNoVigente($f));
+        $ok = $motivos->contains(null);
+        $out[] = ['Vigente (habilitado «si», credencial «Vigente», sin término vencido)', $ok, $ok ? 'sí: se reconoce como funcionario(a)' : 'No: '.$motivos->first()];
+
+        return $out;
     }
 
     public static function loginUsuarioHabilitado(): bool
@@ -114,7 +203,8 @@ class DirectorioFuncionarios
     {
         $falso = '$2y$12$wugNHhvPcVl3Q/Ov6fLV.ekUSbZV.fXIZ1Wekxz6T1aMXX58cYswW'; // costo constante aunque el usuario no exista
         try {
-            $filas = $this->conexion()->table($this->tabla())->select(array_merge(self::COLUMNAS, ['username', 'pass']))->whereRaw('lower(username) = ?', [mb_strtolower($username)])->limit(5)->get();
+            $this->conexion();
+            $filas = $this->conexion()->table($this->tabla())->select(array_merge($this->columnas(), ['username', 'pass']))->whereRaw('lower(username) = ?', [mb_strtolower($username)])->limit(5)->get();
         } catch (\Throwable) {
             throw new DirectorioException('No fue posible consultar el directorio de funcionarios.');
         }
@@ -214,8 +304,9 @@ class DirectorioFuncionarios
             $out[] = ['Conexión con la base', true, 'conectado a '.config('sgd.directorio.host').'/'.config('sgd.directorio.database')];
             $cols = array_map('strtolower', Schema::connection(self::CONEXION)->getColumnListing($this->tabla()));
             $faltan = array_values(array_diff(self::COLUMNAS, $cols));
-            $out[] = ['Tabla «'.$this->tabla().'» con las columnas necesarias', $faltan === [], $faltan === [] ? 'rut, dv, nombre, apellido, cargo, direccion, departamento, unidad, mail, habilitado, credencial, fecha_termino' : 'faltan: '.implode(', ', $faltan)];
-            if ($faltan === []) {
+            $indispensables = array_values(array_diff(['rut', 'dv', 'habilitado', 'credencial'], $cols));
+            $out[] = ['Tabla «'.$this->tabla().'» con las columnas necesarias', $indispensables === [], $indispensables === [] ? ($faltan === [] ? 'todas las columnas' : 'indispensables presentes; opcionales ausentes: '.implode(', ', $faltan)) : 'faltan indispensables: '.implode(', ', $indispensables)];
+            if ($indispensables === []) {
                 $n = $con->table($this->tabla())->whereRaw('lower(habilitado) in (?, ?)', ['si', 'sí'])->whereRaw('lower(credencial) = ?', ['vigente'])->count();
                 $out[] = ['Funcionarios habilitados y vigentes', $n > 0, $n.' en el directorio'];
             }

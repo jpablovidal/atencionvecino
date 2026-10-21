@@ -6,6 +6,7 @@ use App\Exceptions\FlujoException;
 use App\Services\Admin\ApiCatalogo;
 use App\Services\Admin\ApiConfigService;
 use App\Services\AuditoriaService;
+use App\Services\Directorio\DirectorioFuncionarios;
 use App\Services\Firma\FirmaClient;
 use App\Services\Firma\FirmaException;
 use App\Services\Repositorio\CredencialDriveService;
@@ -88,6 +89,19 @@ class ApiConfigController extends Controller
         $this->servicio($servicio);
 
         return back()->with('pruebas', $this->svc->probar($servicio));
+    }
+
+    /** «Probar con un RUN»: explica por qué ese RUN se reconoce o no como funcionario(a) del directorio (sin mostrar datos personales). */
+    public function directorioPrueba(Request $r)
+    {
+        $d = $r->validate(['run' => 'required|string|max:14']);
+        $run = Run::normalizar($d['run']);
+        if (! $run) {
+            return back()->with('pruebas', [['RUN a consultar', false, 'El RUN no es válido.']]);
+        }
+        $this->audit->registrar('directorio.prueba_run', null, null, ['run' => Run::enmascarar($run)]);
+
+        return back()->with('pruebas', app(DirectorioFuncionarios::class)->diagnosticarRun($run));
     }
 
     /** Envía un correo de prueba con el método de envío vigente y muestra el resultado (sin detalles internos ni secretos). */

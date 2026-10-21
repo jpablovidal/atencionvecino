@@ -70,6 +70,16 @@
 </div></div>
 @endif
 
+@if($clave==='directorio')
+<div class="card mb-3"><div class="card-body">
+<h2 class="h5">Probar con un RUN</h2>
+<p class="small text-muted">Indica por qué un RUN se reconoce (o no) como funcionario(a): conexión, si figura en la tabla, dígito verificador y vigencia. No muestra datos personales. Si el RUT no figura, la persona entra solo como vecino(a).</p>
+<form method="post" action="{{ route('app.admin.api.directorio_prueba') }}" class="form-inline">@csrf
+<label class="sr-only" for="dir-run">RUN a consultar</label><input class="form-control mr-2 mb-2" id="dir-run" name="run" placeholder="12345678-9" maxlength="14" required value="{{ auth()->user()->run }}">
+<button class="btn btn-primary mb-2">Consultar</button></form>
+</div></div>
+@endif
+
 @if($clave==='google_mail')
 <div class="card mb-3"><div class="card-body">
 <h2 class="h5">Enviar correo de prueba</h2>

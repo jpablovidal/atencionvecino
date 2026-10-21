@@ -180,4 +180,48 @@ class DirectorioFuncionariosTest extends TestCase
         $this->assertTrue($filas->first(fn ($f) => str_starts_with($f[0], 'Tabla'))[1]);
         $this->assertFalse($filas->first(fn ($f) => str_starts_with($f[0], 'Contraseñas'))[1], 'avisa de las columnas de contraseña');
     }
+
+    public function test_una_columna_opcional_ausente_no_impide_reconocer_al_funcionario(): void
+    {
+        Schema::connection(DirectorioFuncionarios::CONEXION)->drop('sistemas_users');
+        Schema::connection(DirectorioFuncionarios::CONEXION)->create('sistemas_users', function ($t) {
+            $t->increments('id');
+            foreach (['habilitado', 'credencial', 'dv', 'nombre', 'apellido', 'cargo', 'pass'] as $c) {
+                $t->string($c)->nullable();
+            }
+            $t->integer('rut');
+        });
+        $dv = Run::dv('19142479');
+        DB::connection(DirectorioFuncionarios::CONEXION)->table('sistemas_users')->insert(['habilitado' => 'si', 'credencial' => 'Vigente', 'rut' => 19142479, 'dv' => $dv, 'nombre' => 'Rocío', 'apellido' => 'Abarca', 'cargo' => 'Profesional']);
+        $this->assertNotNull(app(DirectorioFuncionarios::class)->buscar('19142479-'.$dv));
+        $this->entrar('19142479', $dv)->assertRedirect(route('espacio'));
+    }
+
+    public function test_el_diagnostico_por_run_explica_cada_caso_sin_datos_personales(): void
+    {
+        $dv = Run::dv('19142479');
+        $this->fila(['dv' => $dv]);
+        $d = app(DirectorioFuncionarios::class);
+        $ok = $d->diagnosticarRun('19142479-'.$dv);
+        $this->assertTrue(collect($ok)->every(fn ($f) => $f[1]), json_encode($ok));
+        $this->assertStringNotContainsString('Rocío', json_encode($ok, JSON_UNESCAPED_UNICODE));
+        $this->assertStringContainsString('solo como vecino', json_encode($d->diagnosticarRun('11111111-1'), JSON_UNESCAPED_UNICODE));
+        $mal = $dv === '0' ? '1' : '0';
+        $this->assertStringContainsString('No coincide', json_encode($d->diagnosticarRun('19142479-'.$mal), JSON_UNESCAPED_UNICODE));
+        DB::connection(DirectorioFuncionarios::CONEXION)->table('sistemas_users')->update(['credencial' => 'Caducada']);
+        $this->assertStringContainsString('credencial', json_encode($d->diagnosticarRun('19142479-'.$dv), JSON_UNESCAPED_UNICODE));
+        config(['sgd.directorio.enabled' => false]);
+        $this->assertStringContainsString('active el directorio', json_encode($d->diagnosticarRun('19142479-'.$dv), JSON_UNESCAPED_UNICODE));
+    }
+
+    public function test_el_panel_y_el_comando_consultan_un_run(): void
+    {
+        $dv = Run::dv('19142479');
+        $this->fila(['dv' => $dv]);
+        $admin = $this->usuario('admin');
+        $this->comoFuncionario($admin)->get('/app/admin/api/directorio')->assertOk()->assertSee('Probar con un RUN');
+        $this->comoFuncionario($admin)->post('/app/admin/api-directorio-prueba', ['run' => '19142479-'.$dv])->assertRedirect();
+        $this->artisan('directorio:consultar', ['run' => '19142479-'.$dv])->assertSuccessful();
+        $this->artisan('directorio:consultar', ['run' => '11111111-1'])->assertFailed();
+    }
 }

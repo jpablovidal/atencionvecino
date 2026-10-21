@@ -443,6 +443,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::get('/api/{servicio}', [ApiConfigController::class, 'editar'])->name('api.editar');
             Route::post('/api/{servicio}', [ApiConfigController::class, 'actualizar'])->name('api.actualizar');
             Route::post('/api-firma-prueba', [ApiConfigController::class, 'firmaPrueba'])->middleware('throttle:5,1')->name('api.firma_prueba');
+            Route::post('/api-directorio-prueba', [ApiConfigController::class, 'directorioPrueba'])->middleware('throttle:10,1')->name('api.directorio_prueba');
             Route::post('/api-correo-prueba', [ApiConfigController::class, 'correoPrueba'])->middleware('throttle:5,1')->name('api.correo_prueba');
             Route::post('/api/{servicio}/probar', [ApiConfigController::class, 'probar'])->name('api.probar');
             Route::post('/api/{servicio}/env', [ApiConfigController::class, 'volverEnv'])->name('api.env');

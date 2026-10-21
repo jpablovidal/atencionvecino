@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `8f195f65573a9b6f13f79c81035fd0ae1a753c933b3360d5922cb43d5540d46b`).
+- Archivo **`sgd-release.zip`** (SHA-256 `858dd23f0395a95ce28f28cf6d6357bfb13b0fbb95da39dc64060133aafd4f75`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -237,6 +237,14 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - En **Administración → APIs → Asistente de redacción (IA)** elija el **proveedor**: Google AI Studio (Gemini), Alibaba Qwen, OpenRouter, Groq, Mistral, Anthropic u «Otro compatible con OpenAI» (con su dirección HTTPS).
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
+- Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: perfil de funcionario(a) y vecino(a) con ClaveÚnica
+Tras entrar con ClaveÚnica, el sistema busca el RUT en `sistemas_usuarios` → `sistemas_users`: si figura (habilitado «si», credencial «Vigente», sin término vencido) puede elegir **funcionario(a)** o **vecino(a)**; si no figura, entra solo como vecino(a). Para que funcione, el directorio debe estar configurado:
+1. Administración → APIs → **Directorio**: marque **Activar**, servidor `localhost`, puerto `3306`, base `sistemas_usuarios`, tabla `sistemas_users`, el **usuario de base de datos** con permiso SELECT y su contraseña. Guarde y pulse **«Validar credenciales»**.
+2. En la misma pantalla, **«Probar con un RUN»** (o en la Terminal `cd ~/sgd && php artisan directorio:consultar 12345678-9`) dice paso a paso por qué un RUN se reconoce o no: directorio activado, conexión, si el RUT figura, dígito verificador y vigencia (sin mostrar datos personales).
+3. En cPanel, el usuario de base de datos debe estar **agregado a la base** `sistemas_usuarios` con al menos SELECT (cPanel → Bases de datos MySQL → «Agregar usuario a la base de datos»).
+- Si la columna `habilitado` no vale «si» o `credencial` no vale «Vigente», la persona entra solo como vecino(a) (la prueba por RUN lo indica).
 - Al actualizar no hay pasos manuales nuevos.
 
 ## Novedades: ClaveÚnica con las URI certificadas
