@@ -7,10 +7,9 @@ use Illuminate\Support\Carbon;
 /**
  * Normas técnicas de la Ley 21.180 (Transformación Digital del Estado) y matriz de cumplimiento del sistema.
  *
- * Los decretos 8, 9, 10, 11 y 12 (todos de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional,
- * versión del 21-10-2026; el Decreto 12 en su última versión, modificada por el Decreto 876 del 24-12-2025). El Decreto 7 (seguridad de la información
- * y ciberseguridad) NO fue entregado: su fila queda pendiente de lectura. Las guías técnicas que cada norma ordena dictar a la División de Gobierno
- * Digital tampoco se entregaron: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue «A VALIDAR».
+ * Los decretos 7, 8, 9, 10, 11 y 12 (todos de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional,
+ * versión del 21-10-2026; el Decreto 12 en su última versión, modificada por el Decreto 876 del 24-12-2025). Las guías técnicas que cada norma ordena dictar a la División de Gobierno
+ * Digital no se entregaron: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue «A VALIDAR».
  */
 class NormasTecnicas
 {
@@ -29,7 +28,7 @@ class NormasTecnicas
     public static function decretos(): array
     {
         return [
-            7 => ['numero' => 7, 'titulo' => 'Norma Técnica de Seguridad de la Información y Ciberseguridad', 'publicacion' => '—', 'version' => 'texto no entregado', 'bcn' => null, 'wiki' => 'https://wikiguias.digital.gob.cl/Normas/Decreto7', 'leido' => false],
+            7 => ['numero' => 7, 'titulo' => 'Norma Técnica de Seguridad de la Información y Ciberseguridad', 'publicacion' => '17-08-2023', 'version' => 'Única', 'bcn' => 'https://bcn.cl/3hri8', 'wiki' => 'https://wikiguias.digital.gob.cl/Normas/Decreto7', 'leido' => true],
             8 => ['numero' => 8, 'titulo' => 'Norma Técnica de Notificaciones', 'publicacion' => '17-08-2023', 'version' => 'Única', 'bcn' => 'https://bcn.cl/3lbiy', 'wiki' => 'https://wikiguias.digital.gob.cl/Normas/Decreto8', 'leido' => true],
             9 => ['numero' => 9, 'titulo' => 'Norma Técnica de Autenticación', 'publicacion' => '17-08-2023', 'version' => 'Única', 'bcn' => 'https://bcn.cl/3h75f', 'wiki' => 'https://wikiguias.digital.gob.cl/Normas/Decreto9', 'leido' => true],
             10 => ['numero' => 10, 'titulo' => 'Norma Técnica de Documentos y Expedientes Electrónicos para la gestión de procedimientos administrativos', 'publicacion' => '17-08-2023', 'version' => 'Única', 'bcn' => 'https://bcn.cl/3hh4y', 'wiki' => 'https://wikiguias.digital.gob.cl/Normas/Decreto10', 'leido' => true],
@@ -62,8 +61,17 @@ class NormasTecnicas
         $f = fn (int $d, string $art, string $req, string $estado, string $sis, string $donde = '') => ['decreto' => $d, 'art' => $art, 'requisito' => $req, 'estado' => $estado, 'sistema' => $sis, 'donde' => $donde];
 
         return [
-            // ---- Decreto 7: seguridad (texto no entregado)
-            $f(7, '—', 'Seguridad de la información y ciberseguridad (texto del decreto no entregado)', 'parcial', 'Controles existentes: segundo factor del administrador, cifrado de archivos en reposo, cadena de auditoría HMAC, CSP estricta, límites de intentos, módulo de incidentes con marca CSIRT. No se contrastaron con el decreto porque su texto no fue entregado.', 'docs/SEGURIDAD.md · docs/PENTEST.md'),
+            // ---- Decreto 7: seguridad de la información y ciberseguridad
+            $f(7, '3-4', 'Diagnóstico inicial de ciberseguridad de las plataformas, incluido en el Catálogo de Plataformas (Decreto 11)', 'parcial', 'Se registra la fecha y el resumen del diagnóstico y el catálogo de plataformas. El método del diagnóstico lo fijarán las guías técnicas (no entregadas): A VALIDAR.', 'Administración › Cumplimiento normativo'),
+            $f(7, '5', 'Política de Seguridad de la Información y Ciberseguridad aprobada por acto administrativo de la Jefatura Superior, con objetivos, alcance, normativa y roles', 'institucional', 'El texto y el acto los debe emitir el municipio; el sistema registra el acto, la fecha y la vigencia, y avisa cuando toca revisarla.', 'Administración › Cumplimiento normativo'),
+            $f(7, '5 (4)', 'Responsable institucional de seguridad y ciberseguridad y responsable de los activos de información, no externalizables', 'parcial', 'Se registran ambas personas y el sistema avisa si falta alguna. La designación y que no se externalice es decisión del municipio (si ya existe encargado de ciberseguridad según el Instructivo Presidencial 8/2018, se entiende cumplido).', 'Administración › Cumplimiento normativo'),
+            $f(7, '7', 'Función de identificación: contexto, gobernanza, activos de información, gestión de riesgos y proveedores en la nube', 'parcial', 'Matriz de riesgos OWASP y pentest documentados, inventario de librerías (SBOM), catálogo de plataformas y proveedores (Google, Gobierno Digital). Falta el inventario y la clasificación formal de activos de información y el análisis de riesgos institucional (municipio).', 'docs/SEGURIDAD.md · docs/PENTEST.md · Inventario de librerías'),
+            $f(7, '8', 'Función de protección: servidores, redes, autenticación y control de acceso, concienciación, seguridad de los datos y registro de eventos', 'parcial', 'Implementado: ClaveÚnica, segundo factor obligatorio del administrador, roles y permisos mínimos, cifrado de archivos en reposo, cabeceras y CSP estrictas, límites de intentos, bitácora con cadena HMAC. Del municipio: seguridad del servidor y la red (hosting), capacitación de funcionarios.', 'docs/SEGURIDAD.md'),
+            $f(7, '9', 'Función de detección: análisis de eventos, monitoreo continuo y protección contra código malicioso', 'parcial', 'Verificación diaria de la cadena de auditoría, alertas de accesos denegados y errores, validación de archivos por firma binaria y defensa contra código malicioso en plantillas e IA. No hay antivirus en el hosting compartido ni monitoreo externo continuo.', 'Seguridad · docs/SEGURIDAD.md'),
+            $f(7, '10', 'Función de respuesta: planificación, comunicación, análisis y mitigación de incidentes y mejora', 'parcial', 'Plan de incidentes y panel con hitos de reporte al CSIRT (plazos A VALIDAR). La comunicación y el reporte los hace el encargado de forma manual.', 'Seguridad › Incidentes · docs/INCIDENTES.md'),
+            $f(7, '11', 'Función de recuperación: planes de recuperación y comunicación del estado', 'parcial', 'Respaldo y restauración documentados, cola de envíos con reintentos. El plan de recuperación ante desastres formal y las pruebas de restauración son del municipio.', 'README · docs/INCIDENTES.md'),
+            $f(7, '12-13', 'Guías técnicas y gradualidad dictadas por la División de Gobierno Digital', 'externo', 'Las guías técnicas no han sido entregadas: los detalles operativos de cada función quedan A VALIDAR cuando se publiquen.', ''),
+            $f(7, '14', 'Revisar y actualizar la norma cada dos años', 'institucional', 'Debe revisarse al menos cada dos años desde su vigencia (17-08-2023): la matriz del sistema se vuelve a contrastar cuando se publiquen versiones nuevas.', ''),
 
             // ---- Decreto 8: notificaciones
             $f(8, '3, 5, 10', 'Domicilio Digital Único (DDU): Casilla Única o correo, a elección del interesado; Registro de DDU del Registro Civil', 'parcial', 'El formulario permite elegir el canal (correo, Casilla Única o presencial) y registra la elección. No consulta el Registro de DDU del Registro Civil (su API y guía técnica no se entregaron).', 'Formulario de solicitud · Casilla Única'),

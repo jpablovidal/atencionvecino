@@ -21,6 +21,7 @@ class CumplimientoController extends Controller
 
         return view('app.admin.cumplimiento', [
             'politica' => $this->svc->politica(), 'estadoPolitica' => $this->svc->estadoPolitica(), 'coordinador' => $this->svc->coordinador(), 'subcar' => $this->svc->subcaracteristicas(),
+            'seguridad' => $this->svc->seguridad(), 'estadoSeguridad' => $this->svc->estadoSeguridad(),
             'plataformas' => CalidadPlataforma::query()->withCount(['iniciativas' => fn ($q) => $q->where('estado', '!=', 'descartada')])->orderByDesc('priorizada')->orderBy('nombre')->get(),
             'iniciativas' => CalidadIniciativa::query()->with('plataforma')->orderBy('etapa')->orderBy('plazo')->orderBy('id')->get(), 'resumen' => NormasTecnicas::resumen(), 'puedeEditar' => request()->user()->tienePermiso('cumplimiento.gestionar'),
         ]);
@@ -32,6 +33,16 @@ class CumplimientoController extends Controller
         $this->svc->guardarPolitica($d, $r->user());
 
         return back()->with('ok', 'Política de Gestión Documental registrada.');
+    }
+
+    public function seguridad(Request $r)
+    {
+        $d = $r->validate(['decreto' => 'required|string|max:190', 'fecha_aprobacion' => 'required|date_format:Y-m-d|before_or_equal:today', 'revision_anios' => 'required|integer|between:1,3',
+            'responsable_seguridad' => 'nullable|string|max:150', 'responsable_activos' => 'nullable|string|max:150', 'diagnostico_fecha' => 'nullable|date_format:Y-m-d|before_or_equal:today',
+            'diagnostico_resumen' => 'nullable|string|max:2000', 'notas' => 'nullable|string|max:1000']);
+        $this->svc->guardarSeguridad($d, $r->user());
+
+        return back()->with('ok', 'Política de Seguridad de la Información y Ciberseguridad registrada.');
     }
 
     public function coordinador(Request $r)

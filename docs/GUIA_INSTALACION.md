@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `239fd6ecbac10b3f125a1b4ed54bfaeab3a1f378eb27cb5225a073e657e83613`).
+- Archivo **`sgd-release.zip`** (SHA-256 `d8d8687e2b44c6f5c49bf921b83941fade1169ff90cf15aa55a10234141e5547`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -239,6 +239,9 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
 
+## Novedades: Decreto 7 (seguridad) y normas técnicas 7 a 12
+- Con el texto del **Decreto 7** la matriz quedó completa (Decretos 7 a 12). En **Cumplimiento normativo** hay un registro nuevo para la **Política de Seguridad de la Información y Ciberseguridad**: acto que la aprueba, responsable institucional de seguridad, responsable de los activos de información y diagnóstico inicial. La política, el análisis de riesgos y el plan de recuperación los elabora el municipio; el sistema solo lleva el control.
+
 ## Novedades: normas técnicas (Decretos 8 a 12) y cumplimiento normativo
 - Con los textos oficiales de los **Decretos 8, 9, 10, 11 y 12** se rehízo la matriz de cumplimiento **por artículo**: lo que el sistema hace, lo que falta y lo que le corresponde al municipio. Está en **Administración → Cumplimiento normativo** (filtros por decreto y estado) y en `docs/NORMAS_TECNICAS.md`.
 - **Importante — PISEE termina el 31-12-2026** (Decreto 12). Desde esa fecha solo sirve la red de interoperabilidad del Estado: hay que pedir el nodo a la Secretaría de Gobierno Digital. El sistema muestra el aviso con los días que faltan.
@@ -248,7 +251,7 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - **Consentimiento de datos:** el vecino puede cambiar o revocar su respuesta desde su solicitud (no afecta lo ya realizado).
 - **Panel «Datos personales (DPO)»:** suma el registro de accesos a contenido con datos sensibles.
 - **Decisión que debe tomar el municipio:** el ingreso de funcionarios con usuario y contraseña del directorio no es un mecanismo oficial; el Decreto 9 (art. 3) exige autorización previa de SEGPRES. Puede desactivarse en *APIs e integraciones → Directorio*.
-- Faltan por entregar: el texto del **Decreto 7** (seguridad) y las **guías técnicas**; mientras tanto esos puntos siguen «A VALIDAR».
+- Faltan por entregar las **guías técnicas** de cada norma; mientras tanto esos puntos siguen «A VALIDAR».
 - Al actualizar se agregan las tablas del catálogo y del plan. No hay otros pasos manuales.
 
 ## Novedades: gestión de comunicaciones recibidas por DocDigital

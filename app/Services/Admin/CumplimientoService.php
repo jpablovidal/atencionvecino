@@ -20,6 +20,8 @@ class CumplimientoService
 
     public const CLAVE_COORDINADOR = 'coordinador_td';
 
+    public const CLAVE_SEGURIDAD = 'politica_seguridad';
+
     /** Plataformas que el sistema conoce y siembra en el catálogo la primera vez (editable). */
     public const PLATAFORMAS_BASE = [
         ['SGD — Sistema de Atención y Gestión Documental', 'propia', 'Plataforma de gestión de expedientes y documentos electrónicos del municipio (esta aplicación).'],
@@ -73,6 +75,53 @@ class CumplimientoService
     {
         $this->guardar(self::CLAVE_POLITICA, ['decreto' => trim((string) ($d['decreto'] ?? '')), 'fecha_aprobacion' => ($d['fecha_aprobacion'] ?? null) ?: null, 'revision_anios' => (int) $d['revision_anios'],
             'responsable' => trim((string) ($d['responsable'] ?? '')), 'notas' => trim((string) ($d['notas'] ?? ''))], $u, 'cumplimiento.politica');
+    }
+
+    // ---- Política de Seguridad de la Información y Ciberseguridad (Decreto 7, arts. 4 y 5)
+
+    /** @return array{decreto:string,fecha_aprobacion:?string,revision_anios:int,responsable_seguridad:string,responsable_activos:string,diagnostico_fecha:?string,diagnostico_resumen:string,notas:string} */
+    public function seguridad(): array
+    {
+        $j = json_decode((string) ConfigSitio::query()->where('clave', self::CLAVE_SEGURIDAD)->value('valor'), true);
+
+        return ['decreto' => (string) ($j['decreto'] ?? ''), 'fecha_aprobacion' => $j['fecha_aprobacion'] ?? null, 'revision_anios' => max(1, min(3, (int) ($j['revision_anios'] ?? 2))),
+            'responsable_seguridad' => (string) ($j['responsable_seguridad'] ?? ''), 'responsable_activos' => (string) ($j['responsable_activos'] ?? ''),
+            'diagnostico_fecha' => $j['diagnostico_fecha'] ?? null, 'diagnostico_resumen' => (string) ($j['diagnostico_resumen'] ?? ''), 'notas' => (string) ($j['notas'] ?? '')];
+    }
+
+    /**
+     * Estado de la política de seguridad: sin_registro, incompleta (falta responsable o diagnóstico), vigente, por_revisar (menos de 60 días) o vencida.
+     *
+     * @return array{estado:string,proxima:?string,texto:string}
+     */
+    public function estadoSeguridad(?Carbon $hoy = null): array
+    {
+        $hoy ??= now('America/Santiago');
+        $p = $this->seguridad();
+        if (! $p['fecha_aprobacion']) {
+            return ['estado' => 'sin_registro', 'proxima' => null, 'texto' => 'Aún no se registra la Política de Seguridad de la Información y Ciberseguridad (Decreto 7, art. 5).'];
+        }
+        $prox = Carbon::parse($p['fecha_aprobacion'])->addYears($p['revision_anios']);
+        $faltan = array_filter(['responsable institucional de seguridad' => $p['responsable_seguridad'], 'responsable de los activos de información' => $p['responsable_activos'], 'diagnóstico inicial' => $p['diagnostico_fecha']], fn ($v) => ! $v);
+        if ($faltan) {
+            return ['estado' => 'incompleta', 'proxima' => $prox->format('Y-m-d'), 'texto' => 'Falta registrar: '.implode(', ', array_keys($faltan)).'.'];
+        }
+        if ($prox->lt($hoy->copy()->startOfDay())) {
+            return ['estado' => 'vencida', 'proxima' => $prox->format('Y-m-d'), 'texto' => 'La revisión de la política venció el '.$prox->format('d-m-Y').'.'];
+        }
+        if ($prox->lt($hoy->copy()->addDays(60))) {
+            return ['estado' => 'por_revisar', 'proxima' => $prox->format('Y-m-d'), 'texto' => 'La política debe revisarse antes del '.$prox->format('d-m-Y').'.'];
+        }
+
+        return ['estado' => 'vigente', 'proxima' => $prox->format('Y-m-d'), 'texto' => 'Vigente; próxima revisión el '.$prox->format('d-m-Y').'.'];
+    }
+
+    /** @param array<string,mixed> $d */
+    public function guardarSeguridad(array $d, Usuario $u): void
+    {
+        $this->guardar(self::CLAVE_SEGURIDAD, ['decreto' => trim((string) ($d['decreto'] ?? '')), 'fecha_aprobacion' => ($d['fecha_aprobacion'] ?? null) ?: null, 'revision_anios' => (int) $d['revision_anios'],
+            'responsable_seguridad' => trim((string) ($d['responsable_seguridad'] ?? '')), 'responsable_activos' => trim((string) ($d['responsable_activos'] ?? '')),
+            'diagnostico_fecha' => ($d['diagnostico_fecha'] ?? null) ?: null, 'diagnostico_resumen' => trim((string) ($d['diagnostico_resumen'] ?? '')), 'notas' => trim((string) ($d['notas'] ?? ''))], $u, 'cumplimiento.seguridad');
     }
 
     // ---- Coordinador(a) de Transformación Digital

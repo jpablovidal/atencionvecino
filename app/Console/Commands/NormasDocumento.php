@@ -32,7 +32,7 @@ class NormasDocumento extends Command
         $e = NormasTecnicas::ESTADOS;
         $o = "# Normas técnicas de la Ley 21.180 — matriz de cumplimiento\n\n";
         $o .= "> Generado desde `App\\Support\\NormasTecnicas` (`php artisan normas:documento`); no edite este archivo a mano. La misma matriz se ve en el sistema en **Administración › Cumplimiento normativo**.\n\n";
-        $o .= "**Qué se revisó.** Los Decretos 8, 9, 10, 11 y 12 (de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional, versión del 21-10-2026; el Decreto 12 en su última versión, del 24-12-2025, modificada por el Decreto 876). **No se entregó el texto del Decreto 7** (seguridad de la información y ciberseguridad) **ni las guías técnicas** que cada norma ordena dictar a la División de Gobierno Digital: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue **A VALIDAR**.\n\n";
+        $o .= "**Qué se revisó.** Los Decretos 7, 8, 9, 10, 11 y 12 (de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional, versión del 21-10-2026; el Decreto 12 en su última versión, del 24-12-2025, modificada por el Decreto 876). **No se entregaron las guías técnicas** que cada norma ordena dictar a la División de Gobierno Digital: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue **A VALIDAR**.\n\n";
         $o .= "## Normas\n| Decreto | Norma | Publicación | Versión | Texto oficial |\n|---|---|---|---|---|\n";
         foreach (NormasTecnicas::decretos() as $d) {
             $o .= "| {$d['numero']} | {$d['titulo']} | {$d['publicacion']} | {$d['version']} | ".($d['bcn'] ? "[BCN]({$d['bcn']})" : '—')." · [Guías]({$d['wiki']}) |\n";

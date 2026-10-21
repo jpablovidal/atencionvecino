@@ -416,6 +416,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::get('/informe', [CumplimientoController::class, 'informe'])->name('cumplimiento.informe');
             Route::middleware(['permiso:cumplimiento.gestionar', 'throttle:60,1'])->group(function () {
                 Route::post('/politica', [CumplimientoController::class, 'politica'])->name('cumplimiento.politica');
+                Route::post('/seguridad', [CumplimientoController::class, 'seguridad'])->name('cumplimiento.seguridad');
                 Route::post('/coordinador', [CumplimientoController::class, 'coordinador'])->name('cumplimiento.coordinador');
                 Route::get('/plataformas/nueva', [CumplimientoController::class, 'plataforma'])->name('cumplimiento.plataforma.nueva');
                 Route::get('/plataformas/{plataforma}', [CumplimientoController::class, 'plataforma'])->whereNumber('plataforma')->name('cumplimiento.plataforma');

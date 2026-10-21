@@ -40,6 +40,22 @@
 <div class="form-group"><label for="p_n">Notas</label><input class="form-control" id="p_n" name="notas" maxlength="1000" value="{{ old('notas', $politica['notas']) }}"></div>
 <button class="btn btn-primary">Guardar política</button></form>@endif</div></section>
 
+<section class="card mb-4" aria-labelledby="seg"><div class="card-body"><h2 class="h5" id="seg">Política de Seguridad de la Información y Ciberseguridad (Decreto 7, arts. 4 y 5)</h2>
+<p class="mb-2"><span class="estado {{ $estadoSeguridad['estado']==='vigente' ? 'estado-vigente' : ($estadoSeguridad['estado']==='sin_registro' ? 'estado-fallida' : 'estado-pendiente') }}">{{ ['sin_registro'=>'Sin registro','incompleta'=>'Incompleta','vigente'=>'Vigente','por_revisar'=>'Por revisar','vencida'=>'Revisión vencida'][$estadoSeguridad['estado']] }}</span> {{ $estadoSeguridad['texto'] }}</p>
+<p class="small text-muted">La política la aprueba la Jefatura Superior por acto administrativo. Debe indicar objetivos, alcance (activos y plataformas), la normativa aplicable y los roles: un(a) <strong>responsable institucional de seguridad de la información y ciberseguridad</strong> y un(a) <strong>responsable de los activos de información</strong> (pueden ser la misma persona; no se pueden externalizar). El diagnóstico inicial de las plataformas también debe constar en el catálogo de plataformas.</p>
+@if($puedeEditar)
+<form method="post" action="{{ route('app.admin.cumplimiento.seguridad') }}">@csrf
+<div class="form-row"><div class="form-group col-md-5"><label for="s_d">Acto que la aprueba (decreto)</label><input class="form-control" id="s_d" name="decreto" required maxlength="190" value="{{ old('decreto', $seguridad['decreto']) }}"></div>
+<div class="form-group col-md-3"><label for="s_f">Fecha de aprobación</label><input class="form-control" type="date" id="s_f" name="fecha_aprobacion" required value="{{ old('fecha_aprobacion', $seguridad['fecha_aprobacion']) }}"></div>
+<div class="form-group col-md-2"><label for="s_r">Revisar cada (años)</label><select class="form-control" id="s_r" name="revision_anios">@foreach([1,2,3] as $a)<option value="{{ $a }}" @selected((int) old('revision_anios', $seguridad['revision_anios'])===$a)>{{ $a }}</option>@endforeach</select></div></div>
+<div class="form-row"><div class="form-group col-md-6"><label for="s_rs">Responsable institucional de seguridad y ciberseguridad</label><input class="form-control" id="s_rs" name="responsable_seguridad" maxlength="150" value="{{ old('responsable_seguridad', $seguridad['responsable_seguridad']) }}"></div>
+<div class="form-group col-md-6"><label for="s_ra">Responsable de los activos de información</label><input class="form-control" id="s_ra" name="responsable_activos" maxlength="150" value="{{ old('responsable_activos', $seguridad['responsable_activos']) }}"></div></div>
+<div class="form-row"><div class="form-group col-md-3"><label for="s_df">Fecha del diagnóstico inicial</label><input class="form-control" type="date" id="s_df" name="diagnostico_fecha" value="{{ old('diagnostico_fecha', $seguridad['diagnostico_fecha']) }}"></div>
+<div class="form-group col-md-9"><label for="s_dr">Resumen del diagnóstico</label><input class="form-control" id="s_dr" name="diagnostico_resumen" maxlength="2000" value="{{ old('diagnostico_resumen', $seguridad['diagnostico_resumen']) }}"></div></div>
+<div class="form-group"><label for="s_n">Notas</label><input class="form-control" id="s_n" name="notas" maxlength="1000" value="{{ old('notas', $seguridad['notas']) }}"></div>
+<button class="btn btn-primary">Guardar política de seguridad</button></form>
+@else<p>Responsable: {{ $seguridad['responsable_seguridad'] ?: '—' }} · Activos: {{ $seguridad['responsable_activos'] ?: '—' }} · {{ $seguridad['decreto'] ?: 'sin acto registrado' }}</p>@endif</div></section>
+
 <section class="card mb-4" aria-labelledby="cor"><div class="card-body"><h2 class="h5" id="cor">Coordinador(a) de Transformación Digital (Decreto 11, arts. 15 y 16)</h2>
 <p class="small text-muted">Es quien desarrolla y gestiona el Plan de Mejora Continua y reporta a la División de Gobierno Digital. La Jefatura Superior debe informar su nombre (y cualquier cambio) mediante una comunicación oficial.</p>
 @if($puedeEditar)

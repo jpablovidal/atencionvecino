@@ -2,12 +2,12 @@
 
 > Generado desde `App\Support\NormasTecnicas` (`php artisan normas:documento`); no edite este archivo a mano. La misma matriz se ve en el sistema en **Administración › Cumplimiento normativo**.
 
-**Qué se revisó.** Los Decretos 8, 9, 10, 11 y 12 (de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional, versión del 21-10-2026; el Decreto 12 en su última versión, del 24-12-2025, modificada por el Decreto 876). **No se entregó el texto del Decreto 7** (seguridad de la información y ciberseguridad) **ni las guías técnicas** que cada norma ordena dictar a la División de Gobierno Digital: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue **A VALIDAR**.
+**Qué se revisó.** Los Decretos 7, 8, 9, 10, 11 y 12 (de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional, versión del 21-10-2026; el Decreto 12 en su última versión, del 24-12-2025, modificada por el Decreto 876). **No se entregaron las guías técnicas** que cada norma ordena dictar a la División de Gobierno Digital: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue **A VALIDAR**.
 
 ## Normas
 | Decreto | Norma | Publicación | Versión | Texto oficial |
 |---|---|---|---|---|
-| 7 | Norma Técnica de Seguridad de la Información y Ciberseguridad | — | texto no entregado | — · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto7) |
+| 7 | Norma Técnica de Seguridad de la Información y Ciberseguridad | 17-08-2023 | Única | [BCN](https://bcn.cl/3hri8) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto7) |
 | 8 | Norma Técnica de Notificaciones | 17-08-2023 | Única | [BCN](https://bcn.cl/3lbiy) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto8) |
 | 9 | Norma Técnica de Autenticación | 17-08-2023 | Única | [BCN](https://bcn.cl/3h75f) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto9) |
 | 10 | Norma Técnica de Documentos y Expedientes Electrónicos para la gestión de procedimientos administrativos | 17-08-2023 | Única | [BCN](https://bcn.cl/3hh4y) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto10) |
@@ -16,10 +16,10 @@
 
 ## Resumen
 - Implementado: **20**
-- Parcial: **28**
+- Parcial: **34**
 - Pendiente: **3**
-- Del municipio: **3**
-- Componente externo: **1**
+- Del municipio: **5**
+- Componente externo: **2**
 
 **Estados.** *Implementado*: lo hace el sistema y tiene pruebas automáticas. *Parcial*: lo hace en parte. *Pendiente*: el sistema no lo hace. *Del municipio*: lo define o decide la institución. *Componente externo*: lo provee Gobierno Digital u otro órgano.
 
@@ -28,7 +28,16 @@
 ## Decreto 7 — Norma Técnica de Seguridad de la Información y Ciberseguridad
 | Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
 |---|---|---|---|---|
-| — | Seguridad de la información y ciberseguridad (texto del decreto no entregado) | Parcial | Controles existentes: segundo factor del administrador, cifrado de archivos en reposo, cadena de auditoría HMAC, CSP estricta, límites de intentos, módulo de incidentes con marca CSIRT. No se contrastaron con el decreto porque su texto no fue entregado. | docs/SEGURIDAD.md · docs/PENTEST.md |
+| 3-4 | Diagnóstico inicial de ciberseguridad de las plataformas, incluido en el Catálogo de Plataformas (Decreto 11) | Parcial | Se registra la fecha y el resumen del diagnóstico y el catálogo de plataformas. El método del diagnóstico lo fijarán las guías técnicas (no entregadas): A VALIDAR. | Administración › Cumplimiento normativo |
+| 5 | Política de Seguridad de la Información y Ciberseguridad aprobada por acto administrativo de la Jefatura Superior, con objetivos, alcance, normativa y roles | Del municipio | El texto y el acto los debe emitir el municipio; el sistema registra el acto, la fecha y la vigencia, y avisa cuando toca revisarla. | Administración › Cumplimiento normativo |
+| 5 (4) | Responsable institucional de seguridad y ciberseguridad y responsable de los activos de información, no externalizables | Parcial | Se registran ambas personas y el sistema avisa si falta alguna. La designación y que no se externalice es decisión del municipio (si ya existe encargado de ciberseguridad según el Instructivo Presidencial 8/2018, se entiende cumplido). | Administración › Cumplimiento normativo |
+| 7 | Función de identificación: contexto, gobernanza, activos de información, gestión de riesgos y proveedores en la nube | Parcial | Matriz de riesgos OWASP y pentest documentados, inventario de librerías (SBOM), catálogo de plataformas y proveedores (Google, Gobierno Digital). Falta el inventario y la clasificación formal de activos de información y el análisis de riesgos institucional (municipio). | docs/SEGURIDAD.md · docs/PENTEST.md · Inventario de librerías |
+| 8 | Función de protección: servidores, redes, autenticación y control de acceso, concienciación, seguridad de los datos y registro de eventos | Parcial | Implementado: ClaveÚnica, segundo factor obligatorio del administrador, roles y permisos mínimos, cifrado de archivos en reposo, cabeceras y CSP estrictas, límites de intentos, bitácora con cadena HMAC. Del municipio: seguridad del servidor y la red (hosting), capacitación de funcionarios. | docs/SEGURIDAD.md |
+| 9 | Función de detección: análisis de eventos, monitoreo continuo y protección contra código malicioso | Parcial | Verificación diaria de la cadena de auditoría, alertas de accesos denegados y errores, validación de archivos por firma binaria y defensa contra código malicioso en plantillas e IA. No hay antivirus en el hosting compartido ni monitoreo externo continuo. | Seguridad · docs/SEGURIDAD.md |
+| 10 | Función de respuesta: planificación, comunicación, análisis y mitigación de incidentes y mejora | Parcial | Plan de incidentes y panel con hitos de reporte al CSIRT (plazos A VALIDAR). La comunicación y el reporte los hace el encargado de forma manual. | Seguridad › Incidentes · docs/INCIDENTES.md |
+| 11 | Función de recuperación: planes de recuperación y comunicación del estado | Parcial | Respaldo y restauración documentados, cola de envíos con reintentos. El plan de recuperación ante desastres formal y las pruebas de restauración son del municipio. | README · docs/INCIDENTES.md |
+| 12-13 | Guías técnicas y gradualidad dictadas por la División de Gobierno Digital | Componente externo | Las guías técnicas no han sido entregadas: los detalles operativos de cada función quedan A VALIDAR cuando se publiquen. |  |
+| 14 | Revisar y actualizar la norma cada dos años | Del municipio | Debe revisarse al menos cada dos años desde su vigencia (17-08-2023): la matriz del sistema se vuelve a contrastar cuando se publiquen versiones nuevas. |  |
 
 ## Decreto 8 — Norma Técnica de Notificaciones
 | Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |

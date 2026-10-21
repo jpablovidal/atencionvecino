@@ -32,7 +32,6 @@ class NormasTecnicasTest extends TestCase
     {
         $dec = NormasTecnicas::decretos();
         $this->assertSame([7, 8, 9, 10, 11, 12], array_keys($dec));
-        $this->assertFalse($dec[7]['leido']);
         foreach ([8, 9, 10, 11, 12] as $n) {
             $this->assertTrue($dec[$n]['leido']);
         }
@@ -63,7 +62,7 @@ class NormasTecnicasTest extends TestCase
     {
         $admin = $this->comoFuncionario($this->usuario('admin'));
         $r = $admin->get('/app/admin/cumplimiento')->assertOk();
-        $r->assertSee('Cumplimiento normativo')->assertSee('Norma Técnica de Notificaciones')->assertSee('Norma Técnica de Autenticación')->assertSee('Norma Técnica de Interoperabilidad')->assertSee('texto no entregado');
+        $r->assertSee('Cumplimiento normativo')->assertSee('Norma Técnica de Notificaciones')->assertSee('Norma Técnica de Autenticación')->assertSee('Norma Técnica de Interoperabilidad')->assertSee('Política de Seguridad de la Información y Ciberseguridad');
         $r->assertSee('31-12-2026')->assertSee('Matriz de cumplimiento por artículo');
         $admin->get('/app/admin/cumplimiento?estado=pendiente')->assertOk()->assertSee('Clave Tributaria')->assertDontSee('Domicilio Digital Único');
         $admin->get('/app/admin/cumplimiento?decreto=8')->assertOk()->assertSee('Domicilio Digital Único')->assertDontSee('Política de Gestión Documental (objetivo');
@@ -85,6 +84,25 @@ class NormasTecnicasTest extends TestCase
         $this->comoFuncionario($admin)->post('/app/admin/cumplimiento/politica', ['decreto' => 'x', 'fecha_aprobacion' => '2026-01-10', 'revision_anios' => 5])->assertSessionHasErrors('revision_anios');
         $this->comoFuncionario($admin)->post('/app/admin/cumplimiento/politica', ['decreto' => 'x', 'fecha_aprobacion' => now()->addDay()->format('Y-m-d'), 'revision_anios' => 1])->assertSessionHasErrors('fecha_aprobacion');
         $this->assertDatabaseHas('audit_log', ['accion' => 'cumplimiento.politica']);
+    }
+
+    public function test_politica_de_seguridad_decreto_7_y_su_estado(): void
+    {
+        $svc = app(CumplimientoService::class);
+        $this->assertSame('sin_registro', $svc->estadoSeguridad()['estado']);
+        $admin = $this->usuario('admin');
+        $this->comoFuncionario($this->usuario('auditor'))->post('/app/admin/cumplimiento/seguridad', ['decreto' => 'x', 'fecha_aprobacion' => '2026-01-01', 'revision_anios' => 2])->assertForbidden();
+        $this->comoFuncionario($admin)->post('/app/admin/cumplimiento/seguridad', ['decreto' => 'Decreto Alcaldicio 5/2026', 'fecha_aprobacion' => '2026-02-01', 'revision_anios' => 2, 'responsable_seguridad' => 'Encargado TI'])->assertSessionHas('ok');
+        $e = $svc->estadoSeguridad(Carbon::parse('2026-06-01'));
+        $this->assertSame('incompleta', $e['estado']);
+        $this->assertStringContainsString('responsable de los activos', $e['texto']);
+        $this->comoFuncionario($admin)->post('/app/admin/cumplimiento/seguridad', ['decreto' => 'Decreto Alcaldicio 5/2026', 'fecha_aprobacion' => '2026-02-01', 'revision_anios' => 2, 'responsable_seguridad' => 'Encargado TI',
+            'responsable_activos' => 'Director', 'diagnostico_fecha' => '2026-03-01', 'diagnostico_resumen' => 'Diagnóstico inicial'])->assertSessionHas('ok');
+        $this->assertSame('vigente', $svc->estadoSeguridad(Carbon::parse('2026-06-01'))['estado']);
+        $this->assertSame('vencida', $svc->estadoSeguridad(Carbon::parse('2028-03-01'))['estado']);
+        $this->comoFuncionario($admin)->get('/app/admin/cumplimiento')->assertOk()->assertSee('Encargado TI');
+        $this->assertDatabaseHas('audit_log', ['accion' => 'cumplimiento.seguridad']);
+        $this->assertTrue(collect(NormasTecnicas::matriz())->contains(fn ($m) => $m['decreto'] === 7 && $m['art'] === '5'));
     }
 
     public function test_coordinador_de_transformacion_digital_viene_del_decreto_2372_y_se_puede_cambiar(): void
