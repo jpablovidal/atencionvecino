@@ -2,8 +2,8 @@
 @section('titulo', 'Ayuda y manuales')
 @section('contenido')
 <h1>Ayuda y manuales de usuario</h1>
-<p class="lead">Elija el manual que corresponde a su perfil. Todos pueden imprimirse o guardarse como PDF desde el navegador y funcionan con teclado y lector de pantalla.</p>
-@if($mio)<p><a class="btn btn-primary" href="{{ route('ayuda.manual',$mio) }}">Ir a mi manual: {{ $perfiles[$mio][0] }}</a></p>@endif
+<p class="lead">@if($todos)Como superadministrador(a) ve los manuales de todos los perfiles.@else Estos son los manuales de <strong>su perfil</strong>.@endif Pueden imprimirse o guardarse como PDF desde el navegador y funcionan con teclado y lector de pantalla.</p>
+<p>@if($mio)<a class="btn btn-primary mr-2" href="{{ route('ayuda.manual',$mio) }}">Ir a mi manual: {{ $perfiles[$mio][0] }}</a>@endif<button type="button" class="btn btn-outline-primary" data-recorrido>Iniciar el recorrido guiado</button></p>
 <ul class="list-unstyled row">
 @foreach($perfiles as $slug => [$nombre, $desc])
   <li class="col-md-6 mb-3"><div class="card h-100"><div class="card-body">

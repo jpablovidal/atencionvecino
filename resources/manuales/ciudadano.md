@@ -41,7 +41,7 @@ Al ingresar verá **Mis solicitudes**: tres tarjetas con cuántas solicitudes es
    - **Detalle de su solicitud** (mínimo 10 y máximo 2.000 caracteres): explique con claridad qué necesita. Un contador le muestra cuántos caracteres lleva, le avisa cuando se acerca al límite y le indica cuánto se pasó si lo supera; mientras se pase del máximo no podrá avanzar.
    - **¿Cómo desea ser notificado(a)?**: *correo electrónico*, *Casilla Única* o *presencial*.
    - **Anexos**: adjunte los documentos que pide el trámite. Los marcados "(obligatorio)" son indispensables. Puede agregar "Otros anexos". Cada archivo aparece en una tarjeta con su tamaño y una barra de avance de lectura; presione **Ver** para abrirlo en una ventana y comprobar que es el documento correcto, **Reemplazar** para elegir otro o **Quitar** para sacarlo. Desde un teléfono, **Tomar fotografía** abre la cámara y adjunta la foto (que quede legible y completa). Al enviar, otra barra muestra el avance de la subida.
-3. En el último paso, lea el aviso sobre el **tratamiento de sus datos personales** (basado en la Política de Privacidad, Decreto Alcaldicio N° 2590) e indique si **consiente o no**. Sin consentimiento la solicitud no se puede ingresar por este medio: puede presentarla en la oficina de partes. Su respuesta queda registrada con la fecha.
+3. En el último paso, lea el aviso sobre el **tratamiento de sus datos personales** (basado en la Política de Privacidad, Decreto Alcaldicio N° 2590) e indique si **consiente o no**. Si **no consiente**, igual puede enviar su solicitud: queda registrado que no autoriza el tratamiento de sus datos, el Oficial de Protección de Datos (DPO) lo sabe y la Municipalidad solo trata los datos que la ley le exige para resolver su trámite. Su respuesta queda registrada con la fecha y puede leer la política en **Privacidad y datos personales** (pie de página).
 4. Presione **Enviar solicitud**.
 
 ![Formulario de solicitud](/assets/manual/04-formulario-solicitud.png)
@@ -106,3 +106,6 @@ En **Mis solicitudes** y en el detalle de cada solicitud ve el **número de soli
 ## Mis solicitudes y el formulario
 - En **Mis solicitudes** verá «Lo más buscado» para iniciar un trámite y el historial de sus solicitudes. Cada solicitud muestra su estado, la dirección responsable, la fecha de la última actualización y, en secciones plegables, sus **movimientos**, devoluciones y documentos notificados.
 - El formulario de cada trámite muestra primero qué documentos debe adjuntar, el plazo y quién lo atiende; luego se completa en 3 pasos (sus datos, documentos y cómo desea ser notificado) con una revisión antes de enviar. Los formatos y el peso máximo que acepta los define el municipio y se muestran en el propio formulario.
+
+## Recorrido guiado y manuales
+En el menú de su nombre (arriba a la derecha) encontrará **Recorrido guiado**, una presentación paso a paso de este portal, y **Manuales de usuario**, con los manuales que corresponden a su perfil. El recorrido se muestra solo la primera vez y puede repetirlo cuando quiera.

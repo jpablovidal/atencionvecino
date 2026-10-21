@@ -244,3 +244,10 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 ## Formulario de solicitud
 - La vista previa de PDF depende del visor del navegador del usuario (algunos teléfonos solo descargan el PDF); los TIF no se pueden mostrar. «Tomar fotografía» usa el atributo `capture` de HTML: en teléfonos abre la cámara, en computadores el selector de archivos. Probado con un navegador Chromium de escritorio; **no** se probó en teléfonos reales.
 - El texto del consentimiento reproduce la cláusula tipo del Título VIII del Decreto N° 2590; si el DPO modifica la redacción hay que actualizar `resources/views/ciudadano/nueva.blade.php` y `ayuda/privacidad.blade.php` (el resumen de privacidad no reemplaza al decreto).
+
+## Directorio, organigrama, manuales y recorrido
+- La importación del directorio no se probó contra la base real (solo contra una base de prueba con la misma estructura de columnas); «Probar con un RUN» y `directorio:consultar` ayudan a diagnosticar.
+- Los nombres de departamentos y unidades se toman tal como vienen del directorio (se normalizan espacios y mayúsculas para no duplicar); si el directorio los escribe distinto en cada fila se crearán variantes.
+- Un funcionario creado manualmente (no por el directorio) no se actualiza automáticamente con la importación.
+- El recorrido guiado y los manuales por perfil se probaron con un navegador Chromium de escritorio, no con lectores de pantalla reales ni teléfonos.
+- No se pudo reproducir ni identificar qué dato del formulario activó el bloqueo de Wordfence; la solución es de configuración del hosting (ver decisión 141).

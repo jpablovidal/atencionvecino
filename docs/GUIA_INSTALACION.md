@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `ca2a9c4d8b457223c48f929e86e5cd845cf067c8fb6412546d0ced591dce11a4`).
+- Archivo **`sgd-release.zip`** (SHA-256 `20b55032eba35d3b8a81d5228469a99b5882d56d200aa7099c54a3d0257d0a6b`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,15 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: manuales por perfil, recorrido guiado, datos personales, directorio y favicon
+- **Manuales por perfil:** en el menú de su nombre → *Manuales de usuario* cada persona ve solo los manuales de su perfil (el superadministrador, todos). **Recorrido guiado** (mismo menú, y en Ayuda) abre una presentación a pantalla completa del portal con enlaces al manual; se muestra sola la primera vez.
+- **Sin consentimiento de datos:** quien marca «No consiento» **igual puede enviar** su solicitud; queda marcada para los funcionarios (aviso en el expediente) y para el DPO (menú **Datos personales (DPO)**, permiso `datospersonales.ver`: lo tienen por defecto administración y auditoría).
+- **Superadministrador:** el instalador crea/promueve a **17454784-K** (Juan Pablo Vidal Araya) como superadministrador; ingresa con ClaveÚnica. Cambiable con las variables `SUPERADMIN_RUN`, `SUPERADMIN_NOMBRES`, `SUPERADMIN_APELLIDOS`, `SUPERADMIN_CORREO`.
+- **Direcciones, departamentos y unidades:** en *APIs e integraciones → Directorio* pulse **Importar ahora** (o en la Terminal `cd ~/sgd && php artisan directorio:sincronizar --usuarios`). Crea las direcciones, departamentos y unidades que falten y carga cargo y correo; con `--usuarios` (o la casilla) crea además las cuentas de los funcionarios vigentes. Es seguro repetirlo. Luego, en *Usuarios* se asocia cada persona a su dirección, departamento y unidad.
+- **Favicon:** el logo municipal aparece en la pestaña del navegador.
+- **Si Wordfence bloquea (403 «A potentially unsafe operation…»):** ejecute `bash ~/sgd/scripts/wordfence-excluir.sh` y espere unos 5 minutos (o reinicie PHP en cPanel → MultiPHP Manager). Para deshacerlo: `bash ~/sgd/scripts/wordfence-excluir.sh --revertir`. Alternativa: en el WordPress, Wordfence → Firewall → All Firewall Options → *Allowlisted URLs*, agregue `/ciudadano/solicitudes`.
+- Al actualizar, el instalador agrega las tablas/columnas nuevas. No hay otros pasos manuales.
 
 ## Novedades: formulario de solicitud del vecino(a)
 - **Detalle de la solicitud:** máximo **2.000 caracteres**, con contador (avisa al acercarse y cuánto se pasó).

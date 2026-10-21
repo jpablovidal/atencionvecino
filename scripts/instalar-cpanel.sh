@@ -128,6 +128,7 @@ paso "6/7 Base de datos"
 "$PHP" artisan route:clear >/dev/null 2>&1 || true   # rutas nuevas tras actualizar (evita errores 500 por caché vieja)
 "$PHP" artisan migrate --force || fallo "Falló la migración (revise el mensaje anterior)."
 "$PHP" artisan codificador:municipio || true   # Municipalidad de Santo Domingo (PE-MUN-00243) en el catálogo del Codificador
+
 if [ "$ACTUALIZACION" = 0 ]; then
   "$PHP" artisan db:seed --class=DemoSeeder --force || fallo "Falló la carga de datos de demostración."
   echo; echo "CUENTAS DE PRUEBA (usuario = RUN, contraseña aleatoria). ANÓTELAS AHORA: no se vuelven a mostrar."
@@ -148,6 +149,16 @@ else
     "$PHP" artisan pruebas:pagos || true
   fi
   echo "Actualización aplicada. Para ver/rotar cuentas de prueba: php artisan pruebas:credenciales --rotar"
+fi
+# Aviso: si el servidor carga el firewall de Wordfence para todo el hosting, puede bloquear envíos legítimos (403 «potentially unsafe operation»).
+if grep -qs "wordfence-waf" "$HOME/.user.ini" "$HOME/public_html/.user.ini" "$HOME/public_html/.htaccess" "$HOME/.htaccess" "$HOME/php.ini" 2>/dev/null && [ ! -f "$HOME/sgd/public/.user.ini" ]; then
+  echo; echo "AVISO: se detectó el firewall de Wordfence en el hosting. Si al enviar una solicitud aparece «A potentially unsafe operation has been detected» (403), ejecute:"
+  echo "  bash ~/sgd/scripts/wordfence-excluir.sh"
+fi
+# Superadministrador(a) del sitio (entra con ClaveÚnica). Se puede cambiar con SUPERADMIN_RUN/NOMBRES/APELLIDOS/CORREO o dejar vacío SUPERADMIN_RUN para omitirlo.
+SA_RUN="${SUPERADMIN_RUN-17454784-K}"
+if [ -n "$SA_RUN" ]; then
+  "$PHP" artisan sgd:superadmin "$SA_RUN" --crear --nombres="${SUPERADMIN_NOMBRES:-Juan Pablo}" --apellidos="${SUPERADMIN_APELLIDOS:-Vidal Araya}" --correo="${SUPERADMIN_CORREO:-jvidal@santodomingo.cl}" || true
 fi
 
 paso "7/7 Tareas programadas y verificación"

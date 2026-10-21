@@ -53,7 +53,7 @@ class AccesibilidadTest extends TestCase
             'adm-apariencia' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/apariencia'), 'adm-menu' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/menu'), 'adm-api' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/api'), 'adm-api-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/api/pisee'), 'adm-folios' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/folios'), 'adm-firmas' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/firmas'), 'adm-repositorio' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/repositorio'), 'adm-roles' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/roles'), 'adm-rol-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/roles/nuevo'), 'adm-usuario-form' => $this->comoFuncionario($this->usuario('admin'))->get('/app/admin/usuarios/nuevo'), 'adm-logs' => $this->comoFuncionario($this->usuario('admin'))->get('/app/logs'), 'adm-logs-app' => $this->comoFuncionario($this->usuario('admin'))->get('/app/logs/aplicacion'), 'adm-sesiones' => $this->comoFuncionario($this->usuario('admin'))->get('/app/sesiones'),
         ];
         foreach (array_keys(ManualRenderer::PERFILES) as $p) {
-            $h['manual-'.$p] = $this->get('/ayuda/'.$p);
+            $h['manual-'.$p] = $this->comoFuncionario($this->superadminManuales())->get('/ayuda/'.$p);
         }
         $out = [];
         foreach ($h as $k => $r) {
@@ -229,7 +229,7 @@ class AccesibilidadTest extends TestCase
     public function test_manuales_por_perfil_se_publican_con_indice_y_sin_html_crudo(): void
     {
         foreach (ManualRenderer::PERFILES as $slug => [$nombre]) {
-            $r = $this->get('/ayuda/'.$slug)->assertOk();
+            $r = $this->comoFuncionario($this->superadminManuales())->get('/ayuda/'.$slug)->assertOk();
             $html = $r->getContent();
             $this->assertStringContainsString('class="manual"', $html);
             $this->assertStringContainsString('Contenido de este manual', $html);
@@ -277,5 +277,14 @@ class AccesibilidadTest extends TestCase
             $src = file_get_contents(resource_path('views/'.str_replace('.', '/', $v).'.blade.php'));
             $this->assertStringContainsString('lang="es"', $src, "$v: lang");
         }
+    }
+
+    /** Los manuales se muestran según el perfil: un superadministrador los ve todos. */
+    private function superadminManuales(): Usuario
+    {
+        $u = $this->usuario('admin');
+        $u->forceFill(['superadmin' => true])->save();
+
+        return $u->refresh();
     }
 }

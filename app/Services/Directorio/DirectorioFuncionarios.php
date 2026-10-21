@@ -4,6 +4,7 @@ namespace App\Services\Directorio;
 
 use App\Models\Rol;
 use App\Models\Unidad;
+use App\Models\UnidadInterna;
 use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Support\Run;
@@ -113,13 +114,20 @@ class DirectorioFuncionarios
             if (strtoupper(trim(self::campo($f, 'dv'))) !== strtoupper($dv) || ! $this->vigente($f)) {
                 continue;
             }
-            $t = fn ($v, int $n) => mb_substr(trim((string) $v), 0, $n);
 
-            return ['run' => $run, 'nombres' => $t(self::campo($f, 'nombre'), 120), 'apellidos' => $t(self::campo($f, 'apellido'), 120), 'cargo' => $t(self::campo($f, 'cargo'), 120), 'direccion' => $t(self::campo($f, 'direccion'), 120),
-                'departamento' => $t(self::campo($f, 'departamento'), 120), 'unidad' => $t(self::campo($f, 'unidad'), 120), 'correo' => $t(self::campo($f, 'mail'), 190)];
+            return $this->datos($f, $run);
         }
 
         return null;
+    }
+
+    /** @return array{run:string,nombres:string,apellidos:string,cargo:string,direccion:string,departamento:string,unidad:string,correo:string} */
+    private function datos(object $f, string $run): array
+    {
+        $t = fn (string $c, int $n) => mb_substr(trim((string) preg_replace('/\s+/u', ' ', self::campo($f, $c))), 0, $n);
+
+        return ['run' => $run, 'nombres' => $t('nombre', 120), 'apellidos' => $t('apellido', 120), 'cargo' => $t('cargo', 120), 'direccion' => $t('direccion', 120),
+            'departamento' => $t('departamento', 120), 'unidad' => $t('unidad', 120), 'correo' => $t('mail', 190)];
     }
 
     /** Habilitado «si», credencial «Vigente» y sin fecha de término vencida. */
@@ -246,35 +254,93 @@ class DirectorioFuncionarios
             return $this->crear($f);
         }
         if ($u && $u->directorio && $f !== null) {
-            $u->fill(array_filter(['nombres' => $f['nombres'], 'apellidos' => $f['apellidos'], 'cargo' => $f['cargo'], 'correo' => $f['correo']], fn ($v) => $v !== ''))->save();
+            $this->actualizar($u, $f);
         }
 
         return $u;
     }
 
+    /** Mantiene los datos del funcionario(a) según el directorio (nombre, cargo, correo y su ubicación en el organigrama). */
+    private function actualizar(Usuario $u, array $f, ?array &$cont = null): void
+    {
+        $u->fill(array_filter(['nombres' => $f['nombres'], 'apellidos' => $f['apellidos'], 'cargo' => $f['cargo'], 'correo' => $f['correo']], fn ($v) => $v !== ''));
+        [$dir, $dep, $sub] = $this->jerarquia($f, $cont);
+        if ($dir) {
+            $u->fill(['unidad_id' => $dir->id, 'departamento_id' => $dep?->id, 'subunidad_id' => $sub?->id]);
+        }
+        $u->save();
+    }
+
     /** @param array<string,string> $f */
-    private function crear(array $f): Usuario
+    private function crear(array $f, ?array &$cont = null): Usuario
     {
         $rol = (string) config('sgd.directorio.rol_defecto', 'funcionario');
         if (Rol::query()->where('clave', $rol)->where('activo', true)->value('rol_base') !== 'funcionario') {
             $rol = 'funcionario'; // solo roles de base «funcionario»: nadie se vuelve administrador por figurar en el directorio
         }
+        [$dir, $dep, $sub] = $this->jerarquia($f, $cont);
         $u = new Usuario(['run' => $f['run'], 'nombres' => $f['nombres'] ?: 'Funcionario(a)', 'apellidos' => $f['apellidos'] ?: '-', 'cargo' => $f['cargo'] ?: null,
-            'correo' => $f['correo'] ?: strtolower(str_replace('-', '', $f['run'])).'@sin-correo.invalid', 'rol' => $rol, 'unidad_id' => $this->unidad($f)?->id, 'puede_firmar' => false, 'activo' => true]);
+            'correo' => $f['correo'] ?: strtolower(str_replace('-', '', $f['run'])).'@sin-correo.invalid', 'rol' => $rol, 'unidad_id' => $dir?->id, 'departamento_id' => $dep?->id, 'subunidad_id' => $sub?->id, 'puede_firmar' => false, 'activo' => true]);
         $u->forceFill(['directorio' => true])->save();
         $this->audit->registrar('usuario.directorio_alta', 'usuario', $u->id, ['rol' => $rol, 'unidad_id' => $u->unidad_id], true);
 
         return $u;
     }
 
-    /** Unidad local equivalente a la dirección del directorio (por nombre); si no existe y está permitido, se crea. */
-    private function unidad(array $f): ?Unidad
+    private static function clave(string $n): string
     {
-        $nombre = $f['direccion'] ?: $f['departamento'];
+        return mb_strtolower(trim((string) preg_replace('/\s+/u', ' ', $n)));
+    }
+
+    /**
+     * Ubicación en el organigrama: dirección (tabla `unidades`), departamento y unidad (tabla `unidades_internas`). Si el directorio no
+     * trae «dirección», la primera columna con valor hace de dirección. Crea lo que falte (si está permitido) y cuenta lo creado.
+     *
+     * @param  array<string,string>  $f
+     * @param  array<string,int>|null  $cont
+     * @return array{0:?Unidad,1:?UnidadInterna,2:?UnidadInterna}
+     */
+    private function jerarquia(array $f, ?array &$cont = null): array
+    {
+        $dir = $this->unidad($f, $cont);
+        if (! $dir) {
+            return [null, null, null];
+        }
+        $dep = $f['departamento'] !== '' && self::clave($f['departamento']) !== self::clave($dir->nombre) ? $this->interna($dir, null, 'departamento', $f['departamento'], $cont) : null;
+        $nom = $f['unidad'];
+        $sub = $nom !== '' && self::clave($nom) !== self::clave($dir->nombre) && self::clave($nom) !== self::clave($dep?->nombre ?? '') ? $this->interna($dir, $dep, 'unidad', $nom, $cont) : null;
+
+        return [$dir, $dep, $sub];
+    }
+
+    /** @param  array<string,int>|null  $cont */
+    private function interna(Unidad $dir, ?UnidadInterna $padre, string $tipo, string $nombre, ?array &$cont): UnidadInterna
+    {
+        $q = UnidadInterna::query()->where('unidad_id', $dir->id)->where('tipo', $tipo)->where('padre_id', $padre?->id);
+        $e = $q->whereRaw('lower(nombre) = ?', [self::clave($nombre)])->first();
+        if ($e) {
+            return $e;
+        }
+        if ($cont !== null) {
+            $k = $tipo === 'departamento' ? 'departamentos_nuevos' : 'unidades_nuevas';
+            $cont[$k] = ($cont[$k] ?? 0) + 1;
+        }
+
+        return UnidadInterna::query()->create(['unidad_id' => $dir->id, 'padre_id' => $padre?->id, 'tipo' => $tipo, 'nombre' => $nombre, 'activo' => true]);
+    }
+
+    /**
+     * Dirección local equivalente (por nombre) a la del directorio; si no existe y está permitido, se crea.
+     *
+     * @param  array<string,int>|null  $cont
+     */
+    private function unidad(array $f, ?array &$cont = null): ?Unidad
+    {
+        $nombre = $f['direccion'] ?: ($f['departamento'] ?: $f['unidad']);
         if ($nombre === '') {
             return null;
         }
-        $u = Unidad::query()->whereRaw('lower(nombre) = ?', [mb_strtolower($nombre)])->first();
+        $u = Unidad::query()->whereRaw('lower(nombre) = ?', [self::clave($nombre)])->first();
         if ($u || ! config('sgd.directorio.crear_unidades', true)) {
             return $u;
         }
@@ -283,8 +349,68 @@ class DirectorioFuncionarios
         for ($i = 2; Unidad::query()->where('codigo', $codigo)->exists(); $i++) {
             $codigo = substr($base, 0, 26).$i;
         }
+        if ($cont !== null) {
+            $cont['direcciones_nuevas'] = ($cont['direcciones_nuevas'] ?? 0) + 1;
+        }
 
         return Unidad::query()->create(['codigo' => $codigo, 'nombre' => $nombre, 'activo' => true]);
+    }
+
+    /**
+     * Importa del directorio las direcciones, departamentos y unidades, y actualiza cargo, correo y ubicación de los funcionarios vigentes que ya
+     * tienen cuenta; con $crearUsuarios crea además la cuenta (rol funcionario) de quienes aún no la tienen. Solo lee columnas de identificación y cargo.
+     *
+     * @return array<string,int>
+     *
+     * @throws DirectorioException
+     */
+    public function sincronizar(bool $crearUsuarios = false): array
+    {
+        if (! self::habilitado()) {
+            throw new DirectorioException('El directorio no está activado o está incompleto.');
+        }
+        try {
+            $this->conexion();
+            $filas = $this->conexion()->table($this->tabla())->select($this->columnas())->get();
+        } catch (\Throwable $e) {
+            Log::warning('Directorio de funcionarios: sincronización fallida ('.class_basename($e).').');
+            throw new DirectorioException('No fue posible consultar el directorio de funcionarios.');
+        }
+        $r = ['filas' => 0, 'vigentes' => 0, 'sin_rut_valido' => 0, 'direcciones_nuevas' => 0, 'departamentos_nuevos' => 0, 'unidades_nuevas' => 0, 'usuarios_creados' => 0, 'usuarios_actualizados' => 0];
+        foreach ($filas as $f) {
+            $r['filas']++;
+            if ($this->motivoNoVigente($f) !== null) {
+                continue;
+            }
+            $r['vigentes']++;
+            $run = Run::normalizar(trim(self::campo($f, 'rut')).trim(self::campo($f, 'dv')));
+            if (! $run) {
+                $r['sin_rut_valido']++;
+
+                continue;
+            }
+            $d = $this->datos($f, $run);
+            $u = Usuario::query()->where('run', $run)->first();
+            if (! $u) {
+                if ($crearUsuarios) {
+                    $this->crear($d, $r);
+                    $r['usuarios_creados']++;
+                } else {
+                    $this->jerarquia($d, $r); // al menos se incorpora el organigrama
+                }
+
+                continue;
+            }
+            if ($u->directorio && $u->activo) {
+                $this->actualizar($u, $d, $r);
+                $r['usuarios_actualizados']++;
+            } else {
+                $this->jerarquia($d, $r);
+            }
+        }
+        $this->audit->registrar('directorio.sincronizar', null, null, $r + ['crear_usuarios' => $crearUsuarios], true);
+
+        return $r;
     }
 
     /**

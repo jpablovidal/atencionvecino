@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="robots" content="noindex">
+<link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/img/favicon-32.png') }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ asset('assets/img/favicon-192.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('assets/img/apple-touch-icon.png') }}">
+<meta name="theme-color" content="#0a132d">
 <meta name="sgd-max-subida" content="{{ \App\Support\Subidas::maximoBytes() }}">
 <title>@yield('titulo', 'Inicio') · SGD Santo Domingo</title>
 <link rel="stylesheet" href="{{ asset('assets/css/sgd-fonts.css') }}?v={{ substr((string) @md5_file(public_path('assets/css/sgd-fonts.css')), 0, 8) }}">
@@ -49,11 +54,13 @@
         <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ session('ciudadano.nombres') }} {{ session('ciudadano.apellidos') }}</span></summary>
           <div class="sgd-user-panel"><p class="mb-1">RUN {{ session('ciudadano.run') }}</p><p class="small mb-2">Ciudadano(a)@if($dual ?? false) · espacio vecino(a)@endif</p>
             @if($dual ?? false)<p class="mb-2"><a class="btn btn-sm btn-primary btn-block" href="{{ route('app.bandeja') }}">Ir a mi trabajo (funcionario)</a></p>@endif
+            <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ route('ayuda') }}">Manuales de usuario</a></li></ul>
             <form method="post" action="{{ route('salir') }}">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @elseif(auth()->check())
         <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ auth()->user()->nombreCompleto() }}</span></summary>
           <div class="sgd-user-panel"><p class="mb-1">{{ auth()->user()->rol }}@if(auth()->user()->cargo) · {{ auth()->user()->cargo }}@endif</p>
             @if($dual ?? false)<p class="mb-1"><a class="btn btn-sm btn-primary btn-block" href="{{ route('ciudadano.index') }}">Ir a mis trámites (vecino/a)</a></p>@endif
+            <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ route('ayuda') }}">Manuales de usuario</a></li></ul>
             <form method="post" action="{{ route('salir') }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @else
         @include('partials.boton_claveunica', ['href' => route('ingreso'), 'oscuro' => true])
@@ -115,6 +122,7 @@
 @include('partials.anuncios')
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+@include('partials.recorrido')
 @stack('scripts')
 <script src="{{ asset('assets/js/anuncios.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/anuncios.js')), 0, 8) }}" defer></script>
 <script src="{{ asset('assets/js/sgd.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/sgd.js')), 0, 8) }}"></script>

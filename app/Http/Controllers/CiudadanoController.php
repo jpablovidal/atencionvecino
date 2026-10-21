@@ -66,11 +66,6 @@ class CiudadanoController extends Controller
             'canal_notificacion' => 'required|in:correo,presencial,casilla_unica',
             'consentimiento' => 'required|in:si,no',
         ], ['detalle.max' => 'El detalle no puede superar los '.self::MAX_DETALLE.' caracteres.', 'consentimiento.required' => 'Indique si consiente o no el tratamiento de sus datos personales.']);
-        if ($d['consentimiento'] !== 'si') {
-            $this->audit->registrar('solicitud.consentimiento_rechazado', null, null, ['version' => self::CONSENTIMIENTO_VERSION], false, ['run' => $c['run'], 'rol' => 'ciudadano']);
-
-            return back()->withInput()->with('error', 'Sin su consentimiento para el tratamiento de sus datos personales no es posible ingresar la solicitud por este medio. Puede presentarla en la oficina de partes de la Municipalidad.');
-        }
         $tramite = Tramite::query()->with('anexos')->findOrFail($d['tramite_id']);
         $requeridos = [];
         foreach ($tramite->anexos as $a) {
@@ -81,9 +76,13 @@ class CiudadanoController extends Controller
         $extras = array_values(array_filter((array) $r->file('extras', [])));
         try {
             // RUN, nombres y apellidos vienen SOLO de la sesión (ClaveÚnica); cualquier valor enviado se ignora.
-            $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras, self::CONSENTIMIENTO_VERSION);
+            $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras, $d['consentimiento'] === 'si', self::CONSENTIMIENTO_VERSION);
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        if (! $s->consentimiento_datos) {
+            $this->audit->registrar('solicitud.sin_consentimiento', 'solicitud', $s->folio, ['version' => self::CONSENTIMIENTO_VERSION], false, ['run' => $c['run'], 'rol' => 'ciudadano']);
         }
 
         return redirect()->route('ciudadano.solicitud', $s->folio)->with('ok', 'Solicitud ingresada. Su folio es '.$s->folio.'.');

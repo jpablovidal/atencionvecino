@@ -12,7 +12,7 @@
  <dt class="col-sm-4 col-md-3">Dirección responsable</dt><dd class="col-sm-8 col-md-9">{{ $direccion ?? 'Por asignar' }}</dd>
 </dl>
 <p>{{ $s->detalle }}</p>
-@if($s->consentimiento_datos)<p class="small text-muted">Consentimiento al tratamiento de datos personales otorgado el {{ $s->consentimiento_en?->timezone('America/Santiago')->format('d-m-Y H:i') }} ({{ $s->consentimiento_version }}).</p>@endif
+@if($s->consentimiento_datos === false)<p class="small text-muted">Usted indicó el {{ $s->consentimiento_en?->timezone('America/Santiago')->format('d-m-Y H:i') }} que no autoriza el tratamiento de sus datos personales; la Municipalidad solo trata los que la ley le exige para resolver el trámite.</p>@elseif($s->consentimiento_datos)<p class="small text-muted">Consentimiento al tratamiento de datos personales otorgado el {{ $s->consentimiento_en?->timezone('America/Santiago')->format('d-m-Y H:i') }} ({{ $s->consentimiento_version }}).</p>@endif
 @if($s->prorroga_dias)<div class="alert alert-info" role="status"><strong>Plazo ampliado.</strong> La municipalidad prorrogó el plazo de respuesta {{ $s->prorroga_dias }} días el {{ $s->prorrogada_en?->setTimezone('America/Santiago')->format('d-m-Y') }}. Motivo: {{ $s->prorroga_motivo }}</div>@endif
 <p><a class="btn btn-outline-primary" href="{{ route('ciudadano.comprobante',$s->folio) }}">Descargar comprobante de ingreso (PDF)</a></p>
 @if($pendiente)

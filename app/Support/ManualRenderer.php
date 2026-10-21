@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Usuario;
 use Illuminate\Support\Str;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
@@ -30,6 +31,51 @@ class ManualRenderer
         'tesorero' => ['Tesorero(a) municipal', 'Generar el egreso de los decretos de pago (fecha, medio de pago, monto y detalle) y firmarlo con firma simple o avanzada.'],
         'publico' => ['Público general', 'Validar documentos, consultar documentos públicos y usar las opciones de accesibilidad.'],
     ];
+
+    /** Manual principal según el rol base. */
+    public const POR_ROL = ['funcionario' => 'funcionario', 'secretario' => 'secretario', 'alcalde' => 'alcalde', 'admin' => 'administrador', 'auditor' => 'auditor', 'autoridad' => 'autoridad', 'oirs' => 'oirs',
+        'transparencia' => 'transparencia', 'oficina_partes' => 'oficina-partes', 'contabilidad' => 'pagos', 'tesorero' => 'tesorero'];
+
+    /** Manuales adicionales según permisos (quien tiene la función, tiene el manual). */
+    private const POR_PERMISO = ['transparencia.ver' => 'transparencia', 'oirs.ver' => 'oirs', 'respuestas.despachar' => 'oficina-partes', 'decretopago.gestionar' => 'pagos', 'egresos.gestionar' => 'tesorero', 'seguimiento.consultar' => 'autoridad'];
+
+    /**
+     * Manuales que corresponden al perfil de la persona (el del público siempre). Un(a) superadministrador(a) ve todos.
+     *
+     * @return list<string> slugs en el orden del catálogo
+     */
+    public static function perfilesPara(?Usuario $u, bool $esVecino): array
+    {
+        $ok = ['publico'];
+        if ($esVecino) {
+            $ok[] = 'ciudadano';
+        }
+        if ($u) {
+            if ($u->veTodo()) {
+                return array_keys(self::PERFILES);
+            }
+            if ($p = self::POR_ROL[$u->rolBase()] ?? null) {
+                $ok[] = $p;
+            }
+            foreach (self::POR_PERMISO as $perm => $slug) {
+                if ($u->tienePermiso($perm)) {
+                    $ok[] = $slug;
+                }
+            }
+        }
+
+        return array_values(array_filter(array_keys(self::PERFILES), fn ($k) => in_array($k, $ok, true)));
+    }
+
+    /** Manual del espacio activo (para el recorrido guiado). */
+    public static function principalPara(?Usuario $u, bool $esVecino): string
+    {
+        if ($esVecino || ! $u) {
+            return $esVecino ? 'ciudadano' : 'publico';
+        }
+
+        return self::POR_ROL[$u->rolBase()] ?? 'funcionario';
+    }
 
     /** @return array{html:string,toc:array<int,array{id:string,texto:string}>,titulo:string}|null */
     public function render(string $perfil): ?array

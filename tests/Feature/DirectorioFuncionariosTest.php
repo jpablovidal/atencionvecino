@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ApiConfig;
 use App\Models\Unidad;
+use App\Models\UnidadInterna;
 use App\Models\Usuario;
 use App\Services\ClaveUnicaService;
 use App\Services\Directorio\DirectorioFuncionarios;
@@ -223,5 +224,76 @@ class DirectorioFuncionariosTest extends TestCase
         $this->comoFuncionario($admin)->post('/app/admin/api-directorio-prueba', ['run' => '19142479-'.$dv])->assertRedirect();
         $this->artisan('directorio:consultar', ['run' => '19142479-'.$dv])->assertSuccessful();
         $this->artisan('directorio:consultar', ['run' => '11111111-1'])->assertFailed();
+    }
+
+    public function test_importa_direcciones_departamentos_y_unidades_y_actualiza_cargo_y_correo(): void
+    {
+        $d1 = Run::dv('19142479');
+        $d2 = Run::dv('15086916');
+        $d3 = Run::dv('10332734');
+        $this->fila(['rut' => 19142479, 'dv' => $d1, 'direccion' => 'Dirección de Recursos Humanos', 'departamento' => 'Departamento de Personal', 'unidad' => 'Unidad de Remuneraciones', 'cargo' => 'Profesional', 'mail' => 'rabarca@santodomingo.cl']);
+        $this->fila(['rut' => 15086916, 'dv' => $d2, 'direccion' => 'Dirección de Recursos Humanos', 'departamento' => 'Departamento de Personal', 'unidad' => '', 'cargo' => 'Técnico', 'mail' => 'ppailamilla@santodomingo.cl']);
+        $this->fila(['rut' => 10332734, 'dv' => $d3, 'credencial' => 'Caducada', 'direccion' => 'Dirección de Obras']); // no vigente: no se importa
+        $this->fila(['rut' => 11111111, 'dv' => Run::dv('11111111'), 'direccion' => '', 'departamento' => 'Departamento Aislado', 'unidad' => '', 'cargo' => 'Jefe', 'mail' => '']);
+        // una cuenta existente creada por el directorio con datos viejos
+        $viejo = new Usuario(['run' => '19142479-'.$d1, 'nombres' => 'Rocío', 'apellidos' => 'Abarca', 'correo' => 'viejo@x.cl', 'cargo' => 'Antiguo', 'rol' => 'funcionario', 'activo' => true]);
+        $viejo->forceFill(['directorio' => true])->save();
+        $r = app(DirectorioFuncionarios::class)->sincronizar(false);
+        $this->assertSame(4, $r['filas']);
+        $this->assertSame(3, $r['vigentes']);
+        $this->assertSame(2, $r['direcciones_nuevas']); // RR.HH. y «Departamento Aislado» (hace de dirección)
+        $this->assertSame(1, $r['departamentos_nuevos']);
+        $this->assertSame(1, $r['unidades_nuevas']);
+        $this->assertSame(1, $r['usuarios_actualizados']);
+        $this->assertSame(0, $r['usuarios_creados']);
+        $viejo->refresh();
+        $this->assertSame('Profesional', $viejo->cargo);
+        $this->assertSame('rabarca@santodomingo.cl', $viejo->correo);
+        $rrhh = Unidad::query()->where('nombre', 'Dirección de Recursos Humanos')->firstOrFail();
+        $this->assertSame($rrhh->id, $viejo->unidad_id);
+        $this->assertSame('Departamento de Personal', UnidadInterna::query()->findOrFail($viejo->departamento_id)->nombre);
+        $this->assertSame('Unidad de Remuneraciones', UnidadInterna::query()->findOrFail($viejo->subunidad_id)->nombre);
+        $this->assertDatabaseMissing('unidades', ['nombre' => 'Dirección de Obras']);
+        // idempotente
+        $r2 = app(DirectorioFuncionarios::class)->sincronizar(false);
+        $this->assertSame([0, 0, 0], [$r2['direcciones_nuevas'], $r2['departamentos_nuevos'], $r2['unidades_nuevas']]);
+        $this->assertSame(1, UnidadInterna::query()->where('tipo', 'departamento')->where('nombre', 'Departamento de Personal')->count());
+        // con --usuarios crea las cuentas faltantes con cargo y correo
+        $r3 = app(DirectorioFuncionarios::class)->sincronizar(true);
+        $this->assertSame(2, $r3['usuarios_creados']);
+        $u = Usuario::query()->where('run', '15086916-'.$d2)->firstOrFail();
+        $this->assertSame('Técnico', $u->cargo);
+        $this->assertSame('ppailamilla@santodomingo.cl', $u->correo);
+        $this->assertTrue($u->directorio);
+        $this->assertSame('funcionario', $u->rol);
+        $this->assertSame($rrhh->id, $u->unidad_id);
+        $this->assertStringEndsWith('@sin-correo.invalid', Usuario::query()->where('run', '11111111-'.Run::dv('11111111'))->value('correo'));
+        $this->assertSame(0, Usuario::query()->where('run', '10332734-'.$d3)->count());
+    }
+
+    public function test_el_comando_y_el_panel_importan_y_no_leen_contrasenas(): void
+    {
+        $dv = Run::dv('19142479');
+        $this->fila(['rut' => 19142479, 'dv' => $dv, 'password' => 'NO-LEER-123']);
+        $this->artisan('directorio:sincronizar', ['--usuarios' => true])->assertSuccessful();
+        $this->assertSame(1, Usuario::query()->where('run', '19142479-'.$dv)->count());
+        $admin = $this->usuario('admin');
+        $this->comoFuncionario($admin)->post('/app/admin/api-directorio-sincronizar', ['crear_usuarios' => '1'])->assertRedirect()->assertSessionHas('pruebas');
+        $this->comoFuncionario($admin)->get('/app/admin/api/directorio')->assertOk()->assertSee('Importar direcciones y funcionarios');
+        $this->assertStringNotContainsString('NO-LEER', json_encode(DB::table('audit_log')->get()));
+    }
+
+    public function test_la_ficha_de_usuario_exige_que_departamento_y_unidad_sean_de_su_direccion(): void
+    {
+        $a = Unidad::query()->create(['codigo' => 'AA', 'nombre' => 'Dirección A', 'activo' => true]);
+        $b = Unidad::query()->create(['codigo' => 'BB', 'nombre' => 'Dirección B', 'activo' => true]);
+        $depB = UnidadInterna::query()->create(['unidad_id' => $b->id, 'tipo' => 'departamento', 'nombre' => 'Depto B']);
+        $admin = $this->usuario('admin');
+        $f = $this->usuario('funcionario', 1);
+        $base = ['run' => $f->run, 'nombres' => 'X', 'apellidos' => 'Y', 'correo' => 'x@y.cl', 'rol' => 'funcionario', 'unidad_id' => $a->id, 'departamento_id' => $depB->id];
+        $this->comoFuncionario($admin)->post('/app/admin/usuarios/'.$f->id, $base)->assertSessionHas('error');
+        $this->assertNull($f->refresh()->departamento_id);
+        $this->comoFuncionario($admin)->post('/app/admin/usuarios/'.$f->id, array_merge($base, ['unidad_id' => $b->id]))->assertSessionDoesntHaveErrors();
+        $this->assertSame($depB->id, $f->refresh()->departamento_id);
     }
 }

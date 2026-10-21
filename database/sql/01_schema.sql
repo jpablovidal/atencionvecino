@@ -726,4 +726,14 @@ alter table `solicitudes` add `consentimiento_en` timestamp null;
 
 alter table `solicitudes` add `consentimiento_version` varchar(60) null;
 
+create table `unidades_internas` (`id` bigint unsigned not null auto_increment primary key, `unidad_id` bigint unsigned not null, `padre_id` bigint unsigned null, `tipo` varchar(20) not null, `nombre` varchar(150) not null, `activo` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `unidades_internas` add constraint `unidades_internas_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`) on delete cascade;
+
+alter table `unidades_internas` add index `unidades_internas_unidad_id_tipo_index`(`unidad_id`, `tipo`);
+
+alter table `usuarios` add `departamento_id` bigint unsigned null;
+
+alter table `usuarios` add `subunidad_id` bigint unsigned null;
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -24,7 +24,7 @@ class SolicitudService
      * @param  array<int,UploadedFile>  $anexosRequeridos  indexados por id de TramiteAnexo
      * @param  array<int,UploadedFile>  $extras
      */
-    public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras, ?string $consentimientoVersion = null): Solicitud
+    public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras, ?bool $consiente = null, ?string $consentimientoVersion = null): Solicitud
     {
         if (! $tramite->estaPublicado()) {
             throw new FlujoException('El trámite no está disponible.');
@@ -57,11 +57,11 @@ class SolicitudService
 
         $creados = [];
         try {
-            return DB::transaction(function () use ($ciudadano, $tramite, $correo, $detalle, $canal, $validados, $consentimientoVersion, &$creados) {
+            return DB::transaction(function () use ($ciudadano, $tramite, $correo, $detalle, $canal, $validados, $consiente, $consentimientoVersion, &$creados) {
                 $s = Solicitud::query()->create([
                     'folio' => $this->nuevoFolio(), 'run' => $ciudadano['run'], 'nombres' => $ciudadano['nombres'], 'apellidos' => $ciudadano['apellidos'],
                     'correo' => $correo, 'tramite_id' => $tramite->id, 'detalle' => $detalle, 'canal_notificacion' => $canal, 'estado' => 'ingresada',
-                    'consentimiento_datos' => $consentimientoVersion !== null ? true : null, 'consentimiento_en' => $consentimientoVersion !== null ? now() : null, 'consentimiento_version' => $consentimientoVersion,
+                    'consentimiento_datos' => $consiente, 'consentimiento_en' => $consiente !== null ? now() : null, 'consentimiento_version' => $consiente !== null ? $consentimientoVersion : null,
                 ]);
                 $info = [];
                 foreach ($validados as [$f, $titulo, $tipo]) {
@@ -76,7 +76,7 @@ class SolicitudService
                     'tamano' => $f['tamano'], 'sha256' => $f['sha256'], 'ruta' => $f['ruta'], 'titulo' => 'Comprobante electrónico de ingreso',
                     'subido_por' => $ciudadano['run'], 'nivel_acceso' => 'reservado',
                 ]);
-                $this->audit->registrar('solicitud.ingreso', 'solicitud', $s->folio, ['tramite' => $tramite->codigo_interno, 'anexos' => count($info), 'consentimiento' => $consentimientoVersion], false, ['run' => $ciudadano['run'], 'rol' => 'ciudadano']);
+                $this->audit->registrar('solicitud.ingreso', 'solicitud', $s->folio, ['tramite' => $tramite->codigo_interno, 'anexos' => count($info), 'consentimiento' => $consiente === null ? null : ($consiente ? 'si' : 'no')], false, ['run' => $ciudadano['run'], 'rol' => 'ciudadano']);
                 $this->mov->registrar($s, 'ingreso', 'Su solicitud fue ingresada. Quedó a cargo de la dirección municipal responsable del trámite.');
 
                 return $s;

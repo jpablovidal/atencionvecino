@@ -6,6 +6,7 @@ use App\Exceptions\FlujoException;
 use App\Services\Admin\ApiCatalogo;
 use App\Services\Admin\ApiConfigService;
 use App\Services\AuditoriaService;
+use App\Services\Directorio\DirectorioException;
 use App\Services\Directorio\DirectorioFuncionarios;
 use App\Services\Firma\FirmaClient;
 use App\Services\Firma\FirmaException;
@@ -89,6 +90,23 @@ class ApiConfigController extends Controller
         $this->servicio($servicio);
 
         return back()->with('pruebas', $this->svc->probar($servicio));
+    }
+
+    /** Importa direcciones, departamentos, unidades y datos de los funcionarios desde el directorio (idempotente). */
+    public function directorioSincronizar(Request $r)
+    {
+        $crear = $r->boolean('crear_usuarios');
+        try {
+            $x = app(DirectorioFuncionarios::class)->sincronizar($crear);
+        } catch (DirectorioException $e) {
+            return back()->with('pruebas', [['Importación del directorio', false, $e->getMessage()]]);
+        }
+
+        return back()->with('pruebas', [
+            ['Filas leídas / vigentes', true, $x['filas'].' / '.$x['vigentes'].($x['sin_rut_valido'] ? " ({$x['sin_rut_valido']} sin RUT válido)" : '')],
+            ['Direcciones, departamentos y unidades nuevos', true, $x['direcciones_nuevas'].' / '.$x['departamentos_nuevos'].' / '.$x['unidades_nuevas']],
+            ['Funcionarios: cuentas creadas / actualizadas', true, $x['usuarios_creados'].' / '.$x['usuarios_actualizados'].($crear ? '' : ' (sin crear cuentas nuevas)')],
+        ]);
     }
 
     /** «Probar con un RUN»: explica por qué ese RUN se reconoce o no como funcionario(a) del directorio (sin mostrar datos personales). */

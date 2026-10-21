@@ -231,3 +231,9 @@ Al **crear una comunicación** puede marcar los **archivos del expediente** que 
 
 ## Panel de DocDigital
 En **DocDigital** verá, además del estado de la conexión, un panel con las comunicaciones recibidas y enviadas de su dirección, los **acuses atrasados**, los envíos fallidos, el **tiempo medio para registrar el acuse** y para responder lo recibido, el movimiento de los últimos 6 meses y las instituciones con más movimiento. Auditoría ve toda la municipalidad.
+
+## Solicitudes sin autorización de datos personales
+Al ingresar su solicitud, el vecino(a) indica si autoriza el tratamiento de sus datos personales. Si **no lo autoriza**, igual se tramita, pero el expediente muestra un **aviso amarillo** en la parte superior: trate solo los datos estrictamente necesarios para resolver el trámite y avise al Oficial de Protección de Datos (DPO) si necesita usarlos para otro fin. Quien tenga el permiso de Datos personales puede ver el listado en el menú **Datos personales (DPO)**.
+
+## Recorrido guiado y manuales
+En el menú de su nombre están **Recorrido guiado** (se muestra la primera vez y puede repetirlo) y **Manuales de usuario**, que lista solo los manuales de su perfil.

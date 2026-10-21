@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\FlujoException;
 use App\Models\Rol;
 use App\Models\Unidad;
+use App\Models\UnidadInterna;
 use App\Models\Usuario;
 use App\Services\Admin\AreaService;
 use App\Services\AuditoriaService;
@@ -51,6 +52,7 @@ class UsuariosController extends Controller
     {
         return ['fila' => $u, 'roles' => Rol::query()->where(fn ($w) => $w->where('activo', true)->when($u, fn ($x) => $x->orWhere('clave', $u->rol)))->orderBy('nombre')->get(),
             'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(),
+            'internas' => UnidadInterna::query()->where('activo', true)->orderBy('nombre')->get(['id', 'unidad_id', 'tipo', 'nombre']),
             'areas' => $this->areas->habilitadas(), 'areaIds' => $u ? $u->areas()->pluck('areas.id')->all() : []];
     }
 
@@ -65,8 +67,13 @@ class UsuariosController extends Controller
             'run' => ['required', Rule::unique('usuarios', 'run')->ignore($usuario?->id)],
             'nombres' => 'required|string|max:120', 'apellidos' => 'required|string|max:120', 'correo' => 'required|email|max:190',
             'cargo' => 'nullable|string|max:120', 'rol' => ['required', Rule::exists('roles', 'clave')->where('activo', true)],
-            'unidad_id' => 'nullable|integer|exists:unidades,id', 'puede_firmar' => 'nullable|boolean', 'areas' => 'nullable|array', 'areas.*' => 'integer',
+            'unidad_id' => 'nullable|integer|exists:unidades,id', 'departamento_id' => 'nullable|integer|exists:unidades_internas,id', 'subunidad_id' => 'nullable|integer|exists:unidades_internas,id', 'puede_firmar' => 'nullable|boolean', 'areas' => 'nullable|array', 'areas.*' => 'integer',
         ]);
+        foreach (['departamento_id' => 'departamento', 'subunidad_id' => 'unidad'] as $campo => $tipo) { // el departamento y la unidad deben pertenecer a la dirección elegida
+            if (! empty($d[$campo]) && ! UnidadInterna::query()->whereKey($d[$campo])->where('tipo', $tipo)->where('unidad_id', (int) ($d['unidad_id'] ?? 0))->exists()) {
+                return back()->withInput()->with('error', 'El departamento y la unidad deben pertenecer a la dirección elegida.');
+            }
+        }
         $areaIds = array_map('intval', (array) ($d['areas'] ?? []));
         unset($d['areas']);
         $d = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $d);

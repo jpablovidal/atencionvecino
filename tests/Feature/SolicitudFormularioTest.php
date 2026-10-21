@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Controllers\CiudadanoController;
 use App\Models\Solicitud;
+use App\Services\ExpedienteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Escenario;
 use Tests\TestCase;
@@ -56,14 +57,31 @@ class SolicitudFormularioTest extends TestCase
         $this->assertDatabaseHas('audit_log', ['accion' => 'solicitud.ingreso']);
     }
 
-    public function test_sin_consentimiento_no_se_ingresa_la_solicitud_ni_se_guardan_archivos(): void
+    public function test_sin_consentimiento_igual_se_ingresa_pero_queda_marcado(): void
     {
         $this->sembrar();
-        $this->comoCiudadano()->post('/ciudadano/solicitudes', $this->base(['consentimiento' => 'no']))->assertSessionHas('error');
         $this->comoCiudadano()->post('/ciudadano/solicitudes', array_diff_key($this->base(), ['consentimiento' => 1]))->assertSessionHasErrors('consentimiento');
         $this->assertDatabaseCount('solicitudes', 0);
-        $this->assertDatabaseCount('archivos', 0);
-        $this->assertDatabaseHas('audit_log', ['accion' => 'solicitud.consentimiento_rechazado']);
+        $this->comoCiudadano()->post('/ciudadano/solicitudes', $this->base(['consentimiento' => 'no']))->assertSessionDoesntHaveErrors();
+        $s = Solicitud::query()->firstOrFail();
+        $this->assertFalse($s->consentimiento_datos);
+        $this->assertNotNull($s->consentimiento_en);
+        $this->assertDatabaseHas('audit_log', ['accion' => 'solicitud.sin_consentimiento']);
+        $this->comoCiudadano()->get('/ciudadano/solicitudes/'.$s->folio)->assertOk()->assertSee('no autoriza el tratamiento', false);
+    }
+
+    public function test_el_panel_dpo_lista_las_solicitudes_sin_consentimiento_y_el_expediente_lo_advierte(): void
+    {
+        $this->sembrar();
+        $this->comoCiudadano()->post('/ciudadano/solicitudes', $this->base(['consentimiento' => 'no']));
+        $s = Solicitud::query()->firstOrFail();
+        $admin = $this->usuario('admin');
+        $r = $this->comoFuncionario($admin)->get('/app/datos-personales')->assertOk();
+        $r->assertSee($s->folio)->assertSee('No autoriza')->assertDontSee($s->run);
+        $this->comoFuncionario($admin)->get('/app/datos-personales?estado=con_consentimiento')->assertOk()->assertDontSee($s->folio);
+        $this->comoFuncionario($this->usuario('funcionario'))->get('/app/datos-personales')->assertForbidden();
+        $e = app(ExpedienteService::class)->crearDesdeSolicitud($s->refresh(), $this->usuario('funcionario', 1));
+        $this->comoFuncionario($this->usuario('funcionario', 1))->get('/app/expedientes/'.$e->id)->assertOk()->assertSee('no autorizó el tratamiento de sus datos personales', false);
     }
 
     public function test_la_politica_de_privacidad_es_publica_y_enlaza_el_decreto(): void

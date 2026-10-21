@@ -72,6 +72,11 @@
 
 @if($clave==='directorio')
 <div class="card mb-3"><div class="card-body">
+<h2 class="h5">Importar direcciones y funcionarios</h2>
+<p class="small text-muted">Lee la tabla del directorio (solo identificación, cargo, correo, dirección, departamento y unidad; nunca contraseñas) y: crea las <strong>direcciones, departamentos y unidades</strong> que falten; actualiza el <strong>cargo, correo y ubicación</strong> de los funcionarios que ya tienen cuenta desde el directorio. Es seguro repetirlo.</p>
+<form method="post" action="{{ route('app.admin.api.directorio_sincronizar') }}" data-confirm="¿Importar ahora desde el directorio?">@csrf
+<div class="custom-control custom-checkbox mb-2"><input class="custom-control-input" type="checkbox" id="dir-crear" name="crear_usuarios" value="1"><label class="custom-control-label" for="dir-crear">Crear también la cuenta de los funcionarios vigentes que aún no la tienen (rol funcionario; entran con ClaveÚnica)</label></div>
+<button class="btn btn-primary mb-4">Importar ahora</button></form>
 <h2 class="h5">Probar con un RUN</h2>
 <p class="small text-muted">Indica por qué un RUN se reconoce (o no) como funcionario(a): conexión, si figura en la tabla, dígito verificador y vigencia. No muestra datos personales. Si el RUT no figura, la persona entra solo como vecino(a).</p>
 <form method="post" action="{{ route('app.admin.api.directorio_prueba') }}" class="form-inline">@csrf

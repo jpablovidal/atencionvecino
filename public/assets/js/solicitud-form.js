@@ -1,7 +1,7 @@
 /* Formulario de nueva solicitud (sin scripts en línea; CSP script-src 'self'). Mejora progresiva: sin JavaScript el formulario sigue funcionando.
    1) Contador de caracteres del detalle (avisa al acercarse y si se pasa).
    2) Anexos: tarjeta por archivo con progreso de lectura, vista previa en modal, reemplazar, quitar y «Tomar fotografía» (móvil).
-   3) Consentimiento del tratamiento de datos: si no consiente, no se puede enviar. */
+   3) Consentimiento del tratamiento de datos: si no consiente igual puede enviar; queda registrado que no lo autoriza. */
 (function () {
   'use strict';
   var anuncio = document.getElementById('a11y-anuncio');
@@ -120,12 +120,11 @@
 
   /* ---------- 3. Consentimiento ---------- */
   var no = document.getElementById('consent-no'); var si = document.getElementById('consent-si');
-  var aviso = document.getElementById('consent-aviso'); var enviar = document.getElementById('enviar-solicitud');
+  var aviso = document.getElementById('consent-aviso');
   function consentimiento() {
     var rechaza = !!(no && no.checked);
     if (aviso) { aviso.hidden = !rechaza; }
-    if (enviar) { enviar.disabled = rechaza; }
-    if (rechaza) { decir('Sin su consentimiento no es posible ingresar la solicitud por este medio.'); }
+    if (rechaza) { decir('Podrá enviar igualmente su solicitud; quedará registrado que no autoriza el tratamiento de sus datos.'); }
   }
   [no, si].forEach(function (r) { if (r) { r.addEventListener('change', consentimiento); } });
   consentimiento();

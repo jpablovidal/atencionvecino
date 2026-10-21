@@ -253,3 +253,15 @@ En **Pruebas y producción** puede:
 
 ## Tiempos de respuesta (panel de Inicio)
 En su Inicio verá cuántos **días hábiles** demora en promedio el municipio en responder una solicitud, y el detalle **por área** y **por dirección municipal** (solicitudes terminadas en los últimos 12 meses; los feriados no cuentan). Mide desde que ingresa la solicitud hasta que se cierra su expediente.
+
+## 14. Directorio de funcionarios: importar direcciones, departamentos y unidades
+En **APIs e integraciones → Directorio** configure la conexión (servidor, base `sistemas_usuarios`, tabla `sistemas_users`, usuario de solo lectura) y active el directorio. Luego pulse **Importar ahora**: crea las **direcciones, departamentos y unidades** que falten y actualiza el **cargo, correo y ubicación** de los funcionarios que ya tienen cuenta. Marcando «Crear también la cuenta…» se crean además las cuentas (rol funcionario) de todos los funcionarios vigentes; entrarán con ClaveÚnica. Es seguro repetirlo. Solo se leen datos de identificación y cargo, nunca contraseñas. «Probar con un RUN» explica por qué un RUN se reconoce o no como funcionario(a). En **Usuarios** puede asociar a cada persona su dirección, departamento y unidad.
+
+## 15. Superadministrador(a)
+El superadministrador puede abrir todas las vistas del sistema, crear usuarios y asociarlos. Se asigna desde **Usuarios** (solo otro superadministrador) o con el comando `php artisan sgd:superadmin RUN`; con `--crear` crea la cuenta de administración si no existe.
+
+## 16. Datos personales (DPO)
+El menú **Datos personales (DPO)** (permiso «Ver las solicitudes cuyo titular no autorizó el tratamiento de sus datos personales») lista las solicitudes según lo que el titular indicó al enviar: *no autoriza*, *autoriza* o *sin dato* (anteriores a esta función). El RUN se muestra enmascarado. En cada expediente afectado aparece además un aviso para quienes lo tramitan.
+
+## 17. Recorrido guiado y manuales por perfil
+Cada persona ve en **Manuales de usuario** solo los manuales de su perfil (el superadministrador los ve todos) y puede iniciar el **Recorrido guiado** desde el menú de su nombre.

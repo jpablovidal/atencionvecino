@@ -56,6 +56,7 @@ class Permisos
             'respuestas.despachar' => ['Responder al solicitante (p. ej. Oficina de Partes): ver las respuestas finales instruidas, notificarlas por Casilla Única con copia por correo o registrar la entrega física', 'Respuesta al solicitante', [...self::OP], false, []],
             'anuncios.gestionar' => ['Administrar los anuncios que se muestran en un modal al cargar el sitio (título, descripción, imagen o video)', 'Administración', ['admin', 'oirs', 'transparencia', 'secretario', 'alcalde'], false, ['admin', 'oirs']],
             'restringidos.gestionar' => ['Marcar expedientes, documentos y archivos como restringidos y administrar quién puede verlos', 'Protección de datos', [...self::OP], false, [...self::OP]],
+            'datospersonales.ver' => ['Ver las solicitudes cuyo titular no autorizó el tratamiento de sus datos personales (Oficial de Protección de Datos, DPO)', 'Protección de datos', ['admin', 'auditor'], false, ['admin', 'auditor']],
             'restringidos.auditar' => ['Ver quiénes vieron o intentaron ver expedientes, documentos y archivos restringidos', 'Protección de datos', ['admin', 'auditor'], false, ['admin', 'auditor']],
             'casilla.gestionar' => ['Gestionar el notificador de Casilla Única (probar conexión y reintentar envíos fallidos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
             'archivo.ver' => ['Ver y consultar las microformas del archivo municipal', 'Archivo municipal', $opa, false, ['auditor']],

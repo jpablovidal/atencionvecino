@@ -12,6 +12,7 @@ use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CasillaController;
 use App\Http\Controllers\CatalogoTramitesController;
 use App\Http\Controllers\CiudadanoController;
+use App\Http\Controllers\DatosPersonalesController;
 use App\Http\Controllers\DocDigitalController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\DosFactoresController;
@@ -297,6 +298,8 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     });
 
     // ---- Restricciones de acceso (protección de datos personales)
+    Route::get('/datos-personales', [DatosPersonalesController::class, 'index'])->middleware(['permiso:datospersonales.ver', 'throttle:60,1'])->name('datospersonales');
+
     Route::middleware(['throttle:60,1'])->prefix('restringidos')->group(function () {
         Route::get('/', [RestringidosController::class, 'accesos'])->middleware('permiso:restringidos.auditar')->name('restringidos');
         Route::middleware('permiso:restringidos.gestionar')->group(function () {
@@ -444,6 +447,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::get('/api/{servicio}', [ApiConfigController::class, 'editar'])->name('api.editar');
             Route::post('/api/{servicio}', [ApiConfigController::class, 'actualizar'])->name('api.actualizar');
             Route::post('/api-firma-prueba', [ApiConfigController::class, 'firmaPrueba'])->middleware('throttle:5,1')->name('api.firma_prueba');
+            Route::post('/api-directorio-sincronizar', [ApiConfigController::class, 'directorioSincronizar'])->middleware('throttle:3,1')->name('api.directorio_sincronizar');
             Route::post('/api-directorio-prueba', [ApiConfigController::class, 'directorioPrueba'])->middleware('throttle:10,1')->name('api.directorio_prueba');
             Route::post('/api-correo-prueba', [ApiConfigController::class, 'correoPrueba'])->middleware('throttle:5,1')->name('api.correo_prueba');
             Route::post('/api/{servicio}/probar', [ApiConfigController::class, 'probar'])->name('api.probar');
