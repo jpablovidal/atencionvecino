@@ -143,6 +143,9 @@ return [
         'rate_per_minute' => (int) env('GOOGLE_MAIL_RATE_PER_MINUTE', 20),
     ],
 
+    // Ubicación geográfica del órgano (Decreto 10 art. 8 y 9): se registra en los metadatos de expedientes. Los códigos del Gestor de Códigos del Estado son A VALIDAR.
+    'ubicacion' => ['comuna' => env('SGD_COMUNA', 'Santo Domingo'), 'provincia' => env('SGD_PROVINCIA', 'San Antonio'), 'region' => env('SGD_REGION', 'Valparaíso'), 'pais' => env('SGD_PAIS', 'Chile')],
+
     // Asistente IA (apagado por defecto)
     'llm' => [
         'enabled' => (bool) env('LLM_ENABLED', false),

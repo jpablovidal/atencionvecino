@@ -7,7 +7,11 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px} h1{color:#006fb3;font-
 <p>I. Municipalidad de Santo Domingo</p>
 <table>
 <tr><td class="k">Folio</td><td><strong>{{ $s->folio }}</strong></td></tr>
-<tr><td class="k">Fecha de ingreso</td><td>{{ $s->created_at->timezone('America/Santiago')->format('d-m-Y H:i') }} (hora de Chile)</td></tr>
+<tr><td class="k">Fecha y hora de presentación</td><td>{{ $s->created_at->timezone('America/Santiago')->format('d-m-Y H:i:s') }} (hora de Chile) · {{ $s->created_at->copy()->utc()->format('Y-m-d H:i:s') }} UTC</td></tr>
+<tr><td class="k">Origen de la presentación</td><td>Formulario web de solicitudes (plataforma SGD)</td></tr>
+<tr><td class="k">Órgano ante el cual se tramita</td><td>I. Municipalidad de Santo Domingo @if(config('sgd.institucion_codigo'))(código {{ config('sgd.institucion_codigo') }})@endif</td></tr>
+<tr><td class="k">Recepción realizada por</td><td>Plataforma SGD (recepción automática)</td></tr>
+<tr><td class="k">Expediente vinculado</td><td>@if($s->expediente){{ $s->expediente->codigo }}@else Se asigna cuando un funcionario(a) toma la solicitud; podrá verlo en el seguimiento.@endif</td></tr>
 <tr><td class="k">RUN</td><td>{{ $s->run }}</td></tr>
 <tr><td class="k">Solicitante</td><td>{{ $s->nombres }} {{ $s->apellidos }}</td></tr>
 <tr><td class="k">Correo</td><td>{{ $s->correo }}</td></tr>

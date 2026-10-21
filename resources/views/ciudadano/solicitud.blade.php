@@ -13,6 +13,9 @@
 </dl>
 <p>{{ $s->detalle }}</p>
 @if($s->consentimiento_datos === false)<p class="small text-muted">Usted indicó el {{ $s->consentimiento_en?->timezone('America/Santiago')->format('d-m-Y H:i') }} que no autoriza el tratamiento de sus datos personales; la Municipalidad solo trata los que la ley le exige para resolver el trámite.</p>@elseif($s->consentimiento_datos)<p class="small text-muted">Consentimiento al tratamiento de datos personales otorgado el {{ $s->consentimiento_en?->timezone('America/Santiago')->format('d-m-Y H:i') }} ({{ $s->consentimiento_version }}).</p>@endif
+<form method="post" action="{{ route('ciudadano.consentimiento', $s->folio) }}" class="form-inline mb-3 small" aria-label="Cambiar su respuesta sobre el tratamiento de datos">@csrf
+@if($s->consentimiento_datos)<input type="hidden" name="consentimiento" value="no"><span class="mr-2">Puede cambiar de opinión en cualquier momento (no afecta lo ya realizado).</span><button class="btn btn-sm btn-outline-secondary">Dejar de autorizar el tratamiento de mis datos</button>
+@else<input type="hidden" name="consentimiento" value="si"><span class="mr-2">Si lo desea, puede autorizar el tratamiento de sus datos para esta solicitud.</span><button class="btn btn-sm btn-outline-primary">Autorizar el tratamiento de mis datos</button>@endif</form>
 @if($s->prorroga_dias)<div class="alert alert-info" role="status"><strong>Plazo ampliado.</strong> La municipalidad prorrogó el plazo de respuesta {{ $s->prorroga_dias }} días el {{ $s->prorrogada_en?->setTimezone('America/Santiago')->format('d-m-Y') }}. Motivo: {{ $s->prorroga_motivo }}</div>@endif
 <p><a class="btn btn-outline-primary" href="{{ route('ciudadano.comprobante',$s->folio) }}">Descargar comprobante de ingreso (PDF)</a></p>
 @if($pendiente)

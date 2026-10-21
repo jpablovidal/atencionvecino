@@ -1,32 +1,110 @@
-# Normas técnicas de la Ley 21.180 — matriz de cumplimiento (A VALIDAR)
+# Normas técnicas de la Ley 21.180 — matriz de cumplimiento
 
-> **Estado honesto:** el entorno donde se desarrolló el sistema **no pudo abrir** las páginas de las normas ni la documentación del Codificador (red bloqueada). Esta matriz declara **lo que el sistema hace**; **no** afirma cumplimiento de artículos concretos. Cada fila queda **A VALIDAR contra el texto vigente** por quien tenga acceso a las normas.
+> Generado desde `App\Support\NormasTecnicas` (`php artisan normas:documento`); no edite este archivo a mano. La misma matriz se ve en el sistema en **Administración › Cumplimiento normativo**.
 
-## Normas indicadas por el municipio
-| Norma | Enlace |
-|---|---|
-| Decreto 7 | https://wikiguias.digital.gob.cl/Normas/Decreto7 |
-| Decreto 8 | https://wikiguias.digital.gob.cl/Normas/Decreto8 |
-| Decreto 10 | https://wikiguias.digital.gob.cl/Normas/Decreto10 |
-| Decreto 11 | https://wikiguias.digital.gob.cl/Normas/Decreto11 |
-| Decreto 12 | https://wikiguias.digital.gob.cl/Normas/Decreto12 |
+**Qué se revisó.** Los Decretos 8, 9, 10, 11 y 12 (de 2023, publicados el 17-08-2023) se leyeron en su texto oficial (Biblioteca del Congreso Nacional, versión del 21-10-2026; el Decreto 12 en su última versión, del 24-12-2025, modificada por el Decreto 876). **No se entregó el texto del Decreto 7** (seguridad de la información y ciberseguridad) **ni las guías técnicas** que cada norma ordena dictar a la División de Gobierno Digital: lo que depende de ellas (nombres exactos de metadatos, formatos, contratos de API) sigue **A VALIDAR**.
 
-(Los títulos y el alcance de cada decreto **no se citan** aquí porque no pudieron verificarse.)
+## Normas
+| Decreto | Norma | Publicación | Versión | Texto oficial |
+|---|---|---|---|---|
+| 7 | Norma Técnica de Seguridad de la Información y Ciberseguridad | — | texto no entregado | — · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto7) |
+| 8 | Norma Técnica de Notificaciones | 17-08-2023 | Única | [BCN](https://bcn.cl/3lbiy) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto8) |
+| 9 | Norma Técnica de Autenticación | 17-08-2023 | Única | [BCN](https://bcn.cl/3h75f) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto9) |
+| 10 | Norma Técnica de Documentos y Expedientes Electrónicos para la gestión de procedimientos administrativos | 17-08-2023 | Única | [BCN](https://bcn.cl/3hh4y) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto10) |
+| 11 | Norma Técnica de Calidad y Funcionamiento de las plataformas electrónicas que sustentan procedimientos administrativos | 17-08-2023 | Única | [BCN](https://bcn.cl/3m2os) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto11) |
+| 12 | Norma Técnica de Interoperabilidad | 17-08-2023 | Última versión del 24-12-2025 (modificada por el Decreto 876) | [BCN](https://bcn.cl/OsIA4v) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto12) |
 
-## Qué hace el sistema (por tema)
-| Tema | Control implementado | Dónde | Estado |
-|---|---|---|---|
-| Identificación única de documentos y expedientes | Identificador por **patrón configurable** que incluye el código de institución del Codificador del Estado; correlativo único por tipo y año | Administración › Codificación y normas | A VALIDAR |
-| Metadatos | Metadatos de expediente (MGDEE) y de documento (MGDDE) con esquema `…-A-VALIDAR` | Expediente › Metadatos | A VALIDAR |
-| Firma electrónica | Simple (Ley 19.799) y avanzada (FirmaGob); sello SHA-256 y código de validación público | Documento | A VALIDAR |
-| Integridad y no repudio | Cadena de auditoría HMAC; archivos cifrados (XChaCha20-Poly1305) con hash por versión | Seguridad | A VALIDAR |
-| Versionado y trazabilidad | Versión nueva por cada cambio, con motivo, diferencias y quién editó, visó o firmó | Expediente › Archivos / Historial | A VALIDAR |
-| Seguridad de la información | 2FA del administrador, CSP estricta, validación de archivos por contenido, OWASP (docs/PENTEST.md) | Seguridad | A VALIDAR |
-| Interoperabilidad | Adaptadores configurables Codificador / PISEE / DocDigital; contratos reales A VALIDAR | APIs e integraciones | A VALIDAR |
-| Calidad de plataformas / accesibilidad | Diseño gob.cl y WCAG 2.1 AA verificado con axe en pantallas clave | docs/ACCESIBILIDAD.md | A VALIDAR |
+## Resumen
+- Implementado: **20**
+- Parcial: **28**
+- Pendiente: **3**
+- Del municipio: **3**
+- Componente externo: **1**
 
-## Cómo cerrar la validación
-1. Permitir `wikiguias.digital.gob.cl` y `codificador.digital.gob.cl` en el acceso de red del entorno **o** entregar los textos/capturas.
-2. Contrastar el **esquema de identificación** con `Administración › Codificación y normas` y ajustar los patrones (no requiere programación).
-3. Contrastar metadatos obligatorios con `ExpedienteService::mgdee` y `DocumentoService::mgdde`.
-4. Actualizar esta tabla y `docs/LIMITACIONES.md`.
+**Estados.** *Implementado*: lo hace el sistema y tiene pruebas automáticas. *Parcial*: lo hace en parte. *Pendiente*: el sistema no lo hace. *Del municipio*: lo define o decide la institución. *Componente externo*: lo provee Gobierno Digital u otro órgano.
+
+**Plazo importante.** 2026-12-31: termina la versión anterior de PISEE (Decreto 12, artículo segundo transitorio); desde entonces la red de interoperabilidad es la única vía.
+
+## Decreto 7 — Norma Técnica de Seguridad de la Información y Ciberseguridad
+| Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
+|---|---|---|---|---|
+| — | Seguridad de la información y ciberseguridad (texto del decreto no entregado) | Parcial | Controles existentes: segundo factor del administrador, cifrado de archivos en reposo, cadena de auditoría HMAC, CSP estricta, límites de intentos, módulo de incidentes con marca CSIRT. No se contrastaron con el decreto porque su texto no fue entregado. | docs/SEGURIDAD.md · docs/PENTEST.md |
+
+## Decreto 8 — Norma Técnica de Notificaciones
+| Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
+|---|---|---|---|---|
+| 3, 5, 10 | Domicilio Digital Único (DDU): Casilla Única o correo, a elección del interesado; Registro de DDU del Registro Civil | Parcial | El formulario permite elegir el canal (correo, Casilla Única o presencial) y registra la elección. No consulta el Registro de DDU del Registro Civil (su API y guía técnica no se entregaron). | Formulario de solicitud · Casilla Única |
+| 7 | Aviso de notificación: informativo, nunca sustituye a la notificación | Implementado | El correo de aviso a quien usa Casilla Única es una copia informativa sin documentos ni datos personales; la notificación es la de la Casilla. | Correos de aviso |
+| 8 | Excepción a la notificación electrónica (soporte papel/presencial) | Parcial | Canal presencial con acta y constancia de fecha y hora. No se comunica la excepción al Registro Civil (módulo institucional). | Notificar al ciudadano |
+| 11-12 | Administrador institucional y envío por módulo institucional o API de notificaciones | Parcial | Adaptador configurable de Casilla Única (modo outbox o API) y permiso para gestionarlo. El contrato real de la API de la Plataforma de Notificaciones es A VALIDAR con su guía técnica. | APIs e integraciones › Casilla Única |
+| 13 | Datos del envío: código del órgano, RUN, id de expediente, id del procedimiento, tipo, asunto y descripción, documentos o URI | Parcial | El sistema ya registra RUN, expediente, documento y canal, y conoce el código de institución y del procedimiento (CPAT); falta enviarlos en el formato exacto de la API, que depende de la guía técnica (A VALIDAR). | Notificaciones |
+| 15, 17-18 | Resultado del envío con código de transacción y estados (enviada, excepcionada, sin DDU, fallida: reenviar) | Parcial | Estados pendiente, enviada y fallida con reintentos y evidencia (folio de la Casilla o ID del mensaje). Los estados «excepcionada» y «sin DDU» dependen del Registro de DDU. | Expediente › Notificaciones |
+| 16, 19 | Constancia de fecha y hora del envío, y de la notificación hecha en dependencias | Implementado | Cada notificación guarda su evidencia con fecha y hora; la presencial registra el acta con quien la realizó. | Expediente › Notificaciones |
+| 20 | Correo como DDU: informar al interesado que mantenga la cuenta habilitada, revise el correo no deseado y verifique el remitente | Implementado | El formulario muestra esas tres recomendaciones al elegir «correo», y los avisos indican el remitente institucional. | Formulario de solicitud |
+| 21 | Interrupción del servicio: reenviar al volver a estar disponible | Parcial | Los envíos fallidos quedan marcados y se pueden reintentar; no hay certificado de indisponibilidad de la plataforma. | Notificaciones › Reintentar |
+
+## Decreto 9 — Norma Técnica de Autenticación
+| Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
+|---|---|---|---|---|
+| 3-4, 10 | Usar mecanismos oficiales de autenticación (ClaveÚnica) con integración certificada | Implementado | Ingreso único con ClaveÚnica (OpenID Connect) con las credenciales certificadas por Gobierno Digital; el RUN lo entrega ClaveÚnica y no se puede modificar. | Ingreso |
+| 3 inc. 2 | Otros mecanismos solo con autorización expresa previa de SEGPRES | Parcial | Existe un ingreso alternativo de funcionarios con usuario y contraseña del directorio municipal (no es un mecanismo oficial). Hay que obtener la autorización de SEGPRES o desactivarlo en APIs e integraciones › Directorio. | Directorio › Permitir ingresar con usuario y contraseña |
+| 5 | Clave Tributaria para personas jurídicas | Pendiente | El sistema atiende solo personas naturales con ClaveÚnica; no integra Clave Tributaria (personas jurídicas, apoderados o representantes). |  |
+| 6 | OpenID Connect y OAuth 2.0; factores almacenados cifrados; transmisión con TLS 1.2 o superior | Implementado | Flujo de código con «state» de un solo uso; el sistema no guarda contraseñas ni factores de ClaveÚnica; las comunicaciones usan HTTPS (el TLS lo provee el hosting con AutoSSL). | Ingreso · docs/CLAVEUNICA_BOTON.md |
+| 7 | Prevención de accesos no autorizados: límite de intentos fallidos con bloqueo y desbloqueo | Implementado | ClaveÚnica administra su propio límite; el ingreso por usuario del directorio bloquea tras varios intentos fallidos durante 15 minutos y limita por IP. | Ingreso |
+| 8-9 | Lineamientos gráficos y accesibilidad del proceso de autenticación | Implementado | Botón oficial de ClaveÚnica según el manual de marca; pantalla de ingreso accesible (WCAG). | Ingreso · docs/ACCESIBILIDAD.md |
+| 12 | Informar al CSIRT y al administrador del mecanismo ante sospecha de riesgos | Parcial | El módulo de incidentes permite marcar un incidente como reportable al CSIRT y registrar su alerta temprana; la comunicación al CSIRT la hace la persona responsable. | Seguridad › Incidentes |
+| 13 | Registro de accesos autenticados: identificador del usuario y fecha y hora en UTC+00:00 | Implementado | Cada ingreso y salida queda en la auditoría con RUN, rol, IP y hora; la bitácora y su exportación muestran la hora en UTC además de la hora de Chile. La sincronización horaria con el SHOA la provee el hosting (A VALIDAR con el proveedor). | Seguridad › Auditoría |
+| 14 | Protección de datos personales y derechos ARCO | Implementado | Política de privacidad pública (/privacidad), consentimiento informado al ingresar una solicitud y posibilidad de cambiarlo después. | Pie de página › Privacidad |
+| 15 | Factores de autenticación adicionales en plataformas con información sensible | Implementado | Segundo factor (TOTP) obligatorio para la administración. | Seguridad › Segundo factor |
+
+## Decreto 10 — Norma Técnica de Documentos y Expedientes Electrónicos para la gestión de procedimientos administrativos
+| Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
+|---|---|---|---|---|
+| 3-4 | Política de Gestión Documental (objetivo, roles, procedimientos, preservación, criterios, gobernanza) revisada cada 1 a 3 años | Parcial | El sistema registra la política vigente (decreto, fecha de aprobación) y avisa cuando corresponde revisarla. Redactarla y aprobarla es del municipio. | Cumplimiento normativo › Política de Gestión Documental |
+| 5-6 | Plataforma de gestión de expedientes y las 5 fases del ciclo vital (recepción, creación, procesamiento, transición, disposición final) | Parcial | Recepción (formulario web y comunicaciones DocDigital), creación de expediente, procesamiento (derivar, comentar, documentos, notificar) y disposición con acta en el Archivo municipal. La transferencia al Archivo Nacional es manual. | Expedientes · Archivo municipal |
+| 7, 17, 32 | Repositorio documental con preservación (confidencialidad, disponibilidad e integridad) y plazos de conservación | Parcial | Archivos cifrados en reposo con hash por versión, repositorio local o Google Drive, respaldo documentado. Los plazos de conservación y la transferencia al Archivo Nacional los define la Política (municipio). | Repositorio · docs/SEGURIDAD.md |
+| 8 | Codificación con el Gestor de Códigos del Estado (órgano, procedimiento y cobertura geográfica) | Parcial | Código de institución PE-MUN-00243 del Codificador, cliente de su API y código CPAT por trámite. La ubicación (comuna, provincia, región, país) se registra en los metadatos; los códigos territoriales del Gestor son A VALIDAR. | Administración › Codificación y normas |
+| 9 | Fecha y hora de toda gestión en UTC+00:00, con ubicación geográfica, sincronizada con el SHOA | Parcial | Los metadatos del expediente llevan la fecha de apertura en UTC y con el desfase de Chile, y la ubicación; la bitácora muestra y exporta la hora UTC. Los registros se almacenan con la hora de Chile (la conversión es exacta); la sincronización con el SHOA es del hosting. | Expediente › Metadatos · Auditoría |
+| 11, 19, 34 | Trazabilidad mínima: creación, incorporación, modificación, transferencia y eliminación; acceso al expediente; poderes | Implementado | Cadena de auditoría HMAC de toda acción con RUN y hora, versiones con motivo y responsables, registro de cada apertura de un expediente (con datos sensibles) y del responsable. Las acciones automáticas se identifican como «sistema». | Seguridad › Auditoría · Expediente |
+| 12-14, 22 | Estructura y metadatos estandarizados del documento y del expediente | Parcial | Metadatos MGDEE (expediente) y MGDDE (documento) vinculados al índice electrónico. Los nombres exactos de los campos dependen de la guía técnica (no entregada): esquema marcado «A VALIDAR». | Expediente › Metadatos |
+| 13 | Formatos válidos de los documentos electrónicos (según la guía técnica) | Parcial | PDF, JPG, PNG y TIF validados por contenido; los PDF generados no son PDF/A. La lista de formatos de la guía técnica es A VALIDAR. | Administración › Archivos |
+| 15, 29, 36 | Acceso de interesados y usuarios con los mecanismos de autenticación oficiales; consulta de sus expedientes | Implementado | El vecino accede con ClaveÚnica a «Mis solicitudes» (estado, etapas, documentos notificados); el personal, con ClaveÚnica y rol. | Mis solicitudes |
+| 16, 31 | Consulta de trazabilidad para verificar identificación y modificaciones, e identificar a quien las ejecutó | Implementado | Bitácora de auditoría con filtros y exportación; índice electrónico del expediente con SHA-256; verificación pública de documentos por código. | Seguridad › Auditoría · /validar |
+| 18 | Crear el expediente con un identificador único institucional (IUIe) | Implementado | Cada expediente recibe un código y un identificador único con el código de institución, configurable en Administración › Codificación. | Expediente |
+| 19-20 | Esquema del expediente: documentos, índice electrónico, metadatos, trazabilidad, registro de accesos, registro de actos y de otras acciones; fidelidad y orden sucesivo | Implementado | El expediente muestra documentos, índice con hash, metadatos, comentarios y derivaciones, comunicaciones, notificaciones y vínculos en orden; los accesos y acciones quedan en la auditoría. | Expediente |
+| 21, 25-26 | Incorporación de documentos: formulario web, documentos digitales y físicos como microformas; expediente híbrido | Parcial | La solicitud web genera un documento (comprobante) con sus anexos; el Archivo municipal registra microformas con acta de certificación y disposición. El expediente híbrido (referencia a papel) se registra como microforma asociada, sin estructura específica de la guía. | Solicitudes · Archivo municipal |
+| 23 | Vinculación y anidamiento de expedientes (acumulación de procedimientos) | Implementado | Se pueden asociar expedientes y microformas, con su contenido, quedando registrado quién y por qué. | Expediente › Expedientes y microformas asociados |
+| 24 | Datos y documentos interoperados: identificar origen, servicio y autorización del interesado si son sensibles | Parcial | Las consultas PISEE guardan servicio, finalidad, funcionario, RUN consultado y resultado cifrado en el expediente. No guardan aún el código del órgano ni la autorización del interesado; además PISEE termina el 31-12-2026 (ver Decreto 12). | Expediente › Consultas a servicios del Estado |
+| 27-28 | Incorporar al expediente las comunicaciones oficiales y las notificaciones | Implementado | Las comunicaciones DocDigital (recibidas y enviadas, con acuse) y las notificaciones con su evidencia quedan en el expediente. | Expediente |
+| 30 | Certificado de presentación con firma electrónica: fecha y hora, origen, expediente, órgano, quien presenta y quien recibe | Parcial | El comprobante electrónico incluye fecha y hora (Chile y UTC), origen (formulario web), órgano y su código, identificación de quien presenta, plataforma que recibe y código de verificación con QR; el número de expediente se informa en el seguimiento al tomarse la solicitud. No lleva firma electrónica avanzada institucional. | Comprobante de ingreso |
+| 33 | Enlaces persistentes a documentos | Parcial | Enlace público permanente por código de validación (/validar/{código}); las vinculaciones entre expedientes son internas. | /validar |
+| 35 | Estándares mínimos: control de poderes, roles de acceso a información sensible, copias autorizadas, condiciones del repositorio | Parcial | Roles y permisos por usuario, restricción de expedientes, documentos y archivos sensibles, copias autorizadas con certificado. El control de poderes de apoderados y representantes de personas jurídicas no está implementado. | Roles y permisos · Restringidos · Copias |
+| 37 | Registro de accesos a documentos con datos sensibles (usuario, fecha y hora, documentos) y perfiles que impidan ver datos de otras partes | Implementado | Cada apertura de un documento sensible o restringido queda registrada y el panel «Datos personales (DPO)» y «Accesos a restringidos» los listan con quién, cuándo y qué. | Datos personales (DPO) · Accesos a restringidos |
+| 38-40 | Guías técnicas, gradualidad y revisión de la norma cada 2 años | Del municipio | Las guías técnicas las dicta la División de Gobierno Digital; la revisión periódica de esta matriz es parte del Ciclo de Calidad del municipio. |  |
+
+## Decreto 11 — Norma Técnica de Calidad y Funcionamiento de las plataformas electrónicas que sustentan procedimientos administrativos
+| Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
+|---|---|---|---|---|
+| 3, 11 | Catálogo de plataformas electrónicas con línea de base, actualizado al cerrar cada plan | Implementado | Catálogo con las plataformas del municipio (el SGD y sus integraciones), línea de base, prioridad y vida útil estimada. | Cumplimiento normativo › Catálogo de plataformas |
+| 4-6, 8, 10 | Plan de Mejora Continua: iniciativas, objetivos, responsables, plazos, costos, subcaracterísticas (mínimo 4), métricas y umbrales, riesgos | Implementado | Registro de iniciativas por plataforma con etapa del ciclo (1 a 5), responsable, plazo, costo, subcaracterística, métrica y umbrales (exitoso, aceptable, insuficiente), riesgos y vida útil. | Cumplimiento normativo › Plan de mejora continua |
+| 9 | Evaluación de la calidad e Informe de Evaluación | Parcial | Cada iniciativa registra su resultado medido y el análisis; el informe se arma con esos datos (vista imprimible). El diseño de la evaluación y su informe formal los redacta el municipio. | Cumplimiento normativo |
+| 7, 12-14 | Formulación presupuestaria y proyectos EvalTIC | Del municipio | Se hace en la plataforma de la Dirección de Presupuestos; el plan registra el costo estimado de cada iniciativa para apoyar la formulación. |  |
+| 15-16 | Coordinador(a) de Transformación Digital designado y reportando avances | Parcial | El sistema registra la designación (decreto, titular y subrogante). Informar el cambio a la División de Gobierno Digital y reportar avances son tareas de la persona designada. | Cumplimiento normativo › Coordinador(a) |
+
+## Decreto 12 — Norma Técnica de Interoperabilidad
+| Art. | Requisito | Estado | Qué hace el sistema / qué falta | Dónde |
+|---|---|---|---|---|
+| 3-6 | Integrarse a la red de interoperabilidad mediante un nodo (propio o de Gobierno Digital) | Pendiente | El sistema no incluye un nodo de interoperabilidad ni se conecta a los servicios centralizados. Debe solicitarse el nodo a la Secretaría de Gobierno Digital e integrarlo con el sistema. |  |
+| segundo transitorio | Fin de la versión anterior de PISEE el 31-12-2026: desde esa fecha la red de interoperabilidad es la única vía | Pendiente | El módulo PISEE del sistema corresponde a la versión anterior y deja de ser utilizable en esa fecha. El panel de integraciones muestra un aviso con los días que faltan. | APIs e integraciones › PISEE |
+| 8, 12 bis, 13 | Catálogo de Servicios, términos y condiciones, Gestor de Solicitudes (15 días hábiles) | Componente externo | Los provee la Secretaría de Gobierno Digital. El municipio debe publicar sus servicios y términos solo si provee servicios; hoy el sistema solo consume. |  |
+| 9 | Registro de trazabilidad de cada transacción (plataforma, órgano, funcionario, procedimiento, plazo, UTC, RUN y autorización si es sensible, tipo de respuesta) | Parcial | Las consultas PISEE guardan funcionario, RUN consultado, finalidad, estado, error y fecha. Faltan el código del órgano destinatario, el procedimiento, el plazo y la hora en UTC dentro del propio registro, y el envío al registro centralizado. | Expediente › Consultas a servicios del Estado |
+| 14-15 | Gestor de Autorizaciones y requisitos del consentimiento: libre, específico, informado, esencialmente revocable; negarse no termina el procedimiento | Parcial | La autorización para interoperar datos sensibles es del Gestor de Autorizaciones (externo, vía ClaveÚnica). El consentimiento propio del formulario cumple los mismos principios: es libre (si no consiente, igual se tramita), específico e informado, y la persona puede cambiarlo (revocarlo) después, sin efecto retroactivo. | Formulario de solicitud · Mis solicitudes |
+| 17 | Gestor de Códigos del Estado | Parcial | Cliente de la API del Codificador (listado, detalle, jerarquía) y sincronización de instituciones; el contrato exacto es A VALIDAR. | Administración › Codificador |
+| 18 | Catálogo de Procedimientos Administrativos y Trámites: nombre, ley de origen, código, interoperabilidad, Gestor de Autorizaciones, contacto | Parcial | Cada trámite tiene nombre, código CPAT, dirección responsable y descripción. No registra la ley de origen, si requiere interoperar ni el contacto para el interesado como campos propios. | Trámites y servicios |
+| 20 | Clasificación de datos (personales, sensibles, estadísticos, secretos, reservados) | Parcial | Los documentos se marcan como sensibles y con nivel de acceso (público o reservado) y los expedientes pueden restringirse; no hay una clasificación completa por tipo de dato. | Documento › Nivel de acceso |
+| 29 | Revisión de la norma cada 2 años | Del municipio | Esta matriz se revisa con cada versión de las normas. |  |
+
+## Cómo se mantiene
+1. Al recibir las guías técnicas, actualizar los nombres de metadatos, formatos y contratos marcados *A VALIDAR* y cambiar el estado de las filas.
+2. Revisar la matriz al menos cada dos años (cada decreto lo exige) y cuando cambie una norma.
+3. Regenerar este documento con `php artisan normas:documento`.

@@ -22,7 +22,7 @@
 </form>
 <p role="status">{{ $filas->total() }} {{ $filas->total() === 1 ? 'registro' : 'registros' }}.</p>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Registros de auditoría, más recientes primero</caption><thead><tr><th scope="col">#</th><th scope="col">Fecha</th><th scope="col">Actor</th><th scope="col">Acción</th><th scope="col">Entidad</th><th scope="col">IP</th><th scope="col">Detalle</th></tr></thead><tbody>
-@forelse($filas as $v)<tr><td>{{ $v->id }}</td><td>{{ substr((string) $v->getRawOriginal('ts'), 0, 19) }}</td><td>{{ $v->actor_rol ?? '—' }}@if($v->actor_run)<br><small>{{ \App\Support\Run::enmascarar($v->actor_run) }}</small>@endif</td><td>{{ $v->accion }}@if($v->sensible) <span class="badge badge-warning">sensible</span>@endif</td><td>{{ $v->entidad }} {{ $v->entidad_id }}</td><td>{{ $v->ip }}</td><td><small class="text-break">{{ \Illuminate\Support\Str::limit((string) $v->detalle, 140) }}</small></td></tr>
+@forelse($filas as $v)<tr><td>{{ $v->id }}</td><td>{{ substr((string) $v->getRawOriginal('ts'), 0, 19) }}<br><small class="text-muted">UTC {{ $v->tsUtc() }}</small></td><td>{{ $v->actor_rol ?? '—' }}@if($v->actor_run)<br><small>{{ \App\Support\Run::enmascarar($v->actor_run) }}</small>@endif</td><td>{{ $v->accion }}@if($v->sensible) <span class="badge badge-warning">sensible</span>@endif</td><td>{{ $v->entidad }} {{ $v->entidad_id }}</td><td>{{ $v->ip }}</td><td><small class="text-break">{{ \Illuminate\Support\Str::limit((string) $v->detalle, 140) }}</small></td></tr>
 @empty<tr><td colspan="7">Sin registros para los filtros indicados.</td></tr>@endforelse</tbody></table></div>
 {{ $filas->links() }}
 @endsection

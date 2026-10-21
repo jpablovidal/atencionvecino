@@ -84,6 +84,8 @@ class Permisos
             'firmas.gestionar' => ['Estilo y posición de firmas', 'Administración', ['admin']],
             'folios.gestionar' => ['Folios por tipo de documento', 'Administración', ['admin']],
             'repositorio.gestionar' => ['Repositorio de documentos (Google Drive)', 'Administración', ['admin']],
+            'cumplimiento.ver' => ['Ver el cumplimiento normativo: matriz de normas técnicas, política de gestión documental, catálogo de plataformas y plan de mejora continua', 'Administración', ['admin', 'auditor'], false, ['admin', 'auditor']],
+            'cumplimiento.gestionar' => ['Registrar la política de gestión documental, el coordinador de transformación digital, el catálogo de plataformas y el plan de mejora continua', 'Administración', ['admin'], false, ['admin']],
             'roles.gestionar' => ['Roles y permisos', 'Administración', ['admin'], true],
         ];
     }

@@ -41,7 +41,7 @@ class ProduccionService
         'anuncios', 'api_config', 'areas', 'audit_log', 'config_sitio', 'conexiones_resumen', 'delegaciones_firma', 'firma_estilos', 'firma_posiciones', 'geo_dns_cache',
         'incidentes', 'instituciones', 'menu_items', 'metricas_recursos', 'migrations', 'pago_firmantes', 'pisee_servicios', 'plantilla_unidades', 'plantilla_versiones',
         'plantillas', 'procesos_codificador', 'recursos_imagen', 'repositorio_carpetas', 'repositorio_reubicaciones', 'rol_permisos', 'roles', 'sessions', 'tipos_documento',
-        'tramite_anexos', 'tramite_unidad', 'tramite_versiones', 'tramites', 'transparencia_feriados', 'unidades', 'unidades_internas', 'usuario_areas', 'usuario_permisos', 'usuario_roles', 'usuarios', 'sqlite_sequence',
+        'tramite_anexos', 'tramite_unidad', 'tramite_versiones', 'tramites', 'transparencia_feriados', 'calidad_iniciativas', 'calidad_plataformas', 'unidades', 'unidades_internas', 'usuario_areas', 'usuario_permisos', 'usuario_roles', 'usuarios', 'sqlite_sequence',
     ];
 
     /** Correo de los usuarios de demostración del proyecto: se desactivan al pasar a producción. */

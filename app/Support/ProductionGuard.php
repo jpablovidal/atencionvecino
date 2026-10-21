@@ -115,6 +115,9 @@ class ProductionGuard
         if (config('sgd.pisee.mode') === 'mock') {
             $a[] = 'PISEE está en modo simulado.';
         }
+        if (config('sgd.pisee.mode') === 'api') {
+            $a[] = NormasTecnicas::avisoPisee();
+        }
         if (config('mail.default') === 'gmail_api' && ! is_file((string) config('sgd.google.service_account_json'))) {
             $a[] = 'El correo usa la API de Gmail pero falta el archivo JSON de la cuenta de servicio.';
         }

@@ -98,6 +98,22 @@ class CiudadanoController extends Controller
             'linea' => $mov->linea($s), 'direccion' => $mov->direccion($s)]);
     }
 
+    /** El titular puede cambiar su respuesta sobre el tratamiento de sus datos (autorizar o revocar) en cualquier momento; no tiene efecto retroactivo (Decreto 12, art. 15). */
+    public function consentimiento(Request $r, string $folio)
+    {
+        $s = $this->propia($r, $folio);
+        $d = $r->validate(['consentimiento' => 'required|in:si,no']);
+        $nuevo = $d['consentimiento'] === 'si';
+        if ($s->consentimiento_datos === $nuevo) {
+            return back()->with('error', 'Su respuesta ya es esa.');
+        }
+        $antes = $s->consentimiento_datos === null ? 'sin dato' : ($s->consentimiento_datos ? 'si' : 'no');
+        $s->forceFill(['consentimiento_datos' => $nuevo, 'consentimiento_en' => now(), 'consentimiento_version' => self::CONSENTIMIENTO_VERSION])->save();
+        $this->audit->registrar($nuevo ? 'solicitud.consentimiento_otorgado' : 'solicitud.consentimiento_revocado', 'solicitud', $s->folio, ['antes' => $antes, 'version' => self::CONSENTIMIENTO_VERSION], false, ['run' => $s->run, 'rol' => 'ciudadano']);
+
+        return back()->with('ok', $nuevo ? 'Registramos que autoriza el tratamiento de sus datos personales para esta solicitud.' : 'Registramos que no autoriza el tratamiento de sus datos. Esto no afecta lo ya realizado y su solicitud sigue su curso.');
+    }
+
     public function responder(Request $r, string $folio, SolicitudService $svc)
     {
         $s = $this->propia($r, $folio);

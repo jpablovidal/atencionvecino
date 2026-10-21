@@ -3,7 +3,7 @@
 @section('contenido')
 <h1>Codificación y normas técnicas</h1>
 <p class="lead-sub">La codificación de documentos y expedientes se basa en el <strong>Codificador del Estado</strong> y las normas técnicas de la Ley 21.180. Elija a qué institución corresponde su municipio y cómo se arma el identificador.</p>
-<div class="alert alert-info" role="note"><strong>A VALIDAR:</strong> el texto de las normas técnicas y el contrato de la API del Codificador no pudieron leerse desde el entorno de desarrollo. Los patrones son configurables y deben contrastarse con la norma vigente antes de operar.</div>
+<div class="alert alert-info" role="note"><strong>A VALIDAR:</strong> el contrato de la API del Codificador y las guías técnicas de las normas no se han entregado. Los patrones son configurables y deben contrastarse con la norma vigente antes de operar.</div>
 
 <section class="card mb-4" aria-labelledby="mu"><div class="card-body"><h2 class="h5" id="mu">Municipio en el Codificador</h2>
 <p>Actual: @if($municipio['codigo'])<strong>{{ $municipio['nombre'] ?? 'Sin nombre en el catálogo' }}</strong> (código <code>{{ $municipio['codigo'] }}</code>, origen: {{ $municipio['origen'] }})@else <strong>sin configurar</strong> (se usa «SGD»)@endif.</p>
@@ -23,7 +23,6 @@
  <button class="btn btn-primary">Guardar patrones</button></form></div></section>
 
 <section class="card mb-4" aria-labelledby="no"><div class="card-body"><h2 class="h5" id="no">Normas técnicas y matriz de cumplimiento</h2>
-<ul>@foreach($normas as $n => $u)<li><a href="{{ $u }}" rel="noopener noreferrer" target="_blank">{{ $n }}<span class="sr-only"> (se abre en una pestaña nueva)</span></a></li>@endforeach</ul>
-<div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Matriz de cumplimiento</caption><thead><tr><th scope="col">Tema</th><th scope="col">Qué hace el sistema</th><th scope="col">Estado</th><th scope="col">Dónde</th></tr></thead><tbody>
-@foreach($matriz as $m)<tr><th scope="row">{{ $m['tema'] }}</th><td>{{ $m['control'] }}</td><td>{{ $m['estado'] }}</td><td>{{ $m['donde'] }}</td></tr>@endforeach</tbody></table></div></div></section>
+<p>Los Decretos 8 (notificaciones), 9 (autenticación), 10 (documentos y expedientes electrónicos), 11 (calidad y funcionamiento) y 12 (interoperabilidad) se revisaron en su texto oficial. La matriz por artículo —qué hace el sistema, qué falta y qué le corresponde al municipio—, la política de gestión documental, el catálogo de plataformas y el plan de mejora continua están en <a href="{{ route('app.admin.cumplimiento') }}">Cumplimiento normativo</a>.</p>
+<ul class="mb-0">@foreach(\App\Support\NormasTecnicas::ESTADOS as $k => $l)<li>{{ $l }}: <strong>{{ $resumenNormas[$k] }}</strong></li>@endforeach</ul></div></section>
 @endsection

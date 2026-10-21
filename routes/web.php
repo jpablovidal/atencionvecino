@@ -12,6 +12,7 @@ use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CasillaController;
 use App\Http\Controllers\CatalogoTramitesController;
 use App\Http\Controllers\CiudadanoController;
+use App\Http\Controllers\CumplimientoController;
 use App\Http\Controllers\DatosPersonalesController;
 use App\Http\Controllers\DocDigitalController;
 use App\Http\Controllers\DocumentoController;
@@ -107,6 +108,7 @@ Route::prefix('ciudadano')->middleware(['ciudadano', 'nostore'])->name('ciudadan
     Route::get('/nueva/{tramite}', [CiudadanoController::class, 'nueva'])->name('nueva');
     Route::post('/solicitudes', [CiudadanoController::class, 'store'])->middleware('throttle:envio')->name('store');
     Route::get('/solicitudes/{folio}', [CiudadanoController::class, 'solicitud'])->name('solicitud');
+    Route::post('/solicitudes/{folio}/consentimiento', [CiudadanoController::class, 'consentimiento'])->middleware('throttle:envio')->name('consentimiento');
     Route::post('/solicitudes/{folio}/responder', [CiudadanoController::class, 'responder'])->middleware('throttle:envio')->name('responder');
     Route::get('/solicitudes/{folio}/comprobante', [CiudadanoController::class, 'comprobante'])->name('comprobante');
     Route::get('/solicitudes/{folio}/documentos/{documento}', [CiudadanoController::class, 'documento'])->name('documento');
@@ -408,6 +410,22 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::post('/apariencia/logo', [AparienciaController::class, 'logo'])->name('apariencia.logo');
             Route::post('/apariencia/logo/quitar', [AparienciaController::class, 'quitarLogo'])->name('apariencia.logo.quitar');
             Route::post('/apariencia/restablecer', [AparienciaController::class, 'restablecer'])->name('apariencia.restablecer');
+        });
+        Route::middleware('permiso:cumplimiento.ver')->prefix('cumplimiento')->group(function () {
+            Route::get('/', [CumplimientoController::class, 'index'])->name('cumplimiento');
+            Route::get('/informe', [CumplimientoController::class, 'informe'])->name('cumplimiento.informe');
+            Route::middleware(['permiso:cumplimiento.gestionar', 'throttle:60,1'])->group(function () {
+                Route::post('/politica', [CumplimientoController::class, 'politica'])->name('cumplimiento.politica');
+                Route::post('/coordinador', [CumplimientoController::class, 'coordinador'])->name('cumplimiento.coordinador');
+                Route::get('/plataformas/nueva', [CumplimientoController::class, 'plataforma'])->name('cumplimiento.plataforma.nueva');
+                Route::get('/plataformas/{plataforma}', [CumplimientoController::class, 'plataforma'])->whereNumber('plataforma')->name('cumplimiento.plataforma');
+                Route::post('/plataformas', [CumplimientoController::class, 'guardarPlataforma'])->name('cumplimiento.plataforma.guardar');
+                Route::post('/plataformas/{plataforma}', [CumplimientoController::class, 'guardarPlataforma'])->whereNumber('plataforma')->name('cumplimiento.plataforma.actualizar');
+                Route::get('/iniciativas/nueva', [CumplimientoController::class, 'iniciativa'])->name('cumplimiento.iniciativa.nueva');
+                Route::get('/iniciativas/{iniciativa}', [CumplimientoController::class, 'iniciativa'])->whereNumber('iniciativa')->name('cumplimiento.iniciativa');
+                Route::post('/iniciativas', [CumplimientoController::class, 'guardarIniciativa'])->name('cumplimiento.iniciativa.guardar');
+                Route::post('/iniciativas/{iniciativa}', [CumplimientoController::class, 'guardarIniciativa'])->whereNumber('iniciativa')->name('cumplimiento.iniciativa.actualizar');
+            });
         });
         Route::middleware('permiso:roles.gestionar')->group(function () {
             Route::get('/permisos', [PermisosUsuarioController::class, 'indice'])->name('permisos');

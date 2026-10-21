@@ -64,7 +64,8 @@ class ExpedienteService
                 'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => CodificacionService::institucion($e->area_id ?? $e->unidad?->area_id),
                     'nombre' => 'Comunicación oficial: '.$c->asunto, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $unidad->nombre],
                 'descripcion' => ['resumen' => mb_substr($c->asunto, 0, 500), 'folio_docdigital' => $c->evidencia],
-                'temporalidad' => ['fecha_apertura' => $now, 'fecha_cierre' => null, 'fecha_recepcion' => $c->evidencia_en?->toIso8601String()],
+                'ubicacion' => (array) config('sgd.ubicacion') + ['codigo_gestor_codigos' => null], // códigos territoriales del Gestor de Códigos: A VALIDAR
+                'temporalidad' => ['fecha_apertura' => $now, 'fecha_apertura_utc' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'fecha_cierre' => null, 'fecha_recepcion' => $c->evidencia_en?->toIso8601String()],
                 'caracterizacion' => ['tipo_expediente' => 'Comunicación oficial recibida', 'serie_documental' => null],
                 'relaciones' => ['comunicacion_id' => $c->id, 'institucion_origen_codigo' => $c->institucion_codigo, 'institucion_origen' => $c->institucion_nombre, 'expedientes_relacionados' => []],
                 'poderes' => ['responsable_run' => null, 'representacion' => 'Órgano de la Administración del Estado'],
@@ -106,7 +107,8 @@ class ExpedienteService
         return [
             'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => CodificacionService::institucion($e->area_id ?? $e->unidad?->area_id), 'nombre' => $s->tramite->nombre.' - '.$s->nombres.' '.$s->apellidos, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $e->unidad->nombre ?? null],
             'descripcion' => ['resumen' => mb_substr($s->detalle, 0, 500), 'folio_solicitud' => $s->folio],
-            'temporalidad' => ['fecha_apertura' => $now, 'fecha_cierre' => null, 'plazo_dias' => $s->tramite->plazo_dias],
+            'ubicacion' => (array) config('sgd.ubicacion') + ['codigo_gestor_codigos' => null], // códigos territoriales del Gestor de Códigos: A VALIDAR
+            'temporalidad' => ['fecha_apertura' => $now, 'fecha_apertura_utc' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'fecha_cierre' => null, 'plazo_dias' => $s->tramite->plazo_dias],
             'caracterizacion' => ['tipo_expediente' => 'Solicitud ciudadana', 'serie_documental' => $s->tramite->codigo_interno],
             'relaciones' => ['solicitud_id' => $s->id, 'expedientes_relacionados' => []],
             'poderes' => ['responsable_run' => null, 'representacion' => 'Titular'],

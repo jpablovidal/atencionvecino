@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `12a604ad16a85ce02165d60b4d0402ed726dd3f88d8cf14fe53ac7a59b219fd0`).
+- Archivo **`sgd-release.zip`** (SHA-256 `239fd6ecbac10b3f125a1b4ed54bfaeab3a1f378eb27cb5225a073e657e83613`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,18 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: normas técnicas (Decretos 8 a 12) y cumplimiento normativo
+- Con los textos oficiales de los **Decretos 8, 9, 10, 11 y 12** se rehízo la matriz de cumplimiento **por artículo**: lo que el sistema hace, lo que falta y lo que le corresponde al municipio. Está en **Administración → Cumplimiento normativo** (filtros por decreto y estado) y en `docs/NORMAS_TECNICAS.md`.
+- **Importante — PISEE termina el 31-12-2026** (Decreto 12). Desde esa fecha solo sirve la red de interoperabilidad del Estado: hay que pedir el nodo a la Secretaría de Gobierno Digital. El sistema muestra el aviso con los días que faltan.
+- **Nuevo registro de cumplimiento:** política de gestión documental (con aviso de revisión), coordinador(a) de transformación digital (precargado con el Decreto Alcaldicio 2372), catálogo de plataformas con línea de base y **Plan de Mejora Continua** con informe imprimible.
+- **Hora UTC:** la bitácora de auditoría muestra y exporta también la hora en UTC. Los metadatos del expediente incluyen la ubicación (Santo Domingo, San Antonio, Valparaíso, Chile).
+- **Comprobante de ingreso:** ahora trae origen, órgano y código, plataforma receptora y hora UTC.
+- **Consentimiento de datos:** el vecino puede cambiar o revocar su respuesta desde su solicitud (no afecta lo ya realizado).
+- **Panel «Datos personales (DPO)»:** suma el registro de accesos a contenido con datos sensibles.
+- **Decisión que debe tomar el municipio:** el ingreso de funcionarios con usuario y contraseña del directorio no es un mecanismo oficial; el Decreto 9 (art. 3) exige autorización previa de SEGPRES. Puede desactivarse en *APIs e integraciones → Directorio*.
+- Faltan por entregar: el texto del **Decreto 7** (seguridad) y las **guías técnicas**; mientras tanto esos puntos siguen «A VALIDAR».
+- Al actualizar se agregan las tablas del catálogo y del plan. No hay otros pasos manuales.
 
 ## Novedades: gestión de comunicaciones recibidas por DocDigital
 - En el expediente de una comunicación recibida: **acusar recibo** (o devolver), **cambiar el estado de gestión** (en gestión, respondida, archivada) y **derivar** a quien debe actuar indicando la **acción** (responder, informar, revisar, etc.) y un **plazo**.

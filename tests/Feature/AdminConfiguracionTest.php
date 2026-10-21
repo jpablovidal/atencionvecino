@@ -11,6 +11,7 @@ use App\Services\Admin\AreaService;
 use App\Services\Admin\CodificacionService;
 use App\Services\Admin\TotpService;
 use App\Services\ExpedienteService;
+use App\Support\NormasTecnicas;
 use App\Support\UploadValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Escenario;
@@ -227,8 +228,8 @@ class AdminConfiguracionTest extends TestCase
 
     public function test_documento_vigente_recibe_identificador_normativo(): void
     {
-        $this->assertNotEmpty(CodificacionService::matrizNormas());
-        $this->assertCount(5, CodificacionService::NORMAS);
+        $this->assertNotEmpty(NormasTecnicas::matriz());
+        $this->assertCount(6, NormasTecnicas::decretos());
         $doc = $this->documentoVigente(app(ExpedienteService::class)->crearDesdeSolicitud($this->solicitudDOM(), $dom = $this->usuario('funcionario')), $dom);
         $this->assertMatchesRegularExpression('/^PE-MUN-00243-[A-Za-z]+-\d{4}-\d{6}$/', (string) $doc->refresh()->identificador);
     }

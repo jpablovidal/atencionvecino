@@ -4,6 +4,9 @@
 <p><a href="{{ route('app.admin.api') }}">&larr; APIs e integraciones</a></p>
 <h1>{{ $d['etiqueta'] }}</h1>
 <p>{{ $d['descripcion'] }}</p>
+@if($clave==='pisee')
+<div class="alert alert-warning" role="note"><strong>Fin de PISEE (Decreto 12, art. 2° transitorio):</strong> {{ \App\Support\NormasTecnicas::avisoPisee() }}</div>
+@endif
 @php $grupos = \App\Services\Admin\ApiCatalogo::grupos($clave); $activoDef = old('activo', $estado['existe'] ? $estado['activo'] : true); @endphp
 <form method="post" action="{{ route('app.admin.api.actualizar',$clave) }}" class="col-lg-10 px-0" autocomplete="off" enctype="multipart/form-data">@csrf
 <div class="card mb-3"><div class="card-body">

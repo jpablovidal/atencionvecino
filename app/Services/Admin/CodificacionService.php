@@ -15,22 +15,13 @@ use App\Services\AuditoriaService;
  * Codificación de documentos y expedientes. El administrador elige el municipio (institución del Codificador del Estado) y,
  * si lo necesita, un código distinto por área (salud, educación, corporación). El identificador se arma con un patrón
  * configurable; los patrones por defecto conservan el formato que ya usaba el sistema. El esquema exacto que exigen las
- * normas técnicas (Decretos 7, 8, 10, 11 y 12) no pudo verificarse en línea: queda como A VALIDAR en docs/NORMAS_TECNICAS.md.
+ * normas técnicas (Decretos 8 a 12) se revisaron en su texto oficial: ver App\Support\NormasTecnicas y docs/NORMAS_TECNICAS.md.
  */
 class CodificacionService
 {
     public const CLAVE_MUNICIPIO = 'municipio_codificador';
 
     public const CLAVE_PATRONES = 'codificacion_patrones';
-
-    /** Normas técnicas indicadas por el municipio. El contenido NO está verificado: ver matriz de cumplimiento. */
-    public const NORMAS = [
-        'Decreto7' => 'https://wikiguias.digital.gob.cl/Normas/Decreto7',
-        'Decreto8' => 'https://wikiguias.digital.gob.cl/Normas/Decreto8',
-        'Decreto10' => 'https://wikiguias.digital.gob.cl/Normas/Decreto10',
-        'Decreto11' => 'https://wikiguias.digital.gob.cl/Normas/Decreto11',
-        'Decreto12' => 'https://wikiguias.digital.gob.cl/Normas/Decreto12',
-    ];
 
     public const TOKENS_EXPEDIENTE = ['institucion', 'codigo', 'anio', 'area', 'unidad'];
 
@@ -169,27 +160,5 @@ class CodificacionService
 
         return self::aplicar($patron ?? self::patrones()['documento'], ['institucion' => self::institucion($area ? (int) $area : null), 'tipo' => (string) $d->tipo->prefijo, 'anio' => (string) $d->anio,
             'numero' => sprintf('%06d', (int) $d->numero), 'area' => strtoupper($areaCod), 'unidad' => (string) ($d->expediente?->unidad?->codigo ?? '')]);
-    }
-
-    /**
-     * Matriz de cumplimiento de las normas técnicas. El contenido de los decretos NO pudo leerse (el entorno de desarrollo no
-     * accede a wikiguias.digital.gob.cl): por eso cada fila declara lo que el sistema implementa y deja «A VALIDAR» contra el texto vigente.
-     *
-     * @return list<array{tema:string,control:string,estado:string,donde:string}>
-     */
-    public static function matrizNormas(): array
-    {
-        $av = 'A VALIDAR contra el texto vigente';
-
-        return [
-            ['tema' => 'Identificación única de documentos y expedientes', 'control' => 'Identificador por patrón configurable con código de institución del Codificador del Estado; correlativo único por tipo y año.', 'estado' => $av, 'donde' => 'Administración › Codificación'],
-            ['tema' => 'Metadatos del expediente y del documento', 'control' => 'Metadatos MGDEE/MGDDE almacenados por expediente y documento (esquema oficial A VALIDAR).', 'estado' => $av, 'donde' => 'Expediente › Metadatos'],
-            ['tema' => 'Firma electrónica simple y avanzada', 'control' => 'Firma simple (Ley 19.799) y avanzada vía FirmaGob; sello de integridad SHA-256 y código de validación público.', 'estado' => $av, 'donde' => 'Documento › Firmas'],
-            ['tema' => 'Integridad, autenticidad y no repudio', 'control' => 'Cadena de auditoría con HMAC; archivos cifrados en reposo (XChaCha20-Poly1305) con hash por versión.', 'estado' => $av, 'donde' => 'Seguridad'],
-            ['tema' => 'Versionado y trazabilidad', 'control' => 'Toda modificación de un archivo o documento genera una versión nueva con motivo, diferencias y responsables (editó, visó, firmó).', 'estado' => $av, 'donde' => 'Expediente › Archivos'],
-            ['tema' => 'Seguridad de la información y ciberseguridad', 'control' => 'Segundo factor del administrador, CSP estricta, validación de archivos por contenido, controles OWASP (docs/PENTEST.md).', 'estado' => $av, 'donde' => 'Seguridad'],
-            ['tema' => 'Interoperabilidad (Codificador, PISEE, DocDigital)', 'control' => 'Adaptadores configurables; contratos reales A VALIDAR con la documentación oficial (docs/LIMITACIONES.md).', 'estado' => $av, 'donde' => 'APIs e integraciones'],
-            ['tema' => 'Calidad y funcionamiento de plataformas / accesibilidad', 'control' => 'Diseño gob.cl, WCAG 2.1 AA verificado con axe en pantallas clave.', 'estado' => $av, 'donde' => 'docs/QA_NAVEGADOR.md'],
-        ];
     }
 }

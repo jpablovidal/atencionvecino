@@ -23,4 +23,16 @@
 </tr>@empty<tr><td colspan="7" class="text-muted">No hay solicitudes con este criterio.</td></tr>@endforelse
 </tbody></table></div>
 {{ $filas->links() }}
+
+<h2 class="h4 mt-4" id="accesos">Accesos a contenido con datos sensibles</h2>
+<p class="small text-muted">Quién abrió o descargó expedientes, documentos y archivos con datos sensibles, y cuándo (hora de Chile y UTC), conforme al Decreto 10 art. 37. Muestra los últimos 100; el detalle completo está en <a href="{{ route('app.logs') }}">Registro de auditoría</a>. El RUN se enmascara.</p>
+<form method="get" class="form-inline mb-2" aria-label="Filtrar accesos">
+ <input type="hidden" name="estado" value="{{ $f['estado'] }}">
+ <label class="mr-2" for="ad">Desde</label><input class="form-control mr-3" type="date" id="ad" name="acc_desde" value="{{ $f['acc_desde'] ?? '' }}">
+ <label class="mr-2" for="ah">Hasta</label><input class="form-control mr-3" type="date" id="ah" name="acc_hasta" value="{{ $f['acc_hasta'] ?? '' }}">
+ <button class="btn btn-outline-primary">Filtrar accesos</button></form>
+<div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Accesos a contenido sensible</caption>
+<thead><tr><th scope="col">Fecha (Chile)</th><th scope="col">UTC</th><th scope="col">Quién</th><th scope="col">Qué hizo</th><th scope="col">Sobre</th></tr></thead><tbody>
+@forelse($accesos as $a)<tr><td>{{ substr((string) $a->getRawOriginal('ts'), 0, 19) }}</td><td>{{ $a->tsUtc() }}</td><td>{{ $a->actor_rol ?? '—' }} @if($a->actor_run)<span class="small">{{ $enmascarar($a->actor_run) }}</span>@endif</td><td>{{ $a->accion }}</td><td>{{ $a->entidad }} {{ $a->entidad_id }}</td></tr>
+@empty<tr><td colspan="5" class="text-muted">Sin accesos registrados con este criterio.</td></tr>@endforelse</tbody></table></div>
 @endsection

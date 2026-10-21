@@ -40,9 +40,9 @@ class LogsController extends Controller
         return response()->streamDownload(function () use ($q) {
             $o = fopen('php://output', 'w');
             fwrite($o, "\xEF\xBB\xBF"); // BOM para Excel
-            fputcsv($o, ['id', 'fecha', 'rol', 'run_enmascarado', 'accion', 'entidad', 'entidad_id', 'ip', 'sensible', 'detalle', 'hmac'], ';');
+            fputcsv($o, ['id', 'fecha', 'fecha_utc', 'rol', 'run_enmascarado', 'accion', 'entidad', 'entidad_id', 'ip', 'sensible', 'detalle', 'hmac'], ';');
             foreach ($q->cursor() as $v) {
-                fputcsv($o, array_map([self::class, 'celda'], [$v->id, $v->getRawOriginal('ts'), $v->actor_rol, $v->actor_run ? Run::enmascarar($v->actor_run) : '', $v->accion, $v->entidad, $v->entidad_id, $v->ip, $v->sensible ? 'si' : 'no', $v->detalle, $v->hmac]), ';');
+                fputcsv($o, array_map([self::class, 'celda'], [$v->id, $v->getRawOriginal('ts'), $v->tsUtc(), $v->actor_rol, $v->actor_run ? Run::enmascarar($v->actor_run) : '', $v->accion, $v->entidad, $v->entidad_id, $v->ip, $v->sensible ? 'si' : 'no', $v->detalle, $v->hmac]), ';');
             }
             fclose($o);
         }, $nombre, ['Content-Type' => 'text/csv; charset=UTF-8', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'no-store']);

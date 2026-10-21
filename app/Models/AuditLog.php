@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /** Bitácora append-only: ni el modelo ni (si hay privilegios) la BD permiten UPDATE/DELETE. */
 /**
@@ -26,6 +27,16 @@ class AuditLog extends Model
     protected $table = 'audit_log';
 
     protected $guarded = ['id'];
+
+    /** Fecha y hora del registro en UTC+00:00 (Decretos 9 art. 13, 10 art. 9 y 12 art. 9): se guarda con la hora de Chile y se convierte aquí. */
+    public function tsUtc(): string
+    {
+        try {
+            return Carbon::parse(substr((string) $this->getRawOriginal('ts'), 0, 26), config('app.timezone'))->utc()->format('Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return '';
+        }
+    }
 
     protected static function booted(): void
     {

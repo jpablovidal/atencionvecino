@@ -8,6 +8,7 @@ use App\Models\Expediente;
 use App\Models\Institucion;
 use App\Services\Admin\ArchivoConfigService;
 use App\Services\Admin\CodificacionService;
+use App\Support\NormasTecnicas;
 use Illuminate\Http\Request;
 
 /** Administrador del sistema: archivos (pesos y formatos) y codificación normativa (municipio, patrones, normas técnicas). */
@@ -47,7 +48,7 @@ class AdminConfigController extends Controller
         $ejDoc = Documento::query()->whereNotNull('numero')->latest('id')->first();
 
         return view('app.admin.codificacion', ['municipio' => CodificacionService::municipio(), 'patrones' => $p, 'inst' => $inst, 'q' => $q, 'total' => Institucion::query()->count(),
-            'normas' => CodificacionService::NORMAS, 'matriz' => CodificacionService::matrizNormas(), 'defecto' => CodificacionService::DEFECTO,
+            'resumenNormas' => NormasTecnicas::resumen(), 'defecto' => CodificacionService::DEFECTO,
             'tokensExp' => CodificacionService::TOKENS_EXPEDIENTE, 'tokensDoc' => CodificacionService::TOKENS_DOCUMENTO,
             'ejExp' => $ejExp ? $this->cod->identificadorExpediente($ejExp, $p['expediente']) : null, 'ejDoc' => $ejDoc ? $this->cod->identificadorDocumento($ejDoc, $p['documento']) : null]);
     }

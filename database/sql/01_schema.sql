@@ -770,4 +770,12 @@ alter table `comunicaciones_oficiales` add `gestion_en` timestamp null;
 
 alter table `comunicaciones_oficiales` add `gestion_por_id` bigint unsigned null;
 
+create table `calidad_plataformas` (`id` bigint unsigned not null auto_increment primary key, `nombre` varchar(150) not null, `descripcion` text null, `tipo` varchar(10) not null default 'propia', `responsable` varchar(120) null, `linea_base` text null, `linea_base_fecha` date null, `priorizada` tinyint(1) not null default '0', `vida_util_hasta` date null, `activa` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+create table `calidad_iniciativas` (`id` bigint unsigned not null auto_increment primary key, `plataforma_id` bigint unsigned not null, `descripcion` text not null, `objetivo` text null, `etapa` tinyint unsigned not null default '1', `subcaracteristica` varchar(120) null, `metrica` varchar(190) null, `umbral_exitoso` varchar(120) null, `umbral_aceptable` varchar(120) null, `umbral_insuficiente` varchar(120) null, `responsable` varchar(120) null, `plazo` date null, `costo_estimado` bigint unsigned null, `riesgos` text null, `resultado` text null, `estado` varchar(12) not null default 'planificada', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `calidad_iniciativas` add constraint `calidad_iniciativas_plataforma_id_foreign` foreign key (`plataforma_id`) references `calidad_plataformas` (`id`) on delete cascade;
+
+alter table `calidad_iniciativas` add index `calidad_iniciativas_plataforma_id_estado_index`(`plataforma_id`, `estado`);
+
 SET FOREIGN_KEY_CHECKS = 1;

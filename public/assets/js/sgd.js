@@ -239,3 +239,9 @@
   revisar();
   window.addEventListener('resize', revisar);
 })();
+
+/* Botones [data-imprimir]: abren el diálogo de impresión (sin scripts en línea). */
+document.addEventListener('click', function (e) {
+  var b = e.target.closest ? e.target.closest('[data-imprimir]') : null;
+  if (b) { e.preventDefault(); window.print(); }
+});

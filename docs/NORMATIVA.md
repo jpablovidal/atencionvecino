@@ -17,7 +17,7 @@
 | **Calidad y funcionamiento** | Disponibilidad, accesibilidad, usabilidad de plataformas. | WCAG AA básico, framework gob.cl. |
 | **Autenticación** | ClaveÚnica como mecanismo de autenticación de personas. | Solo ClaveÚnica (OIDC). |
 
-Las normas técnicas y guías están publicadas en https://digital.gob.cl/transformacion-digital/ y https://wikiguias.digital.gob.cl. Los textos exactos de cada norma técnica **no se transcriben**; su cumplimiento fino es **A VALIDAR** con el equipo jurídico/TI.
+Las normas técnicas y guías están publicadas en https://digital.gob.cl/transformacion-digital/ y https://wikiguias.digital.gob.cl. Los Decretos 8 a 12 se revisaron en su texto oficial: la matriz por artículo está en `docs/NORMAS_TECNICAS.md`. Sus guías técnicas y el Decreto 7 siguen **A VALIDAR** con el equipo jurídico/TI.
 
 ## 3. Guía Técnica de Documentos y Expedientes
 - **MGDEE** (metadatos del expediente): identificación, descripción, temporalidad, caracterización, relaciones, índice, poderes, seguridad, procedimiento, versión. Implementado en `ExpedienteService::mgdee()` con **nombres de campo propios inspirados en estas categorías — A VALIDAR** contra el esquema oficial vigente.
