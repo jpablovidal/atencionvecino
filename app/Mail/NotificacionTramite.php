@@ -19,7 +19,7 @@ class NotificacionTramite extends Mailable
 
     public function content(): Content
     {
-        return new Content(text: 'emails.notificacion', with: [
+        return new Content(html: 'emails.notificacion', text: 'emails.texto.notificacion', with: [
             'folio' => $this->solicitud->folio, 'estado' => str_replace('_', ' ', $this->solicitud->estado),
             'enlace' => route('ciudadano.solicitud', $this->solicitud->folio),
         ]);

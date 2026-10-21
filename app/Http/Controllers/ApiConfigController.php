@@ -96,7 +96,7 @@ class ApiConfigController extends Controller
         $d = $r->validate(['destino' => 'required|email:rfc|max:190']);
         $metodo = (string) config('mail.default');
         try {
-            Mail::raw('Correo de prueba del Sistema de Gestión Documental de la I. Municipalidad de Santo Domingo. Si lo recibe, el envío funciona.', fn ($m) => $m->to($d['destino'])->subject('Prueba de correo — SGD Santo Domingo'));
+            Mail::send(['html' => 'emails.prueba', 'text' => 'emails.texto.prueba'], [], fn ($m) => $m->to($d['destino'])->subject('Prueba de correo — SGD Santo Domingo'));
             $ok = true;
             $det = $metodo === 'log' ? 'El método es «solo registro»: el mensaje quedó en el registro del servidor y no salió ningún correo.' : 'Enviado a '.$d['destino'].' con el método «'.$metodo.'». Revise la bandeja (y el spam).';
         } catch (\Throwable $e) {

@@ -155,6 +155,22 @@ class GmailTransportTest extends TestCase
         $this->assertSame([], (new NotificacionTramite($s))->attachments());
     }
 
+    public function test_los_correos_son_html_con_el_estilo_institucional_y_version_en_texto(): void
+    {
+        $this->sembrar();
+        $s = $this->solicitudDOM();
+        $html = (new NotificacionTramite($s))->render();
+        $this->assertStringContainsString('<table', $html);
+        $this->assertStringContainsString('Ilustre Municipalidad de Santo Domingo', $html);
+        $this->assertStringContainsString('favor no responda a este remitente', $html);
+        $this->assertStringContainsString(route('ciudadano.solicitud', $s->folio), $html);
+        $this->assertStringContainsString('assets/img/logo-santo-domingo.png', $html);
+        $m = new NotificacionTramite($s);
+        $m->to('x@y.cl');
+        $texto = view('emails.texto.notificacion', ['folio' => $s->folio, 'estado' => 'x', 'enlace' => 'https://e.cl'])->render();
+        $this->assertStringContainsString($s->folio, $texto);
+    }
+
     public function test_la_clave_de_la_cuenta_de_servicio_no_se_filtra_en_errores(): void
     {
         $n = $this->notificacionCorreo();

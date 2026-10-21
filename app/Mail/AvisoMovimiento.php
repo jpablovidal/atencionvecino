@@ -23,7 +23,7 @@ class AvisoMovimiento extends Mailable
     {
         $e = $this->solicitud->expediente;
 
-        return new Content(text: 'emails.aviso_movimiento', with: [
+        return new Content(html: 'emails.aviso_movimiento', text: 'emails.texto.aviso_movimiento', with: [
             'folio' => $this->solicitud->folio, 'expediente' => $e?->codigo, 'descripcion' => $this->movimiento->descripcion,
             'fecha' => Carbon::parse($this->movimiento->created_at)->setTimezone('America/Santiago')->format('d-m-Y H:i'),
             'direccion' => $this->movimiento->unidad?->nombre, 'enlace' => route('ciudadano.solicitud', $this->solicitud->folio),

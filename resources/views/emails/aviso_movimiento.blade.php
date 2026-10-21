@@ -1,19 +1,13 @@
-Estimado(a) vecino(a):
-
-Su solicitud tiene una novedad.
-
-Solicitud N° {{ $folio }}@if($expediente)
-
-Expediente N° {{ $expediente }}@endif
-
-Fecha: {{ $fecha }}
-@if($direccion)Dirección municipal responsable: {{ $direccion }}
-@endif
-Movimiento: {{ $descripcion }}
-
-Para ver el historial completo y, cuando corresponda, descargar los documentos de la respuesta, ingrese con ClaveÚnica en:
-{{ $enlace }}
-
-Este correo es copia del aviso enviado a su Casilla Única. No contiene documentos ni datos personales. Es un mensaje automático: no responda a esta dirección.
-
-I. Municipalidad de Santo Domingo
+@extends('emails.layout', ['titulo' => 'Novedad en su solicitud'])
+@section('contenido')
+<p style="margin:0 0 18px 0;">Su solicitud tiene una <strong>novedad</strong>.</p>
+@include('emails._tabla', ['filas' => array_filter([
+    'Solicitud N°' => $folio,
+    'Expediente N°' => $expediente,
+    'Fecha' => $fecha,
+    'Dirección responsable' => $direccion,
+    'Movimiento' => $descripcion,
+], fn ($v) => filled($v))])
+<p style="margin:0 0 8px 0;">Para ver el historial completo y, cuando corresponda, descargar los documentos de la respuesta, ingrese con ClaveÚnica.</p>
+@endsection
+@section('boton', 'Ver mi solicitud')

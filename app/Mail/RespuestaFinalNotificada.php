@@ -19,7 +19,7 @@ class RespuestaFinalNotificada extends Mailable
 
     public function content(): Content
     {
-        return new Content(text: 'emails.respuesta_final', with: [
+        return new Content(html: 'emails.respuesta_final', text: 'emails.texto.respuesta_final', with: [
             'folio' => $this->respuesta->solicitud->folio, 'expediente' => $this->respuesta->expediente->codigo, 'cantidad' => $this->respuesta->items()->count(),
             'enlace' => route('ciudadano.solicitud', $this->respuesta->solicitud->folio),
         ]);

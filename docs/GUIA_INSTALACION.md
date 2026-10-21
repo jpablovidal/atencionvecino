@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `62bfe093ef428b6c6f1431cf6494629616d4e4d0f3f3683337d7e49cfdfbc75c`).
+- Archivo **`sgd-release.zip`** (SHA-256 `d02c686a923685c4644f196feda8d95e272e0e145a58b4650e79e70ed0b8591d`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
