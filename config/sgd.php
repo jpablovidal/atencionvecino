@@ -146,9 +146,11 @@ return [
     // Asistente IA (apagado por defecto)
     'llm' => [
         'enabled' => (bool) env('LLM_ENABLED', false),
+        'provider' => env('LLM_PROVIDER', 'anthropic'), // anthropic | gemini | qwen | openrouter | groq | mistral | otro (ver LlmAsistente::PROVEEDORES)
         'api_key' => env('LLM_API_KEY'),
-        'model' => env('LLM_MODEL', 'claude-sonnet-5-5'),
-        'url' => 'https://api.anthropic.com/v1/messages',
+        'model' => env('LLM_MODEL'), // vacío = modelo sugerido del proveedor
+        'url' => 'https://api.anthropic.com/v1/messages', // solo Anthropic
+        'url_otro' => env('LLM_URL_OTRO'), // solo proveedor «otro» (compatible con OpenAI, HTTPS)
         'max_input_chars' => 6000,
         'max_output_tokens' => 800,
         'per_minute' => 6,

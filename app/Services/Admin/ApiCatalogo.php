@@ -2,6 +2,8 @@
 
 namespace App\Services\Admin;
 
+use App\Services\LlmAsistente;
+
 /**
  * Catálogo de integraciones configurables desde el mantenedor de APIs.
  * Campo: [etiqueta, tipo, ruta de config, ['secreto'=>bool,'opciones'=>[...],'ayuda'=>'','privada'=>bool,'requerido'=>bool]]
@@ -120,10 +122,12 @@ class ApiCatalogo
                 'id_codificacion_procesos' => ['Id de la codificación de procedimientos (opcional)', 'number', 'sgd.codificador.id_codificacion_procesos'],
                 'api_token' => ['Token de la API (opcional)', 'text', 'sgd.codificador.api_token', ['secreto' => true]],
             ]],
-            'llm' => ['etiqueta' => 'Asistente de redacción (IA)', 'descripcion' => 'Apagado por defecto. Una sola API HTTPS fija.', 'campos' => [
+            'llm' => ['etiqueta' => 'Asistente de redacción (IA)', 'descripcion' => 'Apagado por defecto. Elija el proveedor de IA; el sistema usa solo la dirección HTTPS de ese proveedor.', 'campos' => [
                 'enabled' => ['Habilitado', 'bool', 'sgd.llm.enabled'],
-                'api_key' => ['Clave de la API', 'text', 'sgd.llm.api_key', ['secreto' => true]],
-                'model' => ['Modelo', 'text', 'sgd.llm.model'],
+                'provider' => ['Proveedor de IA', 'select', 'sgd.llm.provider', ['opciones' => LlmAsistente::opcionesProveedor(), 'ayuda' => 'Google AI Studio (Gemini), Qwen, OpenRouter y Groq tienen nivel gratuito. Los servicios gratuitos pueden usar lo que se les envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos antes de enviar, pero no use la IA con información reservada.']],
+                'api_key' => ['Clave de la API', 'text', 'sgd.llm.api_key', ['secreto' => true, 'ayuda' => 'Es la clave del proveedor elegido. Si cambia de proveedor, ingrese la clave de ese proveedor.']],
+                'model' => ['Modelo (vacío = el sugerido del proveedor)', 'text', 'sgd.llm.model', ['regex' => '/^[A-Za-z0-9._:\/-]{1,100}$/', 'ayuda' => 'Solo el nombre del modelo, por ejemplo gemini-flash-latest o qwen-plus. No pegue comandos ni direcciones.']],
+                'url_otro' => ['Dirección HTTPS (solo para «Otro compatible con OpenAI»)', 'url', 'sgd.llm.url_otro', ['ayuda' => 'La dirección de chat/completions del proveedor, por ejemplo https://api.ejemplo.com/v1/chat/completions.']],
             ]],
         ];
     }

@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `d02c686a923685c4644f196feda8d95e272e0e145a58b4650e79e70ed0b8591d`).
+- Archivo **`sgd-release.zip`** (SHA-256 `e1266e7fb4cad5dbfbeb86b932ad4edec8c45b385bd924b19bc7c1ea80cb3145`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -232,6 +232,12 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Si su ClaveÚnica tiene registrada como Redirect URI `…/claveunica/callback`, no cambia nada: solo cambia la dirección que inicia el ingreso.
 - Al actualizar no hay pasos manuales nuevos.
 
+
+## Novedades: elegir la IA del asistente de redacción
+- En **Administración → APIs → Asistente de redacción (IA)** elija el **proveedor**: Google AI Studio (Gemini), Alibaba Qwen, OpenRouter, Groq, Mistral, Anthropic u «Otro compatible con OpenAI» (con su dirección HTTPS).
+- Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
+- Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
+- Al actualizar no hay pasos manuales nuevos.
 
 ## Novedades: ClaveÚnica con sus URI de producción
 Datos registrados en ClaveÚnica (coinciden con el sistema):

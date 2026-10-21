@@ -236,3 +236,7 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Sin segundo factor para funcionarios (solo la administración lo exige, y no entra por esta vía). La seguridad de la contraseña es la de la base institucional; el sistema no la cambia ni permite recuperarla.
 - Quien ingresa así no tiene identidad de vecino(a) acreditada: para trámites propios como vecino(a) debe ingresar con ClaveÚnica. La política de Gobierno Digital recomienda ClaveÚnica como medio único para personas naturales; esta vía es solo para funcionarios.
 - No probado contra su base real (solo con una tabla simulada de igual estructura).
+
+## Asistente de IA con proveedores gratuitos
+- No se probó contra ningún proveedor real (el entorno de desarrollo no tiene acceso). Formatos implementados según la documentación pública de cada uno: Gemini `generateContent` (cabecera `x-goog-api-key`), y `chat/completions` con `Bearer` para Qwen, OpenRouter, Groq, Mistral y compatibles. Los nombres de modelo sugeridos son **A VALIDAR**.
+- Los niveles gratuitos suelen permitir que el proveedor use lo enviado para mejorar sus modelos y tienen cuotas bajas. El sistema quita RUN, correos y teléfonos, pero no puede detectar otra información reservada: no usar la IA con documentos reservados.

@@ -18,6 +18,54 @@ class LlmAsistente
 
     public const MAX_SALIDA = 30000;
 
+    /**
+     * Proveedores admitidos: formato del protocolo, dirección HTTPS fija y modelo sugerido (A VALIDAR: los nombres de modelo
+     * cambian; se pueden reemplazar en la configuración). Los de formato «openai» usan /chat/completions con Bearer.
+     *
+     * @var array<string,array{nombre:string,formato:string,url:?string,modelo:?string}>
+     */
+    public const PROVEEDORES = [
+        'anthropic' => ['nombre' => 'Anthropic (Claude)', 'formato' => 'anthropic', 'url' => null, 'modelo' => 'claude-sonnet-5-5'],
+        'gemini' => ['nombre' => 'Google AI Studio (Gemini) — nivel gratuito', 'formato' => 'gemini', 'url' => 'https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent', 'modelo' => 'gemini-flash-latest'],
+        'qwen' => ['nombre' => 'Alibaba Qwen (DashScope) — cuota gratuita', 'formato' => 'openai', 'url' => 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', 'modelo' => 'qwen-plus'],
+        'openrouter' => ['nombre' => 'OpenRouter (modelos «:free»)', 'formato' => 'openai', 'url' => 'https://openrouter.ai/api/v1/chat/completions', 'modelo' => 'meta-llama/llama-3.3-70b-instruct:free'],
+        'groq' => ['nombre' => 'Groq — nivel gratuito', 'formato' => 'openai', 'url' => 'https://api.groq.com/openai/v1/chat/completions', 'modelo' => 'llama-3.3-70b-versatile'],
+        'mistral' => ['nombre' => 'Mistral AI — nivel gratuito', 'formato' => 'openai', 'url' => 'https://api.mistral.ai/v1/chat/completions', 'modelo' => 'mistral-small-latest'],
+        'otro' => ['nombre' => 'Otro compatible con OpenAI (dirección HTTPS propia)', 'formato' => 'openai', 'url' => null, 'modelo' => null],
+    ];
+
+    /** @return array<string,string> */
+    public static function opcionesProveedor(): array
+    {
+        return array_map(fn ($p) => $p['nombre'], self::PROVEEDORES);
+    }
+
+    /**
+     * Resuelve proveedor, dirección y modelo desde la configuración.
+     *
+     * @return array{formato:string,url:string,modelo:string,proveedor:string}
+     */
+    public static function destino(array $cfg): array
+    {
+        $clave = (string) ($cfg['provider'] ?? 'anthropic');
+        $p = self::PROVEEDORES[$clave] ?? throw new \RuntimeException('Proveedor de IA no admitido.');
+        $modelo = trim((string) ($cfg['model'] ?? '')) ?: (string) $p['modelo'];
+        if ($modelo === '' || ! preg_match('/^[A-Za-z0-9._:\/-]{1,100}$/', $modelo)) {
+            throw new \RuntimeException('Indique el modelo de IA a usar.');
+        }
+        $url = match (true) {
+            $clave === 'anthropic' => (string) $cfg['url'],
+            $clave === 'otro' => (string) ($cfg['url_otro'] ?? ''),
+            default => str_replace('{modelo}', rawurlencode($modelo), (string) $p['url']),
+        };
+        $h = (string) parse_url($url, PHP_URL_HOST);
+        if (! str_starts_with($url, 'https://') || $h === '' || filter_var(trim($h, '[]'), FILTER_VALIDATE_IP) || in_array(strtolower($h), ['localhost'], true) || ! str_contains($h, '.')) {
+            throw new \RuntimeException('La dirección del proveedor de IA debe ser una dirección HTTPS con nombre de dominio.');
+        }
+
+        return ['formato' => $p['formato'], 'url' => $url, 'modelo' => $modelo, 'proveedor' => $clave];
+    }
+
     /** ¿La salida del modelo trae marcado activo, esquemas peligrosos o direcciones? (se neutraliza igual; sirve para advertir y auditar) */
     public static function salidaSospechosa(string $t): bool
     {
@@ -67,14 +115,34 @@ class LlmAsistente
         if (self::sospechaInyeccion($instruccion.' '.$borrador)) {
             $adv[] = 'Se detectó texto que parece una instrucción dirigida al asistente dentro de los datos. Revise el resultado con especial cuidado.';
         }
-        $resp = Http::timeout((int) $cfg['timeout'])->connectTimeout(5)->withoutRedirecting()
-            ->withHeaders(['x-api-key' => $cfg['api_key'], 'anthropic-version' => '2023-06-01'])->acceptJson()->asJson()
-            ->post($cfg['url'], ['model' => $cfg['model'], 'max_tokens' => $cfg['max_output_tokens'], 'system' => self::SISTEMA,
-                'messages' => [['role' => 'user', 'content' => $this->construirMensaje($instruccion, $borrador)]]]);
+        $d = self::destino($cfg);
+        $mensaje = $this->construirMensaje($instruccion, $borrador);
+        $req = Http::timeout((int) $cfg['timeout'])->connectTimeout(5)->withoutRedirecting()->acceptJson()->asJson();
+        $max = (int) $cfg['max_output_tokens'];
+        [$req, $cuerpo] = match ($d['formato']) {
+            'gemini' => [$req->withHeaders(['x-goog-api-key' => $cfg['api_key']]), [
+                'systemInstruction' => ['parts' => [['text' => self::SISTEMA]]],
+                'contents' => [['role' => 'user', 'parts' => [['text' => $mensaje]]]],
+                'generationConfig' => ['maxOutputTokens' => max($max, 2048)], // los modelos con razonamiento gastan parte del cupo pensando
+            ]],
+            'openai' => [$req->withToken((string) $cfg['api_key']), [
+                'model' => $d['modelo'], 'max_tokens' => $max,
+                'messages' => [['role' => 'system', 'content' => self::SISTEMA], ['role' => 'user', 'content' => $mensaje]],
+            ]],
+            default => [$req->withHeaders(['x-api-key' => $cfg['api_key'], 'anthropic-version' => '2023-06-01']), [
+                'model' => $d['modelo'], 'max_tokens' => $max, 'system' => self::SISTEMA,
+                'messages' => [['role' => 'user', 'content' => $mensaje]],
+            ]],
+        };
+        $resp = $req->post($d['url'], $cuerpo);
         if (! $resp->successful()) {
             throw new \RuntimeException('El asistente IA no respondió.');
         }
-        $texto = (string) ($resp->json('content.0.text') ?? '');
+        $texto = (string) match ($d['formato']) {
+            'gemini' => collect($resp->json('candidates.0.content.parts') ?? [])->where('thought', '!=', true)->pluck('text')->implode(''),
+            'openai' => $resp->json('choices.0.message.content') ?? '',
+            default => $resp->json('content.0.text') ?? '',
+        };
         $texto = mb_substr($texto, 0, self::MAX_SALIDA);
         $sospechosa = self::salidaSospechosa($texto);
         if ($sospechosa) {

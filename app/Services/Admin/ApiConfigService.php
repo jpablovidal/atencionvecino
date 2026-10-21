@@ -12,6 +12,7 @@ use App\Services\ClaveUnicaService;
 use App\Services\Directorio\DirectorioFuncionarios;
 use App\Services\Interop\CodificadorService;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
+use App\Services\LlmAsistente;
 use App\Services\Repositorio\DriveClient;
 use App\Services\Repositorio\RepositorioService;
 use Illuminate\Support\Facades\Cache;
@@ -256,6 +257,9 @@ class ApiConfigService
         if ($servicio === 'directorio') {
             return app(DirectorioFuncionarios::class)->probar();
         }
+        if ($servicio === 'llm') {
+            return $this->probarLlm();
+        }
         $extra = [];
         $out = [];
         foreach ($cat['campos'] as $clave => $def) {
@@ -288,6 +292,37 @@ class ApiConfigService
         }
 
         return array_merge($out, $extra);
+    }
+
+    /**
+     * Valida el proveedor de IA elegido; si está habilitado y tiene clave, hace una consulta mínima (sin datos de personas).
+     *
+     * @return list<array{0:string,1:bool,2:string}>
+     */
+    private function probarLlm(): array
+    {
+        $cfg = (array) config('sgd.llm');
+        $out = [['Habilitado', true, ! empty($cfg['enabled']) ? 'sí' : 'no (apagado)']];
+        $out[] = ['Clave de la API', ! empty($cfg['api_key']), ! empty($cfg['api_key']) ? 'definida' : 'sin definir'];
+        try {
+            $d = LlmAsistente::destino($cfg);
+            $out[] = ['Proveedor y modelo', true, LlmAsistente::PROVEEDORES[$d['proveedor']]['nombre'].' · '.$d['modelo']];
+            $out[] = ['Dirección HTTPS del proveedor', true, (string) parse_url($d['url'], PHP_URL_HOST)];
+        } catch (\Throwable $e) {
+            return array_merge($out, [['Proveedor, modelo y dirección', false, $e->getMessage()]]);
+        }
+        if (! empty($cfg['enabled']) && ! empty($cfg['api_key'])) {
+            try {
+                $r = app(LlmAsistente::class)->generar('Responde solo con la palabra OK.', '');
+                $out[] = ['Consulta de prueba al proveedor', true, 'respondió ('.mb_strlen(strip_tags($r['html'])).' caracteres)'];
+            } catch (\Throwable) {
+                $out[] = ['Consulta de prueba al proveedor', false, 'El proveedor no respondió: revise la clave, el modelo y la cuota gratuita.'];
+            }
+        } else {
+            $out[] = ['Consulta de prueba al proveedor', false, 'Habilite el asistente y guarde la clave para probar la conexión.'];
+        }
+
+        return $out;
     }
 
     /**
