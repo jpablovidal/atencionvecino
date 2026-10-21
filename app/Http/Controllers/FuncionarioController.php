@@ -9,6 +9,8 @@ use App\Models\Documento;
 use App\Models\DocumentoPaso;
 use App\Models\Expediente;
 use App\Models\Solicitud;
+use App\Models\TipoDocumento;
+use App\Models\Unidad;
 use App\Models\Usuario;
 use App\Services\AccesoRestringidoService;
 use App\Services\AuditoriaService;
@@ -115,23 +117,76 @@ class FuncionarioController extends Controller
     }
 
     /** Listado final de documentos vigentes (todos los que completaron su flujo) que el usuario puede ver. */
+    /** Columnas por las que se puede ordenar el listado de vigentes (lista cerrada). */
+    private const ORDEN_VIGENTES = ['numero' => 'documentos.numero', 'fecha' => 'documentos.fecha_firma', 'tipo' => 'tipos_documento.nombre', 'direccion' => 'unidades.nombre', 'materia' => 'documentos.titulo',
+        'tipo_materia' => 'documentos.tipo_materia', 'macrotema' => 'documentos.macrotema', 'expediente' => 'expedientes.codigo'];
+
+    /** Todos los documentos vigentes (decretos, oficios y demás), con filtros y orden; por defecto el año actual. El contenido sigue sujeto a los permisos de cada documento. */
     public function vigentes(Request $r)
     {
         $this->permiso('vigentes.ver');
         $u = $r->user();
         abort_unless($u->puedeVerContenido(), 403);
-        $q = Documento::query()->with(['tipo', 'expediente'])->where('estado', 'vigente');
-        if (! $u->veTodo()) {
-            $q->whereHas('expediente', fn ($e) => $e->where('unidad_id', $u->unidad_id)->orWhere('responsable_id', $u->id)
-                ->orWhereHas('derivaciones', fn ($d) => $d->where('a_usuario_id', $u->id))
-                ->orWhereHas('documentos.pasos', fn ($p) => $p->where('usuario_id', $u->id)));
+        $f = $r->validate([
+            'q' => 'nullable|string|max:100', 'anio' => ['nullable', 'string', 'max:5', 'regex:/^(\d{4}|todos)$/'], 'tipo' => 'nullable|string|max:30', 'unidad' => 'nullable|integer', 'tipo_materia' => 'nullable|string|max:120', 'macrotema' => 'nullable|string|max:120',
+            'desde' => 'nullable|date_format:Y-m-d', 'hasta' => 'nullable|date_format:Y-m-d', 'orden' => 'nullable|in:'.implode(',', array_keys(self::ORDEN_VIGENTES)), 'dir' => 'nullable|in:asc,desc', 'por_pagina' => 'nullable|in:25,50,100',
+        ]);
+        $anio = ($f['anio'] ?? null) ?: (string) now('America/Santiago')->year; // por defecto, el año actual
+        $orden = $f['orden'] ?? 'fecha';
+        $dir = $f['dir'] ?? 'desc';
+        $tipos = TipoDocumento::query()->where('activo', true)->orderBy('nombre')->get(['id', 'codigo', 'nombre', 'prefijo']);
+        $esDecreto = fn ($t) => stripos($t->nombre.' '.$t->prefijo, 'decreto') !== false;
+        $esOficio = fn ($t) => stripos($t->nombre.' '.$t->prefijo, 'oficio') !== false;
+
+        $q = Documento::query()->select('documentos.*')->with(['tipo', 'expediente.unidad'])
+            ->join('expedientes', 'expedientes.id', '=', 'documentos.expediente_id')->leftJoin('unidades', 'unidades.id', '=', 'expedientes.unidad_id')
+            ->join('tipos_documento', 'tipos_documento.id', '=', 'documentos.tipo_documento_id')->where('documentos.estado', 'vigente');
+        if ($anio !== 'todos') {
+            $q->where(fn ($w) => $w->where('documentos.anio', (int) $anio)->orWhere(fn ($x) => $x->whereNull('documentos.anio')->whereYear('documentos.fecha_firma', (int) $anio)));
         }
-
-        $docs = $q->orderByDesc('fecha_firma')->paginate(25);
+        $tipo = $f['tipo'] ?? '';
+        if ($tipo === 'decretos') {
+            $q->whereIn('documentos.tipo_documento_id', $tipos->filter($esDecreto)->pluck('id'));
+        } elseif ($tipo === 'oficios') {
+            $q->whereIn('documentos.tipo_documento_id', $tipos->filter($esOficio)->pluck('id'));
+        } elseif (ctype_digit($tipo) && $tipo !== '') {
+            $q->where('documentos.tipo_documento_id', (int) $tipo);
+        }
+        if (! empty($f['unidad'])) {
+            $q->where('expedientes.unidad_id', (int) $f['unidad']);
+        }
+        foreach (['tipo_materia', 'macrotema'] as $c) {
+            if (! empty($f[$c])) {
+                $q->where('documentos.'.$c, $f[$c]);
+            }
+        }
+        if (! empty($f['desde'])) {
+            $q->where('documentos.fecha_firma', '>=', $f['desde'].' 00:00:00');
+        }
+        if (! empty($f['hasta'])) {
+            $q->where('documentos.fecha_firma', '<=', $f['hasta'].' 23:59:59');
+        }
+        if (! empty($f['q'])) {
+            $like = '%'.addcslashes($f['q'], '%_\\').'%';
+            $q->where(fn ($w) => $w->where('documentos.titulo', 'like', $like)->orWhere('documentos.resumen', 'like', $like)->orWhere('documentos.palabras_clave', 'like', $like)
+                ->orWhere('expedientes.codigo', 'like', $like)->orWhere('documentos.folio', 'like', $like)->orWhere('documentos.tipo_materia', 'like', $like)->orWhere('documentos.macrotema', 'like', $like)
+                ->when(ctype_digit(trim($f['q'])), fn ($x) => $x->orWhere('documentos.numero', (int) trim($f['q']))));
+        }
+        $q->orderBy(self::ORDEN_VIGENTES[$orden], $dir)->orderByDesc('documentos.id');
+        $docs = $q->paginate((int) ($f['por_pagina'] ?? 25))->withQueryString();
         $acceso = app(AccesoRestringidoService::class);
-        $ocultos = $docs->getCollection()->filter(fn ($d) => ! $acceso->puedeVerDocumento($r->user(), $d))->pluck('id')->all();
+        $ocultos = $docs->getCollection()->filter(fn ($d) => ! $acceso->puedeVerDocumento($u, $d))->pluck('id')->all();
+        $abrir = $docs->getCollection()->filter(fn ($d) => ! in_array($d->id, $ocultos, true) && $u->can('ver', $d))->pluck('id')->all();
+        $anios = Documento::query()->where('estado', 'vigente')->whereNotNull('anio')->distinct()->orderByDesc('anio')->pluck('anio')->map(fn ($a) => (string) $a)->all();
+        if (! in_array((string) now('America/Santiago')->year, $anios, true)) {
+            array_unshift($anios, (string) now('America/Santiago')->year);
+        }
+        $vals = fn (string $c) => Documento::query()->where('estado', 'vigente')->whereNotNull($c)->where($c, '!=', '')->distinct()->orderBy($c)->pluck($c);
 
-        return view('app.vigentes', ['docs' => $docs, 'ocultos' => $ocultos]);
+        return view('app.vigentes', [
+            'docs' => $docs, 'ocultos' => $ocultos, 'abrir' => $abrir, 'f' => $f + ['anio' => $anio, 'tipo' => $tipo, 'orden' => $orden, 'dir' => $dir], 'anios' => $anios, 'tipos' => $tipos, 'decretos' => $tipos->filter($esDecreto), 'oficios' => $tipos->filter($esOficio),
+            'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(['id', 'nombre']), 'tiposMateria' => $vals('tipo_materia'), 'macrotemas' => $vals('macrotema'),
+        ]);
     }
 
     /** Panel de Alcaldía: firmas pendientes, pagos y solicitudes de toda la municipalidad. */

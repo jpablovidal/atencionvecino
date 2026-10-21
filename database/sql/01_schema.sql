@@ -736,4 +736,20 @@ alter table `usuarios` add `departamento_id` bigint unsigned null;
 
 alter table `usuarios` add `subunidad_id` bigint unsigned null;
 
+create table `usuario_roles` (`usuario_id` bigint unsigned not null, `rol_id` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null, primary key (`usuario_id`, `rol_id`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `usuario_roles` add constraint `usuario_roles_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`) on delete cascade;
+
+alter table `usuario_roles` add constraint `usuario_roles_rol_id_foreign` foreign key (`rol_id`) references `roles` (`id`) on delete cascade;
+
+create table `usuario_permisos` (`usuario_id` bigint unsigned not null, `permiso` varchar(60) not null, `efecto` varchar(10) not null, `created_at` timestamp null, `updated_at` timestamp null, primary key (`usuario_id`, `permiso`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `usuario_permisos` add constraint `usuario_permisos_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`) on delete cascade;
+
+alter table `documentos` add `tipo_materia` varchar(120) null;
+
+alter table `documentos` add `macrotema` varchar(120) null;
+
+alter table `documentos` add index `documentos_estado_fecha_firma_index`(`estado`, `fecha_firma`);
+
 SET FOREIGN_KEY_CHECKS = 1;

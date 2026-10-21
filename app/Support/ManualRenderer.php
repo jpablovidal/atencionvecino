@@ -54,8 +54,10 @@ class ManualRenderer
             if ($u->veTodo()) {
                 return array_keys(self::PERFILES);
             }
-            if ($p = self::POR_ROL[$u->rolBase()] ?? null) {
-                $ok[] = $p;
+            foreach ($u->basesRol() as $b) { // principal y roles adicionales
+                if ($p = self::POR_ROL[$b] ?? null) {
+                    $ok[] = $p;
+                }
             }
             foreach (self::POR_PERMISO as $perm => $slug) {
                 if ($u->tienePermiso($perm)) {

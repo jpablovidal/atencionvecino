@@ -29,6 +29,7 @@ use App\Http\Controllers\MantenedorController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PagosController;
+use App\Http\Controllers\PermisosUsuarioController;
 use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\ProduccionController;
 use App\Http\Controllers\ProveedoresController;
@@ -407,6 +408,10 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
             Route::post('/apariencia/restablecer', [AparienciaController::class, 'restablecer'])->name('apariencia.restablecer');
         });
         Route::middleware('permiso:roles.gestionar')->group(function () {
+            Route::get('/permisos', [PermisosUsuarioController::class, 'indice'])->name('permisos');
+            Route::get('/permisos/matriz.csv', [PermisosUsuarioController::class, 'csv'])->middleware('throttle:10,1')->name('permisos.csv');
+            Route::get('/permisos/{usuario}', [PermisosUsuarioController::class, 'detalle'])->whereNumber('usuario')->name('permisos.usuario');
+            Route::post('/permisos/{usuario}', [PermisosUsuarioController::class, 'guardar'])->whereNumber('usuario')->name('permisos.guardar');
             Route::get('/roles', [RolesController::class, 'index'])->name('roles');
             Route::get('/roles/nuevo', [RolesController::class, 'crear'])->name('roles.crear');
             Route::post('/roles', [RolesController::class, 'guardar'])->name('roles.guardar');

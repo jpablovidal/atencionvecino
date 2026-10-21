@@ -265,3 +265,10 @@ El menú **Datos personales (DPO)** (permiso «Ver las solicitudes cuyo titular 
 
 ## 17. Recorrido guiado y manuales por perfil
 Cada persona ve en **Manuales de usuario** solo los manuales de su perfil (el superadministrador los ve todos) y puede iniciar el **Recorrido guiado** desde el menú de su nombre.
+
+## 18. Varios roles por usuario y matriz de permisos
+Cada persona tiene un **rol principal** (el que se elige en su ficha; fija el rol base y las reglas de seguridad) y puede tener **roles adicionales**. Sus permisos son la **unión** de los de todos sus roles. En **Matriz de permisos por usuario** (menú de administración, permiso «Roles y permisos») se ve la lista de personas con su rol principal, roles adicionales, cantidad de permisos efectivos y ajustes individuales; *Descargar la matriz completa (CSV)* entrega una fila por usuario y una columna por permiso (queda registrado en la auditoría).
+
+Al elegir una persona se abre su **detalle**: los roles adicionales (casillas) y la tabla de todos los permisos por tema, con si está **efectivo**, de **dónde viene** (rol principal, rol adicional, concedido o denegado individualmente) y un **ajuste individual**: *Según sus roles*, *Conceder* (un permiso que sus roles no dan, dentro de lo que sus roles permiten) o *Denegar* (quitar uno que sí le dan). Reglas de seguridad: los roles de **administración y de auditoría no se combinan** con otros ni pueden agregarse como adicionales (separación de funciones); lo concedido nunca supera el techo de sus roles ni incluye los permisos reservados al sistema; siempre debe quedar **al menos una persona con «Roles y permisos»**. Los cambios quedan en la auditoría y la persona los ve desde su próximo ingreso.
+
+**Su propio rol:** el administrador puede abrir su propio detalle y agregarse o quitarse permisos dentro de lo que permite el rol de administración (por ejemplo, quitarse la exportación de la bitácora); el cambio rige de inmediato y queda registrado. No puede darse permisos de operación de expedientes (separación de funciones).

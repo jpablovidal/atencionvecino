@@ -24,6 +24,9 @@
 <div class="form-row">
 <div class="form-group col-md-6"><label for="resumen">Resumen (MGDDE)</label><input class="form-control" id="resumen" name="resumen" maxlength="1000" value="{{ old('resumen',$d->resumen) }}"></div>
 <div class="form-group col-md-6"><label for="palabras_clave">Palabras clave</label><input class="form-control" id="palabras_clave" name="palabras_clave" maxlength="255" value="{{ old('palabras_clave',$d->palabras_clave) }}"></div></div>
+<div class="form-row">
+<div class="form-group col-md-6"><label for="tipo_materia">Tipo de materia (opcional)</label><input class="form-control" id="tipo_materia" name="tipo_materia" maxlength="120" list="lista-tipo-materia" value="{{ old('tipo_materia',$d->tipo_materia) }}" placeholder="Ej.: Autoriza contratación directa"></div>
+<div class="form-group col-md-6"><label for="macrotema">Macrotema (opcional)</label><input class="form-control" id="macrotema" name="macrotema" maxlength="120" value="{{ old('macrotema',$d->macrotema) }}" placeholder="Ej.: Autoriza, Aprueba, Modifica"></div></div>
 <div class="form-row"><div class="form-group col-md-4"><label for="nivel_acceso">Nivel de acceso</label><select class="form-control" id="nivel_acceso" name="nivel_acceso"><option value="reservado" @selected($d->nivel_acceso==='reservado')>Reservado</option><option value="publico" @selected($d->nivel_acceso==='publico')>Público</option></select></div>
 <div class="col-md-4 pt-4"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="sensible" name="sensible" value="1" @checked($d->sensible)><label class="custom-control-label" for="sensible">Contiene datos sensibles</label></div></div></div>
 <button class="btn btn-primary">Guardar nueva versión</button>

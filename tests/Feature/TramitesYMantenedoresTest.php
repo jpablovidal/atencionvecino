@@ -137,7 +137,8 @@ class TramitesYMantenedoresTest extends TestCase
         $d = $this->documentoVigente($e, $dom);
         $d->forceFill(['nivel_acceso' => 'publico', 'titulo' => 'Oficio de prueba especial'])->save();
         $this->comoFuncionario($dom)->get('/app/vigentes')->assertSee($d->codigo_validacion)->assertSee('Oficio de prueba especial');
-        $this->comoFuncionario($this->usuario('funcionario', 3))->get('/app/vigentes')->assertDontSee($d->codigo_validacion); // otra unidad
+        $otra = $this->comoFuncionario($this->usuario('funcionario', 3))->get('/app/vigentes'); // otra unidad: ve que existe, pero no puede abrir su contenido
+        $otra->assertSee('Oficio de prueba especial')->assertDontSee('Ver aquí')->assertSee('Sin acceso a su contenido');
         $this->get('/publico?q=especial')->assertSee('Oficio de prueba especial');
         $this->get('/publico?q=inexistente')->assertDontSee('Oficio de prueba especial');
         $this->get('/publico?tipo=3&anio='.now()->year)->assertSee('Oficio de prueba especial');

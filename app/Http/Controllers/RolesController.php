@@ -20,9 +20,14 @@ class RolesController extends Controller
 
     public function index()
     {
+        $cuentas = Usuario::query()->selectRaw('rol, count(*) as n')->groupBy('rol')->pluck('n', 'rol')->all();
+        foreach (DB::table('usuario_roles')->join('roles', 'roles.id', '=', 'usuario_roles.rol_id')->selectRaw('roles.clave as clave, count(*) as n')->groupBy('roles.clave')->pluck('n', 'clave') as $c => $n) {
+            $cuentas[$c] = ($cuentas[$c] ?? 0) + $n; // también como rol adicional
+        }
+
         return view('app.admin.roles', [
             'roles' => Rol::query()->orderByDesc('sistema')->orderBy('nombre')->get(),
-            'usuarios' => Usuario::query()->selectRaw('rol, count(*) as n')->groupBy('rol')->pluck('n', 'rol'),
+            'usuarios' => collect($cuentas),
             'catalogo' => Permisos::catalogo(),
         ]);
     }
@@ -45,7 +50,7 @@ class RolesController extends Controller
             $ceil[$b] = array_values(array_filter(Permisos::techo($b), fn ($p) => empty(Permisos::catalogo()[$p][3])));
         }
 
-        return ['rol' => $rol, 'catalogo' => Permisos::catalogo(), 'techo' => $ceil, 'sel' => $rol ? $rol->permisos() : [], 'asignados' => $rol ? $rol->usuarios()->count() : 0];
+        return ['rol' => $rol, 'catalogo' => Permisos::catalogo(), 'techo' => $ceil, 'sel' => $rol ? $rol->permisos() : [], 'asignados' => $rol ? $rol->asignaciones() : 0];
     }
 
     public function guardar(Request $r, ?Rol $rol = null)
@@ -57,7 +62,7 @@ class RolesController extends Controller
             'nombre' => 'required|string|min:3|max:80', 'descripcion' => 'nullable|string|max:300',
             'rol_base' => ['required', Rule::in($bases)], 'permisos' => 'nullable|array', 'permisos.*' => ['string', Rule::in(array_keys(Permisos::catalogo()))],
         ]);
-        $asignados = $rol ? $rol->usuarios()->count() : 0;
+        $asignados = $rol ? $rol->asignaciones() : 0;
         if ($rol && $d['rol_base'] !== $rol->rol_base && $asignados > 0) {
             return back()->withInput()->with('error', 'No se puede cambiar el rol base de un rol con usuarios asignados; reasigne a los usuarios primero.');
         }
@@ -86,7 +91,7 @@ class RolesController extends Controller
     public function alternar(Rol $rol)
     {
         abort_if($rol->sistema, 403, 'Los roles del sistema no se pueden desactivar.');
-        if ($rol->activo && $rol->usuarios()->where('activo', true)->exists()) {
+        if ($rol->activo && $rol->asignaciones(true) > 0) {
             return back()->with('error', 'El rol tiene usuarios activos asignados: reasígnelos antes de desactivarlo.');
         }
         $rol->update(['activo' => ! $rol->activo]);
@@ -98,7 +103,7 @@ class RolesController extends Controller
     public function eliminar(Rol $rol)
     {
         abort_if($rol->sistema, 403, 'Los roles del sistema no se pueden eliminar.');
-        if ($rol->usuarios()->exists()) {
+        if ($rol->asignaciones() > 0) {
             return back()->with('error', 'El rol tiene usuarios asignados (incluso inactivos): no se puede eliminar; desactívelo.');
         }
         DB::table('rol_permisos')->where('rol_id', $rol->id)->delete();
@@ -110,7 +115,8 @@ class RolesController extends Controller
 
     private function cerrarSesionesDelRol(string $clave): void
     {
-        $ids = Usuario::query()->where('rol', $clave)->pluck('id');
+        $rolId = DB::table('roles')->where('clave', $clave)->value('id');
+        $ids = Usuario::query()->where('rol', $clave)->pluck('id')->merge(DB::table('usuario_roles')->where('rol_id', $rolId)->pluck('usuario_id'))->unique();
         if ($ids->isNotEmpty()) {
             DB::table('sessions')->whereIn('user_id', $ids)->delete();
         }

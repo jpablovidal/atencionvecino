@@ -106,7 +106,12 @@ Escriba qué necesita y presione **Generar borrador**. Revise el resultado y pre
 
 ## 9. Documentos vigentes
 
-**Documentos vigentes** lista todos los que completaron su flujo, con número, fecha de firma y enlace público de validación.
+**Documentos vigentes** lista **todos** los documentos que completaron su flujo (decretos, oficios y demás), de todas las direcciones, en una tabla con **N°, fecha, tipo, dirección, materia, tipo de materia, macrotema, expediente** y el botón **Ver aquí**. Por defecto muestra el **año actual**.
+
+- **Filtros:** búsqueda de texto (materia, N°, expediente, palabras clave), **año** (o «Todos»), **tipo de documento** (*Decretos*, *Oficios* o un tipo en particular), dirección, tipo de materia, macrotema, rango de fechas de firma y cantidad por página. «Quitar filtros» vuelve al año actual.
+- **Orden:** haga clic en el título de cualquier columna para ordenar de forma ascendente o descendente.
+- **Acceso:** ver que un documento existe no da acceso a su contenido. «Ver aquí» aparece solo si usted puede abrirlo; los documentos con datos sensibles de otra dirección muestran «Contiene datos sensibles» en lugar de la materia, y los restringidos se muestran como «Documento restringido».
+- **Clasificación:** al redactar un documento puede indicar su **tipo de materia** y **macrotema** (opcionales); aparecen y se pueden filtrar en este listado.
 
 ## 10. Accesibilidad y atajos
 

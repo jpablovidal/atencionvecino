@@ -31,6 +31,16 @@ class Rol extends Model
         return DB::table('rol_permisos')->where('rol_id', $this->id)->pluck('permiso')->all();
     }
 
+    /** Personas con este rol como principal o como adicional. */
+    public function asignaciones(bool $soloActivas = false): int
+    {
+        $p = $this->usuarios()->when($soloActivas, fn ($q) => $q->where('activo', true))->count();
+        $a = DB::table('usuario_roles')->join('usuarios', 'usuarios.id', '=', 'usuario_roles.usuario_id')->where('usuario_roles.rol_id', $this->id)
+            ->when($soloActivas, fn ($q) => $q->where('usuarios.activo', true))->count();
+
+        return $p + $a;
+    }
+
     /** @return HasMany<Usuario, $this> */
     public function usuarios(): HasMany
     {

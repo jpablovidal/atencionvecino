@@ -521,3 +521,6 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .btn-cu{margin:0}.btn-cu+.btn-cu{margin-top:.5rem}
 .text-warning-dark{color:#7a4f00}.sgd-anexo progress{height:.6rem}.sgd-consentimiento{border:1px solid #cdd3da;border-left:4px solid #0b5aa8;border-radius:4px;padding:1rem;background:#f8fafc}
 .rec-paso h2:focus{outline:0}
+.sgd-tabla-azul thead th{background:#006fb3;color:#fff;border-color:#005a92;white-space:nowrap;vertical-align:middle}
+.sgd-tabla-azul thead th a{color:#fff;text-decoration:none}.sgd-tabla-azul thead th a:hover,.sgd-tabla-azul thead th a:focus{text-decoration:underline}
+.sgd-tabla-azul td{vertical-align:middle}.sgd-tabla-azul tbody tr:nth-child(even){background:#f6f9fc}

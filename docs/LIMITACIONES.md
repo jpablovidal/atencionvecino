@@ -251,3 +251,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Un funcionario creado manualmente (no por el directorio) no se actualiza automáticamente con la importación.
 - El recorrido guiado y los manuales por perfil se probaron con un navegador Chromium de escritorio, no con lectores de pantalla reales ni teléfonos.
 - No se pudo reproducir ni identificar qué dato del formulario activó el bloqueo de Wordfence; la solución es de configuración del hosting (ver decisión 141).
+
+## Varios roles y permisos individuales
+- Las pantallas que adaptan su contenido al «rol principal» (por ejemplo el tablero de inicio) siguen mostrando la vista de ese rol; los permisos, el menú y el acceso a las funciones sí suman los de todos los roles.
+- Quien tiene roles adicionales de operación puede operar expedientes de su unidad como cualquier funcionario; las reglas de unidad y de contenido restringido no cambian.
+- No se probó con un directorio real de usuarios; las reglas están cubiertas por pruebas automáticas.

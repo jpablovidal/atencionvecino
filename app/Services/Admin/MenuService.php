@@ -55,6 +55,7 @@ class MenuService
             'delegaciones' => $i('Delegaciones de firma', 'app.delegaciones', 'app/delegaciones*', ['app'], 'delegaciones.ver', null, 40),
             'unidades' => $i('Unidades', 'app.admin.index:unidades', 'app/admin/unidades*', ['app'], 'mantenedores.gestionar', $a, 100),
             'usuarios' => $i('Usuarios', 'app.admin.index:usuarios', 'app/admin/usuarios*', ['app'], 'mantenedores.gestionar', $a, 110),
+            'permisos_usuarios' => $i('Matriz de permisos por usuario', 'app.admin.permisos', 'app/admin/permisos*', ['app'], 'roles.gestionar', $a, 116),
             'roles' => $i('Roles y permisos', 'app.admin.roles', 'app/admin/roles*', ['app'], 'roles.gestionar', $a, 115),
             'tramites' => $i('Trámites y servicios', 'app.tramites.index', 'app/tramites*', ['app'], 'tramites.gestionar', $a, 120),
             'datospersonales' => $i('Datos personales (DPO)', 'app.datospersonales', 'app/datos-personales*', ['app'], 'datospersonales.ver', $s, 306),
@@ -110,13 +111,14 @@ class MenuService
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
-        'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help', 'datospersonales' => 'shield',
+        'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help', 'datospersonales' => 'shield', 'permisos_usuarios' => 'users',
     ];
 
     public const DESCRIPCIONES = [
         'seguimiento' => 'Consulte por RUN, fechas, dirección, etapa o trámite: en qué está, quién la tiene y si terminó.', 'oirs' => 'Solicitudes, responsables y plazos vencidos o por vencer.',
         'transparencia' => 'Consultas de acceso a la información: gestión, plazos, prórrogas y derivaciones.', 'transp_activa' => 'Calendario mensual de publicaciones obligatorias.', 'transp_plazos' => 'Feriados y parámetros de los plazos de transparencia.', 'transp_reportes' => 'Reportes de transparencia pasiva y activa, exportables.', 'transp_req' => 'Requerimientos de información dirigidos a su dirección.',
         'restringidos' => 'Quién vio o intentó ver expedientes, documentos y archivos restringidos.',
+        'permisos_usuarios' => 'Roles y permisos de cada persona: agregue roles, conceda o quite permisos y descargue la matriz.',
         'datospersonales' => 'Solicitudes cuyo titular no autorizó el tratamiento de sus datos personales.',
         'pagos_config' => 'Correlativo propio y firmantes del decreto de pago y del egreso.',
         'firmas' => 'Documentos que le toca firmar o visar, para resolverlos uno a uno o por lote.',
@@ -176,7 +178,7 @@ class MenuService
                 continue;
             }
             $roles = array_filter(explode(',', (string) $c->roles));
-            if ($roles && ! ($u && in_array($u->rolBase(), $roles, true))) {
+            if ($roles && ! ($u && array_intersect($u->basesRol(), $roles) !== [])) {
                 continue;
             }
             $out[] = ['url' => str_starts_with((string) $c->url, '/') ? url($c->url) : (string) $c->url, 'etiqueta' => $c->etiqueta, 'patron' => ltrim((string) parse_url((string) $c->url, PHP_URL_PATH), '/') ?: '/', 'clave' => null, 'icono' => 'external', 'descripcion' => '', 'grupo' => null, 'nueva' => (bool) $c->nueva_pestana, 'orden' => $c->orden];

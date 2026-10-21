@@ -87,12 +87,12 @@ class DocumentoController extends Controller
         app(AccesoRestringidoService::class)->exigirDocumento($r->user(), $documento, 'editar_documento');
         $this->authorize('operar', $documento);
         $d = $r->validate([
-            'titulo' => 'required|string|max:190', 'html' => 'required|string|max:200000', 'resumen' => 'nullable|string|max:1000', 'palabras_clave' => 'nullable|string|max:255',
+            'titulo' => 'required|string|max:190', 'html' => 'required|string|max:200000', 'resumen' => 'nullable|string|max:1000', 'palabras_clave' => 'nullable|string|max:255', 'tipo_materia' => 'nullable|string|max:120', 'macrotema' => 'nullable|string|max:120',
             'nivel_acceso' => 'required|in:publico,reservado', 'sensible' => 'nullable|boolean',
         ]);
         try {
             $this->svc->guardar($documento, $d['titulo'], $d['html'], [
-                'resumen' => $d['resumen'] ?? null, 'palabras_clave' => $d['palabras_clave'] ?? null, 'nivel_acceso' => $d['nivel_acceso'], 'sensible' => (bool) ($d['sensible'] ?? false),
+                'resumen' => $d['resumen'] ?? null, 'palabras_clave' => $d['palabras_clave'] ?? null, 'tipo_materia' => trim((string) ($d['tipo_materia'] ?? '')) ?: null, 'macrotema' => trim((string) ($d['macrotema'] ?? '')) ?: null, 'nivel_acceso' => $d['nivel_acceso'], 'sensible' => (bool) ($d['sensible'] ?? false),
             ], $r->user());
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
