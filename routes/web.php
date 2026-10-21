@@ -136,6 +136,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
 
     Route::get('/expedientes/{expediente}', [ExpedienteController::class, 'show'])->name('expediente');
     Route::post('/expedientes/{expediente}/metadatos', [ExpedienteController::class, 'metadatos'])->name('expediente.metadatos');
+    Route::post('/expedientes/{expediente}/derivaciones/{derivacion}/estado', [ExpedienteController::class, 'estadoDerivacion'])->whereNumber('derivacion')->middleware('throttle:60,1')->name('expediente.derivacion.estado');
     Route::post('/expedientes/{expediente}/comentarios', [ExpedienteController::class, 'comentar'])->name('expediente.comentar');
     Route::post('/expedientes/{expediente}/devolver', [ExpedienteController::class, 'devolver'])->name('expediente.devolver');
     Route::post('/expedientes/{expediente}/derivar', [ExpedienteController::class, 'derivar'])->name('expediente.derivar');
@@ -167,6 +168,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::post('/expedientes/{expediente}/comunicaciones', [InteropController::class, 'comunicar'])->middleware('throttle:interop')->name('comunicacion.crear');
     Route::post('/comunicaciones/{comunicacion}/evidencia', [InteropController::class, 'evidencia'])->name('comunicacion.evidencia');
     Route::post('/comunicaciones/{comunicacion}/devolver', [InteropController::class, 'devolver'])->middleware('throttle:interop')->name('comunicacion.devolver');
+    Route::post('/comunicaciones/{comunicacion}/gestion', [InteropController::class, 'gestion'])->middleware('throttle:interop')->name('comunicacion.gestion');
     Route::post('/comunicaciones/{comunicacion}/acuse', [InteropController::class, 'acuse'])->middleware('throttle:interop')->name('comunicacion.acuse');
     Route::post('/expedientes/{expediente}/asignarme', [ExpedienteController::class, 'asignarme'])->name('expediente.asignarme');
     Route::post('/comunicaciones/{comunicacion}/reintentar', [InteropController::class, 'reintentar'])->name('comunicacion.reintentar');

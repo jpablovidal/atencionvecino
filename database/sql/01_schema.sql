@@ -752,4 +752,22 @@ alter table `documentos` add `macrotema` varchar(120) null;
 
 alter table `documentos` add index `documentos_estado_fecha_firma_index`(`estado`, `fecha_firma`);
 
+alter table `derivaciones` add `accion` varchar(20) null;
+
+alter table `derivaciones` add `plazo` date null;
+
+alter table `derivaciones` add `estado` varchar(15) null;
+
+alter table `derivaciones` add `nota` text null;
+
+alter table `derivaciones` add `resuelto_en` timestamp null;
+
+alter table `derivaciones` add index `derivaciones_a_usuario_estado_index`(`a_usuario_id`, `estado`);
+
+alter table `comunicaciones_oficiales` add `gestion` varchar(15) not null default 'recibida';
+
+alter table `comunicaciones_oficiales` add `gestion_en` timestamp null;
+
+alter table `comunicaciones_oficiales` add `gestion_por_id` bigint unsigned null;
+
 SET FOREIGN_KEY_CHECKS = 1;

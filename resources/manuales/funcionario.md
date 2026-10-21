@@ -242,3 +242,12 @@ Al ingresar su solicitud, el vecino(a) indica si autoriza el tratamiento de sus 
 
 ## Recorrido guiado y manuales
 En el menú de su nombre están **Recorrido guiado** (se muestra la primera vez y puede repetirlo) y **Manuales de usuario**, que lista solo los manuales de su perfil.
+
+## Gestionar una comunicación recibida por DocDigital
+Al abrir el expediente de una comunicación recibida verá su documento original, sus firmas y el **acuse de recibo**:
+1. **Acusar recibo** (o devolverla a la entidad de origen con un motivo). Hasta acusar recibo no se pueden crear documentos de respuesta.
+2. **Cambiar el estado de gestión** de la comunicación: *En gestión*, *Respondida* o *Archivada* (con una nota opcional). Queda como comentario del expediente y en la auditoría.
+3. **Derivar el expediente** a la persona que debe actuar: elija *a quién*, la **acción que debe realizar** (preparar la respuesta, informar, revisar, tomar conocimiento, redactar un documento, archivar u otra), un **plazo** opcional y las instrucciones.
+4. La persona derivada ve la tarea en su bandeja, en **Acciones que le derivaron** (las vencidas se marcan), abre el expediente y **actualiza el estado** de la derivación: *En proceso*, *Cumplida* o *Devuelta (no corresponde)*, con una nota (obligatoria al cumplir o devolver). Cada cambio queda como comentario del expediente.
+
+Un(a) superadministrador(a) también puede acusar recibo, cambiar el estado y derivar cualquier expediente; no se asigna el expediente a sí mismo(a) (el responsable es de la unidad receptora).

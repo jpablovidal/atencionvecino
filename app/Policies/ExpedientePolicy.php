@@ -22,6 +22,10 @@ class ExpedientePolicy
 
     public function operar(Usuario $u, Expediente $e): bool
     {
+        if ($u->activo && $u->esSuperadmin()) { // el superadministrador gestiona cualquier expediente (excepto el que él mismo solicitó como vecino); sus acciones quedan en la auditoría
+            return ! $this->esSuyo($u, $e);
+        }
+
         return $u->activo && $u->operaExpedientes() && ! $this->esSuyo($u, $e) && $this->participa($u, $e);
     }
 

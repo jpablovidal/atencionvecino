@@ -31,6 +31,7 @@ use App\Services\TransparenciaService;
 use App\Support\Plazos;
 use App\Support\UploadValidator;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ExpedienteController extends Controller
 {
@@ -143,16 +144,44 @@ class ExpedienteController extends Controller
     {
         $this->permiso('expedientes.derivar');
         $this->operar($expediente);
-        $d = $r->validate(['a_usuario_id' => 'required|integer|exists:usuarios,id', 'motivo' => 'required|string|min:3|max:500']);
+        $d = $r->validate([
+            'a_usuario_id' => 'required|integer|exists:usuarios,id', 'motivo' => 'required|string|min:3|max:500',
+            'accion' => ['nullable', Rule::in(array_keys(Derivacion::ACCIONES))], 'plazo' => 'nullable|date_format:Y-m-d|after_or_equal:today',
+        ]);
         $dest = Usuario::query()->where('id', $d['a_usuario_id'])->where('activo', true)->firstOrFail();
         abort_unless($dest->operaExpedientes(), 422);
-        Derivacion::query()->create(['expediente_id' => $expediente->id, 'de_usuario_id' => $r->user()->id, 'a_usuario_id' => $dest->id, 'motivo' => $d['motivo']]);
-        $this->audit->registrar('expediente.derivar', 'expediente', $expediente->id, ['a' => $dest->id]);
+        Derivacion::query()->create(['expediente_id' => $expediente->id, 'de_usuario_id' => $r->user()->id, 'a_usuario_id' => $dest->id, 'motivo' => $d['motivo'],
+            'accion' => $d['accion'] ?? 'otra', 'plazo' => $d['plazo'] ?? null, 'estado' => 'pendiente']);
+        $this->audit->registrar('expediente.derivar', 'expediente', $expediente->id, ['a' => $dest->id, 'accion' => $d['accion'] ?? 'otra', 'plazo' => $d['plazo'] ?? null]);
         if ($expediente->solicitud) {
             app(MovimientoService::class)->registrar($expediente->solicitud, 'derivada', 'Su solicitud fue derivada a '.($dest->unidad?->nombre ?? 'otra dirección municipal').' para continuar su gestión.', $dest->unidad_id);
         }
 
-        return back()->with('ok', 'Expediente derivado a '.$dest->nombreCompleto().'.');
+        return back()->with('ok', 'Expediente derivado a '.$dest->nombreCompleto().': deberá '.mb_strtolower(Derivacion::ACCIONES[$d['accion'] ?? 'otra']).'.');
+    }
+
+    /** La persona a quien se derivó (o un superadministrador) informa el avance: en proceso, cumplida o devuelta (no corresponde). Queda como comentario del expediente y en la auditoría. */
+    public function estadoDerivacion(Request $r, Expediente $expediente, Derivacion $derivacion)
+    {
+        abort_unless($derivacion->expediente_id === $expediente->id && $derivacion->estado !== null, 404);
+        abort_unless($r->user()->id === $derivacion->a_usuario_id || $r->user()->esSuperadmin(), 403);
+        $d = $r->validate(['estado' => ['required', Rule::in(['en_proceso', 'cumplida', 'devuelta'])], 'nota' => 'nullable|string|max:1000']);
+        if (! $derivacion->abierta()) {
+            return back()->with('error', 'Esta derivación ya está '.mb_strtolower(Derivacion::ESTADOS[$derivacion->estado]).'.');
+        }
+        if ($d['estado'] === $derivacion->estado) {
+            return back()->with('error', 'La derivación ya está en ese estado.');
+        }
+        if (in_array($d['estado'], ['cumplida', 'devuelta'], true) && mb_strlen(trim((string) ($d['nota'] ?? ''))) < 3) {
+            return back()->withInput()->with('error', 'Indique una nota (qué se hizo o por qué no corresponde).');
+        }
+        $nota = trim((string) ($d['nota'] ?? '')) ?: null;
+        $derivacion->forceFill(['estado' => $d['estado'], 'nota' => $nota, 'resuelto_en' => $derivacion->abierta() && $d['estado'] !== 'en_proceso' ? now() : null])->save();
+        Comentario::query()->create(['expediente_id' => $expediente->id, 'usuario_id' => $r->user()->id, 'tipo' => 'comentario',
+            'texto' => 'Derivación «'.Derivacion::ACCIONES[$derivacion->accion ?? 'otra'].'» → '.Derivacion::ESTADOS[$d['estado']].($nota ? ': '.$nota : '')]);
+        $this->audit->registrar('expediente.derivacion_estado', 'expediente', $expediente->id, ['derivacion' => $derivacion->id, 'estado' => $d['estado']]);
+
+        return back()->with('ok', 'Estado de la derivación actualizado: '.mb_strtolower(Derivacion::ESTADOS[$d['estado']]).'.');
     }
 
     public function subir(Request $r, Expediente $expediente, FileVault $vault, ArchivoFirmaService $firmas)

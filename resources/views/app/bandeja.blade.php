@@ -6,7 +6,7 @@
 @include('partials.kpis', ['kpis' => $kpis])
 @include('partials.panel', ['panel' => $panel])
 
-@if($pasos->isNotEmpty() || $entrantes->isNotEmpty() || $porAsignar->isNotEmpty())
+@if($pasos->isNotEmpty() || $entrantes->isNotEmpty() || $porAsignar->isNotEmpty() || $acciones->isNotEmpty())
 <h2 class="seccion">Requieren su atención</h2>
 @if($pasos->count() > 1)<p><a class="btn btn-primary" href="{{ route('app.firmas') }}">Firmar o visar por lote ({{ $pasos->count() }} pendientes)</a></p>@endif
 <div class="dash-alertas">
@@ -17,6 +17,11 @@
 @foreach($entrantes as $s)
   <a class="alerta-card alerta-info" href="{{ route('app.solicitud',$s->folio) }}"><span class="alerta-chip">Nueva solicitud</span>
     <strong>{{ $s->tramite->nombre }}</strong><small>Folio {{ $s->folio }} · ingresó el {{ $s->created_at->format('d-m-Y H:i') }}</small></a>
+@endforeach
+@if($acciones->isNotEmpty())<h3 class="grupo-alerta">Acciones que le derivaron</h3>@endif
+@foreach($acciones as $a)
+  <a class="alerta-card alerta-aviso" href="{{ route('app.expediente',$a->expediente_id) }}"><span class="alerta-chip">{{ $a->vencida() ? 'Vencida' : ($a->estado==='en_proceso' ? 'En proceso' : 'Pendiente') }}</span>
+    <strong>{{ \App\Models\Derivacion::ACCIONES[$a->accion ?? 'otra'] }}</strong><small>Expediente {{ $a->expediente->codigo }} · de {{ $a->de->nombreCompleto() }}@if($a->plazo) · plazo {{ $a->plazo->format('d-m-Y') }}@endif</small></a>
 @endforeach
 @if($porAsignar->isNotEmpty())<h3 class="grupo-alerta">Comunicaciones oficiales recibidas por gestionar (DocDigital)</h3>@endif
 @foreach($porAsignar as $x)

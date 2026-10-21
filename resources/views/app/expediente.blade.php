@@ -16,6 +16,10 @@
 <p class="mb-0"><span class="estado estado-fallida">devuelto a la entidad de origen</span> {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span></p>
 @elseif($entrante->acuse_estado==='registrado')
 <p class="mb-0"><span class="estado estado-vigente">acuse de recibo registrado</span> ({{ $entrante->acuse_tipo }}) {{ $entrante->acuse_en }} · <span class="hash">{{ $entrante->acuse_evidencia }}</span>@if($entrante->acuse_tipo==='simulado') <span class="sim">SIMULADO – no enviado realmente</span>@endif</p>
+<p class="mb-1 mt-2">Estado de gestión: <span class="estado {{ in_array($entrante->gestion, ['respondida','archivada'], true) ? 'estado-vigente' : 'estado-pendiente' }}">{{ ['recibida'=>'recibida','en_gestion'=>'en gestión','respondida'=>'respondida','archivada'=>'archivada'][$entrante->gestion] ?? $entrante->gestion }}</span>@if($entrante->gestion_en) <span class="small text-muted">{{ \Illuminate\Support\Carbon::parse($entrante->gestion_en)->timezone('America/Santiago')->format('d-m-Y H:i') }}</span>@endif</p>
+@if($puedeOperar && auth()->user()->tienePermiso('comunicaciones.acusar'))
+<form method="post" action="{{ route('app.comunicacion.gestion',$entrante) }}" class="form-inline">@csrf<label class="mr-2" for="ge_e">Cambiar el estado a</label><select class="form-control form-control-sm mr-2" id="ge_e" name="gestion"><option value="en_gestion" @selected($entrante->gestion==='en_gestion')>En gestión</option><option value="respondida" @selected($entrante->gestion==='respondida')>Respondida</option><option value="archivada" @selected($entrante->gestion==='archivada')>Archivada</option></select><label class="sr-only" for="ge_n">Nota</label><input class="form-control form-control-sm mr-2" id="ge_n" name="nota" maxlength="500" placeholder="Nota (opcional)"><button class="btn btn-sm btn-outline-primary">Guardar estado</button></form>
+@endif
 @else
 <p class="mb-2"><span class="estado estado-pendiente">acuse de recibo pendiente</span> — debe acusar recibo antes de gestionar y responder.</p>
 @if($puedeOperar)
@@ -27,7 +31,7 @@
 @endif
 @endif
 @endif
-@if($puedeOperar && ! $e->responsable_id)<form method="post" action="{{ route('app.expediente.asignarme',$e) }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-primary">Asignarme este expediente</button></form>@endif
+@if($puedeOperar && ! $e->responsable_id && auth()->user()->operaExpedientes())<form method="post" action="{{ route('app.expediente.asignarme',$e) }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-primary">Asignarme este expediente</button></form>@endif
 </div></div>
 @endif
 @if(!empty($restr))@include('app.restringidos._expediente', ['r' => $restr])@endif
@@ -85,7 +89,14 @@
 
 <h2 class="h4">Comentarios y derivaciones</h2>
 @foreach($e->comentarios as $c)<p class="mb-1"><strong>{{ $c->usuario->nombreCompleto() }}</strong> <small>({{ $c->tipo }}, {{ $c->created_at }})</small>: {{ $c->texto }}</p>@endforeach
-@foreach($e->derivaciones as $d)<p class="mb-1"><em>Derivado de {{ $d->de->nombreCompleto() }} a {{ $d->a->nombreCompleto() }}: {{ $d->motivo }}</em></p>@endforeach
+@foreach($e->derivaciones as $d)
+<div class="mb-2"><em>Derivado de {{ $d->de->nombreCompleto() }} a {{ $d->a->nombreCompleto() }}: {{ $d->motivo }}</em>
+@if($d->estado)<br><span class="small">Debe: <strong>{{ \App\Models\Derivacion::ACCIONES[$d->accion ?? 'otra'] }}</strong>@if($d->plazo) · plazo {{ $d->plazo->format('d-m-Y') }}@if($d->vencida()) <span class="estado estado-fallida">vencido</span>@endif @endif · estado: <span class="estado {{ $d->estado==='cumplida' ? 'estado-vigente' : ($d->estado==='devuelta' ? 'estado-fallida' : 'estado-pendiente') }}">{{ \App\Models\Derivacion::ESTADOS[$d->estado] }}</span>@if($d->nota) · {{ $d->nota }}@endif</span>
+@if($d->abierta() && (auth()->id() === $d->a_usuario_id || auth()->user()->esSuperadmin()))
+<form method="post" action="{{ route('app.expediente.derivacion.estado', [$e, $d]) }}" class="form-inline mt-1">@csrf<label class="sr-only" for="de{{ $d->id }}">Nuevo estado</label><select class="form-control form-control-sm mr-2" id="de{{ $d->id }}" name="estado">@if($d->estado==='pendiente')<option value="en_proceso">En proceso</option>@endif<option value="cumplida">Cumplida</option><option value="devuelta">Devuelta (no corresponde)</option></select><label class="sr-only" for="dn{{ $d->id }}">Nota</label><input class="form-control form-control-sm mr-2" id="dn{{ $d->id }}" name="nota" maxlength="1000" placeholder="Nota: qué hizo o por qué no corresponde"><button class="btn btn-sm btn-outline-primary">Actualizar estado</button></form>
+@endif
+@endif</div>
+@endforeach
 @if($puedeOperar)
 <div class="row mt-3">
 <form method="post" action="{{ route('app.expediente.comentar',$e) }}" class="col-md-4">@csrf
@@ -93,7 +104,9 @@
 <select class="form-control mb-2" name="tipo" aria-label="Tipo"><option value="comentario">Comentario</option><option value="observacion">Observación</option></select><button class="btn btn-sm btn-primary">Agregar</button></form>
 <form method="post" action="{{ route('app.expediente.derivar',$e) }}" class="col-md-4">@csrf
 <div class="form-group"><label for="d_a">Derivar a</label><select class="form-control" id="d_a" name="a_usuario_id" required>@foreach($usuarios as $u)<option value="{{ $u->id }}">{{ $u->nombreCompleto() }} ({{ $u->rol }})</option>@endforeach</select></div>
-<div class="form-group"><label for="d_m">Motivo</label><input class="form-control" id="d_m" name="motivo" required maxlength="500"></div><button class="btn btn-sm btn-primary">Derivar</button></form>
+<div class="form-group"><label for="d_ac">Acción que debe realizar</label><select class="form-control" id="d_ac" name="accion" required>@foreach(\App\Models\Derivacion::ACCIONES as $k=>$l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select></div>
+<div class="form-group"><label for="d_pl">Plazo (opcional)</label><input class="form-control" type="date" id="d_pl" name="plazo" min="{{ now('America/Santiago')->format('Y-m-d') }}"></div>
+<div class="form-group"><label for="d_m">Motivo o instrucciones</label><input class="form-control" id="d_m" name="motivo" required maxlength="500"></div><button class="btn btn-sm btn-primary">Derivar</button></form>
 @if($s && $e->estado==='abierto' && $s->estado==='en_tramite')
 <form method="post" action="{{ route('app.expediente.devolver',$e) }}" class="col-md-4">@csrf
 <div class="form-group"><label for="v_o">Devolver al ciudadano: observación</label><textarea class="form-control" id="v_o" name="observacion" required minlength="5" maxlength="2000"></textarea></div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\FlujoException;
 use App\Jobs\EnviarComunicacionDocDigital;
 use App\Models\Archivo;
+use App\Models\Comentario;
 use App\Models\ComunicacionOficial;
 use App\Models\Documento;
 use App\Models\Expediente;
@@ -19,6 +20,7 @@ use App\Services\Interop\CodificadorService;
 use App\Services\Interop\ComunicacionService;
 use App\Services\Interop\PiseeService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class InteropController extends Controller
 {
@@ -87,6 +89,31 @@ class InteropController extends Controller
         }
 
         return back()->with('ok', 'Documento devuelto a la entidad de origen por DocDigital.');
+    }
+
+    /** Estado de gestión de una comunicación recibida (en gestión, respondida o archivada). Exige el acuse de recibo registrado; queda como comentario del expediente y en la auditoría. */
+    public function gestion(Request $r, ComunicacionOficial $comunicacion)
+    {
+        $this->permiso('comunicaciones.acusar');
+        if ($comunicacion->direccion !== 'entrante' || $comunicacion->expediente_id === null) {
+            abort(404);
+        }
+        $e = Expediente::query()->findOrFail($comunicacion->expediente_id);
+        $this->authorize('operar', $e);
+        $d = $r->validate(['gestion' => ['required', Rule::in(['en_gestion', 'respondida', 'archivada'])], 'nota' => 'nullable|string|max:500']);
+        if ($comunicacion->acuse_estado !== 'registrado') {
+            return back()->with('error', 'Primero debe acusar recibo de la comunicación (o devolverla) antes de cambiar su estado de gestión.');
+        }
+        if ($comunicacion->gestion === $d['gestion']) {
+            return back()->with('error', 'La comunicación ya está en ese estado.');
+        }
+        $et = ['en_gestion' => 'en gestión', 'respondida' => 'respondida', 'archivada' => 'archivada'][$d['gestion']];
+        $nota = trim((string) ($d['nota'] ?? ''));
+        $comunicacion->forceFill(['gestion' => $d['gestion'], 'gestion_en' => now(), 'gestion_por_id' => $r->user()->id])->save();
+        Comentario::query()->create(['expediente_id' => $e->id, 'usuario_id' => $r->user()->id, 'tipo' => 'comentario', 'texto' => 'Comunicación recibida por DocDigital marcada como '.$et.($nota !== '' ? ': '.$nota : '')]);
+        $this->audit->registrar('docdigital.gestion', 'comunicacion', $comunicacion->id, ['gestion' => $d['gestion']]);
+
+        return back()->with('ok', 'La comunicación quedó '.$et.'.');
     }
 
     public function acuse(Request $r, ComunicacionOficial $comunicacion, ComunicacionService $svc)

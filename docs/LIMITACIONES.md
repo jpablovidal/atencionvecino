@@ -256,3 +256,7 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Las pantallas que adaptan su contenido al «rol principal» (por ejemplo el tablero de inicio) siguen mostrando la vista de ese rol; los permisos, el menú y el acceso a las funciones sí suman los de todos los roles.
 - Quien tiene roles adicionales de operación puede operar expedientes de su unidad como cualquier funcionario; las reglas de unidad y de contenido restringido no cambian.
 - No se probó con un directorio real de usuarios; las reglas están cubiertas por pruebas automáticas.
+
+## Gestión de comunicaciones recibidas
+- El «estado de gestión» y los estados de las derivaciones son internos del sistema: **no** se informan a DocDigital (la API documentada solo permite acusar recibo y devolver).
+- No hay avisos por correo a la persona derivada: lo ve en su bandeja y en el expediente.
