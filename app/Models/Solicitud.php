@@ -29,7 +29,7 @@ class Solicitud extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['prorrogada_en' => 'datetime'];
+    protected $casts = ['prorrogada_en' => 'datetime', 'consentimiento_datos' => 'boolean', 'consentimiento_en' => 'datetime'];
 
     /** @return BelongsTo<Tramite, $this> */
     public function tramite(): BelongsTo

@@ -171,7 +171,7 @@ class AccesibilidadTest extends TestCase
 
     public function test_el_resumen_de_errores_enlaza_a_los_campos_y_recibe_el_foco(): void
     {
-        $r = $this->comoCiudadano()->post('/ciudadano/solicitudes', ['tramite_id' => 2, 'correo' => 'no-es-correo', 'detalle' => 'corto', 'canal_notificacion' => 'correo']);
+        $r = $this->comoCiudadano()->post('/ciudadano/solicitudes', ['tramite_id' => 2, 'correo' => 'no-es-correo', 'detalle' => 'corto', 'consentimiento' => 'si', 'canal_notificacion' => 'correo']);
         $r->assertSessionHasErrors(['correo', 'detalle']);
         $html = $this->comoCiudadano()->withSession(['errors' => $r->getSession()->get('errors')])->get('/ciudadano/nueva/2')->getContent();
         $this->assertStringContainsString('id="resumen-errores"', $html);

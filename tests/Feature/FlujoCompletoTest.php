@@ -29,7 +29,7 @@ class FlujoCompletoTest extends TestCase
         $this->sembrar();
         // 1. Ciudadano ingresa por HTTP (solo con sesión de ClaveÚnica)
         $this->comoCiudadano()->post('/ciudadano/solicitudes', [
-            'tramite_id' => 1, 'correo' => 'vecina@example.com', 'detalle' => 'Necesito un permiso de edificación.', 'canal_notificacion' => 'correo',
+            'tramite_id' => 1, 'correo' => 'vecina@example.com', 'detalle' => 'Necesito un permiso de edificación.', 'consentimiento' => 'si', 'canal_notificacion' => 'correo',
             'anexo_1' => $this->archivo('planos.pdf'), 'anexo_2' => $this->archivo('dominio.pdf'),
             'run' => '1-9', 'nombres' => 'HACKER', // se ignoran: vienen de ClaveÚnica
         ])->assertRedirect();

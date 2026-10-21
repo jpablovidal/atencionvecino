@@ -103,6 +103,7 @@
       <li class="list-inline-item"><a href="{{ str_starts_with($e['url'], '/') ? url($e['url']) : $e['url'] }}" @unless(str_starts_with($e['url'], '/')) rel="noopener noreferrer" @endunless>{{ $e['etiqueta'] }}</a></li>
     @empty
       <li class="list-inline-item"><a href="{{ route('accesibilidad') }}">Accesibilidad</a></li>
+      <li class="list-inline-item"><a href="{{ route('privacidad') }}">Privacidad y datos personales</a></li>
       <li class="list-inline-item"><a href="{{ route('ayuda') }}">Ayuda y manuales</a></li>
       <li class="list-inline-item"><a href="{{ route('publico.listado') }}">Documentos públicos</a></li>
       <li class="list-inline-item"><a href="{{ route('validar.form') }}">Validar un documento</a></li>

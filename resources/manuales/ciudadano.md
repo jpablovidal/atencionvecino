@@ -38,10 +38,11 @@ Al ingresar verá **Mis solicitudes**: tres tarjetas con cuántas solicitudes es
 1. En **Mis solicitudes**, bajo "Ingresar una nueva solicitud", busque el trámite: están agrupados por la **dirección municipal** que los atiende. Al abrirlo verá su descripción, las instrucciones, el plazo y la **lista de documentos que debe adjuntar** (con una ayuda para cada uno).
 2. Complete:
    - **Correo electrónico**: aquí se le avisará (sin adjuntos ni datos personales).
-   - **Detalle de su solicitud** (mínimo 10 caracteres): explique con claridad qué necesita.
+   - **Detalle de su solicitud** (mínimo 10 y máximo 2.000 caracteres): explique con claridad qué necesita. Un contador le muestra cuántos caracteres lleva, le avisa cuando se acerca al límite y le indica cuánto se pasó si lo supera; mientras se pase del máximo no podrá avanzar.
    - **¿Cómo desea ser notificado(a)?**: *correo electrónico*, *Casilla Única* o *presencial*.
-   - **Anexos**: adjunte los documentos que pide el trámite. Los marcados "(obligatorio)" son indispensables. Puede agregar "Otros anexos".
-3. Presione **Enviar solicitud**.
+   - **Anexos**: adjunte los documentos que pide el trámite. Los marcados "(obligatorio)" son indispensables. Puede agregar "Otros anexos". Cada archivo aparece en una tarjeta con su tamaño y una barra de avance de lectura; presione **Ver** para abrirlo en una ventana y comprobar que es el documento correcto, **Reemplazar** para elegir otro o **Quitar** para sacarlo. Desde un teléfono, **Tomar fotografía** abre la cámara y adjunta la foto (que quede legible y completa). Al enviar, otra barra muestra el avance de la subida.
+3. En el último paso, lea el aviso sobre el **tratamiento de sus datos personales** (basado en la Política de Privacidad, Decreto Alcaldicio N° 2590) e indique si **consiente o no**. Sin consentimiento la solicitud no se puede ingresar por este medio: puede presentarla en la oficina de partes. Su respuesta queda registrada con la fecha.
+4. Presione **Enviar solicitud**.
 
 ![Formulario de solicitud](/assets/manual/04-formulario-solicitud.png)
 

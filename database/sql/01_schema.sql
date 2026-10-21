@@ -720,4 +720,10 @@ alter table `instituciones` add `oid` varchar(120) null;
 
 alter table `instituciones` add `info_extra` text null;
 
+alter table `solicitudes` add `consentimiento_datos` tinyint(1) null;
+
+alter table `solicitudes` add `consentimiento_en` timestamp null;
+
+alter table `solicitudes` add `consentimiento_version` varchar(60) null;
+
 SET FOREIGN_KEY_CHECKS = 1;

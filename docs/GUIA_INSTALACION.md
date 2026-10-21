@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `858dd23f0395a95ce28f28cf6d6357bfb13b0fbb95da39dc64060133aafd4f75`).
+- Archivo **`sgd-release.zip`** (SHA-256 `ca2a9c4d8b457223c48f929e86e5cd845cf067c8fb6412546d0ced591dce11a4`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,12 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: formulario de solicitud del vecino(a)
+- **Detalle de la solicitud:** máximo **2.000 caracteres**, con contador (avisa al acercarse y cuánto se pasó).
+- **Anexos:** cada archivo muestra su tarjeta con barra de avance, **Ver** (vista previa en una ventana), **Reemplazar**, **Quitar** y **Tomar fotografía** (en el teléfono abre la cámara). Al enviar se ve la barra de subida.
+- **Último paso:** el vecino(a) indica si **consiente o no** el tratamiento de sus datos personales (Decreto Alcaldicio N° 2590). Si no consiente, la solicitud no se ingresa por este medio. El consentimiento queda guardado con fecha y se ve en el detalle de la solicitud. Hay una página pública **/privacidad** (enlace en el pie) con el resumen y el decreto en PDF.
+- Al actualizar, el instalador agrega tres columnas a `solicitudes` (las solicitudes anteriores quedan sin dato de consentimiento). No hay pasos manuales nuevos.
 
 ## Novedades: perfil de funcionario(a) y vecino(a) con ClaveÚnica
 Tras entrar con ClaveÚnica, el sistema busca el RUT en `sistemas_usuarios` → `sistemas_users`: si figura (habilitado «si», credencial «Vigente», sin término vencido) puede elegir **funcionario(a)** o **vecino(a)**; si no figura, entra solo como vecino(a). Para que funcione, el directorio debe estar configurado:

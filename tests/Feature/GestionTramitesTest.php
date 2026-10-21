@@ -87,8 +87,8 @@ class GestionTramitesTest extends TestCase
 
         // sin el adjunto obligatorio: rechazo
         $a = $t->anexos->firstWhere('nombre', 'Cédula de identidad');
-        $this->comoCiudadano()->post('/ciudadano/solicitudes', ['tramite_id' => $t->id, 'correo' => 'v@example.com', 'detalle' => 'Necesito el certificado.', 'canal_notificacion' => 'correo'])->assertSessionHas('error');
-        $r = $this->comoCiudadano()->post('/ciudadano/solicitudes', ['tramite_id' => $t->id, 'correo' => 'v@example.com', 'detalle' => 'Necesito el certificado.', 'canal_notificacion' => 'correo', 'anexo_'.$a->id => $this->archivo('cedula.pdf')]);
+        $this->comoCiudadano()->post('/ciudadano/solicitudes', ['tramite_id' => $t->id, 'correo' => 'v@example.com', 'detalle' => 'Necesito el certificado.', 'consentimiento' => 'si', 'canal_notificacion' => 'correo'])->assertSessionHas('error');
+        $r = $this->comoCiudadano()->post('/ciudadano/solicitudes', ['tramite_id' => $t->id, 'correo' => 'v@example.com', 'detalle' => 'Necesito el certificado.', 'consentimiento' => 'si', 'canal_notificacion' => 'correo', 'anexo_'.$a->id => $this->archivo('cedula.pdf')]);
         $r->assertSessionHas('ok');
         $s = Solicitud::query()->where('tramite_id', $t->id)->firstOrFail();
         $this->assertTrue(Archivo::query()->where('solicitud_id', $s->id)->where('nombre_original', 'cedula.pdf')->exists());

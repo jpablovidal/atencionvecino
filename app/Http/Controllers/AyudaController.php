@@ -27,4 +27,10 @@ class AyudaController extends Controller
     {
         return view('ayuda.accesibilidad', ['contacto' => config('sgd.accesibilidad_contacto')]);
     }
+
+    /** Resumen de la Política de Privacidad y Protección de Datos Personales (Decreto Alcaldicio N° 2590). */
+    public function privacidad()
+    {
+        return view('ayuda.privacidad');
+    }
 }

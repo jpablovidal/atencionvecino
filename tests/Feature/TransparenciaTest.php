@@ -63,7 +63,7 @@ class TransparenciaTest extends TestCase
     private function sai(string $cuerpo = '20000001', ?string $ingreso = null, int $tramite = 5): Solicitud
     {
         $s = Solicitud::query()->create(['folio' => 'SD-2026-S'.str_pad((string) ++$this->n, 5, '0', STR_PAD_LEFT), 'run' => $cuerpo.'-'.Run::dv($cuerpo), 'nombres' => 'Vecino'.$this->n, 'apellidos' => 'Secreto',
-            'correo' => 'v'.$this->n.'@example.com', 'tramite_id' => $tramite, 'detalle' => 'Solicito copia del contrato de aseo '.$this->n, 'canal_notificacion' => 'correo', 'estado' => 'ingresada']);
+            'correo' => 'v'.$this->n.'@example.com', 'tramite_id' => $tramite, 'detalle' => 'Solicito copia del contrato de aseo '.$this->n, 'consentimiento' => 'si', 'canal_notificacion' => 'correo', 'estado' => 'ingresada']);
         if ($ingreso) {
             $s->forceFill(['created_at' => Carbon::parse($ingreso, 'America/Santiago')])->saveQuietly();
         }

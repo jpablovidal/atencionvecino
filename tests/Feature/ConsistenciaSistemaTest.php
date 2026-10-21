@@ -25,7 +25,7 @@ class ConsistenciaSistemaTest extends TestCase
             }
         }
         sort($publicas);
-        $esperadas = ['GET /', 'GET /accesibilidad', 'GET /ayuda', 'GET /ayuda/{perfil}', 'GET /auth/callback', 'GET /claveunica/callback', 'GET /logout', 'GET /dev/login', 'GET /espacio', 'GET /ingreso', 'GET /ingreso/pruebas', 'GET /login', 'GET /login/usuario', 'POST /login/usuario', 'GET /ingreso/ciudadano', 'GET /ingreso/funcionario', 'GET /ingreso/auto',
+        $esperadas = ['GET /', 'GET /accesibilidad', 'GET /privacidad', 'GET /ayuda', 'GET /ayuda/{perfil}', 'GET /auth/callback', 'GET /claveunica/callback', 'GET /logout', 'GET /dev/login', 'GET /espacio', 'GET /ingreso', 'GET /ingreso/pruebas', 'GET /login', 'GET /login/usuario', 'POST /login/usuario', 'GET /ingreso/ciudadano', 'GET /ingreso/funcionario', 'GET /ingreso/auto',
             'GET /anuncios/{anuncio}/medio', 'GET /pagos-proveedores', 'GET /pagos-proveedores/ingresar', 'POST /pagos-proveedores', 'GET /marca/estilo.css', 'GET /marca/logo', 'GET /publico', 'GET /publico/{codigo}', 'GET /tramites', 'GET /tramites/sugerencias', 'GET /tramites/{id}/iniciar', 'GET /tramites/{id}/{slug?}', 'GET /validar', 'GET /validar-comprobante/{folio}/{codigo}', 'GET /validar/{codigo}', 'GET /validar/{codigo}/copia', 'POST /validar', 'POST /dev/login',
             'POST /ingreso/pruebas', 'POST /salir'];
         $inesperadas = array_diff($publicas, $esperadas);

@@ -54,7 +54,7 @@ class SeguimientoRolesTest extends TestCase
     private function sol(string $cuerpo = '20000001', int $tramite = 1, ?string $ingreso = null, string $estado = 'ingresada'): Solicitud
     {
         $s = Solicitud::query()->create(['folio' => 'SD-2026-T'.str_pad((string) ++$this->n, 5, '0', STR_PAD_LEFT), 'run' => $cuerpo.'-'.Run::dv($cuerpo), 'nombres' => 'Vecino'.$this->n, 'apellidos' => 'Prueba',
-            'correo' => 'v@example.com', 'tramite_id' => $tramite, 'detalle' => 'detalle de prueba', 'canal_notificacion' => 'correo', 'estado' => $estado]);
+            'correo' => 'v@example.com', 'tramite_id' => $tramite, 'detalle' => 'detalle de prueba', 'consentimiento' => 'si', 'canal_notificacion' => 'correo', 'estado' => $estado]);
         if ($ingreso) {
             $s->forceFill(['created_at' => Carbon::parse($ingreso, 'America/Santiago')])->saveQuietly();
         }

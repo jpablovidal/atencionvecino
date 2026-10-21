@@ -240,3 +240,7 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 ## Asistente de IA con proveedores gratuitos
 - No se probó contra ningún proveedor real (el entorno de desarrollo no tiene acceso). Formatos implementados según la documentación pública de cada uno: Gemini `generateContent` (cabecera `x-goog-api-key`), y `chat/completions` con `Bearer` para Qwen, OpenRouter, Groq, Mistral y compatibles. Los nombres de modelo sugeridos son **A VALIDAR**.
 - Los niveles gratuitos suelen permitir que el proveedor use lo enviado para mejorar sus modelos y tienen cuotas bajas. El sistema quita RUN, correos y teléfonos, pero no puede detectar otra información reservada: no usar la IA con documentos reservados.
+
+## Formulario de solicitud
+- La vista previa de PDF depende del visor del navegador del usuario (algunos teléfonos solo descargan el PDF); los TIF no se pueden mostrar. «Tomar fotografía» usa el atributo `capture` de HTML: en teléfonos abre la cámara, en computadores el selector de archivos. Probado con un navegador Chromium de escritorio; **no** se probó en teléfonos reales.
+- El texto del consentimiento reproduce la cláusula tipo del Título VIII del Decreto N° 2590; si el DPO modifica la redacción hay que actualizar `resources/views/ciudadano/nueva.blade.php` y `ayuda/privacidad.blade.php` (el resumen de privacidad no reemplaza al decreto).

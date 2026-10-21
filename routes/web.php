@@ -72,6 +72,7 @@ Route::get('/marca/logo', [MarcaController::class, 'logo'])->name('marca.logo');
 
 // ---- Ayuda y accesibilidad (públicas)
 Route::get('/accesibilidad', [AyudaController::class, 'accesibilidad'])->name('accesibilidad');
+Route::get('/privacidad', [AyudaController::class, 'privacidad'])->name('privacidad');
 Route::get('/ayuda', [AyudaController::class, 'indice'])->name('ayuda');
 Route::get('/ayuda/{perfil}', [AyudaController::class, 'manual'])->where('perfil', '[a-z\-]+')->name('ayuda.manual');
 

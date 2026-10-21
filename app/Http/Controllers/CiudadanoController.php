@@ -17,6 +17,12 @@ use Illuminate\Http\Request;
 
 class CiudadanoController extends Controller
 {
+    /** Largo máximo del detalle de la solicitud (caracteres). */
+    public const MAX_DETALLE = 2000;
+
+    /** Política de Privacidad vigente a la que se refiere el consentimiento. */
+    public const CONSENTIMIENTO_VERSION = 'Decreto Alcaldicio 2590 de 31-08-2026';
+
     public function __construct(private readonly AuditoriaService $audit) {}
 
     private function ciudadano(Request $r): array
@@ -52,12 +58,19 @@ class CiudadanoController extends Controller
     public function store(Request $r, SolicitudService $svc)
     {
         $c = $this->ciudadano($r);
+        $r->merge(['detalle' => str_replace("\r\n", "\n", (string) $r->input('detalle'))]); // el navegador cuenta un salto de línea como 1 carácter; el envío lo manda como 2
         $d = $r->validate([
             'tramite_id' => 'required|integer|exists:tramites,id',
             'correo' => 'required|email:rfc|max:190',
-            'detalle' => 'required|string|min:10|max:4000',
+            'detalle' => 'required|string|min:10|max:'.self::MAX_DETALLE,
             'canal_notificacion' => 'required|in:correo,presencial,casilla_unica',
-        ]);
+            'consentimiento' => 'required|in:si,no',
+        ], ['detalle.max' => 'El detalle no puede superar los '.self::MAX_DETALLE.' caracteres.', 'consentimiento.required' => 'Indique si consiente o no el tratamiento de sus datos personales.']);
+        if ($d['consentimiento'] !== 'si') {
+            $this->audit->registrar('solicitud.consentimiento_rechazado', null, null, ['version' => self::CONSENTIMIENTO_VERSION], false, ['run' => $c['run'], 'rol' => 'ciudadano']);
+
+            return back()->withInput()->with('error', 'Sin su consentimiento para el tratamiento de sus datos personales no es posible ingresar la solicitud por este medio. Puede presentarla en la oficina de partes de la Municipalidad.');
+        }
         $tramite = Tramite::query()->with('anexos')->findOrFail($d['tramite_id']);
         $requeridos = [];
         foreach ($tramite->anexos as $a) {
@@ -68,7 +81,7 @@ class CiudadanoController extends Controller
         $extras = array_values(array_filter((array) $r->file('extras', [])));
         try {
             // RUN, nombres y apellidos vienen SOLO de la sesión (ClaveÚnica); cualquier valor enviado se ignora.
-            $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras);
+            $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras, self::CONSENTIMIENTO_VERSION);
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
