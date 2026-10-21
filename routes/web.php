@@ -86,8 +86,9 @@ Route::post('/login/usuario', [AuthController::class, 'usuarioLogin'])->middlewa
 Route::permanentRedirect('/ingreso/ciudadano', '/login');
 Route::permanentRedirect('/ingreso/funcionario', '/login');
 Route::permanentRedirect('/ingreso/auto', '/login');
-Route::get('/auth/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback'); // Redirect URI registrada ante ClaveÚnica
-Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login'); // ruta anterior: se mantiene por si estaba registrada
+Route::get('/claveunica/callback', [AuthController::class, 'callback'])->middleware('throttle:login')->name('claveunica.callback'); // Redirect URI certificada por Gobierno Digital
+Route::get('/auth/callback', [AuthController::class, 'callback'])->middleware('throttle:login'); // alias: solo sirve si se registrara ante ClaveÚnica
+Route::get('/logout', [AuthController::class, 'retornoCierre'])->name('logout.retorno'); // Logout URI certificada: a donde vuelve ClaveÚnica tras cerrar su sesión
 Route::post('/salir', [AuthController::class, 'salir'])->name('salir');
 if (config('sgd.claveunica.mode') === 'mock' && app()->environment(['local', 'testing'])) { // jamás en staging/producción
     Route::get('/dev/login', [AuthController::class, 'devForm'])->name('dev.login');

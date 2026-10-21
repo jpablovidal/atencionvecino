@@ -222,6 +222,19 @@ class AuthController extends Controller
         return $viaClaveUnica ? redirect()->away($cu->urlCierre()) : redirect()->route('inicio');
     }
 
+    /** Logout URI certificada: ClaveÚnica vuelve aquí tras cerrar su sesión; se asegura el cierre local y se muestra la portada. */
+    public function retornoCierre(Request $request)
+    {
+        if (Auth::check()) {
+            $this->audit->registrar('auth.logout');
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        return redirect()->route('inicio')->with('ok', 'Su sesión fue cerrada.');
+    }
+
     // ---- SOLO DESARROLLO (modo mock de ClaveÚnica; ruta inexistente en producción)
     public function devForm(Request $request)
     {

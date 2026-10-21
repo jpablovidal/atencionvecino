@@ -185,7 +185,7 @@ Ingrese en `https://sgd.santodomingo.cl/ingreso` → *funcionario* (ClaveÚnica)
 
 - [ ] `/app/diagnostico` sin elementos "REVISAR".
 - [ ] `APP_DEBUG=false`, `APP_URL` https, sin modo mock (la app no arranca si no).
-- [ ] ClaveÚnica real configurada y URL de retorno registrada (`/auth/callback`).
+- [ ] ClaveÚnica real configurada y URL de retorno registrada (`/claveunica/callback`).
 - [ ] FirmaGob **probado en ambiente `test`** antes de `prod`; contrato validado (ver LIMITACIONES).
 - [ ] Cuenta de servicio Google con un solo alcance; envío de prueba exitoso; SPF/DKIM/DMARC publicados.
 - [ ] Permisos 750/640/600; `.env` y `sgd_secrets` fuera del docroot; `sgd_storage` fuera del docroot.

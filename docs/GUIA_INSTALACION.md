@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `e1266e7fb4cad5dbfbeb86b932ad4edec8c45b385bd924b19bc7c1ea80cb3145`).
+- Archivo **`sgd-release.zip`** (SHA-256 `8f195f65573a9b6f13f79c81035fd0ae1a753c933b3360d5922cb43d5540d46b`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -229,7 +229,7 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 
 ## Novedades: un solo ingreso en `/login`
 - Hay **una sola ruta de ingreso, `https://gestor.santodomingo.cl/login`**, y **un solo botón** de ClaveÚnica. Las rutas `/ingreso/ciudadano` y `/ingreso/funcionario` quedaron reemplazadas (redirigen a `/login`). Si la persona figura en el directorio `sistemas_usuarios` entra como funcionario(a); si no, como vecino(a).
-- Si su ClaveÚnica tiene registrada como Redirect URI `…/claveunica/callback`, no cambia nada: solo cambia la dirección que inicia el ingreso.
+- El Redirect URI certificado es `…/claveunica/callback`; solo cambia la dirección que inicia el ingreso.
 - Al actualizar no hay pasos manuales nuevos.
 
 
@@ -239,20 +239,20 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
 
-## Novedades: ClaveÚnica con sus URI de producción
-Datos registrados en ClaveÚnica (coinciden con el sistema):
+## Novedades: ClaveÚnica con las URI certificadas
+Datos certificados por Gobierno Digital (el sistema los usa por defecto):
 | Campo | Valor |
 |---|---|
-| Website | `https://gestor.santodomingo.cl/login` |
-| Redirect_Uri producción | `https://gestor.santodomingo.cl` |
-| Logout URI | `https://gestor.santodomingo.cl` |
-| Redirect URI (callback) | `https://gestor.santodomingo.cl/auth/callback` |
+| URL del sitio | `https://gestor.santodomingo.cl/login` |
+| Callback (Redirect URI) | `https://gestor.santodomingo.cl/claveunica/callback` |
+| Logout | `https://gestor.santodomingo.cl/logout` |
 
-- El sistema recibe la respuesta en **`/auth/callback`** (la ruta antigua `/claveunica/callback` sigue funcionando).
+- El sistema recibe la respuesta en **`/claveunica/callback`** y, al cerrar sesión, ClaveÚnica vuelve a **`/logout`**.
+- **Revise en el panel** (Administración → APIs → ClaveÚnica → Credenciales — Producción) que *Redirect URI* sea `https://gestor.santodomingo.cl/claveunica/callback` y *Logout URI* `https://gestor.santodomingo.cl/logout`. Si los deja **vacíos**, el sistema usa esos valores. Si había guardado `/auth/callback` o solo la portada, corríjalos: el Redirect URI enviado debe ser idéntico al certificado.
 - **«invalid_client»** en *Validar credenciales* significa que ClaveÚnica rechaza el **client_id o el client_secret**: revise que sean los de **producción**, sin espacios al inicio o final, y que estén habilitados. Para ver la respuesta cruda (las claves no se muestran ni quedan en el historial):
 ```
 read -rp "client_id: " CID; read -rsp "client_secret: " CSE; echo
-curl -sS -X POST https://accounts.claveunica.gob.cl/openid/token/ -d "client_id=$CID" -d "client_secret=$CSE" -d "grant_type=authorization_code" -d "redirect_uri=https://gestor.santodomingo.cl/auth/callback" -d "code=prueba" -d "state=prueba"; echo; unset CID CSE
+curl -sS -X POST https://accounts.claveunica.gob.cl/openid/token/ -d "client_id=$CID" -d "client_secret=$CSE" -d "grant_type=authorization_code" -d "redirect_uri=https://gestor.santodomingo.cl/claveunica/callback" -d "code=prueba" -d "state=prueba"; echo; unset CID CSE
 ```
 Si responde `invalid_grant` las credenciales fueron aceptadas; `invalid_client` indica que ClaveÚnica no las reconoce y debe pedir/confirmar las de producción a Gobierno Digital.
 - Al actualizar no hay pasos manuales nuevos.
