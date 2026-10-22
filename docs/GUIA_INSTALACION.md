@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `2807711a9b1802f0e0f3d3bbeb4d0219b3aab832bbf7c5087eaea651ae147ba1`).
+- Archivo **`sgd-release.zip`** (SHA-256 `efccadb50cd0b99adce826dfffecda54c48a749f729b233543c62776fc156b5b`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,13 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: constructor de formularios de trámites (campos, listados y cálculos)
+- Al crear o editar un trámite hay un paso nuevo, **Campos del formulario**: textos, números, fechas, listas para elegir (una o varias), Sí/No y **cálculos con fórmulas** (operadores `+ - * / % ^`, comparaciones y funciones como `si`, `min`, `max`, `redondear`, `dias`, `anios`). El vecino ve los resultados en vivo; el servidor los recalcula al recibir la solicitud.
+- **Listados de opciones reutilizables** (Trámites → Listados de opciones): se crean una vez y se eligen en cualquier trámite nuevo. Una opción puede tener un valor numérico (`0.5;Media tarifa`) para usarlo en cálculos.
+- Las respuestas se ven en el expediente («Datos del formulario»), en el comprobante y en los metadatos. La vista previa del trámite muestra el formulario funcionando.
+- Al actualizar se crean 3 tablas y una columna nueva (`php artisan migrate` lo hace el instalador). No hay pasos manuales.
+- Pendiente (si lo necesitan): campos condicionales («mostrar solo si…»).
 
 ## Novedades: verificación del Codificador con el listado oficial
 - Se contrastó el módulo con la documentación del Codificador y el **«Listado de códigos de Instituciones»** oficial (6.452 filas). El listado se puede subir tal cual en **Administración → Codificador**: el sistema reconoce el padre, el OID, el tipo, la vigencia y los códigos de región/provincia/comuna. Lo que ya no está vigente queda inactivo.
