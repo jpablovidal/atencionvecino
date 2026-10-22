@@ -219,7 +219,7 @@ class RecepcionDocDigitalTest extends TestCase
 
         // despacho: por defecto sugiere la institución de origen; el usuario puede elegir cualquier destinatario
         $html = $this->comoFuncionario($sec)->get("/app/expedientes/{$e->id}")->getContent();
-        $this->assertMatchesRegularExpression('/<option value="DEMO-GORE-VAL"\s+selected/', $html);
+        $this->assertMatchesRegularExpression('/<input type="hidden" id="cd_inst" name="institucion_codigo" value="DEMO-GORE-VAL">/', $html);
         Queue::fake();
         $this->comoFuncionario($sec)->post("/app/expedientes/{$e->id}/comunicaciones", ['documento_id' => $doc->id, 'institucion_codigo' => 'DEMO-GORE-VAL', 'asunto' => 'Responde Oficio 101'])->assertSessionHas('ok');
         $this->comoFuncionario($sec)->post("/app/expedientes/{$e->id}/comunicaciones", ['documento_id' => $doc->id, 'institucion_codigo' => 'DEMO-SEGPRES', 'asunto' => 'Con copia a SEGPRES'])->assertSessionHas('ok');

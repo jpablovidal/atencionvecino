@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `7758fa61e9016acde3310de503a035a7c412a403ab99936c72b7d27752471cdd`).
+- Archivo **`sgd-release.zip`** (SHA-256 `2807711a9b1802f0e0f3d3bbeb4d0219b3aab832bbf7c5087eaea651ae147ba1`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,13 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: verificación del Codificador con el listado oficial
+- Se contrastó el módulo con la documentación del Codificador y el **«Listado de códigos de Instituciones»** oficial (6.452 filas). El listado se puede subir tal cual en **Administración → Codificador**: el sistema reconoce el padre, el OID, el tipo, la vigencia y los códigos de región/provincia/comuna. Lo que ya no está vigente queda inactivo.
+- La Municipalidad de Santo Domingo coincide con el listado: `PE-MUN-00243` (id 243, padre `PE-SUBDERE 00573`). Los metadatos de cada expediente ahora llevan región 05, provincia 056 y comuna 05606.
+- En el despacho por DocDigital, la institución destinataria se busca por nombre o código (antes era una lista de miles de opciones).
+- **Recomendado al actualizar:** suba el listado oficial en *Administración → Codificador → Importar CSV* (instituciones). La API no se probó contra el servicio real; la doble dirección que muestra la documentación sigue por validar con Gobierno Digital.
+- No hay pasos manuales obligatorios.
 
 ## Novedades: directorio de DocDigital, expedientes de oficio y solicitudes a nombre de otra persona
 - **Directorio de DocDigital:** si DocDigital está en modo DemoDoc o Producción, el sistema carga **solo** todas las entidades y personas habilitadas (cada 10 minutos hasta completarse y luego cada 24 horas). Lo ve en **DocDigital → Directorio de DocDigital**. Al despachar un documento puede elegir la entidad y personas de esa entidad. El RUN de las personas no se guarda (solo una huella). La instalación hace una primera carga y la tarea programada (`schedule:run`) la continúa.

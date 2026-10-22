@@ -291,3 +291,7 @@ Cuando DocDigital está en modo **DemoDoc** o **Producción**, el sistema carga 
 - **Privacidad:** de cada persona se guarda nombre, cargo, correo institucional y entidad. El RUN **no se guarda**: solo una huella para reconocer a los funcionarios de este sistema (se muestra en *Roles y permisos › usuario* sus roles en DocDigital, solo como información).
 - Verlo: **DocDigital › Directorio de DocDigital** (permiso «Probar la conexión y gestionar DocDigital»).
 - El permiso **«Iniciar expedientes de oficio»** (`expedientes.crear`) lo reciben por defecto funcionarios, alcaldía y secretaría; se concede o quita por usuario en la matriz de permisos.
+
+## Cargar el Codificador con el listado oficial
+En **Administración › Codificador** puede subir directamente el archivo **«Listado de códigos de Instituciones»** que se descarga del Codificador (CSV separado por «;»). El sistema crea o actualiza las instituciones con su código, nombre, institución padre, OID, tipo y códigos de región, provincia y comuna, y deja **inactivas** las que ya no están vigentes. Si el archivo trae filas incompletas (por ejemplo, códigos «PE-undefined-…» sin nombre), las omite y se las informa. Volver a subir el listado actualiza sin duplicar. En el despacho por DocDigital el destinatario se **busca** por nombre o código (el catálogo tiene más de 6.000 instituciones). Los códigos de región, provincia y comuna de la Municipalidad (`05`, `056`, `05606`) se incluyen en los metadatos de cada expediente.
+

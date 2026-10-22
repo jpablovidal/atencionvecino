@@ -224,6 +224,7 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
 
     // ---- DocDigital: panel de gestión (ver = comunicaciones.ver; probar/sincronizar/reintentar = docdigital.gestionar)
     Route::get('/docdigital', [DocDigitalController::class, 'index'])->middleware('permiso:comunicaciones.ver,docdigital.gestionar')->name('docdigital');
+    Route::get('/instituciones/buscar', [InteropController::class, 'buscarInstituciones'])->middleware(['permiso:comunicaciones.despachar', 'throttle:90,1'])->name('instituciones.buscar');
     Route::get('/docdigital/directorio/buscar', [DocDigitalController::class, 'buscarDirectorio'])->middleware(['permiso:comunicaciones.despachar,docdigital.gestionar', 'throttle:90,1'])->name('docdigital.directorio.buscar');
     Route::middleware('permiso:docdigital.gestionar')->group(function () {
         Route::get('/docdigital/entidades', [DocDigitalController::class, 'entidades'])->middleware('throttle:20,1')->name('docdigital.entidades');

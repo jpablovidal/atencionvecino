@@ -34,6 +34,21 @@ class CodificadorApi
         return $u === '' || str_contains($u, 'codificacion.digital.gob.cl') || str_contains($u, 'codificador.digital.gob.cl');
     }
 
+    /**
+     * Estilo de rutas según el servidor. El documento «Selecciona un servicio para consultar» usa `https://codificacion.digital.gob.cl/api/v{version}/…`; la guía
+     * de Postman del Codificador usa `https://codificador.digital.gob.cl/codigos/{id}` (sin `/api` ni versión). Se admiten ambos: «directo» si el servidor
+     * configurado es codificador.digital.gob.cl. A VALIDAR cuál es el vigente.
+     */
+    public function directo(): bool
+    {
+        return str_contains((string) config('sgd.codificador.api_url'), 'codificador.digital.gob.cl');
+    }
+
+    private function prefijo(): string
+    {
+        return $this->directo() ? '' : '/'.$this->version();
+    }
+
     private function version(): string
     {
         $v = (string) (config('sgd.codificador.version') ?: 'v1');
@@ -93,7 +108,7 @@ class CodificadorApi
 
         return [
             'id' => isset($c['id']) ? (int) $c['id'] : null, 'codigo' => (string) ($c['codigo'] ?? ''), 'descripcion' => (string) ($c['descripcion'] ?? ''),
-            'fecha_inicio' => $c['fecha_inicio'] ?? $c['fecha_incio'] ?? null, 'fecha_fin' => $c['fecha_fin'] ?? null, 'idCodificacion' => $c['idCodificacion'] ?? null,
+            'fecha_inicio' => $c['fecha_inicio'] ?? $c['fecha_incio'] ?? null, 'fecha_fin' => $c['fecha_fin'] ?? null, 'idCodificacion' => $c['idCodificacion'] ?? $c['IdCodificacion'] ?? null,
             'info_extra' => is_array($extra) ? $extra : [], 'padre' => isset($c['padre']) ? (int) $c['padre'] : 0, 'secuencia' => $c['secuencia'] ?? null,
             'identificador' => (string) ($c['identificador'] ?? ''), 'hijos' => $c['hijos'] ?? $c['Hijos'] ?? null,
         ];
@@ -109,7 +124,7 @@ class CodificadorApi
     {
         $q = array_intersect_key($filtros, array_flip(['codigo', 'desde', 'hasta', 'padre', 'descripcion']));
 
-        return $this->codigosDe($this->get('/'.$this->version().'/codigos/'.$this->idCodificacion($idCodificacion), $q));
+        return $this->codigosDe($this->get($this->prefijo().'/codigos/'.$this->idCodificacion($idCodificacion), $q));
     }
 
     /** @return array<string,mixed>|null */
@@ -117,8 +132,8 @@ class CodificadorApi
     {
         $this->idSeguro($idCodigo);
         $id = $this->idCodificacion($idCodificacion);
-        $v = $this->version();
-        $r = $this->get("/$v/v1/codigos/$id/".rawurlencode($idCodigo), [], "/$v/codigos/$id/".rawurlencode($idCodigo));
+        $v = $this->prefijo();
+        $r = $this->get($this->directo() ? "$v/codigos/$id/".rawurlencode($idCodigo) : "$v/v1/codigos/$id/".rawurlencode($idCodigo), [], "$v/codigos/$id/".rawurlencode($idCodigo));
 
         return $this->codigosDe($r)[0] ?? null;
     }
@@ -128,9 +143,9 @@ class CodificadorApi
     {
         $this->idSeguro($idCodigo);
         $id = $this->idCodificacion($idCodificacion);
-        $v = $this->version();
+        $v = $this->prefijo();
         $q = ['tipovista' => in_array($vista, ['jsonlist', 'jsontree', 'html'], true) ? $vista : 'jsonlist', 'orden' => $orden === 'desc' ? 'desc' : 'asc'];
-        $r = $this->get("/$v/v1/codigos/$id/".rawurlencode($idCodigo).'/jerarquia', $q, "/$v/codigos/$id/".rawurlencode($idCodigo).'/jerarquia');
+        $r = $this->get(($this->directo() ? "$v/codigos/$id/" : "$v/v1/codigos/$id/").rawurlencode($idCodigo).'/jerarquia', $q, "$v/codigos/$id/".rawurlencode($idCodigo).'/jerarquia');
 
         return $this->codigosDe($r);
     }

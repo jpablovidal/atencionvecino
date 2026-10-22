@@ -56,6 +56,28 @@ class CodificacionService
         return ['codigo' => $env !== '' ? $env : null, 'nombre' => $nombre, 'origen' => $env === 'PE-MUN-00243' ? 'predeterminado' : ($env !== '' ? 'entorno' : 'sin configurar')];
     }
 
+    /**
+     * Ubicación geográfica del expediente: nombres configurados (comuna, provincia, región, país) y los códigos territoriales que el Codificador
+     * entrega para la institución (región, provincia y comuna a 5 dígitos), o null si el catálogo aún no los tiene.
+     *
+     * @return array<string,mixed>
+     */
+    public static function ubicacion(): array
+    {
+        $codigos = null;
+        try {
+            $cod = self::municipio()['codigo'];
+            $j = $cod ? json_decode((string) Institucion::query()->where('codigo', $cod)->value('info_extra'), true) : null;
+            if (is_array($j) && ! empty($j['comuna'])) {
+                $codigos = array_filter(['region' => $j['region'] ?? null, 'provincia' => $j['provincia'] ?? null, 'comuna' => $j['comuna']]);
+            }
+        } catch (\Throwable) {
+            $codigos = null;
+        }
+
+        return (array) config('sgd.ubicacion') + ['codigo_gestor_codigos' => $codigos];
+    }
+
     /** Código de institución vigente para un área (el del área si lo tiene; si no, el del municipio; si no, «SGD»). */
     public static function institucion(?int $areaId = null): string
     {

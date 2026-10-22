@@ -179,6 +179,18 @@ class InteropController extends Controller
         return descarga($vault->get($a->ruta, $a->sha256), $a->nombre_original, 'application/pdf');
     }
 
+    /** Búsqueda de instituciones del Codificador (vigentes) para elegir el destinatario de una comunicación: el catálogo oficial tiene más de 6.000. */
+    public function buscarInstituciones(Request $r)
+    {
+        $this->permiso('comunicaciones.despachar');
+        $d = $r->validate(['q' => 'required|string|min:2|max:100']);
+        $t = '%'.addcslashes(trim($d['q']), '%_\\').'%';
+        $f = Institucion::query()->where('activo', true)->where(fn ($w) => $w->where('nombre', 'like', $t)->orWhere('codigo', 'like', $t))
+            ->orderByRaw('case when nombre like ? then 0 else 1 end', [addcslashes(trim($d['q']), '%_\\').'%'])->orderBy('nombre')->limit(15)->get(['codigo', 'nombre', 'tipo']);
+
+        return response()->json($f->map(fn ($i) => ['id' => $i->codigo, 'texto' => $i->nombre, 'detalle' => trim(($i->tipo ?: '').' · '.$i->codigo, ' ·')])->values())->header('Cache-Control', 'no-store');
+    }
+
     // ---- Codificador (solo admin)
     public function codificador()
     {

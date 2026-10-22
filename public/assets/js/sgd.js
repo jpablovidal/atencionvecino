@@ -293,7 +293,7 @@ document.addEventListener('click', function (e) {
     if (b) {
       var i = el(b.getAttribute('data-origen'));
       var lista = el(i.getAttribute('data-lista'));
-      if (i.getAttribute('data-buscar-dd') === 'entidad') {
+      if (i.getAttribute('data-buscar-dd') !== 'persona') {
         el(i.getAttribute('data-salida')).value = b.getAttribute('data-id');
         var ok = el(i.getAttribute('data-elegida')); if (ok) { ok.textContent = 'Entidad elegida: ' + b.getAttribute('data-texto'); }
         i.value = b.getAttribute('data-texto');
