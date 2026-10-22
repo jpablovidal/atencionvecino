@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `d6bae314fe31991822a97adaaf2123ac3756106e1c36e776a6d39c6d70c6c9b8`).
+- Archivo **`sgd-release.zip`** (SHA-256 `7758fa61e9016acde3310de503a035a7c412a403ab99936c72b7d27752471cdd`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,13 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: directorio de DocDigital, expedientes de oficio y solicitudes a nombre de otra persona
+- **Directorio de DocDigital:** si DocDigital está en modo DemoDoc o Producción, el sistema carga **solo** todas las entidades y personas habilitadas (cada 10 minutos hasta completarse y luego cada 24 horas). Lo ve en **DocDigital → Directorio de DocDigital**. Al despachar un documento puede elegir la entidad y personas de esa entidad. El RUN de las personas no se guarda (solo una huella). La instalación hace una primera carga y la tarea programada (`schedule:run`) la continúa.
+- **Expediente de oficio:** un funcionario con el permiso nuevo «Iniciar expedientes de oficio» puede crear un expediente sin solicitud previa, registrar sus partes (vecinos, funcionarios, externos, organismos de DocDigital), redactar decretos, reglamentos u oficios y, al cerrarlo, **notificar a cada parte por su canal** (Casilla Única, correo, entrega física, aviso interno o DocDigital).
+- **Solicitudes a nombre de otra persona:** el formulario del vecino permite presentar una solicitud en representación o ayuda de otra persona (relación, acreditación declarada y declaración). El funcionario lo ve en el expediente; el sistema no verifica el poder.
+- Al actualizar se crean 2 tablas del directorio, la de partes y columnas nuevas; `php artisan migrate` lo hace el instalador. Opcional en `.env`: `DOCDIGITAL_DIRECTORIO_USUARIOS=todos|propia` y `DOCDIGITAL_DIRECTORIO_HORAS=24`.
+- Pendiente de validar con Gobierno Digital: cómo trata DocDigital los despachos dirigidos a personas y el contrato de Casilla Única para partes sin solicitud.
 
 ## Novedades: revisión de ciberseguridad (OWASP Top 10 y rutas)
 - Se revisaron las 323 rutas y el código nuevo. Se cerró un caso menor: el cierre de sesión (`/logout`) ya no se activa desde imágenes o marcos de otros sitios, y se desactivó el servidor de archivos integrado de Laravel.
