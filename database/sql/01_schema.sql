@@ -838,4 +838,26 @@ alter table `solicitudes` add `declaracion_en` timestamp null;
 
 alter table `solicitudes` add index `solicitudes_interesado_run_index`(`interesado_run`);
 
+create table `listas_opciones` (`id` bigint unsigned not null auto_increment primary key, `nombre` varchar(120) not null, `descripcion` varchar(250) null, `unidad_id` bigint unsigned null, `activa` tinyint(1) not null default '1', `creado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `listas_opciones` add constraint `listas_opciones_unidad_id_foreign` foreign key (`unidad_id`) references `unidades` (`id`);
+
+alter table `listas_opciones` add constraint `listas_opciones_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `listas_opciones` add unique `listas_opciones_nombre_unique`(`nombre`);
+
+create table `lista_opciones_items` (`id` bigint unsigned not null auto_increment primary key, `lista_id` bigint unsigned not null, `valor` varchar(60) not null, `etiqueta` varchar(190) not null, `orden` smallint unsigned not null default '0', `activo` tinyint(1) not null default '1') default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `lista_opciones_items` add constraint `lista_opciones_items_lista_id_foreign` foreign key (`lista_id`) references `listas_opciones` (`id`) on delete cascade;
+
+alter table `lista_opciones_items` add unique `lista_opciones_items_lista_id_valor_unique`(`lista_id`, `valor`);
+
+create table `tramite_campos` (`id` bigint unsigned not null auto_increment primary key, `tramite_id` bigint unsigned not null, `clave` varchar(30) not null, `etiqueta` varchar(190) not null, `tipo` varchar(12) not null, `ayuda` varchar(255) null, `obligatorio` tinyint(1) not null default '0', `orden` smallint unsigned not null default '0', `activo` tinyint(1) not null default '1', `config` text null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `tramite_campos` add constraint `tramite_campos_tramite_id_foreign` foreign key (`tramite_id`) references `tramites` (`id`) on delete cascade;
+
+alter table `tramite_campos` add unique `tramite_campos_tramite_id_clave_unique`(`tramite_id`, `clave`);
+
+alter table `solicitudes` add `datos` longtext null;
+
 SET FOREIGN_KEY_CHECKS = 1;

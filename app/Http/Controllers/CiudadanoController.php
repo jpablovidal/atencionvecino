@@ -13,6 +13,7 @@ use App\Services\DocumentoService;
 use App\Services\FileVault;
 use App\Services\MovimientoService;
 use App\Services\SolicitudService;
+use App\Services\TramiteCamposService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -53,7 +54,7 @@ class CiudadanoController extends Controller
     {
         abort_unless($tramite->estaPublicado(), 404);
 
-        return view('ciudadano.nueva', ['c' => $this->ciudadano($r), 'tramite' => $tramite->load('anexos', 'unidades')]);
+        return view('ciudadano.nueva', ['c' => $this->ciudadano($r), 'tramite' => $tramite->load('anexos', 'unidades'), 'campos' => $tramite->campos()->get(), 'hoy' => now('America/Santiago')->format('Y-m-d')]);
     }
 
     public function store(Request $r, SolicitudService $svc)
@@ -77,11 +78,12 @@ class CiudadanoController extends Controller
                 $requeridos[$a->id] = $r->file('anexo_'.$a->id);
             }
         }
+        $datos = app(TramiteCamposService::class)->responder($tramite, (array) $r->input('campos', [])); // valida y calcula; si algo falla vuelve al formulario con el detalle por campo
         $extras = array_values(array_filter((array) $r->file('extras', [])));
         try {
             // RUN, nombres y apellidos vienen SOLO de la sesión (ClaveÚnica); cualquier valor enviado se ignora.
             $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras, $d['consentimiento'] === 'si', self::CONSENTIMIENTO_VERSION,
-                ! empty($d['en_nombre_de']) ? ['run' => $d['tercero_run'], 'nombre' => $d['tercero_nombre'], 'correo' => $d['tercero_correo'] ?? null, 'relacion' => $d['tercero_relacion'], 'acreditacion' => $d['tercero_acreditacion'], 'declara' => ! empty($d['tercero_declara'])] : null);
+                ! empty($d['en_nombre_de']) ? ['run' => $d['tercero_run'], 'nombre' => $d['tercero_nombre'], 'correo' => $d['tercero_correo'] ?? null, 'relacion' => $d['tercero_relacion'], 'acreditacion' => $d['tercero_acreditacion'], 'declara' => ! empty($d['tercero_declara'])] : null, $datos);
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }

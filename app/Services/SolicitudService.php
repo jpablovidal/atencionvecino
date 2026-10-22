@@ -68,8 +68,9 @@ class SolicitudService
      * @param  array<int,UploadedFile>  $anexosRequeridos  indexados por id de TramiteAnexo
      * @param  array<int,UploadedFile>  $extras
      * @param  array{run:string,nombre:string,correo?:?string,relacion:string,acreditacion:string,declara:mixed}|null  $tercero  persona a cuyo nombre se presenta (persona asistida)
+     * @param  list<array<string,mixed>>|null  $datos  respuestas a los campos propios del trámite (ya validadas por TramiteCamposService)
      */
-    public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras, ?bool $consiente = null, ?string $consentimientoVersion = null, ?array $tercero = null): Solicitud
+    public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras, ?bool $consiente = null, ?string $consentimientoVersion = null, ?array $tercero = null, ?array $datos = null): Solicitud
     {
         $tercero = $this->validarTercero($ciudadano, $tercero);
         if (! $tramite->estaPublicado()) {
@@ -103,12 +104,12 @@ class SolicitudService
 
         $creados = [];
         try {
-            return DB::transaction(function () use ($ciudadano, $tramite, $correo, $detalle, $canal, $validados, $consiente, $consentimientoVersion, $tercero, &$creados) {
+            return DB::transaction(function () use ($ciudadano, $tramite, $correo, $detalle, $canal, $validados, $consiente, $consentimientoVersion, $tercero, $datos, &$creados) {
                 $s = Solicitud::query()->create([
                     'folio' => $this->nuevoFolio(), 'run' => $ciudadano['run'], 'nombres' => $ciudadano['nombres'], 'apellidos' => $ciudadano['apellidos'],
                     'correo' => $correo, 'tramite_id' => $tramite->id, 'detalle' => $detalle, 'canal_notificacion' => $canal, 'estado' => 'ingresada',
                     'consentimiento_datos' => $consiente, 'consentimiento_en' => $consiente !== null ? now() : null, 'consentimiento_version' => $consiente !== null ? $consentimientoVersion : null,
-                ] + ($tercero ? ['en_nombre_de' => true, 'declaracion_en' => now()] + $tercero : []));
+                ] + ($tercero ? ['en_nombre_de' => true, 'declaracion_en' => now()] + $tercero : []) + ($datos ? ['datos' => $datos] : []));
                 $info = [];
                 foreach ($validados as [$f, $titulo, $tipo]) {
                     $info[] = $this->guardarAnexo($s, $f, $titulo, $tipo, 'anexo', $ciudadano['run'], $creados);

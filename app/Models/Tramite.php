@@ -75,4 +75,10 @@ class Tramite extends Model
     {
         return $this->hasMany(TramiteAnexo::class)->where('activo', true)->orderBy('orden')->orderBy('id');
     }
+
+    /** @return HasMany<TramiteCampo, $this> campos propios del formulario (activos, en orden) */
+    public function campos(): HasMany
+    {
+        return $this->hasMany(TramiteCampo::class)->where('activo', true)->orderBy('orden')->orderBy('id');
+    }
 }

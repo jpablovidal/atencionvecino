@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\FlujoException;
+use App\Models\ListaOpciones;
 use App\Models\ProcesoCodificador;
 use App\Models\Tramite;
 use App\Models\Unidad;
@@ -73,7 +74,7 @@ class TramitesController extends Controller
     {
         $t = $this->propio($r, $id)->load('anexos', 'unidades');
 
-        return view('app.tramites.vista', ['tramite' => $t, 'problemas' => $this->svc->problemasParaPublicar($t), 'u' => $r->user()]);
+        return view('app.tramites.vista', ['campos' => $t->campos()->get(), 'hoy' => now('America/Santiago')->format('Y-m-d'), 'tramite' => $t, 'problemas' => $this->svc->problemasParaPublicar($t), 'u' => $r->user()]);
     }
 
     public function historial(Request $r, int $id)
@@ -125,9 +126,16 @@ class TramitesController extends Controller
         $d = $r->validate([
             'nombre' => 'required|string|max:300', 'descripcion' => 'nullable|string|max:5000', 'instrucciones' => 'nullable|string|max:8000', 'plazo_dias' => 'required|integer',
             'anexos' => 'nullable|array|max:40', 'anexos.*.nombre' => 'nullable|string|max:300', 'anexos.*.descripcion' => 'nullable|string|max:600', 'anexos.*.id' => 'nullable|integer', 'anexos.*.obligatorio' => 'nullable',
+            'campos' => 'nullable|array|max:80', 'campos.*' => 'array', 'campos.*.id' => 'nullable|integer', 'campos.*.clave' => 'nullable|string|max:60', 'campos.*.etiqueta' => 'nullable|string|max:400', 'campos.*.tipo' => 'nullable|string|max:20',
+            'campos.*.ayuda' => 'nullable|string|max:600', 'campos.*.obligatorio' => 'nullable', 'campos.*.eliminar' => 'nullable', 'campos.*.formula' => 'nullable|string|max:1000', 'campos.*.opciones' => 'nullable|string|max:30000',
+            'campos.*.lista_id' => 'nullable|integer', 'campos.*.maxlen' => 'nullable|string|max:10', 'campos.*.max_elegidas' => 'nullable|string|max:5', 'campos.*.min' => 'nullable|string|max:20', 'campos.*.max' => 'nullable|string|max:20', 'campos.*.decimales' => 'nullable|string|max:3',
+            'campos.*.prefijo' => 'nullable|string|max:40', 'campos.*.sufijo' => 'nullable|string|max:40', 'campos.*.fecha_min' => 'nullable|string|max:12', 'campos.*.fecha_max' => 'nullable|string|max:12',
             'unidad_propietaria_id' => 'nullable|integer', 'unidades' => 'nullable|array', 'unidades.*' => 'integer', 'codigo_interno' => 'nullable|string|max:40',
             'es_transparencia' => 'nullable|boolean', 'plazo_habiles' => 'nullable|boolean', 'codigo_cpat' => ['nullable', 'regex:'.MantenedorController::CPAT], 'proceso_codigo' => 'nullable|string|max:40|exists:procesos_codificador,codigo',
         ]);
+        if ($r->boolean('campos_enviados')) {
+            $d['campos'] = $d['campos'] ?? []; // el editor siempre envía esta marca: sin filas = se quitaron todos los campos
+        }
         // los campos de administración solo se aceptan si el usuario ve todas las direcciones
         if (! TramiteService::veTodas($r->user())) {
             unset($d['unidad_propietaria_id'], $d['unidades'], $d['codigo_interno'], $d['codigo_cpat'], $d['proceso_codigo'], $d['es_transparencia'], $d['plazo_habiles']);
@@ -146,6 +154,8 @@ class TramitesController extends Controller
             'unidades' => Unidad::query()->where('activo', true)->orderBy('nombre')->get(), 'unidad' => $u->unidad_id ? Unidad::query()->find($u->unidad_id) : null,
             'sel' => $t ? $t->unidades()->pluck('unidades.id')->all() : [], 'puedeEditar' => ! $t || TramiteService::puedeEditar($u, $t),
             'procesos' => ProcesoCodificador::query()->where('activo', true)->orderBy('nombre')->get(),
+            'listas' => ListaOpciones::query()->withCount('items')->where('activa', true)->orderBy('nombre')->get(),
+            'camposFilas' => $t ? $t->campos()->get()->map(fn ($c) => ['id' => $c->id, 'clave' => $c->clave, 'etiqueta' => $c->etiqueta, 'tipo' => $c->tipo, 'ayuda' => $c->ayuda, 'obligatorio' => $c->obligatorio, 'config' => $c->config])->all() : [],
         ];
     }
 }

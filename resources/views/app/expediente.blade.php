@@ -46,6 +46,7 @@
 <dt class="col-sm-3">Responsable</dt><dd class="col-sm-9">{{ $e->responsable?->nombreCompleto() ?? 'Sin asignar' }} ({{ $e->unidad->nombre }})</dd>
 @if($s)
 <dt class="col-sm-3">Solicitante</dt><dd class="col-sm-9">{{ $s->nombres }} {{ $s->apellidos }} · {{ $s->run }} · {{ $s->correo }} · notificar por {{ str_replace('_',' ',$s->canal_notificacion) }}</dd>
+@if(! empty($s->datos))<dt class="col-sm-3">Datos del formulario</dt><dd class="col-sm-9">@include('partials.datos_formulario', ['datos' => $s->datos])</dd>@endif
 @if($s->en_nombre_de)<dt class="col-sm-3">A nombre de</dt><dd class="col-sm-9"><strong>{{ $s->interesado_nombre }}</strong> · {{ $s->interesado_run }}@if($s->interesado_correo) · {{ $s->interesado_correo }}@endif<br>Presentada por <strong>{{ \App\Models\Solicitud::RELACIONES[$s->relacion] ?? $s->relacion }}</strong>. Acreditación declarada: «{{ $s->acreditacion }}» <span class="small text-muted">(declaración del {{ $s->declaracion_en?->setTimezone('America/Santiago')->format('d-m-Y H:i') }}; el sistema no verifica el poder: revíselo en los anexos)</span></dd>@endif
 <dt class="col-sm-3">Detalle</dt><dd class="col-sm-9">{{ $s->detalle }}</dd>
 @endif

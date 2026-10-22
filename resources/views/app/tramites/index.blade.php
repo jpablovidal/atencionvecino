@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Trámites y servicios')
 @section('contenido')
-<div class="d-flex justify-content-between"><h1>Trámites y servicios</h1><a class="btn btn-primary align-self-center" href="{{ route('app.tramites.crear') }}">Nuevo trámite</a></div>
+<div class="d-flex justify-content-between"><h1>Trámites y servicios</h1><span class="align-self-center"><a class="btn btn-outline-secondary mr-2" href="{{ route('app.tramites.listas') }}">Listados de opciones</a><a class="btn btn-primary" href="{{ route('app.tramites.crear') }}">Nuevo trámite</a></span></div>
 <p class="text-muted">Trámites de {{ \App\Services\TramiteService::veTodas($u) ? 'todas las direcciones' : 'su dirección municipal' }}. Un trámite en <strong>borrador</strong> no es visible para la ciudadanía; al <strong>publicarlo</strong> los vecinos pueden solicitarlo adjuntando los documentos requeridos, lo que genera un expediente.</p>
 <form method="get" class="form-inline mb-3"><label class="mr-2" for="estado">Estado</label><select class="form-control mr-2" id="estado" name="estado"><option value="">Todos</option>@foreach(['borrador','publicado','deshabilitado'] as $e)<option value="{{ $e }}" @selected($filtro===$e)>{{ ucfirst($e) }}</option>@endforeach</select><button class="btn btn-outline-secondary">Filtrar</button></form>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Trámites</caption><thead><tr><th scope="col">Trámite</th><th scope="col">Dirección</th><th scope="col">Estado</th><th scope="col">Versión</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody>

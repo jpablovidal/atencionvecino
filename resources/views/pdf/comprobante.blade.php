@@ -20,6 +20,7 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px} h1{color:#006fb3;font-
 <tr><td class="k">Trámite</td><td>{{ $s->tramite->nombre }} @if($s->tramite->codigo_cpat)(CPAT {{ $s->tramite->codigo_cpat }})@endif</td></tr>
 <tr><td class="k">Forma de notificación</td><td>{{ str_replace('_',' ',$s->canal_notificacion) }}</td></tr>
 <tr><td class="k">Detalle</td><td>{{ $s->detalle }}</td></tr>
+@foreach((array) $s->datos as $d)<tr><td class="k">{{ $d['etiqueta'] }}</td><td>{{ $d['texto'] }}@if(($d['tipo'] ?? '') === 'calculo') (calculado)@endif</td></tr>@endforeach
 </table>
 <h3>Anexos</h3>
 <table><tr><th scope="col">Nombre</th><th scope="col">Tamaño (bytes)</th><th scope="col">SHA-256</th></tr>

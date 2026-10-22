@@ -114,3 +114,6 @@ En el menú de su nombre (arriba a la derecha) encontrará **Recorrido guiado**,
 Si usted presenta la solicitud para alguien a quien representa o ayuda (por ejemplo, su madre, un hijo o una persona que no puede hacer el trámite sola), marque **«Presento esta solicitud a nombre de otra persona»** en el formulario. Indique el RUN y el nombre de esa persona, su relación con ella y cómo la acredita (poder, parentesco, tutela). Adjunte el documento en **Otros anexos** si lo tiene y declare que actúa con su conocimiento o en su representación.
 - Los datos de ClaveÚnica son **suyos**, quien presenta. Usted será el contacto: las notificaciones le llegan a usted.
 - Un funcionario(a) revisará lo que acreditó; si falta algo, se lo pedirán.
+
+## Datos propios de cada trámite
+Algunos trámites piden datos además de los documentos: números, fechas, listas para elegir o preguntas de Sí/No. Si el trámite incluye **cálculos** (por ejemplo, un derecho o una tarifa), verá el resultado actualizarse mientras completa los datos; el municipio lo vuelve a calcular al recibir su solicitud. Si algún dato no es válido (fuera de rango, fecha pasada, opción inexistente), el formulario le indica cuál corregir. Lo que usted completó queda en su solicitud y en el comprobante.

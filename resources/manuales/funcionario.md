@@ -271,3 +271,18 @@ En el expediente, al crear una comunicación elija **Entidad y personas de DocDi
 
 ## Solicitudes presentadas a nombre de otra persona
 Cuando un vecino presenta una solicitud **a nombre de otra persona** (representante, apoderado, familiar o quien le ayuda), el expediente muestra **«A nombre de»** con la persona, la relación y la acreditación que declaró. El sistema **no verifica el poder**: revise el documento en los anexos antes de resolver. Las notificaciones llegan a quien presentó la solicitud. Si la solicitud se hizo a nombre suyo, no puede tramitarla (conflicto de interés).
+
+## Armar el formulario de un trámite (campos, listados y cálculos)
+Si su rol administra trámites, en **Trámites y servicios › Nuevo trámite** (o al editar uno) hay un paso **Campos del formulario** para pedir datos propios además de los documentos. Máximo 40 campos por trámite. Tipos disponibles:
+- **Texto corto** y **texto largo** (con largo máximo), **número** (mínimo, máximo, decimales, y un texto antes o después, como `$` o `m²`), **fecha** (puede exigir «desde hoy» o «hasta hoy», o fechas fijas) y **Sí / No**.
+- **Lista de opciones** (elige una) o **varias** (con un máximo): escriba las opciones aquí, una por línea, o **use un listado guardado**.
+- **Cálculo (fórmula):** se muestra en vivo al vecino mientras completa el formulario, y el sistema lo vuelve a calcular al recibir la solicitud. Los cálculos no se piden: se calculan solos.
+- **Título de sección:** separa los campos en grupos.
+
+**Clave:** cada campo tiene una clave (se genera sola a partir del nombre: `superficie`, `valor_m2`…) que se usa en las fórmulas.
+
+**Fórmulas.** Operadores: `+ - * / %` (resto) `^` (potencia) y paréntesis; comparaciones `< <= > >= == !=` (dan 1 si se cumplen y 0 si no) y lógicos `&&` (y) `||` (o) `!` (no). Funciones: `si(condición; si_cumple; si_no)`, `min`, `max`, `suma`, `promedio`, `abs`, `redondear(x; decimales)`, `piso`, `techo`, `raiz`, `potencia(base; exponente)`, `dias(fecha1; fecha2)` y `anios(fecha1; fecha2)`. Se usan los campos por su clave (número, fecha, sí/no, lista con valores numéricos u otro cálculo). Un número vacío vale 0; una fecha vacía deja el cálculo sin resultado; `hoy` es la fecha de hoy. Ejemplos: `redondear(superficie * valor_m2 * 0.02; 0)`, `si(edad >= 60; tarifa * 0.5; tarifa)`, `anios(fecha_nacimiento; hoy)`, `dias(inicio; termino) * 3500`. Si una fórmula tiene un error, el sistema lo indica con la posición al guardar.
+
+**Listados reutilizables.** En **Trámites › Listados de opciones** cree una vez un listado (por ejemplo «Tipo de vivienda» o «Tarifa por zona») y elíjalo en los campos de lista de cualquier trámite. Una opción puede ser `valor;texto` (por ejemplo `0.5;Media tarifa`): si el valor es un número se puede usar en cálculos. Los cambios al listado se reflejan en todos los trámites que lo usan; lo que ya envió la ciudadanía conserva su respuesta. Cada dirección edita sus listados (la administración, todos); todos pueden usarlos.
+
+La **vista previa** del trámite muestra el formulario funcionando. Las respuestas aparecen en el expediente («Datos del formulario»), en el comprobante del vecino y en los metadatos del expediente; si cambia o quita un campo, las solicitudes ya enviadas conservan lo que respondieron.

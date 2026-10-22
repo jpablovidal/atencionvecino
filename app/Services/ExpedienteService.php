@@ -151,7 +151,7 @@ class ExpedienteService
 
         return [
             'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => CodificacionService::institucion($e->area_id ?? $e->unidad?->area_id), 'nombre' => $s->tramite->nombre.' - '.$s->nombres.' '.$s->apellidos, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $e->unidad->nombre ?? null],
-            'descripcion' => ['resumen' => mb_substr($s->detalle, 0, 500), 'folio_solicitud' => $s->folio],
+            'descripcion' => ['resumen' => mb_substr($s->detalle, 0, 500), 'folio_solicitud' => $s->folio] + ($s->datos ? ['formulario' => array_map(fn ($d) => ['campo' => $d['clave'], 'etiqueta' => $d['etiqueta'], 'valor' => $d['valor'], 'texto' => $d['texto']], (array) $s->datos)] : []),
             'ubicacion' => CodificacionService::ubicacion(), // códigos territoriales del Gestor de Códigos: A VALIDAR
             'temporalidad' => ['fecha_apertura' => $now, 'fecha_apertura_utc' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'fecha_cierre' => null, 'plazo_dias' => $s->tramite->plazo_dias],
             'caracterizacion' => ['tipo_expediente' => 'Solicitud ciudadana', 'serie_documental' => $s->tramite->codigo_interno],

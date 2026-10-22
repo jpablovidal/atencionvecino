@@ -5,7 +5,7 @@
 @include('partials.tramite_ficha', ['tramite' => $tramite])
 <h2 class="h4 mt-4" id="completar">Complete su solicitud</h2>
 <p class="small text-muted">Son 3 pasos: sus datos, los documentos y cómo desea ser notificado(a). Al final podrá revisar todo antes de enviar.</p>
-<form method="post" action="{{ route('ciudadano.store') }}" enctype="multipart/form-data" class="portal-formulario" data-pasos aria-labelledby="completar">
+<form method="post" action="{{ route('ciudadano.store') }}" enctype="multipart/form-data" class="portal-formulario" data-pasos @if($campos->isNotEmpty()) data-formulario @endif aria-labelledby="completar">
 @csrf
 <input type="hidden" name="tramite_id" value="{{ $tramite->id }}">
 <div data-paso="Sus datos y solicitud">
@@ -32,6 +32,9 @@
 <div class="form-group"><label for="correo">Correo electrónico</label><input class="form-control" type="email" id="correo" name="correo" value="{{ old('correo') }}" required maxlength="190"></div>
 <div class="form-group"><label for="detalle">Detalle de su solicitud</label><textarea class="form-control" id="detalle" name="detalle" rows="6" required minlength="10" maxlength="{{ \App\Http\Controllers\CiudadanoController::MAX_DETALLE }}" data-contador="{{ \App\Http\Controllers\CiudadanoController::MAX_DETALLE }}" aria-describedby="detalle-cont">{{ old('detalle') }}</textarea>
 <small id="detalle-cont" class="form-text text-muted" data-contador-texto>Máximo {{ number_format(\App\Http\Controllers\CiudadanoController::MAX_DETALLE, 0, ',', '.') }} caracteres.</small></div>
+@if($campos->isNotEmpty())<h3 class="h5 mt-4" id="datos-adicionales">Datos de su solicitud</h3>
+@include('partials.tramite_campos', ['campos' => $campos, 'hoy' => $hoy])
+@endif
 </div>
 <fieldset class="form-group" data-paso="Documentos"><legend class="h6">Anexos</legend>
 <p class="small text-muted">Formatos admitidos: {{ \App\Support\UploadValidator::descripcionFormatos() }}. Máximo {{ round(\App\Services\Admin\ArchivoConfigService::maxBytes('ciudadano') / 1048576) }} MB por archivo.</p>
@@ -54,5 +57,6 @@
 <button class="btn btn-primary" id="enviar-solicitud">Enviar solicitud</button> <a class="btn btn-link" href="{{ route('catalogo.ficha', [$tramite->id, \Illuminate\Support\Str::slug($tramite->nombre)]) }}">Volver al trámite</a>
 </form>
 @include('partials.visor_modal')
+@if($campos->isNotEmpty())@push('scripts')<script src="{{ asset('assets/js/formulario.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/formulario.js')), 0, 8) }}" defer></script>@endpush @endif
 @push('scripts')<script src="{{ asset('assets/js/solicitud-form.js') }}?v={{ substr((string) @md5_file(public_path('assets/js/solicitud-form.js')), 0, 8) }}" defer></script>@endpush
 @endsection

@@ -22,7 +22,7 @@ class TramiteService
 
     private const URL = '/(https?:\/\/|www\.|ftp:\/\/|\b[a-z0-9.-]+\.(?:com|net|org|cl|gob|io|info|biz|xyz)\b\/?)/iu';
 
-    public function __construct(private readonly AuditoriaService $audit) {}
+    public function __construct(private readonly AuditoriaService $audit, private readonly TramiteCamposService $campos) {}
 
     // ---------------------------------------------------------------- ámbito y permisos
     public static function veTodas(Usuario $u): bool
@@ -99,9 +99,10 @@ class TramiteService
         }
         $campos = $this->validarCampos($d);
         $anexos = $this->validarAnexos((array) ($d['anexos'] ?? []));
+        $formulario = $this->campos->normalizar((array) ($d['campos'] ?? []));
         $unidades = $admin ? $this->unidadesValidas((array) ($d['unidades'] ?? []), $unidad->id) : [$unidad->id];
 
-        return DB::transaction(function () use ($u, $d, $admin, $unidad, $campos, $anexos, $unidades) {
+        return DB::transaction(function () use ($u, $d, $admin, $unidad, $campos, $anexos, $unidades, $formulario) {
             $t = Tramite::query()->create($campos + [
                 'codigo_interno' => $this->codigo($unidad, $admin ? ($d['codigo_interno'] ?? null) : null), 'estado' => 'borrador', 'activo' => false, 'unidad_propietaria_id' => $unidad->id,
                 'codigo_cpat' => $admin ? ($d['codigo_cpat'] ?? null) : null, 'proceso_codigo' => $admin ? ($d['proceso_codigo'] ?? null) : null, 'actualizado_por' => $u->id, 'version' => 0,
@@ -109,6 +110,7 @@ class TramiteService
             ]);
             $t->unidades()->sync($unidades);
             $this->guardarAnexos($t, $anexos);
+            $this->campos->guardar($t, $formulario);
             $this->version($t, 'crear', $u);
             $this->audit->registrar('tramite.crear', 'tramite', $t->id, ['unidad' => $unidad->codigo]);
 
@@ -125,9 +127,10 @@ class TramiteService
         $admin = self::veTodas($u);
         $campos = $this->validarCampos($d);
         $anexos = $this->validarAnexos((array) ($d['anexos'] ?? []));
+        $formulario = array_key_exists('campos', $d) ? $this->campos->normalizar((array) $d['campos']) : null; // sin el campo no se toca el formulario
         $unidades = $admin && isset($d['unidades']) ? $this->unidadesValidas((array) $d['unidades'], (int) $t->unidad_propietaria_id) : null;
 
-        return DB::transaction(function () use ($t, $u, $d, $admin, $campos, $anexos, $unidades) {
+        return DB::transaction(function () use ($t, $u, $d, $admin, $campos, $anexos, $unidades, $formulario) {
             $t = Tramite::query()->lockForUpdate()->findOrFail($t->id);
             $extra = ['actualizado_por' => $u->id];
             if ($admin) {
@@ -141,6 +144,9 @@ class TramiteService
                 $t->unidades()->sync($unidades);
             }
             $this->guardarAnexos($t, $anexos);
+            if ($formulario !== null) {
+                $this->campos->guardar($t, $formulario);
+            }
             $this->version($t, 'editar', $u);
             $this->audit->registrar('tramite.editar', 'tramite', $t->id, ['estado' => $t->estado]);
 
@@ -169,7 +175,7 @@ class TramiteService
             $p[] = 'El plazo de respuesta debe estar entre 1 y 365 días.';
         }
 
-        return $p;
+        return array_merge($p, $this->campos->problemas($t));
     }
 
     /** @return array<int,string> advertencias (no bloquean) */
@@ -225,6 +231,7 @@ class TramiteService
             'nombre' => mb_substr('Copia de '.$t->nombre, 0, 190), 'descripcion' => $t->descripcion, 'instrucciones' => $t->instrucciones, 'plazo_dias' => $t->plazo_dias,
             'unidad_propietaria_id' => $t->unidad_propietaria_id, 'unidades' => $t->unidades()->pluck('unidades.id')->all(),
             'anexos' => $t->anexos->map(fn ($a) => ['nombre' => $a->nombre, 'descripcion' => $a->descripcion, 'obligatorio' => $a->obligatorio])->all(),
+            'campos' => $this->campos->paraDuplicar($t),
         ]);
         $this->audit->registrar('tramite.duplicar', 'tramite', $copia->id, ['origen' => $t->id]);
 
@@ -343,6 +350,7 @@ class TramiteService
             'nombre' => $t->nombre, 'descripcion' => $t->descripcion, 'instrucciones' => $t->instrucciones, 'plazo_dias' => $t->plazo_dias, 'plazo_habiles' => $t->plazo_habiles, 'es_transparencia' => $t->es_transparencia, 'estado' => $t->estado,
             'unidad_propietaria_id' => $t->unidad_propietaria_id, 'unidades' => $t->unidades()->pluck('unidades.id')->all(),
             'anexos' => $t->anexos()->get()->map(fn ($a) => ['nombre' => $a->nombre, 'obligatorio' => $a->obligatorio, 'descripcion' => $a->descripcion])->all(),
+            'campos' => $t->campos()->get()->map(fn ($c) => ['clave' => $c->clave, 'etiqueta' => $c->etiqueta, 'tipo' => $c->tipo, 'obligatorio' => $c->obligatorio, 'config' => $c->config])->all(),
         ], JSON_UNESCAPED_UNICODE)]);
     }
 }

@@ -26,6 +26,7 @@ use App\Http\Controllers\FirmasMasivasController;
 use App\Http\Controllers\FoliosController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\InteropController;
+use App\Http\Controllers\ListasOpcionesController;
 use App\Http\Controllers\LogsController;
 use App\Http\Controllers\MantenedorController;
 use App\Http\Controllers\MarcaController;
@@ -211,6 +212,12 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     // ---- Trámites y servicios por dirección (el ámbito se aplica en TramiteService)
     Route::prefix('tramites')->name('tramites.')->group(function () {
         Route::get('/', [TramitesController::class, 'index'])->name('index');
+        Route::get('/listas', [ListasOpcionesController::class, 'index'])->name('listas');
+        Route::get('/listas/nueva', [ListasOpcionesController::class, 'crear'])->name('listas.crear');
+        Route::post('/listas', [ListasOpcionesController::class, 'guardar'])->middleware('throttle:30,1')->name('listas.guardar');
+        Route::get('/listas/{lista}', [ListasOpcionesController::class, 'editar'])->whereNumber('lista')->name('listas.editar');
+        Route::post('/listas/{lista}', [ListasOpcionesController::class, 'actualizar'])->whereNumber('lista')->middleware('throttle:30,1')->name('listas.actualizar');
+        Route::post('/listas/{lista}/estado', [ListasOpcionesController::class, 'estado'])->whereNumber('lista')->name('listas.estado');
         Route::get('/nuevo', [TramitesController::class, 'crear'])->name('crear');
         Route::post('/', [TramitesController::class, 'guardar'])->name('guardar');
         Route::get('/{id}', [TramitesController::class, 'editar'])->whereNumber('id')->name('editar');

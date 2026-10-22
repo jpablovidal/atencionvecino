@@ -37,6 +37,21 @@
 <button type="button" class="btn btn-sm btn-outline-secondary" id="agregar-anexo">Agregar otro documento</button>
 <p class="small text-muted mt-2">Para quitar un documento, deje su nombre en blanco.</p>
 </fieldset>
+<fieldset class="form-group" data-paso="Campos del formulario"><legend class="h5">Campos del formulario</legend>
+<p class="small text-muted">Datos que la persona debe completar al solicitar el trámite, además de los documentos: textos, números, fechas, listas para elegir, sí/no y <strong>cálculos</strong> con operadores matemáticos que se muestran en vivo. Máximo 40. Para reutilizar opciones en varios trámites cree un <a href="{{ route('app.tramites.listas') }}">listado de opciones</a>.</p>
+<input type="hidden" name="campos_enviados" value="1">
+@php $filasCampos = old('campos', $camposFilas); @endphp
+<div id="campos">@foreach($filasCampos as $i => $f)@include('partials.tramite_campo_editor', ['i' => $i, 'f' => $f, 'listas' => $listas])@endforeach</div>
+<button type="button" class="btn btn-sm btn-outline-secondary" id="agregar-campo">Agregar un campo</button>
+<template id="tpl-campo">@include('partials.tramite_campo_editor', ['i' => '__I__', 'f' => ['tipo' => 'texto'], 'listas' => $listas])</template>
+<details class="mt-3"><summary class="h6">Guía de operadores y funciones para los cálculos</summary>
+<ul class="small mt-2">
+<li><strong>Operadores:</strong> <code>+</code> suma, <code>-</code> resta, <code>*</code> multiplica, <code>/</code> divide, <code>%</code> resto, <code>^</code> potencia, paréntesis <code>( )</code>. Comparaciones: <code>&lt; &lt;= &gt; &gt;= == !=</code> (dan 1 si se cumplen, 0 si no) y lógicos <code>&amp;&amp;</code> (y), <code>||</code> (o), <code>!</code> (no).</li>
+<li><strong>Funciones:</strong> <code>si(condición; si_cumple; si_no)</code>, <code>min</code>, <code>max</code>, <code>suma</code>, <code>promedio</code>, <code>abs</code>, <code>redondear(x; decimales)</code>, <code>piso</code>, <code>techo</code>, <code>raiz</code>, <code>potencia(base; exponente)</code>, <code>dias(fecha1; fecha2)</code>, <code>anios(fecha1; fecha2)</code>. Separe los argumentos con <code>;</code> o <code>,</code>. Decimales con punto: <code>0.19</code>.</li>
+<li><strong>Datos:</strong> use la clave de otro campo (número, fecha, sí/no, lista con valores numéricos u otro cálculo). Un número vacío vale 0; una fecha vacía hace que el cálculo quede sin resultado. <code>hoy</code> es la fecha de hoy y restar dos fechas da los días entre ellas.</li>
+<li><strong>Ejemplos:</strong> <code>redondear(superficie * valor_m2 * 0.02; 0)</code> · <code>si(edad_solicitante &gt;= 60; tarifa * 0.5; tarifa)</code> · <code>anios(fecha_nacimiento; hoy)</code> · <code>dias(fecha_inicio; fecha_termino) * 3500</code></li>
+</ul></details>
+</fieldset>
 <button class="btn btn-primary">Guardar{{ $tramite ? ' cambios' : ' como borrador' }}</button> <a class="btn btn-link" href="{{ route('app.tramites.index') }}">Volver</a>
 </fieldset>
 </form>
@@ -48,5 +63,5 @@
 <form method="post" action="{{ route('app.tramites.duplicar',$tramite->id) }}" data-confirm="¿Crear una copia como borrador?">@csrf<button class="btn btn-outline-secondary">Duplicar como borrador</button></form>
 </div>
 @endif
-@push('scripts')<script src="{{ asset('assets/js/tramites.js') }}"></script>@endpush
+@push('scripts')<script src="{{ asset('assets/js/tramites.js') }}"></script><script src="{{ asset('assets/js/tramite_campos.js') }}"></script>@endpush
 @endsection
