@@ -225,7 +225,9 @@ class AuthController extends Controller
     /** Logout URI certificada: ClaveÚnica vuelve aquí tras cerrar su sesión; se asegura el cierre local y se muestra la portada. */
     public function retornoCierre(Request $request)
     {
-        if (Auth::check()) {
+        // Es un GET (así lo exige la URI certificada): solo se atiende como navegación de página, nunca como carga de <img>, <iframe>, <script> o fetch de otro sitio.
+        $destino = strtolower((string) $request->header('Sec-Fetch-Dest', 'document'));
+        if (Auth::check() && in_array($destino, ['document', 'empty', ''], true) && ($destino !== 'empty' || $request->header('Sec-Fetch-Mode') === 'navigate')) {
             $this->audit->registrar('auth.logout');
             Auth::logout();
             $request->session()->invalidate();

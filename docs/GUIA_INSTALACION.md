@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `d8d8687e2b44c6f5c49bf921b83941fade1169ff90cf15aa55a10234141e5547`).
+- Archivo **`sgd-release.zip`** (SHA-256 `d6bae314fe31991822a97adaaf2123ac3756106e1c36e776a6d39c6d70c6c9b8`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,11 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: revisión de ciberseguridad (OWASP Top 10 y rutas)
+- Se revisaron las 323 rutas y el código nuevo. Se cerró un caso menor: el cierre de sesión (`/logout`) ya no se activa desde imágenes o marcos de otros sitios, y se desactivó el servidor de archivos integrado de Laravel.
+- Hay pruebas nuevas que recorren todas las rutas: si en el futuro se agrega una ruta interna sin protección, la suite falla.
+- No hay pasos manuales. Detalle en `docs/PENTEST.md` §35.
 
 ## Novedades: Decreto 7 (seguridad) y normas técnicas 7 a 12
 - Con el texto del **Decreto 7** la matriz quedó completa (Decretos 7 a 12). En **Cumplimiento normativo** hay un registro nuevo para la **Política de Seguridad de la Información y Ciberseguridad**: acto que la aprueba, responsable institucional de seguridad, responsable de los activos de información y diagnóstico inicial. La política, el análisis de riesgos y el plan de recuperación los elabora el municipio; el sistema solo lleva el control.
