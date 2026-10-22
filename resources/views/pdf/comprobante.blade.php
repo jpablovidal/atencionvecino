@@ -15,6 +15,8 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px} h1{color:#006fb3;font-
 <tr><td class="k">RUN</td><td>{{ $s->run }}</td></tr>
 <tr><td class="k">Solicitante</td><td>{{ $s->nombres }} {{ $s->apellidos }}</td></tr>
 <tr><td class="k">Correo</td><td>{{ $s->correo }}</td></tr>
+@if($s->en_nombre_de)<tr><td class="k">Presentada a nombre de</td><td>{{ $s->interesado_nombre }} (RUN {{ $s->interesado_run }}) · relación: {{ \App\Models\Solicitud::RELACIONES[$s->relacion] ?? $s->relacion }} · acreditación declarada: {{ $s->acreditacion }}</td></tr>
+@endif
 <tr><td class="k">Trámite</td><td>{{ $s->tramite->nombre }} @if($s->tramite->codigo_cpat)(CPAT {{ $s->tramite->codigo_cpat }})@endif</td></tr>
 <tr><td class="k">Forma de notificación</td><td>{{ str_replace('_',' ',$s->canal_notificacion) }}</td></tr>
 <tr><td class="k">Detalle</td><td>{{ $s->detalle }}</td></tr>

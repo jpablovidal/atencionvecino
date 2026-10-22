@@ -778,4 +778,64 @@ alter table `calidad_iniciativas` add constraint `calidad_iniciativas_plataforma
 
 alter table `calidad_iniciativas` add index `calidad_iniciativas_plataforma_id_estado_index`(`plataforma_id`, `estado`);
 
+create table `docdigital_entidades` (`id` bigint unsigned not null auto_increment primary key, `entidad_id` bigint unsigned not null, `nombre` varchar(255) not null, `padre_id` bigint unsigned null, `organismo_id` bigint unsigned null, `organismo_nombre` varchar(255) null, `vigente` tinyint(1) not null default '1', `sincronizado_en` timestamp null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `docdigital_entidades` add index `docdigital_entidades_nombre_index`(`nombre`);
+
+alter table `docdigital_entidades` add unique `docdigital_entidades_entidad_id_unique`(`entidad_id`);
+
+alter table `docdigital_entidades` add index `docdigital_entidades_padre_id_index`(`padre_id`);
+
+create table `docdigital_usuarios` (`id` bigint unsigned not null auto_increment primary key, `usuario_id` bigint unsigned not null, `run_huella` char(64) null, `run_mascara` varchar(16) null, `nombre` varchar(190) not null, `email` varchar(190) null, `cargo` varchar(190) null, `entidad_id` bigint unsigned null, `entidad_nombre` varchar(255) null, `organismo_id` bigint unsigned null, `organismo_nombre` varchar(255) null, `roles` varchar(12) null, `vigente` tinyint(1) not null default '1', `sincronizado_en` timestamp null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `docdigital_usuarios` add index `docdigital_usuarios_nombre_index`(`nombre`);
+
+alter table `docdigital_usuarios` add unique `docdigital_usuarios_usuario_id_unique`(`usuario_id`);
+
+alter table `docdigital_usuarios` add index `docdigital_usuarios_run_huella_index`(`run_huella`);
+
+alter table `docdigital_usuarios` add index `docdigital_usuarios_entidad_id_index`(`entidad_id`);
+
+alter table `comunicaciones_oficiales` add `destino_entidad_id` bigint unsigned null after `institucion_nombre`;
+
+alter table `comunicaciones_oficiales` add `destino_usuarios` text null after `destino_entidad_id`;
+
+create table `expediente_partes` (`id` bigint unsigned not null auto_increment primary key, `expediente_id` bigint unsigned not null, `tipo` varchar(12) not null, `rol` varchar(20) not null default 'interesado', `nombre` varchar(190) not null, `run` varchar(12) null, `correo` varchar(190) null, `usuario_id` bigint unsigned null, `dd_entidad_id` bigint unsigned null, `dd_usuarios` text null, `canal` varchar(15) null, `notas` varchar(250) null, `creado_por` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `expediente_partes` add constraint `expediente_partes_expediente_id_foreign` foreign key (`expediente_id`) references `expedientes` (`id`) on delete cascade;
+
+alter table `expediente_partes` add constraint `expediente_partes_usuario_id_foreign` foreign key (`usuario_id`) references `usuarios` (`id`);
+
+alter table `expediente_partes` add constraint `expediente_partes_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `expediente_partes` add index `expediente_partes_expediente_id_tipo_index`(`expediente_id`, `tipo`);
+
+alter table `notificaciones` modify `solicitud_id` bigint unsigned null;
+
+alter table `notificaciones` modify `destinatario_run` varchar(12) null;
+
+alter table `notificaciones` add `parte_id` bigint unsigned null;
+
+alter table `notificaciones` add `comunicacion_id` bigint unsigned null;
+
+alter table `notificaciones` add `destinatario_nombre` varchar(190) null;
+
+alter table `notificaciones` add index `notificaciones_parte_id_index`(`parte_id`);
+
+alter table `solicitudes` add `en_nombre_de` tinyint(1) not null default '0';
+
+alter table `solicitudes` add `interesado_run` varchar(12) null;
+
+alter table `solicitudes` add `interesado_nombre` varchar(190) null;
+
+alter table `solicitudes` add `interesado_correo` varchar(190) null;
+
+alter table `solicitudes` add `relacion` varchar(20) null;
+
+alter table `solicitudes` add `acreditacion` varchar(500) null;
+
+alter table `solicitudes` add `declaracion_en` timestamp null;
+
+alter table `solicitudes` add index `solicitudes_interesado_run_index`(`interesado_run`);
+
 SET FOREIGN_KEY_CHECKS = 1;

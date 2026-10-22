@@ -46,10 +46,15 @@ class InteropController extends Controller
     {
         $this->permiso('comunicaciones.despachar');
         $this->authorize('operar', $expediente);
-        $d = $r->validate(['documento_id' => 'required|integer', 'institucion_codigo' => 'required|string|max:40', 'asunto' => 'required|string|min:3|max:190', 'anexos' => 'nullable|array|max:50', 'anexos.*' => 'integer']);
+        $d = $r->validate(['documento_id' => 'required|integer', 'destino' => 'nullable|in:codificador,docdigital', 'institucion_codigo' => 'required_unless:destino,docdigital|nullable|string|max:40', 'entidad_id' => 'required_if:destino,docdigital|nullable|integer|min:1',
+            'usuarios' => 'nullable|array|max:20', 'usuarios.*' => 'integer|min:1', 'asunto' => 'required|string|min:3|max:190', 'anexos' => 'nullable|array|max:50', 'anexos.*' => 'integer']);
         $doc = Documento::query()->where('expediente_id', $expediente->id)->findOrFail($d['documento_id']);
         try {
-            $svc->crearSaliente($expediente, $doc, $d['institucion_codigo'], $d['asunto'], $r->user(), array_map('intval', $d['anexos'] ?? []));
+            if (($d['destino'] ?? 'codificador') === 'docdigital') {
+                $svc->crearSalienteEntidad($expediente, $doc, (int) $d['entidad_id'], $d['asunto'], $r->user(), array_map('intval', $d['anexos'] ?? []), array_map('intval', $d['usuarios'] ?? []));
+            } else {
+                $svc->crearSaliente($expediente, $doc, (string) $d['institucion_codigo'], $d['asunto'], $r->user(), array_map('intval', $d['anexos'] ?? []));
+            }
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }

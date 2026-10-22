@@ -245,3 +245,101 @@ document.addEventListener('click', function (e) {
   var b = e.target.closest ? e.target.closest('[data-imprimir]') : null;
   if (b) { e.preventDefault(); window.print(); }
 });
+
+/* Despacho por DocDigital: alterna el destino (Codificador / directorio de DocDigital) y busca entidades y personas (sin scripts en línea). */
+(function () {
+  'use strict';
+  function el(id) { return document.getElementById(id); }
+  function texto(t) { return document.createTextNode(t); }
+  document.addEventListener('change', function (e) {
+    var s = e.target.closest ? e.target.closest('[data-alterna-destino]') : null;
+    if (!s) { return; }
+    var form = s.form;
+    form.querySelectorAll('[data-destino]').forEach(function (b) {
+      var activo = b.getAttribute('data-destino') === s.value;
+      b.hidden = !activo;
+      b.querySelectorAll('select,input').forEach(function (c) { if (c.name === 'institucion_codigo') { c.required = activo; } });
+    });
+  });
+  var temporizador = null;
+  document.addEventListener('input', function (e) {
+    var i = e.target.closest ? e.target.closest('[data-buscar-dd]') : null;
+    if (!i) { return; }
+    clearTimeout(temporizador);
+    temporizador = setTimeout(function () { buscar(i); }, 300);
+  });
+  function buscar(i) {
+    var lista = el(i.getAttribute('data-lista'));
+    var q = i.value.trim();
+    lista.textContent = '';
+    if (q.length < 2) { return; }
+    var url = i.getAttribute('data-url') + '?tipo=' + encodeURIComponent(i.getAttribute('data-buscar-dd')) + '&q=' + encodeURIComponent(q);
+    var ent = i.getAttribute('data-entidad');
+    if (ent && el(ent).value) { url += '&entidad=' + encodeURIComponent(el(ent).value); }
+    fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (filas) {
+      lista.textContent = '';
+      if (!filas.length) { var v = document.createElement('li'); v.className = 'list-group-item small text-muted'; v.appendChild(texto('Sin resultados.')); lista.appendChild(v); return; }
+      filas.forEach(function (f) {
+        var li = document.createElement('li'); li.className = 'list-group-item list-group-item-action p-1'; li.setAttribute('role', 'option');
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-link btn-sm text-left'; b.setAttribute('data-elegir-dd', '1');
+        b.setAttribute('data-id', f.id); b.setAttribute('data-texto', f.texto); b.setAttribute('data-origen', i.id);
+        b.appendChild(texto(f.texto + (f.detalle ? ' — ' + f.detalle : '')));
+        li.appendChild(b); lista.appendChild(li);
+      });
+    }).catch(function () { lista.textContent = ''; });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-elegir-dd]') : null;
+    if (b) {
+      var i = el(b.getAttribute('data-origen'));
+      var lista = el(i.getAttribute('data-lista'));
+      if (i.getAttribute('data-buscar-dd') === 'entidad') {
+        el(i.getAttribute('data-salida')).value = b.getAttribute('data-id');
+        var ok = el(i.getAttribute('data-elegida')); if (ok) { ok.textContent = 'Entidad elegida: ' + b.getAttribute('data-texto'); }
+        i.value = b.getAttribute('data-texto');
+        var per = el(i.getAttribute('data-limpiar')); if (per) { per.textContent = ''; }
+      } else {
+        var cont = el(i.getAttribute('data-elegidas'));
+        if (!cont.querySelector('input[value="' + b.getAttribute('data-id') + '"]')) {
+          var li = document.createElement('li'); li.className = 'list-inline-item';
+          var h = document.createElement('input'); h.type = 'hidden'; h.name = i.getAttribute('data-multiple'); h.value = b.getAttribute('data-id');
+          var q = document.createElement('button'); q.type = 'button'; q.className = 'btn btn-sm btn-outline-secondary'; q.setAttribute('data-quitar-dd', '1');
+          q.appendChild(texto(b.getAttribute('data-texto') + ' ×')); q.setAttribute('aria-label', 'Quitar a ' + b.getAttribute('data-texto'));
+          li.appendChild(h); li.appendChild(q); cont.appendChild(li);
+        }
+        i.value = '';
+      }
+      lista.textContent = '';
+      return;
+    }
+    var q2 = e.target.closest ? e.target.closest('[data-quitar-dd]') : null;
+    if (q2) { q2.parentNode.remove(); }
+  });
+})();
+
+/* Partes del expediente: muestra solo los campos y canales que corresponden al tipo de parte elegido. */
+(function () {
+  'use strict';
+  function aplicar(sel) {
+    var form = sel.form, tipo = sel.value;
+    form.querySelectorAll('[data-parte]').forEach(function (b) { b.hidden = b.getAttribute('data-parte').split(' ').indexOf(tipo) === -1; });
+    var canal = form.querySelector('select[name="canal"]'), primero = null;
+    if (canal) {
+      Array.prototype.forEach.call(canal.options, function (o) { var ok = o.getAttribute('data-tipo') === tipo; o.hidden = !ok; o.disabled = !ok; if (ok && !primero) { primero = o; } });
+      if (canal.selectedOptions[0] && canal.selectedOptions[0].disabled && primero) { canal.value = primero.value; }
+    }
+  }
+  document.addEventListener('change', function (e) { var s = e.target.closest ? e.target.closest('[data-alterna-parte]') : null; if (s) { aplicar(s); } });
+  document.querySelectorAll('[data-alterna-parte]').forEach(aplicar);
+})();
+
+/* Solicitud a nombre de otra persona: muestra los datos de la persona asistida solo cuando se marca la casilla. */
+document.addEventListener('change', function (e) {
+  var c = e.target.closest ? e.target.closest('[data-alterna-tercero]') : null;
+  if (!c) { return; }
+  var b = document.getElementById(c.getAttribute('aria-controls'));
+  if (b) {
+    b.hidden = !c.checked;
+    b.querySelectorAll('input,select').forEach(function (x) { if (x.type !== 'checkbox' || x.id === 'tercero_declara') { x.required = c.checked && x.id !== 'tercero_correo'; } });
+  }
+});

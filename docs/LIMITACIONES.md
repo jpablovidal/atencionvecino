@@ -260,3 +260,6 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 ## Gestión de comunicaciones recibidas
 - El «estado de gestión» y los estados de las derivaciones son internos del sistema: **no** se informan a DocDigital (la API documentada solo permite acusar recibo y devolver).
 - No hay avisos por correo a la persona derivada: lo ve en su bandeja y en el expediente.
+- **Directorio de DocDigital:** el contrato de `GET /usuarios/` no entrega los roles de cada persona, por eso se consultan por tipo solo para la entidad propia; los roles de personas de otras entidades no se conocen. La carga completa de todo el Estado puede tardar varias ejecuciones. No se probó contra el servicio real (sin credenciales); está probado con simulaciones del contrato. En el despacho se puede dirigir el documento a personas (`listado_id_usuarios_destinatarios`), pero la forma en que DocDigital las trata en la Oficina de Partes es **A VALIDAR** con Gobierno Digital.
+- **Expedientes de oficio y partes:** las notificaciones por Casilla Única a partes sin solicitud usan el expediente como «folio» (contrato **A VALIDAR**). No hay registro verificado de poderes ni de representantes de personas jurídicas; la persona asistida no tiene acceso propio al sistema.
+

@@ -109,3 +109,8 @@ En **Mis solicitudes** y en el detalle de cada solicitud ve el **número de soli
 
 ## Recorrido guiado y manuales
 En el menú de su nombre (arriba a la derecha) encontrará **Recorrido guiado**, una presentación paso a paso de este portal, y **Manuales de usuario**, con los manuales que corresponden a su perfil. El recorrido se muestra solo la primera vez y puede repetirlo cuando quiera.
+
+## Presentar una solicitud a nombre de otra persona
+Si usted presenta la solicitud para alguien a quien representa o ayuda (por ejemplo, su madre, un hijo o una persona que no puede hacer el trámite sola), marque **«Presento esta solicitud a nombre de otra persona»** en el formulario. Indique el RUN y el nombre de esa persona, su relación con ella y cómo la acredita (poder, parentesco, tutela). Adjunte el documento en **Otros anexos** si lo tiene y declare que actúa con su conocimiento o en su representación.
+- Los datos de ClaveÚnica son **suyos**, quien presenta. Usted será el contacto: las notificaciones le llegan a usted.
+- Un funcionario(a) revisará lo que acreditó; si falta algo, se lo pedirán.

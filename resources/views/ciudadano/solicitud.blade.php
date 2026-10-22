@@ -7,6 +7,7 @@
 <p><span class="estado estado-{{ $s->estado }}">{{ str_replace('_',' ',$s->estado) }}</span> · {{ $s->tramite->nombre }}</p>
 <dl class="row" aria-label="Datos de su solicitud">
  <dt class="col-sm-4 col-md-3">Solicitud N°</dt><dd class="col-sm-8 col-md-9">{{ $s->folio }}</dd>
+@if($s->en_nombre_de) <dt class="col-sm-4 col-md-3">A nombre de</dt><dd class="col-sm-8 col-md-9">{{ $s->interesado_nombre }} ({{ \App\Models\Solicitud::RELACIONES[$s->relacion] ?? $s->relacion }})</dd>@endif
  <dt class="col-sm-4 col-md-3">Expediente N°</dt><dd class="col-sm-8 col-md-9">{{ $s->expediente?->codigo ?? 'Aún no se abre el expediente' }}</dd>
  <dt class="col-sm-4 col-md-3">Ingresada el</dt><dd class="col-sm-8 col-md-9">{{ $s->created_at->setTimezone('America/Santiago')->format('d-m-Y H:i') }}</dd>
  <dt class="col-sm-4 col-md-3">Dirección responsable</dt><dd class="col-sm-8 col-md-9">{{ $direccion ?? 'Por asignar' }}</dd>

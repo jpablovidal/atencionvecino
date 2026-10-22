@@ -7,6 +7,7 @@ use App\Models\Rol;
 use App\Models\Usuario;
 use App\Services\Admin\PermisosUsuarioService;
 use App\Services\AuditoriaService;
+use App\Services\Interop\DocDigitalDirectorioService;
 use App\Support\Permisos;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ class PermisosUsuarioController extends Controller
     {
         return view('app.admin.usuario_permisos', [
             'u' => $usuario, 'matriz' => $this->svc->matriz($usuario), 'disponibles' => $this->svc->rolesDisponibles($usuario), 'adicionales' => $usuario->rolesAdicionales(),
-            'nombres' => Rol::query()->pluck('nombre', 'clave'), 'propio' => request()->user()->id === $usuario->id, 'resumen' => $this->svc->resumen($usuario),
+            'nombres' => Rol::query()->pluck('nombre', 'clave'), 'propio' => request()->user()->id === $usuario->id, 'resumen' => $this->svc->resumen($usuario), 'dd' => app(DocDigitalDirectorioService::class)->de($usuario),
         ]);
     }
 

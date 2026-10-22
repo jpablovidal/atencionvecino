@@ -18,6 +18,7 @@ class Permisos
 
         return [
             'expedientes.operar' => ['Operar expedientes (comentar, cargar archivos, editar metadatos)', 'Expedientes', $op],
+            'expedientes.crear' => ['Iniciar expedientes de oficio: crear un expediente sin solicitud ciudadana, registrar sus partes y comenzar un procedimiento (decreto, reglamento, oficio, etc.)', 'Expedientes', $op, false, ['funcionario', 'alcalde', 'secretario']],
             'expedientes.derivar' => ['Derivar expedientes', 'Expedientes', $op],
             'expedientes.devolver' => ['Devolver solicitudes al ciudadano', 'Expedientes', $op],
             'expedientes.cerrar' => ['Cerrar y reabrir expedientes', 'Expedientes', $op],

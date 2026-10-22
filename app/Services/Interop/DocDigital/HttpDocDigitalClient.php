@@ -240,6 +240,65 @@ class HttpDocDigitalClient implements DocDigitalClient
         return $this->entidades($this->lista($r));
     }
 
+    public const P_USUARIOS = '/usuarios/';
+
+    /**
+     * Una página del listado de entidades (GET /entidades/, índice de página base 0).
+     *
+     * @return array{items:list<array{id:int,nombre:string,padre:?int,organismo_id:?int,organismo_nombre:?string}>,total_pages:int}
+     */
+    public function paginaEntidades(int $pagina, int $tam = 1000): array
+    {
+        $r = $this->llamar(fn () => $this->http()->get($this->base().self::P_ENTIDADES, ['pageSize' => $tam, 'pageNumber' => $pagina, 'orderType' => 'ASC']));
+        $items = [];
+        foreach ($this->lista($r) as $e) {
+            if (isset($e['entidad_id'], $e['entidad_nombre']) && is_numeric($e['entidad_id'])) {
+                $o = is_array($e['organismo'] ?? null) ? $e['organismo'] : [];
+                $items[] = ['id' => (int) $e['entidad_id'], 'nombre' => mb_substr(trim((string) $e['entidad_nombre']), 0, 255), 'padre' => isset($e['entidad_padre_id']) && is_numeric($e['entidad_padre_id']) ? (int) $e['entidad_padre_id'] : null,
+                    'organismo_id' => isset($o['organismo_id']) && is_numeric($o['organismo_id']) ? (int) $o['organismo_id'] : null, 'organismo_nombre' => isset($o['organismo_nombre']) ? mb_substr((string) $o['organismo_nombre'], 0, 255) : null];
+            }
+        }
+
+        return ['items' => $items, 'total_pages' => max(1, (int) $r->json('total_pages', 1))];
+    }
+
+    /**
+     * Una página de personas habilitadas (GET /usuarios/). `tipo`: 1 tramitador · 2 OP salida · 3 OP entrada · 4 administrador.
+     *
+     * @return array{items:list<array<string,mixed>>,total_pages:int}
+     */
+    public function paginaUsuarios(int $pagina, int $tam = 1000, ?int $tipo = null, ?int $entidad = null, ?string $nombre = null): array
+    {
+        $q = ['pageSize' => $tam, 'pageNumber' => $pagina, 'orderType' => 'ASC'];
+        if ($tipo !== null) {
+            $q['tipo'] = $tipo;
+        }
+        if ($entidad !== null) {
+            $q['idEntidad'] = $entidad;
+        }
+        if ($nombre !== null && $nombre !== '') {
+            $q['nombre'] = $nombre;
+        }
+        $r = $this->llamar(fn () => $this->http()->get($this->base().self::P_USUARIOS, $q));
+        $items = [];
+        foreach ($this->lista($r) as $u) {
+            if (isset($u['usuario_id'], $u['usuario_nombre']) && is_numeric($u['usuario_id'])) {
+                $items[] = ['id' => (int) $u['usuario_id'], 'run' => isset($u['usuario_run']) ? (string) $u['usuario_run'] : null, 'nombre' => mb_substr(trim((string) $u['usuario_nombre']), 0, 190),
+                    'email' => isset($u['usuario_email']) ? mb_substr((string) $u['usuario_email'], 0, 190) : null, 'cargo' => isset($u['usuario_cargo']) ? mb_substr((string) $u['usuario_cargo'], 0, 190) : null,
+                    'entidad_id' => isset($u['entidad_id']) && is_numeric($u['entidad_id']) ? (int) $u['entidad_id'] : null, 'entidad_nombre' => isset($u['entidad_nombre']) ? mb_substr((string) $u['entidad_nombre'], 0, 255) : null,
+                    'organismo_id' => isset($u['organismo_id']) && is_numeric($u['organismo_id']) ? (int) $u['organismo_id'] : null, 'organismo_nombre' => isset($u['organismo_nombre']) ? mb_substr((string) $u['organismo_nombre'], 0, 255) : null];
+            }
+        }
+
+        return ['items' => $items, 'total_pages' => max(1, (int) $r->json('total_pages', 1))];
+    }
+
+    /** Entidad propia (DOCDIGITAL_ENTIDAD_ID o la asociada al token) para filtrar a las personas de esta municipalidad. */
+    public function entidadPropiaId(): int
+    {
+        return $this->entidadPropia();
+    }
+
     /** @param list<array<string,mixed>> $f @return list<array{id:int,nombre:string,padre:?int}> */
     private function entidades(array $f): array
     {
@@ -348,6 +407,10 @@ class HttpDocDigitalClient implements DocDigitalClient
             'folio' => mb_substr((string) ($meta['numero'] ?: 'S/N'), 0, 100),
             'listado_id_entidades_destinatarias' => [$this->entidadDestino($meta)],
         ];
+        $personas = array_values(array_unique(array_filter(array_map('intval', (array) ($meta['destino_usuarios'] ?? [])), fn ($i) => $i > 0)));
+        if ($personas) {
+            $cuerpo['listado_id_usuarios_destinatarios'] = $personas;
+        }
         $anexos = (array) ($meta['anexos'] ?? []);
         if (count($anexos) > $this->maxAnexos()) {
             throw new DocDigitalException('Demasiados anexos: el máximo por comunicación es '.$this->maxAnexos().'.');

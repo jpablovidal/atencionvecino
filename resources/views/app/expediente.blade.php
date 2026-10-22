@@ -42,10 +42,11 @@
 <dt class="col-sm-3">Procedimiento (CPAT)</dt><dd class="col-sm-9">{{ $m['procedimiento']['codigo_cpat'] ?? '—' }} · {{ $m['procedimiento']['tramite'] ?? '' }}</dd>
 <dt class="col-sm-3">Apertura / cierre</dt><dd class="col-sm-9">{{ $m['temporalidad']['fecha_apertura'] ?? '' }} / {{ $m['temporalidad']['fecha_cierre'] ?? '—' }}</dd>
 <dt class="col-sm-3">Seguridad</dt><dd class="col-sm-9">{{ $m['seguridad']['nivel_acceso'] ?? '' }}</dd>
-<dt class="col-sm-3">Identificador único</dt><dd class="col-sm-9"><strong>{{ $m['identificacion']['identificador_unico'] ?? $e->codigo }}</strong> · origen: {{ $e->origen==='docdigital' ? 'comunicación oficial (DocDigital)' : 'solicitud ciudadana' }}</dd>
+<dt class="col-sm-3">Identificador único</dt><dd class="col-sm-9"><strong>{{ $m['identificacion']['identificador_unico'] ?? $e->codigo }}</strong> · origen: {{ ['docdigital' => 'comunicación oficial (DocDigital)', 'oficio' => 'iniciado de oficio'][$e->origen] ?? 'solicitud ciudadana' }}</dd>
 <dt class="col-sm-3">Responsable</dt><dd class="col-sm-9">{{ $e->responsable?->nombreCompleto() ?? 'Sin asignar' }} ({{ $e->unidad->nombre }})</dd>
 @if($s)
 <dt class="col-sm-3">Solicitante</dt><dd class="col-sm-9">{{ $s->nombres }} {{ $s->apellidos }} · {{ $s->run }} · {{ $s->correo }} · notificar por {{ str_replace('_',' ',$s->canal_notificacion) }}</dd>
+@if($s->en_nombre_de)<dt class="col-sm-3">A nombre de</dt><dd class="col-sm-9"><strong>{{ $s->interesado_nombre }}</strong> · {{ $s->interesado_run }}@if($s->interesado_correo) · {{ $s->interesado_correo }}@endif<br>Presentada por <strong>{{ \App\Models\Solicitud::RELACIONES[$s->relacion] ?? $s->relacion }}</strong>. Acreditación declarada: «{{ $s->acreditacion }}» <span class="small text-muted">(declaración del {{ $s->declaracion_en?->setTimezone('America/Santiago')->format('d-m-Y H:i') }}; el sistema no verifica el poder: revíselo en los anexos)</span></dd>@endif
 <dt class="col-sm-3">Detalle</dt><dd class="col-sm-9">{{ $s->detalle }}</dd>
 @endif
 </dl>
@@ -125,7 +126,10 @@
 <form method="post" action="{{ route('app.comunicacion.crear',$e) }}" class="card card-body mb-3">@csrf
 <div class="form-row">
 <div class="form-group col-md-4"><label for="cd_doc">Documento vigente</label><select class="form-control" id="cd_doc" name="documento_id" required>@foreach($e->documentos->where('estado','vigente') as $d)<option value="{{ $d->id }}">{{ $d->numeroFormateado() }} — {{ $d->titulo }}</option>@endforeach</select></div>
-<div class="form-group col-md-4"><label for="cd_inst">Institución destinataria (Codificador)</label><select class="form-control" id="cd_inst" name="institucion_codigo" required>@foreach($instituciones as $i)<option value="{{ $i->codigo }}" @selected($i->codigo===$origenCodigo)>{{ $i->nombre }} ({{ $i->codigo }})</option>@endforeach</select></div>
+<div class="form-group col-md-4"><label for="cd_dest">Destinatario</label><select class="form-control" id="cd_dest" name="destino" data-alterna-destino><option value="codificador">Institución del Codificador</option><option value="docdigital">Entidad y personas de DocDigital (buscar)</option></select></div>
+<div class="form-group col-md-4" data-destino="codificador"><label for="cd_inst">Institución destinataria (Codificador)</label><select class="form-control" id="cd_inst" name="institucion_codigo">@foreach($instituciones as $i)<option value="{{ $i->codigo }}" @selected($i->codigo===$origenCodigo)>{{ $i->nombre }} ({{ $i->codigo }})</option>@endforeach</select></div>
+<div class="form-group col-md-4" data-destino="docdigital" hidden><label for="cd_ent_q">Entidad de DocDigital</label><input class="form-control" id="cd_ent_q" type="search" autocomplete="off" maxlength="100" placeholder="Escriba al menos 2 letras" data-buscar-dd="entidad" data-url="{{ route('app.docdigital.directorio.buscar') }}" data-salida="cd_ent_id" data-elegida="cd_ent_elegida" data-limpiar="cd_per_elegidas" data-lista="cd_ent_lista" aria-controls="cd_ent_lista"><input type="hidden" id="cd_ent_id" name="entidad_id"><ul class="list-group mt-1" id="cd_ent_lista" role="listbox" aria-label="Entidades encontradas"></ul><p class="small mb-0" id="cd_ent_elegida" aria-live="polite"></p></div>
+<div class="form-group col-md-12" data-destino="docdigital" hidden><label for="cd_per_q">Personas destinatarias de esa entidad (opcional)</label><input class="form-control" id="cd_per_q" type="search" autocomplete="off" maxlength="100" placeholder="Nombre, cargo o entidad" data-buscar-dd="persona" data-url="{{ route('app.docdigital.directorio.buscar') }}" data-lista="cd_per_lista" data-entidad="cd_ent_id" data-multiple="usuarios[]" data-elegidas="cd_per_elegidas" aria-controls="cd_per_lista"><ul class="list-group mt-1" id="cd_per_lista" role="listbox" aria-label="Personas encontradas"></ul><ul class="list-inline mb-0" id="cd_per_elegidas" aria-live="polite"></ul></div>
 <div class="form-group col-md-4"><label for="cd_asunto">Asunto</label><input class="form-control" id="cd_asunto" name="asunto" required minlength="3" maxlength="190"></div></div>
 @php $anexables = $e->archivos->where('ambito','!=','comprobante')->reject(fn ($aa) => in_array($aa->id, $ocultos['archivos'], true)); @endphp
 @if($anexables->isNotEmpty())<fieldset class="form-group"><legend class="h6">Anexos que se envían con el documento (opcional, hasta {{ (int) config('sgd.docdigital.max_anexos', 10) }}, máx. 50 MB c/u)</legend>
@@ -189,12 +193,8 @@
 </fieldset>
 <button class="btn btn-primary">Indicar respuesta final</button></form>
 @elseif($e->respuestas->isEmpty())<p class="small text-muted">Aún no se ha indicado la respuesta final.</p>@endif
-<table class="table table-sm"><thead><tr><th scope="col">Documento</th><th scope="col">Canal</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead><tbody>
-@foreach($e->notificaciones as $n)<tr><td>@if($n->documento){{ $n->documento->numeroFormateado() }}@elseif($n->archivo){{ $n->archivo->titulo ?: $n->archivo->nombre_original }}@else Aviso por correo @endif</td><td>{{ str_replace('_',' ',$n->canal) }}</td><td><span class="estado estado-{{ $n->estado }}">{{ $n->estado }}</span> @if($n->ultimo_error)<small>{{ $n->ultimo_error }}</small>@endif</td>
-<td>@if($n->evidencia){{ $n->evidencia_tipo }}: <span class="hash">{{ $n->evidencia }}</span>@elseif($puedeOperar && $n->canal!=='correo' && $n->estado!=='enviada')
-<form method="post" action="{{ route('app.notificacion.evidencia',$n) }}" class="form-inline">@csrf<label class="sr-only" for="ev{{ $n->id }}">Evidencia</label>
-<select class="form-control form-control-sm mr-1" name="tipo" aria-label="Tipo de evidencia"><option value="id_casilla_unica">ID Casilla Única</option><option value="acta_presencial">Acta presencial</option></select>
-<input class="form-control form-control-sm mr-1" id="ev{{ $n->id }}" name="valor" required maxlength="250" placeholder="Referencia"><button class="btn btn-sm btn-primary">Registrar</button></form>@else — @endif</td></tr>@endforeach</tbody></table>
+@include('partials.expediente_notificaciones', ['e' => $e, 'puedeOperar' => $puedeOperar])
 @endif
+@include('partials.expediente_partes', ['partes' => $partes, 'funcionarios' => $funcionariosPartes, 'docsVigentes' => $e->documentos->where('estado','vigente')->reject(fn ($dd) => in_array($dd->id, $ocultos['documentos'], true))])
 @include('partials.visor_modal')
 @endsection

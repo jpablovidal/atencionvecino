@@ -67,7 +67,7 @@ class CasillaAdapter
             throw new \RuntimeException('La URL de Casilla Única debe ser https.');
         }
         $resp = Http::timeout(15)->connectTimeout(5)->withoutRedirecting()->withToken($this->token())
-            ->post((string) $this->cfg['api_url'], ['run' => $n->destinatario_run, 'folio' => $n->solicitud_id, 'documento' => $n->documento_id] + ($n->archivo_id ? ['archivo' => $n->archivo_id] : []));
+            ->post((string) $this->cfg['api_url'], ['run' => $n->destinatario_run, 'folio' => $n->solicitud_id ?? $n->expediente_id, 'documento' => $n->documento_id] + ($n->archivo_id ? ['archivo' => $n->archivo_id] : []));
         $id = $resp->successful() ? $resp->json('id') : null;
         if (! is_string($id) || $id === '') {
             throw new \RuntimeException('Casilla Única no confirmó el envío.');

@@ -11,6 +11,7 @@ use App\Models\Usuario;
 use App\Services\Admin\ArchivoConfigService;
 use App\Services\Firma\ArchivoFirmaService;
 use App\Support\Plazos;
+use App\Support\Run;
 use App\Support\UploadValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -20,12 +21,57 @@ class SolicitudService
     public function __construct(private readonly FileVault $vault, private readonly PdfService $pdf, private readonly AuditoriaService $audit, private readonly ArchivoFirmaService $firmas, private readonly MovimientoService $mov) {}
 
     /**
+     * Datos de la persona a cuyo nombre se presenta la solicitud (persona asistida). La declaración es de quien presenta; la acreditación (poder, parentesco,
+     * tutela) la revisa el funcionario(a): el sistema no la verifica.
+     *
+     * @param  array<string,mixed>|null  $t
+     * @return array{interesado_run:string,interesado_nombre:string,interesado_correo:?string,relacion:string,acreditacion:string}|null
+     *
+     * @throws FlujoException
+     */
+    private function validarTercero(array $ciudadano, ?array $t): ?array
+    {
+        if ($t === null) {
+            return null;
+        }
+        $run = Run::normalizar((string) ($t['run'] ?? ''));
+        if (! $run) {
+            throw new FlujoException('El RUN de la persona a cuyo nombre presenta la solicitud no es válido.');
+        }
+        if ($run === Run::normalizar((string) $ciudadano['run'])) {
+            throw new FlujoException('El RUN de la persona asistida no puede ser el suyo: si presenta la solicitud para usted, no marque esa opción.');
+        }
+        $nombre = trim((string) ($t['nombre'] ?? ''));
+        if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 190) {
+            throw new FlujoException('Indique el nombre completo de la persona a cuyo nombre presenta la solicitud.');
+        }
+        if (! isset(Solicitud::RELACIONES[(string) ($t['relacion'] ?? '')])) {
+            throw new FlujoException('Indique su relación con esa persona.');
+        }
+        $acre = trim((string) ($t['acreditacion'] ?? ''));
+        if (mb_strlen($acre) < 5 || mb_strlen($acre) > 500) {
+            throw new FlujoException('Indique cómo acredita su representación o relación (poder, parentesco, tutela u otro antecedente; 5 a 500 caracteres).');
+        }
+        $correo = trim((string) ($t['correo'] ?? ''));
+        if ($correo !== '' && (! filter_var($correo, FILTER_VALIDATE_EMAIL) || preg_match('/[\r\n]/', $correo) || mb_strlen($correo) > 190)) {
+            throw new FlujoException('El correo de la persona asistida no es válido.');
+        }
+        if (empty($t['declara'])) {
+            throw new FlujoException('Debe declarar que actúa con el conocimiento de esa persona o en su representación.');
+        }
+
+        return ['interesado_run' => $run, 'interesado_nombre' => $nombre, 'interesado_correo' => $correo !== '' ? $correo : null, 'relacion' => (string) $t['relacion'], 'acreditacion' => $acre];
+    }
+
+    /**
      * @param  array{run:string,nombres:string,apellidos:string}  $ciudadano  (de ClaveÚnica, no editable)
      * @param  array<int,UploadedFile>  $anexosRequeridos  indexados por id de TramiteAnexo
      * @param  array<int,UploadedFile>  $extras
+     * @param  array{run:string,nombre:string,correo?:?string,relacion:string,acreditacion:string,declara:mixed}|null  $tercero  persona a cuyo nombre se presenta (persona asistida)
      */
-    public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras, ?bool $consiente = null, ?string $consentimientoVersion = null): Solicitud
+    public function ingresar(array $ciudadano, Tramite $tramite, string $correo, string $detalle, string $canal, array $anexosRequeridos, array $extras, ?bool $consiente = null, ?string $consentimientoVersion = null, ?array $tercero = null): Solicitud
     {
+        $tercero = $this->validarTercero($ciudadano, $tercero);
         if (! $tramite->estaPublicado()) {
             throw new FlujoException('El trámite no está disponible.');
         }
@@ -57,12 +103,12 @@ class SolicitudService
 
         $creados = [];
         try {
-            return DB::transaction(function () use ($ciudadano, $tramite, $correo, $detalle, $canal, $validados, $consiente, $consentimientoVersion, &$creados) {
+            return DB::transaction(function () use ($ciudadano, $tramite, $correo, $detalle, $canal, $validados, $consiente, $consentimientoVersion, $tercero, &$creados) {
                 $s = Solicitud::query()->create([
                     'folio' => $this->nuevoFolio(), 'run' => $ciudadano['run'], 'nombres' => $ciudadano['nombres'], 'apellidos' => $ciudadano['apellidos'],
                     'correo' => $correo, 'tramite_id' => $tramite->id, 'detalle' => $detalle, 'canal_notificacion' => $canal, 'estado' => 'ingresada',
                     'consentimiento_datos' => $consiente, 'consentimiento_en' => $consiente !== null ? now() : null, 'consentimiento_version' => $consiente !== null ? $consentimientoVersion : null,
-                ]);
+                ] + ($tercero ? ['en_nombre_de' => true, 'declaracion_en' => now()] + $tercero : []));
                 $info = [];
                 foreach ($validados as [$f, $titulo, $tipo]) {
                     $info[] = $this->guardarAnexo($s, $f, $titulo, $tipo, 'anexo', $ciudadano['run'], $creados);

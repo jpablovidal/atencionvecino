@@ -29,7 +29,7 @@ class ProduccionService
 
     /** Tablas de PROCESOS que se vacían, en orden seguro respecto de las claves foráneas (hijas primero). */
     public const BORRAR = [
-        'acceso_restringido', 'respuesta_final_items', 'respuestas_finales', 'avisos_movimiento', 'comunicacion_anexos', 'docdigital_evidencias', 'archivo_eventos', 'archivo_microforma_archivos', 'archivo_microforma_items',
+        'expediente_partes', 'acceso_restringido', 'respuesta_final_items', 'respuestas_finales', 'avisos_movimiento', 'comunicacion_anexos', 'docdigital_evidencias', 'archivo_eventos', 'archivo_microforma_archivos', 'archivo_microforma_items',
         'archivo_microformas', 'egresos', 'decretos_pago', 'expediente_vinculos', 'documento_version_eventos', 'documento_pasos', 'documento_versiones', 'archivo_versiones',
         'archivos', 'comentarios', 'derivaciones', 'notificaciones', 'pisee_consultas', 'comunicaciones_oficiales', 'devoluciones', 'transparencia_derivaciones',
         'transparencia_requerimientos', 'transparencia_activa_items', 'transparencia_activa_registros', 'solicitud_movimientos', 'documentos', 'expedientes', 'solicitudes',
@@ -41,7 +41,7 @@ class ProduccionService
         'anuncios', 'api_config', 'areas', 'audit_log', 'config_sitio', 'conexiones_resumen', 'delegaciones_firma', 'firma_estilos', 'firma_posiciones', 'geo_dns_cache',
         'incidentes', 'instituciones', 'menu_items', 'metricas_recursos', 'migrations', 'pago_firmantes', 'pisee_servicios', 'plantilla_unidades', 'plantilla_versiones',
         'plantillas', 'procesos_codificador', 'recursos_imagen', 'repositorio_carpetas', 'repositorio_reubicaciones', 'rol_permisos', 'roles', 'sessions', 'tipos_documento',
-        'tramite_anexos', 'tramite_unidad', 'tramite_versiones', 'tramites', 'transparencia_feriados', 'calidad_iniciativas', 'calidad_plataformas', 'unidades', 'unidades_internas', 'usuario_areas', 'usuario_permisos', 'usuario_roles', 'usuarios', 'sqlite_sequence',
+        'tramite_anexos', 'tramite_unidad', 'tramite_versiones', 'tramites', 'transparencia_feriados', 'calidad_iniciativas', 'calidad_plataformas', 'docdigital_entidades', 'docdigital_usuarios', 'unidades', 'unidades_internas', 'usuario_areas', 'usuario_permisos', 'usuario_roles', 'usuarios', 'sqlite_sequence',
     ];
 
     /** Correo de los usuarios de demostración del proyecto: se desactivan al pasar a producción. */

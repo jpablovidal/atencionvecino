@@ -128,6 +128,7 @@ paso "6/7 Base de datos"
 "$PHP" artisan route:clear >/dev/null 2>&1 || true   # rutas nuevas tras actualizar (evita errores 500 por caché vieja)
 "$PHP" artisan migrate --force || fallo "Falló la migración (revise el mensaje anterior)."
 "$PHP" artisan codificador:municipio || true   # Municipalidad de Santo Domingo (PE-MUN-00243) en el catálogo del Codificador
+"$PHP" artisan docdigital:directorio --segundos=20 || true   # primera carga de entidades y personas de DocDigital (solo si está en modo DemoDoc/Producción; sigue sola cada 10 min)
 
 if [ "$ACTUALIZACION" = 0 ]; then
   "$PHP" artisan db:seed --class=DemoSeeder --force || fallo "Falló la carga de datos de demostración."

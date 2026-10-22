@@ -283,3 +283,11 @@ El menú **Cumplimiento normativo** reúne lo que piden los Decretos 8 a 12:
 - **Catálogo de plataformas y línea de base:** el sistema siembra el SGD y sus integraciones; puede agregar otras (intranet, sitio web, etc.), su línea de base, prioridad y vida útil.
 - **Plan de Mejora Continua:** registre las iniciativas por plataforma con su etapa (1 a 5), subcaracterística, métrica y umbrales, responsable, plazo, costo, riesgos y resultado. El plan debe abordar al menos **4 subcaracterísticas**. **Ver el informe** da una vista imprimible.
 También: la **hora UTC** se muestra y exporta en la bitácora de auditoría; los metadatos del expediente llevan la ubicación (comuna, provincia, región, país); el panel **Datos personales (DPO)** lista los accesos a contenido sensible; y el vecino puede **cambiar o revocar** su consentimiento de datos desde su solicitud.
+
+## Directorio de DocDigital: entidades y personas habilitadas
+Cuando DocDigital está en modo **DemoDoc** o **Producción**, el sistema carga **solo** las **entidades** y las **personas habilitadas** (GET /entidades/ y /usuarios/ de la API v3), con los roles de gestión de esta municipalidad (tramitador, Oficina de Partes de salida y de entrada, administrador). Se usan para despachar (elegir entidad y personas destinatarias), derivar y gestionar.
+- La carga corre cada 10 minutos hasta completarse (es reanudable, apta para hosting compartido) y se refresca cada 24 horas (`DOCDIGITAL_DIRECTORIO_HORAS`). También puede ejecutarse a mano: `php artisan docdigital:directorio` (`--forzar` empieza de nuevo).
+- `DOCDIGITAL_DIRECTORIO_USUARIOS=todos` carga a todas las personas habilitadas del Estado; `propia` solo a las de esta municipalidad.
+- **Privacidad:** de cada persona se guarda nombre, cargo, correo institucional y entidad. El RUN **no se guarda**: solo una huella para reconocer a los funcionarios de este sistema (se muestra en *Roles y permisos › usuario* sus roles en DocDigital, solo como información).
+- Verlo: **DocDigital › Directorio de DocDigital** (permiso «Probar la conexión y gestionar DocDigital»).
+- El permiso **«Iniciar expedientes de oficio»** (`expedientes.crear`) lo reciben por defecto funcionarios, alcaldía y secretaría; se concede o quita por usuario en la matriz de permisos.

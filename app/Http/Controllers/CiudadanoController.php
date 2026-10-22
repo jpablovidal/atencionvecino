@@ -14,6 +14,7 @@ use App\Services\FileVault;
 use App\Services\MovimientoService;
 use App\Services\SolicitudService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CiudadanoController extends Controller
 {
@@ -65,6 +66,9 @@ class CiudadanoController extends Controller
             'detalle' => 'required|string|min:10|max:'.self::MAX_DETALLE,
             'canal_notificacion' => 'required|in:correo,presencial,casilla_unica',
             'consentimiento' => 'required|in:si,no',
+            'en_nombre_de' => 'nullable|in:1',
+            'tercero_run' => 'required_if:en_nombre_de,1|nullable|string|max:14', 'tercero_nombre' => 'required_if:en_nombre_de,1|nullable|string|max:190', 'tercero_correo' => 'nullable|string|max:190',
+            'tercero_relacion' => ['required_if:en_nombre_de,1', 'nullable', Rule::in(array_keys(Solicitud::RELACIONES))], 'tercero_acreditacion' => 'required_if:en_nombre_de,1|nullable|string|max:500', 'tercero_declara' => 'required_if:en_nombre_de,1|nullable|in:1',
         ], ['detalle.max' => 'El detalle no puede superar los '.self::MAX_DETALLE.' caracteres.', 'consentimiento.required' => 'Indique si consiente o no el tratamiento de sus datos personales.']);
         $tramite = Tramite::query()->with('anexos')->findOrFail($d['tramite_id']);
         $requeridos = [];
@@ -76,11 +80,15 @@ class CiudadanoController extends Controller
         $extras = array_values(array_filter((array) $r->file('extras', [])));
         try {
             // RUN, nombres y apellidos vienen SOLO de la sesión (ClaveÚnica); cualquier valor enviado se ignora.
-            $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras, $d['consentimiento'] === 'si', self::CONSENTIMIENTO_VERSION);
+            $s = $svc->ingresar($c, $tramite, $d['correo'], $d['detalle'], $d['canal_notificacion'], $requeridos, $extras, $d['consentimiento'] === 'si', self::CONSENTIMIENTO_VERSION,
+                ! empty($d['en_nombre_de']) ? ['run' => $d['tercero_run'], 'nombre' => $d['tercero_nombre'], 'correo' => $d['tercero_correo'] ?? null, 'relacion' => $d['tercero_relacion'], 'acreditacion' => $d['tercero_acreditacion'], 'declara' => ! empty($d['tercero_declara'])] : null);
         } catch (FlujoException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
 
+        if ($s->en_nombre_de) {
+            $this->audit->registrar('solicitud.en_nombre_de', 'solicitud', $s->folio, ['relacion' => $s->relacion], false, ['run' => $c['run'], 'rol' => 'ciudadano']);
+        }
         if (! $s->consentimiento_datos) {
             $this->audit->registrar('solicitud.sin_consentimiento', 'solicitud', $s->folio, ['version' => self::CONSENTIMIENTO_VERSION], false, ['run' => $c['run'], 'rol' => 'ciudadano']);
         }

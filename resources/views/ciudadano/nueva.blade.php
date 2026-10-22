@@ -15,6 +15,20 @@
   <div class="form-group col-md-4"><label for="apellidos">Apellidos</label><input class="form-control" id="apellidos" value="{{ $c['apellidos'] }}" readonly></div>
 </div>
 <small id="ayuda-cu" class="form-text text-muted mb-3">Datos obtenidos de ClaveÚnica; no se pueden modificar.</small>
+<div class="custom-control custom-checkbox mb-2"><input class="custom-control-input" type="checkbox" id="en_nombre_de" name="en_nombre_de" value="1" data-alterna-tercero aria-controls="bloque-tercero" @checked(old('en_nombre_de'))><label class="custom-control-label" for="en_nombre_de">Presento esta solicitud <strong>a nombre de otra persona</strong> (a quien represento o ayudo)</label></div>
+<div id="bloque-tercero" class="card card-body mb-3" @unless(old('en_nombre_de')) hidden @endunless>
+  <p class="small text-muted">Los datos de ClaveÚnica de arriba son los suyos, quien presenta. Aquí indique los de la persona a cuyo nombre presenta. Usted será el contacto de la solicitud: las notificaciones le llegarán a usted.</p>
+  <div class="form-row">
+    <div class="form-group col-md-4"><label for="tercero_run">RUN de esa persona</label><input class="form-control" id="tercero_run" name="tercero_run" maxlength="14" value="{{ old('tercero_run') }}" placeholder="12.345.678-5"></div>
+    <div class="form-group col-md-8"><label for="tercero_nombre">Nombre completo de esa persona</label><input class="form-control" id="tercero_nombre" name="tercero_nombre" maxlength="190" value="{{ old('tercero_nombre') }}"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4"><label for="tercero_relacion">Su relación con esa persona</label><select class="form-control" id="tercero_relacion" name="tercero_relacion"><option value="">Elija…</option>@foreach(\App\Models\Solicitud::RELACIONES as $k => $t)<option value="{{ $k }}" @selected(old('tercero_relacion')===$k)>{{ $t }}</option>@endforeach</select></div>
+    <div class="form-group col-md-8"><label for="tercero_correo">Correo de esa persona (opcional)</label><input class="form-control" type="email" id="tercero_correo" name="tercero_correo" maxlength="190" value="{{ old('tercero_correo') }}"></div>
+  </div>
+  <div class="form-group"><label for="tercero_acreditacion">Cómo acredita su representación o relación</label><input class="form-control" id="tercero_acreditacion" name="tercero_acreditacion" maxlength="500" value="{{ old('tercero_acreditacion') }}" aria-describedby="acred-ayuda"><small id="acred-ayuda" class="form-text text-muted">Por ejemplo: «poder simple adjunto», «madre del niño», «tutor designado por el tribunal». Adjunte el documento en <em>Otros anexos</em> si lo tiene; un funcionario(a) lo revisará.</small></div>
+  <div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="tercero_declara" name="tercero_declara" value="1" @checked(old('tercero_declara'))><label class="custom-control-label" for="tercero_declara">Declaro que presento esta solicitud con el conocimiento de esa persona o en su representación, y que los datos que entrego son verdaderos.</label></div>
+</div>
 <div class="form-group"><label for="correo">Correo electrónico</label><input class="form-control" type="email" id="correo" name="correo" value="{{ old('correo') }}" required maxlength="190"></div>
 <div class="form-group"><label for="detalle">Detalle de su solicitud</label><textarea class="form-control" id="detalle" name="detalle" rows="6" required minlength="10" maxlength="{{ \App\Http\Controllers\CiudadanoController::MAX_DETALLE }}" data-contador="{{ \App\Http\Controllers\CiudadanoController::MAX_DETALLE }}" aria-describedby="detalle-cont">{{ old('detalle') }}</textarea>
 <small id="detalle-cont" class="form-text text-muted" data-contador-texto>Máximo {{ number_format(\App\Http\Controllers\CiudadanoController::MAX_DETALLE, 0, ',', '.') }} caracteres.</small></div>

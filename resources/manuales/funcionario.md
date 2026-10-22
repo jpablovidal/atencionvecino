@@ -251,3 +251,23 @@ Al abrir el expediente de una comunicación recibida verá su documento original
 4. La persona derivada ve la tarea en su bandeja, en **Acciones que le derivaron** (las vencidas se marcan), abre el expediente y **actualiza el estado** de la derivación: *En proceso*, *Cumplida* o *Devuelta (no corresponde)*, con una nota (obligatoria al cumplir o devolver). Cada cambio queda como comentario del expediente.
 
 Un(a) superadministrador(a) también puede acusar recibo, cambiar el estado y derivar cualquier expediente; no se asigna el expediente a sí mismo(a) (el responsable es de la unidad receptora).
+
+## Iniciar un expediente de oficio
+Si su cuenta tiene el permiso **«Iniciar expedientes de oficio»** y está asignada a una unidad, en el **Inicio** verá el botón **Iniciar un expediente de oficio**. Sirve para comenzar un procedimiento administrativo que no nace de una solicitud del vecino y que puede concluir en un decreto, un reglamento, un oficio u otro documento.
+1. Indique el **asunto** (una línea), una descripción, **con qué se espera concluir** y el fundamento legal, si lo hay.
+2. El expediente queda **a su cargo, en su unidad**. Desde allí redacta los documentos con las plantillas, los envía a firma, los comunica por DocDigital y lo cierra como cualquier otro expediente.
+
+### Partes y notificación al concluir
+En la sección **Partes y notificación** del expediente registre a quienes interesa o se dirige el procedimiento:
+- **Persona (vecino/a):** nombre, RUN y, según el canal, correo. Se notifica por Casilla Única, correo o entrega física.
+- **Funcionario(a) municipal:** se le notifica con un **aviso interno**: le queda una acción pendiente «Tomar conocimiento» en su inicio.
+- **Persona o entidad externa:** por correo (con enlace de verificación del documento, sin adjuntos) o entrega física.
+- **Organismo público en DocDigital:** búsquelo por nombre en el directorio y, si quiere, elija **personas** de ese organismo. La notificación sale como comunicación oficial por DocDigital.
+
+Con el expediente **cerrado**, marque las partes y los documentos vigentes y pulse **Notificar**. Cada notificación queda con su estado y su evidencia; no se repite una notificación ya hecha y no se puede quitar una parte a la que ya se notificó.
+
+## Despachar por DocDigital a entidades y personas del directorio
+En el expediente, al crear una comunicación elija **Entidad y personas de DocDigital (buscar)**: escriba parte del nombre de la entidad y elíjala; después, si corresponde, elija personas habilitadas de esa entidad. El directorio se carga solo desde DocDigital (ver el manual de administración); si falta una entidad, pida que lo actualicen.
+
+## Solicitudes presentadas a nombre de otra persona
+Cuando un vecino presenta una solicitud **a nombre de otra persona** (representante, apoderado, familiar o quien le ayuda), el expediente muestra **«A nombre de»** con la persona, la relación y la acreditación que declaró. El sistema **no verifica el poder**: revise el documento en los anexos antes de resolver. Las notificaciones llegan a quien presentó la solicitud. Si la solicitud se hizo a nombre suyo, no puede tramitarla (conflicto de interés).

@@ -3,6 +3,7 @@
 @section('contenido')
 <h1>Inicio</h1>
 <p class="lead-sub">Bienvenido(a), <strong>{{ $u->nombreCompleto() }}</strong>@if($u->cargo) · {{ $u->cargo }}@endif.</p>
+@if($u->tienePermiso('expedientes.crear') && $u->operaExpedientes() && $u->unidad_id)<p><a class="btn btn-primary" href="{{ route('app.expediente.nuevo') }}">Iniciar un expediente de oficio</a></p>@endif
 @include('partials.kpis', ['kpis' => $kpis])
 @include('partials.panel', ['panel' => $panel])
 

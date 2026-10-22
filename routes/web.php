@@ -19,6 +19,7 @@ use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\DosFactoresController;
 use App\Http\Controllers\EspacioController;
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\ExpedienteOficioController;
 use App\Http\Controllers\FeriadosController;
 use App\Http\Controllers\FirmasController;
 use App\Http\Controllers\FirmasMasivasController;
@@ -136,6 +137,11 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     Route::post('/solicitudes/{folio}/asignar', [FuncionarioController::class, 'asignar'])->name('asignar');
     Route::get('/solicitudes/{folio}/archivos/{archivo}', [FuncionarioController::class, 'archivoSolicitud'])->name('solicitud.archivo');
 
+    Route::get('/expedientes/nuevo', [ExpedienteOficioController::class, 'nuevo'])->name('expediente.nuevo');
+    Route::post('/expedientes', [ExpedienteOficioController::class, 'crear'])->middleware('throttle:20,1')->name('expediente.crear');
+    Route::post('/expedientes/{expediente}/partes', [ExpedienteOficioController::class, 'agregarParte'])->middleware('throttle:60,1')->name('expediente.partes.agregar');
+    Route::post('/expedientes/{expediente}/partes/{parte}/quitar', [ExpedienteOficioController::class, 'quitarParte'])->whereNumber('parte')->name('expediente.partes.quitar');
+    Route::post('/expedientes/{expediente}/notificar-partes', [ExpedienteOficioController::class, 'notificar'])->middleware('throttle:30,1')->name('expediente.partes.notificar');
     Route::get('/expedientes/{expediente}', [ExpedienteController::class, 'show'])->name('expediente');
     Route::post('/expedientes/{expediente}/metadatos', [ExpedienteController::class, 'metadatos'])->name('expediente.metadatos');
     Route::post('/expedientes/{expediente}/derivaciones/{derivacion}/estado', [ExpedienteController::class, 'estadoDerivacion'])->whereNumber('derivacion')->middleware('throttle:60,1')->name('expediente.derivacion.estado');
@@ -218,8 +224,11 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
 
     // ---- DocDigital: panel de gestión (ver = comunicaciones.ver; probar/sincronizar/reintentar = docdigital.gestionar)
     Route::get('/docdigital', [DocDigitalController::class, 'index'])->middleware('permiso:comunicaciones.ver,docdigital.gestionar')->name('docdigital');
+    Route::get('/docdigital/directorio/buscar', [DocDigitalController::class, 'buscarDirectorio'])->middleware(['permiso:comunicaciones.despachar,docdigital.gestionar', 'throttle:90,1'])->name('docdigital.directorio.buscar');
     Route::middleware('permiso:docdigital.gestionar')->group(function () {
         Route::get('/docdigital/entidades', [DocDigitalController::class, 'entidades'])->middleware('throttle:20,1')->name('docdigital.entidades');
+        Route::get('/docdigital/directorio', [DocDigitalController::class, 'directorio'])->middleware('throttle:60,1')->name('docdigital.directorio');
+        Route::post('/docdigital/directorio/cargar', [DocDigitalController::class, 'cargarDirectorio'])->middleware('throttle:6,1')->name('docdigital.directorio.cargar');
         Route::post('/docdigital/diagnosticar', [DocDigitalController::class, 'diagnosticar'])->middleware('throttle:10,1')->name('docdigital.diagnosticar');
         Route::post('/docdigital/sincronizar', [DocDigitalController::class, 'sincronizar'])->middleware('throttle:6,1')->name('docdigital.sincronizar');
         Route::post('/docdigital/evidencia', [DocDigitalController::class, 'evidencia'])->middleware('throttle:20,1')->name('docdigital.evidencia');

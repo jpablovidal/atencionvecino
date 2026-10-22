@@ -8,7 +8,7 @@ interface DocDigitalClient
      * Despacha un documento firmado (PDF con firma electrónica avanzada) a una entidad destinataria
      * (POST /documentos/firmado/ingresar de DocDigital API v3).
      *
-     * @param  array{asunto:string,destino_codigo:string,destino_nombre?:?string,destino_entidad_id?:?int,origen_codigo:?string,numero:?string,tipo:string,tipo_id?:?int,reservado?:bool,referencia?:?string,anexos?:list<array{nombre:string,bytes:string}>}  $meta
+     * @param  array{asunto:string,destino_codigo:string,destino_nombre?:?string,destino_entidad_id?:?int,destino_usuarios?:list<int>,origen_codigo:?string,numero:?string,tipo:string,tipo_id?:?int,reservado?:bool,referencia?:?string,anexos?:list<array{nombre:string,bytes:string}>}  $meta
      * @return array{id:string,simulado:bool,solicitud_id?:?string,anexos?:list<array{id:?string,nombre:string}>}
      *
      * @throws DocDigitalException

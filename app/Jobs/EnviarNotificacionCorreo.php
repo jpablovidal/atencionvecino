@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\NotificacionParte;
 use App\Mail\NotificacionTramite;
 use App\Mail\RespuestaFinalNotificada;
 use App\Models\Notificacion;
@@ -54,9 +55,11 @@ class EnviarNotificacionCorreo implements ShouldQueue
             return;
         }
         try {
-            $sent = Mail::to($to)->send($n->respuesta_id
-                ? new RespuestaFinalNotificada(RespuestaFinal::query()->with('solicitud', 'expediente')->findOrFail($n->respuesta_id))
-                : new NotificacionTramite(Solicitud::query()->findOrFail($n->solicitud_id)));
+            $sent = Mail::to($to)->send($n->parte_id
+                ? new NotificacionParte($n)
+                : ($n->respuesta_id
+                    ? new RespuestaFinalNotificada(RespuestaFinal::query()->with('solicitud', 'expediente')->findOrFail($n->respuesta_id))
+                    : new NotificacionTramite(Solicitud::query()->findOrFail($n->solicitud_id))));
             $orig = $sent?->getOriginalMessage();
             $id = $orig instanceof Message ? $orig->getHeaders()->getHeaderBody('X-Gmail-Api-Id') : null;
             if (! is_string($id) || $id === '') {

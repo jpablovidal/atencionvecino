@@ -79,6 +79,51 @@ class ExpedienteService
         });
     }
 
+    /**
+     * Expediente iniciado de oficio por un funcionario(a) (sin solicitud ciudadana): comienza un procedimiento administrativo que puede
+     * concluir en un decreto, reglamento, oficio, etc. Queda a cargo de quien lo crea, en su unidad.
+     *
+     * @param  array{asunto:string,descripcion?:?string,resultado?:?string,fundamento?:?string}  $d
+     *
+     * @throws FlujoException
+     */
+    public function crearDeOficio(Usuario $u, array $d): Expediente
+    {
+        if (! $u->unidad_id || ! $u->unidad) {
+            throw new FlujoException('Su cuenta no tiene una unidad asignada: no puede iniciar expedientes.');
+        }
+        $asunto = trim($d['asunto']);
+        if (mb_strlen($asunto) < 5 || mb_strlen($asunto) > 190 || preg_match('/[\r\n]/', $asunto)) {
+            throw new FlujoException('El asunto debe tener entre 5 y 190 caracteres, en una línea.');
+        }
+        $unidad = $u->unidad;
+
+        return DB::transaction(function () use ($u, $d, $asunto, $unidad) {
+            $e = Expediente::query()->create([
+                'codigo' => 'TMP', 'solicitud_id' => null, 'unidad_id' => $unidad->id, 'area_id' => $unidad->area_id, 'responsable_id' => $u->id, 'estado' => 'abierto', 'origen' => 'oficio', 'metadatos' => [],
+            ]);
+            $e->forceFill(['codigo' => sprintf('EXP-%d-%06d', now('America/Santiago')->year, $e->id)])->save();
+            $now = now('America/Santiago')->toIso8601String();
+            $e->forceFill(['metadatos' => [
+                'identificacion' => ['codigo' => $e->codigo, 'identificador_unico' => $this->identificador($e), 'institucion_codigo' => CodificacionService::institucion($e->area_id ?? $unidad->area_id),
+                    'nombre' => $asunto, 'organismo' => 'I. Municipalidad de Santo Domingo', 'unidad' => $unidad->nombre],
+                'descripcion' => ['resumen' => mb_substr(trim((string) ($d['descripcion'] ?? '')) ?: $asunto, 0, 500), 'folio_solicitud' => null],
+                'ubicacion' => (array) config('sgd.ubicacion') + ['codigo_gestor_codigos' => null], // códigos territoriales del Gestor de Códigos: A VALIDAR
+                'temporalidad' => ['fecha_apertura' => $now, 'fecha_apertura_utc' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'fecha_cierre' => null],
+                'caracterizacion' => ['tipo_expediente' => 'Procedimiento iniciado de oficio', 'serie_documental' => null],
+                'relaciones' => ['expedientes_relacionados' => []],
+                'poderes' => ['responsable_run' => $u->run, 'representacion' => 'Órgano de la Administración del Estado'],
+                'seguridad' => ['nivel_acceso' => 'reservado', 'datos_personales' => false],
+                'procedimiento' => ['codigo_cpat' => null, 'codigo_proceso' => null, 'tramite' => 'Procedimiento iniciado de oficio', 'resultado_esperado' => trim((string) ($d['resultado'] ?? '')) ?: null,
+                    'fundamento' => ($f = trim((string) ($d['fundamento'] ?? ''))) !== '' ? mb_substr($f, 0, 500) : null],
+                'version' => ['esquema' => 'MGDEE-A-VALIDAR', 'version_expediente' => 1],
+            ]])->save();
+            $this->audit->registrar('expediente.crear_oficio', 'expediente', $e->id, ['resultado' => $e->metadatos['procedimiento']['resultado_esperado']]);
+
+            return $e;
+        });
+    }
+
     /** Un funcionario de la unidad receptora toma a su cargo un expediente de comunicación recibida. */
     public function asignarResponsable(Expediente $e, Usuario $u): Expediente
     {
@@ -111,7 +156,8 @@ class ExpedienteService
             'temporalidad' => ['fecha_apertura' => $now, 'fecha_apertura_utc' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'fecha_cierre' => null, 'plazo_dias' => $s->tramite->plazo_dias],
             'caracterizacion' => ['tipo_expediente' => 'Solicitud ciudadana', 'serie_documental' => $s->tramite->codigo_interno],
             'relaciones' => ['solicitud_id' => $s->id, 'expedientes_relacionados' => []],
-            'poderes' => ['responsable_run' => null, 'representacion' => 'Titular'],
+            'poderes' => ['responsable_run' => null, 'representacion' => $s->en_nombre_de ? 'Tercero que actúa a nombre del interesado ('.(Solicitud::RELACIONES[$s->relacion] ?? $s->relacion).')' : 'Titular',
+                'interesado_run' => $s->en_nombre_de ? $s->interesado_run : $s->run, 'interesado_nombre' => $s->en_nombre_de ? $s->interesado_nombre : trim($s->nombres.' '.$s->apellidos), 'acreditacion_declarada' => $s->en_nombre_de ? $s->acreditacion : null],
             'seguridad' => ['nivel_acceso' => 'reservado', 'datos_personales' => true],
             'procedimiento' => ['codigo_cpat' => $s->tramite->codigo_cpat, 'codigo_proceso' => $s->tramite->proceso_codigo, 'tramite' => $s->tramite->nombre],
             'version' => ['esquema' => 'MGDEE-A-VALIDAR', 'version_expediente' => 1],

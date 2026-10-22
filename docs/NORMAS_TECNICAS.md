@@ -15,7 +15,7 @@
 | 12 | Norma Técnica de Interoperabilidad | 17-08-2023 | Última versión del 24-12-2025 (modificada por el Decreto 876) | [BCN](https://bcn.cl/OsIA4v) · [Guías](https://wikiguias.digital.gob.cl/Normas/Decreto12) |
 
 ## Resumen
-- Implementado: **20**
+- Implementado: **21**
 - Parcial: **34**
 - Pendiente: **3**
 - Del municipio: **5**
@@ -57,7 +57,7 @@
 |---|---|---|---|---|
 | 3-4, 10 | Usar mecanismos oficiales de autenticación (ClaveÚnica) con integración certificada | Implementado | Ingreso único con ClaveÚnica (OpenID Connect) con las credenciales certificadas por Gobierno Digital; el RUN lo entrega ClaveÚnica y no se puede modificar. | Ingreso |
 | 3 inc. 2 | Otros mecanismos solo con autorización expresa previa de SEGPRES | Parcial | Existe un ingreso alternativo de funcionarios con usuario y contraseña del directorio municipal (no es un mecanismo oficial). Hay que obtener la autorización de SEGPRES o desactivarlo en APIs e integraciones › Directorio. | Directorio › Permitir ingresar con usuario y contraseña |
-| 5 | Clave Tributaria para personas jurídicas | Pendiente | El sistema atiende solo personas naturales con ClaveÚnica; no integra Clave Tributaria (personas jurídicas, apoderados o representantes). |  |
+| 5 | Clave Tributaria para personas jurídicas | Pendiente | El sistema atiende solo personas naturales con ClaveÚnica; no integra Clave Tributaria (personas jurídicas). Una persona natural puede presentar una solicitud a nombre de otra (persona asistida, apoderado o representante) con su propia ClaveÚnica: se registra la relación, la acreditación declarada y una declaración, pero el sistema no verifica el poder. | Formulario del vecino › A nombre de otra persona |
 | 6 | OpenID Connect y OAuth 2.0; factores almacenados cifrados; transmisión con TLS 1.2 o superior | Implementado | Flujo de código con «state» de un solo uso; el sistema no guarda contraseñas ni factores de ClaveÚnica; las comunicaciones usan HTTPS (el TLS lo provee el hosting con AutoSSL). | Ingreso · docs/CLAVEUNICA_BOTON.md |
 | 7 | Prevención de accesos no autorizados: límite de intentos fallidos con bloqueo y desbloqueo | Implementado | ClaveÚnica administra su propio límite; el ingreso por usuario del directorio bloquea tras varios intentos fallidos durante 15 minutos y limita por IP. | Ingreso |
 | 8-9 | Lineamientos gráficos y accesibilidad del proceso de autenticación | Implementado | Botón oficial de ClaveÚnica según el manual de marca; pantalla de ingreso accesible (WCAG). | Ingreso · docs/ACCESIBILIDAD.md |
@@ -87,7 +87,8 @@
 | 27-28 | Incorporar al expediente las comunicaciones oficiales y las notificaciones | Implementado | Las comunicaciones DocDigital (recibidas y enviadas, con acuse) y las notificaciones con su evidencia quedan en el expediente. | Expediente |
 | 30 | Certificado de presentación con firma electrónica: fecha y hora, origen, expediente, órgano, quien presenta y quien recibe | Parcial | El comprobante electrónico incluye fecha y hora (Chile y UTC), origen (formulario web), órgano y su código, identificación de quien presenta, plataforma que recibe y código de verificación con QR; el número de expediente se informa en el seguimiento al tomarse la solicitud. No lleva firma electrónica avanzada institucional. | Comprobante de ingreso |
 | 33 | Enlaces persistentes a documentos | Parcial | Enlace público permanente por código de validación (/validar/{código}); las vinculaciones entre expedientes son internas. | /validar |
-| 35 | Estándares mínimos: control de poderes, roles de acceso a información sensible, copias autorizadas, condiciones del repositorio | Parcial | Roles y permisos por usuario, restricción de expedientes, documentos y archivos sensibles, copias autorizadas con certificado. El control de poderes de apoderados y representantes de personas jurídicas no está implementado. | Roles y permisos · Restringidos · Copias |
+| 3-4, 5-6 | Expedientes del órgano: inicio de oficio o a petición del interesado, con identificador único y metadatos | Implementado | El expediente nace de una solicitud, de una comunicación recibida por DocDigital o de oficio por un funcionario(a) con permiso (con partes y notificación al concluir), con identificador único y metadatos. | Iniciar un expediente de oficio |
+| 35 | Estándares mínimos: control de poderes, roles de acceso a información sensible, copias autorizadas, condiciones del repositorio | Parcial | Roles y permisos por usuario, restricción de expedientes, documentos y archivos sensibles, copias autorizadas con certificado. Las solicitudes a nombre de otra persona registran la relación y la acreditación declarada, que un funcionario(a) revisa; no hay un registro verificado de poderes ni de representantes de personas jurídicas. | Roles y permisos · Restringidos · Copias · Solicitud a nombre de otra persona |
 | 37 | Registro de accesos a documentos con datos sensibles (usuario, fecha y hora, documentos) y perfiles que impidan ver datos de otras partes | Implementado | Cada apertura de un documento sensible o restringido queda registrada y el panel «Datos personales (DPO)» y «Accesos a restringidos» los listan con quién, cuándo y qué. | Datos personales (DPO) · Accesos a restringidos |
 | 38-40 | Guías técnicas, gradualidad y revisión de la norma cada 2 años | Del municipio | Las guías técnicas las dicta la División de Gobierno Digital; la revisión periódica de esta matriz es parte del Ciclo de Calidad del municipio. |  |
 

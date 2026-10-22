@@ -32,7 +32,7 @@ class ExpedientePolicy
     /** Conflicto de interés: quien solicitó el trámite como vecino(a) no lo tramita como funcionario(a) (lo ve en «Mis solicitudes»). */
     private function esSuyo(Usuario $u, Expediente $e): bool
     {
-        return $e->solicitud !== null && $e->solicitud->run === $u->run;
+        return $e->solicitud !== null && ($e->solicitud->run === $u->run || $e->solicitud->interesado_run === $u->run); // también si la solicitud se hizo a su nombre
     }
 
     private function participa(Usuario $u, Expediente $e): bool

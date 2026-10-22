@@ -27,7 +27,7 @@ class EspacioController extends Controller
         $porAsignar = 0;
         if ($u->operaExpedientes()) {
             $pend = DocumentoPaso::query()->where('usuario_id', $u->id)->where('estado', 'pendiente')->whereHas('documento', fn ($d) => $d->where('estado', 'en_flujo'))->count();
-            $porAsignar = Solicitud::query()->where('estado', 'ingresada')->whereNull('expediente_id')->where('run', '!=', $u->run)
+            $porAsignar = Solicitud::query()->where('estado', 'ingresada')->whereNull('expediente_id')->where('run', '!=', $u->run)->where(fn ($w) => $w->whereNull('interesado_run')->orWhere('interesado_run', '!=', $u->run))
                 ->whereHas('tramite.unidades', fn ($q) => $q->where('unidades.id', $u->unidad_id))->count();
         }
 

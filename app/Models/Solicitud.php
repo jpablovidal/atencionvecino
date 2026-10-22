@@ -29,7 +29,16 @@ class Solicitud extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['prorrogada_en' => 'datetime', 'consentimiento_datos' => 'boolean', 'consentimiento_en' => 'datetime'];
+    protected $casts = ['prorrogada_en' => 'datetime', 'consentimiento_datos' => 'boolean', 'consentimiento_en' => 'datetime', 'en_nombre_de' => 'boolean', 'declaracion_en' => 'datetime'];
+
+    /** Relación de quien presenta con la persona a cuyo nombre actúa. */
+    public const RELACIONES = ['apoderado' => 'Apoderado(a) con poder', 'representante_legal' => 'Representante legal', 'tutor' => 'Tutor(a) o curador(a)', 'familiar' => 'Familiar', 'asistente' => 'Persona que le asiste o ayuda', 'otra' => 'Otra'];
+
+    /** Solicitudes que tocan a esta persona: las que presentó y aquellas hechas a su nombre por un tercero. */
+    public function scopeDePersona($q, string $run)
+    {
+        return $q->where(fn ($w) => $w->where('run', $run)->orWhere('interesado_run', $run));
+    }
 
     /** @return BelongsTo<Tramite, $this> */
     public function tramite(): BelongsTo

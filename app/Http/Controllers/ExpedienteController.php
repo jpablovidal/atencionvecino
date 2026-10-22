@@ -65,6 +65,7 @@ class ExpedienteController extends Controller
             'referenciadoPor' => ExpedienteVinculo::query()->with('expediente')->where('tipo', 'expediente')->where('origen_expediente_id', $expediente->id)->get()->filter(fn ($vv) => $r->user()->can('ver', $vv->expediente))->values(),
             'decretoPago' => DecretoPago::query()->where('expediente_id', $expediente->id)->where('estado', 'abierto')->first(),
             'copias' => $expediente->archivos->whereNotNull('vinculo_id'),
+            'partes' => $expediente->partes()->get(), 'funcionariosPartes' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
         ]);
     }
 

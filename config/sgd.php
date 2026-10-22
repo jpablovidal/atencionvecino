@@ -213,6 +213,8 @@ return [
         'max_bytes' => 20 * 1024 * 1024, // la especificación admite hasta 20 MB en el archivo principal
         'max_bytes_anexo' => 50 * 1024 * 1024, // y hasta 50 MB por anexo
         'max_anexos' => (int) env('DOCDIGITAL_MAX_ANEXOS', 10), // anexos por comunicación (enviados y recibidos)
+        'directorio_usuarios' => env('DOCDIGITAL_DIRECTORIO_USUARIOS', 'todos'), // personas que se cargan del directorio: todos | propia (solo esta municipalidad)
+        'directorio_horas' => (int) env('DOCDIGITAL_DIRECTORIO_HORAS', 24), // cada cuántas horas se refresca el directorio completo
     ],
 
     // Validación pública

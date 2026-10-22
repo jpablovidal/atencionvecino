@@ -7,6 +7,8 @@ use App\Jobs\EnviarComunicacionDocDigital;
 use App\Models\Archivo;
 use App\Models\ComunicacionAnexo;
 use App\Models\ComunicacionOficial;
+use App\Models\DocDigitalEntidad;
+use App\Models\DocDigitalUsuario;
 use App\Models\Documento;
 use App\Models\Expediente;
 use App\Models\Institucion;
@@ -48,8 +50,38 @@ class ComunicacionService
     }
 
     /** @param list<int> $archivoIds archivos del expediente que se envían como anexos (máx. DOCDIGITAL_MAX_ANEXOS) */
-    public function crearSaliente(Expediente $e, Documento $d, string $institucionCodigo, string $asunto, Usuario $u, array $archivoIds = []): ComunicacionOficial
+    public function crearSaliente(Expediente $e, Documento $d, string $institucionCodigo, string $asunto, Usuario $u, array $archivoIds = [], array $usuarioIds = []): ComunicacionOficial
     {
+        $inst = $this->codificador->institucionActiva($institucionCodigo);
+        if (! $inst) {
+            throw new FlujoException('La institución destinataria no existe en el Codificador.');
+        }
+
+        return $this->crearComun($e, $d, ['codigo' => $inst->codigo, 'nombre' => $inst->nombre, 'entidad_id' => null], $asunto, $u, $archivoIds, $usuarioIds);
+    }
+
+    /**
+     * Comunicación saliente a una entidad del directorio de DocDigital (y, si se indica, a personas habilitadas de esa entidad).
+     * Si la entidad corresponde a una institución del Codificador, se usa esa institución.
+     *
+     * @param  list<int>  $archivoIds
+     * @param  list<int>  $usuarioIds  ids de personas en DocDigital (docdigital_usuarios.usuario_id)
+     */
+    public function crearSalienteEntidad(Expediente $e, Documento $d, int $entidadId, string $asunto, Usuario $u, array $archivoIds = [], array $usuarioIds = []): ComunicacionOficial
+    {
+        $ent = DocDigitalEntidad::query()->where('entidad_id', $entidadId)->where('vigente', true)->first();
+        if (! $ent) {
+            throw new FlujoException('La entidad no figura en el directorio de DocDigital (actualícelo desde el panel de DocDigital).');
+        }
+        $inst = Institucion::query()->where('docdigital_entidad_id', $entidadId)->where('activo', true)->first();
+
+        return $this->crearComun($e, $d, ['codigo' => $inst?->codigo, 'nombre' => $inst?->nombre ?? $ent->nombre, 'entidad_id' => $entidadId], $asunto, $u, $archivoIds, $usuarioIds);
+    }
+
+    /** @param array{codigo:?string,nombre:string,entidad_id:?int} $dest */
+    private function crearComun(Expediente $e, Documento $d, array $dest, string $asunto, Usuario $u, array $archivoIds, array $usuarioIds): ComunicacionOficial
+    {
+        $personas = $this->validarPersonas($usuarioIds, $dest['entidad_id'] ?? Institucion::query()->where('codigo', (string) $dest['codigo'])->value('docdigital_entidad_id'));
         $archivos = $this->validarAnexos($e, $u, $archivoIds);
         $asunto = trim($asunto);
         if (mb_strlen($asunto) < 3 || mb_strlen($asunto) > 190 || preg_match('/[\r\n]/', $asunto)) {
@@ -58,31 +90,51 @@ class ComunicacionService
         if ($d->expediente_id !== $e->id || $d->estado !== 'vigente') {
             throw new FlujoException('Solo se comunican documentos vigentes del expediente.');
         }
-        $inst = $this->codificador->institucionActiva($institucionCodigo);
-        if (! $inst) {
-            throw new FlujoException('La institución destinataria no existe en el Codificador.');
-        }
         if ($this->modoApi() && config('sgd.docdigital.mode') !== 'mock' && ! $d->pdf_firmado_ruta) {
             throw new FlujoException('DocDigital exige un PDF con firma electrónica avanzada; este documento no tiene firma real (¿firma simulada?).');
         }
-        $dup = ComunicacionOficial::query()->where('direccion', 'saliente')->where('documento_id', $d->id)->where('institucion_codigo', $inst->codigo)->whereIn('estado', ['pendiente', 'enviada'])->exists();
+        $dup = ComunicacionOficial::query()->where('direccion', 'saliente')->where('documento_id', $d->id)->whereIn('estado', ['pendiente', 'enviada'])
+            ->when($dest['entidad_id'], fn ($q) => $q->where('destino_entidad_id', $dest['entidad_id']), fn ($q) => $q->where('institucion_codigo', $dest['codigo']))->exists();
         if ($dup) {
             throw new FlujoException('Ya existe una comunicación de este documento a esa institución.');
         }
         $origen = $e->origen === 'docdigital' ? ComunicacionOficial::query()->where('id', $e->comunicacion_id)->first() : null;
         $c = ComunicacionOficial::query()->create([
-            'responde_a_id' => $origen?->id, 'direccion' => 'saliente', 'expediente_id' => $e->id, 'documento_id' => $d->id, 'institucion_codigo' => $inst->codigo, 'institucion_nombre' => $inst->nombre,
-            'asunto' => $asunto, 'estado' => 'pendiente', 'creado_por' => $u->id, 'unidad_id' => $e->unidad_id,
+            'responde_a_id' => $origen?->id, 'direccion' => 'saliente', 'expediente_id' => $e->id, 'documento_id' => $d->id, 'institucion_codigo' => $dest['codigo'], 'institucion_nombre' => $dest['nombre'], 'destino_entidad_id' => $dest['entidad_id'],
+            'destino_usuarios' => $personas ? json_encode($personas, JSON_UNESCAPED_UNICODE) : null, 'asunto' => $asunto, 'estado' => 'pendiente', 'creado_por' => $u->id, 'unidad_id' => $e->unidad_id,
         ]);
         foreach ($archivos as $a) {
             ComunicacionAnexo::query()->create(['comunicacion_id' => $c->id, 'archivo_id' => $a->id, 'nombre' => $a->nombre_original, 'estado' => 'pendiente', 'tamano' => $a->tamano]);
         }
-        $this->audit->registrar('docdigital.crear', 'comunicacion', $c->id, ['destino' => $inst->codigo, 'documento' => $d->id, 'anexos' => count($archivos)]);
+        $this->audit->registrar('docdigital.crear', 'comunicacion', $c->id, ['destino' => $dest['codigo'] ?? ('entidad '.$dest['entidad_id']), 'documento' => $d->id, 'anexos' => count($archivos), 'personas' => count($personas)]);
         if ($this->modoApi()) {
             EnviarComunicacionDocDigital::dispatch($c->id);
         }
 
         return $c;
+    }
+
+    /**
+     * Personas de DocDigital a las que se dirige el despacho además de la entidad: deben figurar vigentes en el directorio y pertenecer a la entidad destinataria.
+     *
+     * @param  list<int|string>  $ids
+     * @return list<array{id:int,nombre:string}>
+     */
+    private function validarPersonas(array $ids, mixed $entidadId): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn ($i) => $i > 0)));
+        if (! $ids) {
+            return [];
+        }
+        if (count($ids) > 20) {
+            throw new FlujoException('Puede dirigir el documento a hasta 20 personas.');
+        }
+        $f = DocDigitalUsuario::query()->whereIn('usuario_id', $ids)->where('vigente', true)->get();
+        if ($f->count() !== count($ids) || ! $entidadId || $f->contains(fn ($p) => (int) $p->entidad_id !== (int) $entidadId)) {
+            throw new FlujoException('Las personas destinatarias deben estar habilitadas en DocDigital y pertenecer a la entidad destinataria.');
+        }
+
+        return $f->map(fn ($p) => ['id' => (int) $p->usuario_id, 'nombre' => $p->nombre])->values()->all();
     }
 
     /**
@@ -134,7 +186,8 @@ class ComunicacionService
             $filasAnexo = ComunicacionAnexo::query()->with('archivo')->where('comunicacion_id', $c->id)->orderBy('id')->get();
             $anexos = $filasAnexo->filter(fn ($x) => $x->archivo)->map(fn ($x) => ['nombre' => $x->archivo->nombre_original, 'bytes' => $this->vault->get($x->archivo->ruta, $x->archivo->sha256)])->values()->all(); // verifica integridad
             $r = $this->client->enviar($pdf, 'documento-'.$d->numero.'-'.$d->anio.'.pdf', [
-                'asunto' => $c->asunto, 'destino_codigo' => (string) $c->institucion_codigo, 'destino_nombre' => $inst?->nombre ?? $c->institucion_nombre, 'destino_entidad_id' => $inst?->docdigital_entidad_id,
+                'asunto' => $c->asunto, 'destino_codigo' => (string) ($c->institucion_codigo ?? ''), 'destino_nombre' => $inst?->nombre ?? $c->institucion_nombre, 'destino_entidad_id' => $c->destino_entidad_id ?: $inst?->docdigital_entidad_id,
+                'destino_usuarios' => array_map(fn ($p) => (int) $p['id'], (array) json_decode((string) $c->destino_usuarios, true)),
                 'origen_codigo' => CodificacionService::institucion(), 'numero' => $d->numeroFormateado(), 'tipo' => $d->tipo->nombre, 'reservado' => (bool) ($d->sensible || $d->restringido), 'anexos' => $anexos,
                 'referencia' => $c->responde_a_id ? ComunicacionOficial::query()->where('id', $c->responde_a_id)->value('evidencia') : null, // A VALIDAR
             ]);

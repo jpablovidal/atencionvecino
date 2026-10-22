@@ -24,6 +24,7 @@
     <form method="post" action="{{ route('app.docdigital.reintentar') }}" class="mb-2" data-confirm="¿Reintentar los envíos fallidos (hasta 20)?">@csrf<button class="btn btn-outline-secondary">Reintentar envíos fallidos</button></form>
   </div>
   @endif
+  @if($puedeGestionar)<p class="small mb-2"><a href="{{ route('app.docdigital.directorio') }}">Directorio de DocDigital</a>: entidades y personas habilitadas, cargadas automáticamente.</p>@endif
   @if($puedeGestionar)<p class="small mb-2"><a href="{{ route('app.docdigital.entidades') }}">Buscar entidades de DocDigital y sus ids</a> (necesarias para enviar documentos a otras instituciones).</p>@endif
   @if($diagnostico)
   <div class="mt-2" role="status"><h3 class="h6">Resultado del diagnóstico</h3>

@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Exceptions\FlujoException;
 use App\Models\ComunicacionOficial;
 use App\Models\DocDigitalEvidencia;
+use App\Models\DocDigitalUsuario;
+use App\Models\Usuario;
 use App\Services\AuditoriaService;
 use App\Services\Interop\ComunicacionService;
 use App\Services\Interop\DocDigital\DocDigitalException;
 use App\Services\Interop\DocDigital\EvidenciaService;
 use App\Services\Interop\DocDigital\HttpDocDigitalClient;
 use App\Services\Interop\DocDigitalDashboardService;
+use App\Services\Interop\DocDigitalDirectorioService;
 use App\Services\Interop\DocDigitalEstado;
 use Illuminate\Http\Request;
 
@@ -90,6 +93,59 @@ class DocDigitalController extends Controller
         $this->audit->registrar('docdigital.buscar_entidades', null, null, ['modo' => $modo]);
 
         return view('app.docdigital_entidades', ['q' => $d['q'] ?? '', 'filas' => $filas, 'error' => $error]);
+    }
+
+    /** Directorio local de DocDigital: entidades y personas habilitadas (se carga solo; aquí se ve el estado y se puede forzar). */
+    public function directorio(Request $r, DocDigitalDirectorioService $dir)
+    {
+        $f = $r->validate(['q' => 'nullable|string|max:100', 'ver' => 'nullable|in:entidades,personas,propias']);
+        $ver = $f['ver'] ?? 'propias';
+        $q = trim((string) ($f['q'] ?? ''));
+        $propia = (int) (config('sgd.docdigital.entidad_id') ?: 0);
+        $filas = match ($ver) {
+            'entidades' => $dir->buscarEntidades($q, 50),
+            'personas' => $dir->buscarPersonas($q, null, 50),
+            default => $propia ? $dir->buscarPersonas($q, $propia, 50) : $dir->buscarPersonas($q, null, 50)->filter(fn ($p) => $p->roles),
+        };
+        $enlaces = [];
+        if ($ver !== 'entidades') {
+            foreach (Usuario::query()->where('activo', true)->get(['id', 'run', 'nombres', 'apellidos']) as $u) {
+                $h = DocDigitalUsuario::huella((string) $u->run);
+                if ($h) {
+                    $enlaces[$h] = $u;
+                }
+            }
+        }
+        $this->audit->registrar('docdigital.directorio_ver', null, null, ['vista' => $ver, 'q' => $q !== '']);
+
+        return view('app.docdigital_directorio', ['res' => $dir->resumen(), 'ver' => $ver, 'q' => $q, 'filas' => $filas, 'enlaces' => $enlaces, 'modoApi' => $dir->modoApi(), 'roles' => DocDigitalUsuario::ROLES]);
+    }
+
+    public function cargarDirectorio(Request $r, DocDigitalDirectorioService $dir)
+    {
+        if (! $dir->modoApi()) {
+            return back()->with('error', 'DocDigital no está en modo DemoDoc ni Producción: no hay directorio que cargar.');
+        }
+        $res = $dir->cargar(20, $r->boolean('forzar'));
+        $this->audit->registrar('docdigital.directorio_cargar', null, null, ['forzar' => $r->boolean('forzar'), 'completo' => $res['completo']]);
+        if ($res['error']) {
+            return back()->with('error', 'No fue posible cargar el directorio: '.$res['error']);
+        }
+
+        return back()->with('ok', $res['completo'] ? 'El directorio de DocDigital está al día.' : 'Carga en curso (fase: '.$res['fase'].'). Continúa sola cada 10 minutos hasta completarse.');
+    }
+
+    /** Búsqueda para elegir destinatarios al despachar: entidades o personas habilitadas. */
+    public function buscarDirectorio(Request $r, DocDigitalDirectorioService $dir)
+    {
+        $d = $r->validate(['tipo' => 'required|in:entidad,persona', 'q' => 'required|string|min:2|max:100', 'entidad' => 'nullable|integer|min:1']);
+        if ($d['tipo'] === 'entidad') {
+            $f = $dir->buscarEntidades($d['q'], 15)->map(fn ($e) => ['id' => $e->entidad_id, 'texto' => $e->nombre, 'detalle' => $e->organismo_nombre]);
+        } else {
+            $f = $dir->buscarPersonas($d['q'], isset($d['entidad']) ? (int) $d['entidad'] : null, 15)->map(fn ($p) => ['id' => $p->usuario_id, 'texto' => $p->nombre, 'detalle' => trim(($p->cargo ?: '').' · '.($p->entidad_nombre ?: ''), ' ·')]);
+        }
+
+        return response()->json($f->values())->header('Cache-Control', 'no-store');
     }
 
     public function sincronizar(Request $r, ComunicacionService $svc)

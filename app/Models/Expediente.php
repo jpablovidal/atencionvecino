@@ -48,6 +48,12 @@ class Expediente extends Model
         return $this->belongsTo(Usuario::class, 'responsable_id');
     }
 
+    /** @return HasMany<ExpedienteParte, $this> */
+    public function partes(): HasMany
+    {
+        return $this->hasMany(ExpedienteParte::class)->orderBy('id');
+    }
+
     /** @return HasMany<Documento, $this> */
     public function documentos(): HasMany
     {
