@@ -35,7 +35,7 @@ class AccesibilidadTest extends TestCase
         $micro = app(ArchivoMunicipalService::class)->crear($archivista, ['titulo' => 'Decretos 2020', 'tipo_soporte' => 'digital']);
         $h = [
             'inicio' => $this->get('/'), 'ingreso' => $this->get('/ingreso'), 'publico' => $this->get('/publico'), 'catalogo' => $this->get('/tramites'), 'catalogo-ficha' => $this->get('/tramites/1/permiso-de-edificacion'), 'validar-form' => $this->get('/validar'),
-            'validar' => $this->get('/validar/'.$doc->codigo_validacion), 'accesibilidad' => $this->get('/accesibilidad'), 'ayuda' => $this->get('/ayuda'),
+            'validar' => $this->get('/validar/'.$doc->codigo_validacion), 'accesibilidad' => $this->get('/accesibilidad'), 'ayuda' => $this->get('/ayuda/ciudadano'), 'ayuda-indice' => $this->comoFuncionario($this->usuario('funcionario'))->get('/ayuda'),
             'ciudadano' => $this->comoCiudadano()->get('/ciudadano'), 'nueva' => $this->comoCiudadano()->get('/ciudadano/nueva/1'), 'solicitud' => $this->comoCiudadano()->get("/ciudadano/solicitudes/{$s->folio}"),
             'bandeja' => $this->comoFuncionario($dom)->get('/app'), 'expediente' => $this->comoFuncionario($dom)->get("/app/expedientes/{$e->id}"),
             'documento' => $this->comoFuncionario($dom)->get("/app/documentos/{$doc->id}"), 'vigentes' => $this->comoFuncionario($dom)->get('/app/vigentes'),
@@ -245,7 +245,7 @@ class AccesibilidadTest extends TestCase
         }
         $this->get('/ayuda/inexistente')->assertNotFound();
         $this->get('/ayuda/../../.env')->assertNotFound();
-        $this->get('/ayuda')->assertSee('manuales')->assertSee('Ciudadano');
+        $this->get('/ayuda/ciudadano')->assertSee('Ciudadano');
     }
 
     public function test_el_renderizador_elimina_html_y_enlaces_peligrosos(): void
@@ -263,7 +263,7 @@ class AccesibilidadTest extends TestCase
 
     public function test_cada_perfil_ve_el_enlace_a_su_manual(): void
     {
-        $this->comoCiudadano()->get('/ayuda')->assertSee('Ir a mi manual: Ciudadano');
+        $this->comoCiudadano()->get('/ayuda')->assertRedirect(route('ayuda.manual', 'ciudadano')); // los vecinos van directo a su manual
         foreach (['admin' => 'Administrador', 'auditor' => 'Auditor', 'alcalde' => 'Alcalde', 'secretario' => 'Secretario', 'funcionario' => 'Funcionario'] as $rol => $n) {
             $this->flushSession();
             $this->app['auth']->forgetGuards();

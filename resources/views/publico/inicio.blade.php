@@ -17,6 +17,7 @@
   <li><strong>{{ $direcciones->count() }}</strong> {{ $direcciones->count() === 1 ? 'dirección municipal' : 'direcciones municipales' }}</li>
   <li>Ingreso seguro con <strong>ClaveÚnica</strong></li>
 </ul>
+<p class="mt-2 mb-0"><button type="button" class="btn btn-sm btn-outline-light" data-recorrido>Hacer el recorrido guiado de esta página</button></p>
 @endsection
 @section('contenido')
 @if($destacados->isNotEmpty())
@@ -70,7 +71,7 @@
     <a href="{{ route('login') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-folder"/></svg></span><strong>Mis solicitudes</strong><small>Ingrese con ClaveÚnica y siga el estado de lo que ha presentado.</small></a>
     <a href="{{ route('validar.form') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-check-circle"/></svg></span><strong>Validar un documento</strong><small>Compruebe su autenticidad con el código SDD.</small></a>
     <a href="{{ route('publico.listado') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-file-text"/></svg></span><strong>Documentos públicos</strong><small>Decretos, ordenanzas y otros documentos vigentes.</small></a>
-    <a href="{{ route('ayuda') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-help"/></svg></span><strong>Ayuda y manuales</strong><small>Guías paso a paso y declaración de accesibilidad.</small></a>
+    <a href="{{ route('ayuda.manual', 'ciudadano') }}"><span class="portal-ico" aria-hidden="true"><svg class="sgd-ico" focusable="false"><use href="#i-help"/></svg></span><strong>Manual del ciudadano</strong><small>Guía paso a paso para hacer sus trámites y declaración de accesibilidad.</small></a>
   </div>
 </section>
 

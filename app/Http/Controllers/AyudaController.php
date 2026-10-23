@@ -16,6 +16,9 @@ class AyudaController extends Controller
     public function indice()
     {
         $u = auth()->user();
+        if (! $u) { // público y vecinos: solo el manual del ciudadano
+            return redirect()->route('ayuda.manual', 'ciudadano');
+        }
         $vecino = (bool) session('ciudadano') && (! $u || Espacio::dual());
         $permitidos = ManualRenderer::perfilesPara($u, $vecino);
         $perfiles = array_intersect_key(ManualRenderer::PERFILES, array_flip($permitidos));
@@ -28,7 +31,8 @@ class AyudaController extends Controller
     {
         $u = auth()->user();
         if (! in_array($perfil, ManualRenderer::perfilesPara($u, (bool) session('ciudadano') && (! $u || Espacio::dual())), true) && isset(ManualRenderer::PERFILES[$perfil])) {
-            return redirect()->route('ayuda')->with('error', 'Ese manual corresponde a otro perfil. Aquí están los manuales de su perfil.');
+            return $u ? redirect()->route('ayuda')->with('error', 'Ese manual corresponde a otro perfil. Aquí están los manuales de su perfil.')
+                : redirect()->route('ayuda.manual', 'ciudadano')->with('aviso', 'Los demás manuales de usuario son para el personal municipal. Aquí está el manual del ciudadano.');
         }
         $m = $r->render($perfil);
         abort_if($m === null, 404);

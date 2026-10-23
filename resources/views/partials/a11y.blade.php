@@ -12,7 +12,7 @@
         <button type="button" data-a11y-toggle="links" data-nombre="Enlaces subrayados" aria-pressed="false">Subrayar enlaces</button>
         <button type="button" data-a11y-toggle="motion" data-nombre="Sin animaciones" aria-pressed="false">Sin animaciones</button>
         <button type="button" id="a11y-reset">Restablecer</button></span>
-      <span class="grupo"><a href="{{ route('accesibilidad') }}">Declaración de accesibilidad</a><a href="{{ route('ayuda') }}">Ayuda y manuales</a></span>
+      <span class="grupo"><a href="{{ route('accesibilidad') }}">Declaración de accesibilidad</a><a href="{{ \App\Support\ManualRenderer::ayudaUrl() }}">{{ \App\Support\ManualRenderer::ayudaEtiqueta() }}</a></span>
     </div></div>
   </details>
 </div>

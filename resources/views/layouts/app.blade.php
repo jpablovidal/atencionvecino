@@ -38,7 +38,7 @@
   <p class="sgd-login-titulo">{{ $marca['header']['subtitulo'] !== '' ? $marca['header']['subtitulo'] : $marca['header']['titulo'] }}</p>
   @include('partials.a11y')
   </header>
-  <nav id="navegacion" class="sgd-login-nav" aria-label="Navegación principal" tabindex="-1"><a href="{{ route('inicio') }}">Inicio</a><a href="{{ route('catalogo') }}">Trámites y servicios</a><a href="{{ route('ayuda') }}">Ayuda</a></nav>
+  <nav id="navegacion" class="sgd-login-nav" aria-label="Navegación principal" tabindex="-1"><a href="{{ route('inicio') }}">Inicio</a><a href="{{ route('catalogo') }}">Trámites y servicios</a><a href="{{ \App\Support\ManualRenderer::ayudaUrl() }}">Ayuda</a></nav>
 @else
 <header class="sgd-header">
   <div class="sgd-topbar">
@@ -54,13 +54,13 @@
         <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ session('ciudadano.nombres') }} {{ session('ciudadano.apellidos') }}</span></summary>
           <div class="sgd-user-panel"><p class="mb-1">RUN {{ session('ciudadano.run') }}</p><p class="small mb-2">Ciudadano(a)@if($dual ?? false) · espacio vecino(a)@endif</p>
             @if($dual ?? false)<p class="mb-2"><a class="btn btn-sm btn-primary btn-block" href="{{ route('app.bandeja') }}">Ir a mi trabajo (funcionario)</a></p>@endif
-            <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ route('ayuda') }}">Manuales de usuario</a></li></ul>
+            <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ auth()->check() ? route('ayuda') : route('ayuda.manual', 'ciudadano') }}">{{ auth()->check() ? 'Manuales de usuario' : 'Manual del ciudadano' }}</a></li></ul>
             <form method="post" action="{{ route('salir') }}">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @elseif(auth()->check())
         <details class="sgd-user"><summary><span class="sgd-user-nombre">{{ auth()->user()->nombreCompleto() }}</span></summary>
           <div class="sgd-user-panel"><p class="mb-1">{{ auth()->user()->rol }}@if(auth()->user()->cargo) · {{ auth()->user()->cargo }}@endif</p>
             @if($dual ?? false)<p class="mb-1"><a class="btn btn-sm btn-primary btn-block" href="{{ route('ciudadano.index') }}">Ir a mis trámites (vecino/a)</a></p>@endif
-            <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ route('ayuda') }}">Manuales de usuario</a></li></ul>
+            <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ auth()->check() ? route('ayuda') : route('ayuda.manual', 'ciudadano') }}">{{ auth()->check() ? 'Manuales de usuario' : 'Manual del ciudadano' }}</a></li></ul>
             <form method="post" action="{{ route('salir') }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @else
         @include('partials.boton_claveunica', ['href' => route('ingreso'), 'oscuro' => true])
@@ -111,7 +111,7 @@
     @empty
       <li class="list-inline-item"><a href="{{ route('accesibilidad') }}">Accesibilidad</a></li>
       <li class="list-inline-item"><a href="{{ route('privacidad') }}">Privacidad y datos personales</a></li>
-      <li class="list-inline-item"><a href="{{ route('ayuda') }}">Ayuda y manuales</a></li>
+      <li class="list-inline-item"><a href="{{ \App\Support\ManualRenderer::ayudaUrl() }}">{{ \App\Support\ManualRenderer::ayudaEtiqueta() }}</a></li>
       <li class="list-inline-item"><a href="{{ route('publico.listado') }}">Documentos públicos</a></li>
       <li class="list-inline-item"><a href="{{ route('validar.form') }}">Validar un documento</a></li>
     @endforelse

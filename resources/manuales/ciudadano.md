@@ -107,8 +107,10 @@ En **Mis solicitudes** y en el detalle de cada solicitud ve el **número de soli
 - En **Mis solicitudes** verá «Lo más buscado» para iniciar un trámite y el historial de sus solicitudes. Cada solicitud muestra su estado, la dirección responsable, la fecha de la última actualización y, en secciones plegables, sus **movimientos**, devoluciones y documentos notificados.
 - El formulario de cada trámite muestra primero qué documentos debe adjuntar, el plazo y quién lo atiende; luego se completa en 3 pasos (sus datos, documentos y cómo desea ser notificado) con una revisión antes de enviar. Los formatos y el peso máximo que acepta los define el municipio y se muestran en el propio formulario.
 
-## Recorrido guiado y manuales
-En el menú de su nombre (arriba a la derecha) encontrará **Recorrido guiado**, una presentación paso a paso de este portal, y **Manuales de usuario**, con los manuales que corresponden a su perfil. El recorrido se muestra solo la primera vez y puede repetirlo cuando quiera.
+## Recorrido guiado y manual
+El **recorrido guiado** no abre una ventana aparte: se muestra **sobre la pantalla real**, resaltando cada parte con una tarjeta de instrucciones, y lo lleva por las pantallas que va a usar (su inicio, la lista de trámites, la ficha de un trámite y el formulario). Para iniciarlo, abra el menú de su nombre (arriba a la derecha) y elija **Recorrido guiado**; si aún no ingresó, use el botón «Hacer el recorrido guiado de esta página» de la portada. Avance con **Siguiente**, vuelva con **Anterior** o cierre con **Cerrar el recorrido** o la tecla Esc. Se ofrece solo la primera vez y puede repetirlo cuando quiera.
+
+El **Manual del ciudadano** (este documento) está en el pie de página y en el menú de su nombre. Los demás manuales de usuario son solo para el personal municipal.
 
 ## Presentar una solicitud a nombre de otra persona
 Si usted presenta la solicitud para alguien a quien representa o ayuda (por ejemplo, su madre, un hijo o una persona que no puede hacer el trámite sola), marque **«Presento esta solicitud a nombre de otra persona»** en el formulario. Indique el RUN y el nombre de esa persona, su relación con ella y cómo la acredita (poder, parentesco, tutela). Adjunte el documento en **Otros anexos** si lo tiene y declare que actúa con su conocimiento o en su representación.

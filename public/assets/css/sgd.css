@@ -524,3 +524,19 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .sgd-tabla-azul thead th{background:#006fb3;color:#fff;border-color:#005a92;white-space:nowrap;vertical-align:middle}
 .sgd-tabla-azul thead th a{color:#fff;text-decoration:none}.sgd-tabla-azul thead th a:hover,.sgd-tabla-azul thead th a:focus{text-decoration:underline}
 .sgd-tabla-azul td{vertical-align:middle}.sgd-tabla-azul tbody tr:nth-child(even){background:#f6f9fc}
+
+/* ---- Recorrido guiado sobre la pantalla real: resalta el elemento y muestra una tarjeta con las instrucciones */
+.sgd-rec-foco { position: absolute; z-index: 1090; pointer-events: none; border-radius: 6px; outline: 3px solid #ffbf47; outline-offset: 0; box-shadow: 0 0 0 9999px rgba(10, 19, 45, .38); transition: top .2s, left .2s, width .2s, height .2s; }
+.sgd-rec-tarjeta { position: absolute; z-index: 1100; width: 380px; max-width: calc(100vw - 24px); background: #fff; color: #17233b; border: 2px solid #0a132d; border-radius: 8px; padding: 14px 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.sgd-rec-tarjeta.sgd-rec-fija { position: fixed; top: auto; left: auto; right: 16px; bottom: 16px; }
+.sgd-rec-tarjeta[hidden], .sgd-rec-foco[hidden] { display: none; }
+.sgd-rec-cab { display: flex; justify-content: space-between; gap: 8px; font-size: .75rem; margin: 0 0 6px; color: #4a5568; text-transform: uppercase; letter-spacing: .02em; }
+.sgd-rec-barra { display: block; width: 100%; height: 6px; margin-bottom: 10px; }
+.sgd-rec-titulo { font-size: 1.1rem; margin: 0 0 6px; color: #0a132d; }
+.sgd-rec-titulo:focus { outline: 2px solid #0b5aa8; outline-offset: 2px; }
+.sgd-rec-texto { font-size: .95rem; line-height: 1.45; margin: 0 0 10px; }
+.sgd-rec-acciones { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sgd-rec-manual { display: inline-block; margin-top: 8px; font-size: .8rem; }
+@media (max-width: 767px) { .sgd-rec-tarjeta { width: auto; left: 12px; right: 12px; bottom: 12px; } .sgd-rec-tarjeta.sgd-rec-fija { left: 12px; right: 12px; } }
+@media (prefers-reduced-motion: reduce) { .sgd-rec-foco { transition: none; } }
+@media print { .sgd-rec-foco, .sgd-rec-tarjeta { display: none !important; } }

@@ -264,7 +264,7 @@ El superadministrador puede abrir todas las vistas del sistema, crear usuarios y
 El menú **Datos personales (DPO)** (permiso «Ver las solicitudes cuyo titular no autorizó el tratamiento de sus datos personales») lista las solicitudes según lo que el titular indicó al enviar: *no autoriza*, *autoriza* o *sin dato* (anteriores a esta función). El RUN se muestra enmascarado. En cada expediente afectado aparece además un aviso para quienes lo tramitan.
 
 ## 17. Recorrido guiado y manuales por perfil
-Cada persona ve en **Manuales de usuario** solo los manuales de su perfil (el superadministrador los ve todos) y puede iniciar el **Recorrido guiado** desde el menú de su nombre.
+Los manuales de usuario son para el personal municipal: cada persona ve en **Manuales de usuario** solo los de su perfil (el superadministrador los ve todos). El público general y los vecinos ven únicamente el **Manual del ciudadano**, enlazado desde la portada, el pie de página y su menú. El **Recorrido guiado** (menú de su nombre) se muestra sobre la pantalla real, resaltando cada elemento con instrucciones y llevando por las pantallas del perfil; no abre una ventana aparte.
 
 ## 18. Varios roles por usuario y matriz de permisos
 Cada persona tiene un **rol principal** (el que se elige en su ficha; fija el rol base y las reglas de seguridad) y puede tener **roles adicionales**. Sus permisos son la **unión** de los de todos sus roles. En **Matriz de permisos por usuario** (menú de administración, permiso «Roles y permisos») se ve la lista de personas con su rol principal, roles adicionales, cantidad de permisos efectivos y ajustes individuales; *Descargar la matriz completa (CSV)* entrega una fila por usuario y una columna por permiso (queda registrado en la auditoría).

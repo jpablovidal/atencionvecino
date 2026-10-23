@@ -46,10 +46,10 @@ class ManualRenderer
      */
     public static function perfilesPara(?Usuario $u, bool $esVecino): array
     {
-        $ok = ['publico'];
-        if ($esVecino) {
-            $ok[] = 'ciudadano';
+        if (! $u) {
+            return ['ciudadano']; // el público y los vecinos ven solo el manual del ciudadano: los demás manuales son para el personal municipal
         }
+        $ok = ['publico', 'ciudadano'];
         if ($u) {
             if ($u->veTodo()) {
                 return array_keys(self::PERFILES);
@@ -67,6 +67,17 @@ class ManualRenderer
         }
 
         return array_values(array_filter(array_keys(self::PERFILES), fn ($k) => in_array($k, $ok, true)));
+    }
+
+    /** Dirección de la ayuda: el personal ve todos los manuales de su perfil; el público y los vecinos, directamente el manual del ciudadano. */
+    public static function ayudaUrl(): string
+    {
+        return auth()->check() ? route('ayuda') : route('ayuda.manual', 'ciudadano');
+    }
+
+    public static function ayudaEtiqueta(): string
+    {
+        return auth()->check() ? 'Ayuda y manuales' : 'Manual del ciudadano';
     }
 
     /** Manual del espacio activo (para el recorrido guiado). */

@@ -241,7 +241,9 @@ En **DocDigital** verá, además del estado de la conexión, un panel con las co
 Al ingresar su solicitud, el vecino(a) indica si autoriza el tratamiento de sus datos personales. Si **no lo autoriza**, igual se tramita, pero el expediente muestra un **aviso amarillo** en la parte superior: trate solo los datos estrictamente necesarios para resolver el trámite y avise al Oficial de Protección de Datos (DPO) si necesita usarlos para otro fin. Quien tenga el permiso de Datos personales puede ver el listado en el menú **Datos personales (DPO)**.
 
 ## Recorrido guiado y manuales
-En el menú de su nombre están **Recorrido guiado** (se muestra la primera vez y puede repetirlo) y **Manuales de usuario**, que lista solo los manuales de su perfil.
+En el menú de su nombre están **Recorrido guiado** y **Manuales de usuario**, que lista solo los manuales de su perfil (los manuales son para el personal municipal: el público y los vecinos solo ven el Manual del ciudadano).
+
+El recorrido guiado se muestra **sobre su pantalla real**, sin ventana aparte: resalta cada parte (los indicadores de la bandeja, el menú lateral, un expediente, las partes y la notificación) con una tarjeta de instrucciones y lo lleva por las pantallas que corresponden. Avance con **Siguiente**, vuelva con **Anterior** o cierre con Esc. Se ofrece la primera vez y puede repetirlo cuando quiera.
 
 ## Gestionar una comunicación recibida por DocDigital
 Al abrir el expediente de una comunicación recibida verá su documento original, sus firmas y el **acuse de recibo**:

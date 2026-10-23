@@ -35,5 +35,5 @@
 <h2 class="h4">Reportar una barrera o pedir apoyo</h2>
 <p>Si encuentra una barrera de accesibilidad o necesita la información en otro formato, escriba a <a href="mailto:{{ $contacto }}">{{ $contacto }}</a> o acuda a la oficina de atención presencial del municipio. Indique la dirección de la página, el problema y su tecnología de apoyo. Responderemos a la brevedad (plazo A VALIDAR por la Municipalidad). Mientras tanto, todos los trámites pueden realizarse de forma presencial.</p>
 
-<p><a href="{{ route('ayuda') }}">Ver manuales de usuario</a></p>
+<p><a href="{{ \App\Support\ManualRenderer::ayudaUrl() }}">{{ auth()->check() ? 'Ver manuales de usuario' : 'Ver el manual del ciudadano' }}</a></p>
 @endsection
