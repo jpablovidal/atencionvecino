@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `01a6d4a1da435d290022f39ffc8e5a40c4ffadfede502231a87ab69eeaf0c47c`).
+- Archivo **`sgd-release.zip`** (SHA-256 `2ace14cbcfb298c1eb14acd72bac6ee530687d81765863c8b058f4bf6fc7f857`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,12 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: permisos personalizados, Administrador Municipal y bandeja Por firmar / Por visar
+- **Permisos personalizados:** en el detalle de cada persona y en la asignación masiva se puede conceder **cualquier permiso** (salvo los reservados al sistema), aunque su rol no lo incluya. Nadie puede concederse a sí mismo permisos fuera de su rol. Se registra «fuera de rol» en la bitácora.
+- **Selección:** casilla por persona y botones «marcar la página», «marcar lo que coincide con el filtro» y «desmarcar todo»; 25 a 200 personas por página; acceso desde *Usuarios*.
+- **Administrador Municipal:** nuevo perfil del sistema, como el Alcalde pero de menor rango (panel de Alcaldía, opera, visa y firma lo asignado; sin firma como alcalde, delegaciones ni cuatro permisos sensibles por defecto). **Una migración nueva** crea el rol; el comando de actualización es el mismo.
+- **Bandeja:** el Inicio separa **Por firmar** y **Por visar** (columnas con contador y acceso por lote).
 
 ## Novedades: asignación masiva de personas y formularios del vecino más modernos
 - **Asignación masiva** (*Administración → Asignación masiva de personas*, permiso «Roles y permisos»): lista a todas las personas, incluidas las del directorio; filtre y marque, y asigne en lote **dirección** (con departamento/unidad), **rol principal**, **roles adicionales**, **permisos** (conceder, denegar, quitar el ajuste; las pantallas del menú siguen a los permisos) o **activar/desactivar**. Cada persona se valida con las reglas de siempre; las que no se pueden modificar se omiten y se indica por qué. Hasta 500 por operación; queda en la bitácora.
