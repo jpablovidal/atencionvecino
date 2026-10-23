@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AnunciosController;
+use App\Http\Controllers\AsignacionMasivaController;
 use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ArchivoMunicipalController;
@@ -447,6 +448,8 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
         });
         Route::middleware('permiso:roles.gestionar')->group(function () {
             Route::get('/permisos', [PermisosUsuarioController::class, 'indice'])->name('permisos');
+            Route::get('/asignacion', [AsignacionMasivaController::class, 'indice'])->name('asignacion');
+            Route::post('/asignacion', [AsignacionMasivaController::class, 'aplicar'])->middleware('throttle:20,1')->name('asignacion.aplicar');
             Route::get('/permisos/matriz.csv', [PermisosUsuarioController::class, 'csv'])->middleware('throttle:10,1')->name('permisos.csv');
             Route::get('/permisos/{usuario}', [PermisosUsuarioController::class, 'detalle'])->whereNumber('usuario')->name('permisos.usuario');
             Route::post('/permisos/{usuario}', [PermisosUsuarioController::class, 'guardar'])->whereNumber('usuario')->name('permisos.guardar');

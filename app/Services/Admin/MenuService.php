@@ -57,6 +57,7 @@ class MenuService
             'usuarios' => $i('Usuarios', 'app.admin.index:usuarios', 'app/admin/usuarios*', ['app'], 'mantenedores.gestionar', $a, 110),
             'cumplimiento' => $i('Cumplimiento normativo', 'app.admin.cumplimiento', 'app/admin/cumplimiento*', ['app'], 'cumplimiento.ver', $a, 118),
             'permisos_usuarios' => $i('Matriz de permisos por usuario', 'app.admin.permisos', 'app/admin/permisos*', ['app'], 'roles.gestionar', $a, 116),
+            'asignacion' => $i('Asignación masiva de personas', 'app.admin.asignacion', 'app/admin/asignacion*', ['app'], 'roles.gestionar', $a, 117),
             'roles' => $i('Roles y permisos', 'app.admin.roles', 'app/admin/roles*', ['app'], 'roles.gestionar', $a, 115),
             'tramites' => $i('Trámites y servicios', 'app.tramites.index', 'app/tramites*', ['app'], 'tramites.gestionar', $a, 120),
             'datospersonales' => $i('Datos personales (DPO)', 'app.datospersonales', 'app/datos-personales*', ['app'], 'datospersonales.ver', $s, 306),
@@ -112,7 +113,7 @@ class MenuService
         'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
-        'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help', 'datospersonales' => 'shield', 'permisos_usuarios' => 'users', 'cumplimiento' => 'file-check',
+        'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help', 'datospersonales' => 'shield', 'permisos_usuarios' => 'users', 'asignacion' => 'users', 'cumplimiento' => 'file-check',
     ];
 
     public const DESCRIPCIONES = [
@@ -120,6 +121,7 @@ class MenuService
         'transparencia' => 'Consultas de acceso a la información: gestión, plazos, prórrogas y derivaciones.', 'transp_activa' => 'Calendario mensual de publicaciones obligatorias.', 'transp_plazos' => 'Feriados y parámetros de los plazos de transparencia.', 'transp_reportes' => 'Reportes de transparencia pasiva y activa, exportables.', 'transp_req' => 'Requerimientos de información dirigidos a su dirección.',
         'restringidos' => 'Quién vio o intentó ver expedientes, documentos y archivos restringidos.',
         'cumplimiento' => 'Normas técnicas (Decretos 8 a 12): matriz de cumplimiento, política de gestión documental, plataformas y plan de mejora.',
+        'asignacion' => 'Muestre a todas las personas y asigne dirección, roles, permisos y estado de forma masiva.',
         'permisos_usuarios' => 'Roles y permisos de cada persona: agregue roles, conceda o quite permisos y descargue la matriz.',
         'datospersonales' => 'Solicitudes cuyo titular no autorizó el tratamiento de sus datos personales.',
         'pagos_config' => 'Correlativo propio y firmantes del decreto de pago y del egreso.',

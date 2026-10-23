@@ -540,3 +540,17 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 @media (max-width: 767px) { .sgd-rec-tarjeta { width: auto; left: 12px; right: 12px; bottom: 12px; } .sgd-rec-tarjeta.sgd-rec-fija { left: 12px; right: 12px; } }
 @media (prefers-reduced-motion: reduce) { .sgd-rec-foco { transition: none; } }
 @media print { .sgd-rec-foco, .sgd-rec-tarjeta { display: none !important; } }
+
+/* ---- Asignación masiva ---- */
+.masiva-panel{border-left:4px solid var(--sgd-primario,#0f69c4)}
+.masiva-opcion{margin:.5rem 0 1rem;padding:.75rem 1rem;background:rgba(15,105,196,.05);border-radius:.5rem;animation:sgd-entra .25s ease both}
+.masiva-opcion[hidden]{display:none}
+.masiva-grupo{margin-bottom:.5rem}
+.masiva-grupo>summary{cursor:pointer;font-weight:600;padding:.25rem 0}
+.masiva-perm{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem 1rem;padding:.35rem 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.masiva-perm[hidden]{display:none}
+.masiva-perm-op label{margin:0 .75rem 0 0;font-weight:400;white-space:nowrap}
+.masiva-tabla tr{transition:background-color .15s ease}
+.masiva-tabla tr.masiva-sel{background:rgba(15,105,196,.09)}
+@keyframes sgd-entra{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.masiva-opcion{animation:none}.masiva-tabla tr{transition:none}}
