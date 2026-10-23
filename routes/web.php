@@ -47,6 +47,7 @@ use App\Http\Controllers\SeguimientoController;
 use App\Http\Controllers\SeguridadController;
 use App\Http\Controllers\SesionesController;
 use App\Http\Controllers\SistemaController;
+use App\Http\Controllers\SubroganciasController;
 use App\Http\Controllers\TramitesController;
 use App\Http\Controllers\TransparenciaController;
 use App\Http\Controllers\UsuariosController;
@@ -206,6 +207,11 @@ Route::prefix('app')->middleware(['funcionario', 'nostore'])->name('app.')->grou
     });
     Route::get('/diagnostico', [SeguridadController::class, 'diagnostico'])->middleware('permiso:diagnostico.ver')->name('diagnostico');
 
+    Route::middleware('permiso:subrogancias.gestionar')->group(function () {
+        Route::get('/subrogancias', [SubroganciasController::class, 'indice'])->name('subrogancias');
+        Route::post('/subrogancias', [SubroganciasController::class, 'crear'])->middleware('throttle:30,1')->name('subrogancias.crear');
+        Route::post('/subrogancias/{subrogancia}/terminar', [SubroganciasController::class, 'terminar'])->whereNumber('subrogancia')->name('subrogancias.terminar');
+    });
     Route::get('/delegaciones', [MantenedorController::class, 'delegaciones'])->middleware('permiso:delegaciones.ver')->name('delegaciones');
     Route::post('/delegaciones', [MantenedorController::class, 'crearDelegacion'])->middleware('permiso:delegaciones.crear')->name('delegaciones.crear');
     Route::post('/delegaciones/{delegacion}/revocar', [MantenedorController::class, 'revocarDelegacion'])->middleware('permiso:delegaciones.crear')->name('delegaciones.revocar');

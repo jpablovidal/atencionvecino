@@ -68,6 +68,7 @@ class Permisos
             'archivo.certificar' => ['Certificar microformas (registrar el acta del ministro de fe) o devolverlas a borrador', 'Archivo municipal', $op, false, []],
             'archivo.disposicion' => ['Autorizar la disposición (eliminación o transferencia) de los documentos originales', 'Archivo municipal', ['alcalde', 'secretario'], false, []],
             'llm.usar' => ['Usar el asistente de redacción con IA', 'Documentos', $op],
+            'subrogancias.gestionar' => ['Administrar las subrogancias: quién reemplaza a un funcionario(a) ausente entre fechas y horas y gestiona sus expedientes mientras dure', 'Expedientes', [...self::OP, 'admin'], false, ['admin', 'alcalde', 'secretario', 'adm_municipal']],
             'delegaciones.ver' => ['Ver delegaciones de firma', 'Firma', ['alcalde', 'admin', 'auditor']],
             'delegaciones.crear' => ['Crear y revocar delegaciones de firma', 'Firma', ['alcalde'], true],
             'seguridad.ver' => ['Ver panel de seguridad', 'Seguridad', ['admin', 'auditor']],

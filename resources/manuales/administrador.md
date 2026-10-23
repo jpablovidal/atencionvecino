@@ -313,3 +313,12 @@ Cada fila tiene su casilla (marque una por una). Los botones **Marcar las N de e
 
 ## Perfil «Administrador Municipal»
 Rol del sistema, **como el Alcalde pero de menor rango**: supervisa con el *Panel de Alcaldía*, opera expedientes, redacta, visa y firma lo que se le asigne (requiere estar habilitado(a) para firmar), consulta el seguimiento y gestiona las comunicaciones. A diferencia del Alcalde **no firma como alcalde** (solo con una delegación vigente), **no crea delegaciones**, no autoriza la disposición de originales y **no recibe por defecto** los permisos de gestionar restringidos, exportar metadatos de expedientes, ver decretos de pago ni consultar PISEE; si una persona los necesita, se le conceden individualmente en *Permisos de cada persona* o en la asignación masiva. Se asigna como rol principal como cualquier otro.
+
+## Subrogancias
+En *Subrogancias* (`/app/subrogancias`, permiso `subrogancias.gestionar`; por defecto administración, alcalde, secretario y administrador municipal) se registra quién **reemplaza a un funcionario(a) ausente entre dos fechas y horas**.
+
+1. Elija al **titular** (quien se ausenta), a quien lo **subroga**, el **desde** y el **hasta** (fecha y hora, horario de Chile continental) y, si quiere, el motivo.
+2. Mientras la subrogancia esté **vigente**, el subrogante ve en su Inicio la sección *Expedientes que subroga* con los expedientes abiertos que el titular tiene a su cargo (es responsable o se le derivaron), puede abrirlos y **gestionarlos** (comentar, cargar archivos, derivar, redactar documentos) y recibe las **acciones derivadas** al titular, que puede informar. El expediente muestra el aviso «Usted gestiona este expediente como subrogante de…».
+3. Al llegar la hora de término el acceso se **cierra solo**. También puede **Terminar ahora** una vigente o **Cancelar** una programada.
+
+Reglas: titular y subrogante deben ser personas activas que gestionan expedientes y distintas; el término debe ser posterior al inicio y futuro; máximo 366 días; un titular no puede tener dos subrogancias que se crucen. La subrogancia **no entrega las firmas ni visaciones** del titular (son personales; para firmar por otra persona use una delegación de firma), **ni el acceso a expedientes restringidos** (se autoriza aparte) y no se encadena. Crear y terminar quedan en la auditoría.

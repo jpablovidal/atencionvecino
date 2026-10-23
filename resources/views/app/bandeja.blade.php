@@ -46,6 +46,15 @@
 
 @include('partials.accesos')
 
+@if($titulares->isNotEmpty())
+<h2 class="seccion" id="subrogando">Expedientes que subroga</h2>
+@foreach($titulares as $t)@php $sg = \App\Models\Subrogancia::query()->vigentes()->where('subrogante_id', $u->id)->where('titular_id', $t->id)->first(); @endphp
+<div class="alert alert-info" role="note">Usted subroga a <strong>{{ $t->nombreCompleto() }}</strong>@if($sg) hasta el <strong>{{ $sg->hasta->format('d-m-Y H:i') }}</strong>@endif: mientras dure, sus expedientes están en su bandeja.</div>@endforeach
+<div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Expedientes que subroga</caption><thead><tr><th scope="col">Expediente</th><th scope="col">Trámite</th><th scope="col">Titular</th></tr></thead><tbody>
+@forelse($subrogados as $e)<tr><td><a href="{{ route('app.expediente',$e) }}">{{ $e->codigo }}</a></td><td>{{ $e->solicitud?->tramite->nombre ?? 'Comunicación oficial (DocDigital)' }}</td><td>{{ $titulares->firstWhere('id', $e->responsable_id)?->nombreCompleto() ?? 'Derivado a quien subroga' }}</td></tr>
+@empty<tr><td colspan="3">Por ahora no hay expedientes abiertos a cargo de la persona que subroga.</td></tr>@endforelse</tbody></table></div>
+@endif
+
 @if($u->operaExpedientes())
 <h2 class="seccion">Mis expedientes</h2>
 <div class="table-responsive"><table class="table table-sm"><caption class="sr-only">Mis expedientes</caption><thead><tr><th scope="col">Expediente</th><th scope="col">Trámite</th><th scope="col">Estado</th></tr></thead><tbody>

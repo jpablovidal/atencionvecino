@@ -16,6 +16,7 @@ use App\Models\Notificacion;
 use App\Models\PiseeConsulta;
 use App\Models\PiseeServicio;
 use App\Models\Plantilla;
+use App\Models\Subrogancia;
 use App\Models\TipoDocumento;
 use App\Models\Unidad;
 use App\Models\Usuario;
@@ -27,10 +28,12 @@ use App\Services\Firma\ArchivoFirmaService;
 use App\Services\MovimientoService;
 use App\Services\NotificacionService;
 use App\Services\SolicitudService;
+use App\Services\SubroganciaService;
 use App\Services\TransparenciaService;
 use App\Support\Plazos;
 use App\Support\UploadValidator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
 class ExpedienteController extends Controller
@@ -51,6 +54,7 @@ class ExpedienteController extends Controller
             'plantillas' => Plantilla::query()->visiblesPara($r->user())->where('activo', true)->orderBy('nombre')->get(),
             'usuarios' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
             'puedeOperar' => $r->user()->can('operar', $expediente),
+            'subrogando' => $this->subrogando($r->user(), $expediente),
             'servicios' => PiseeServicio::query()->where('activo', true)->orderBy('nombre')->get(),
             'consultas' => PiseeConsulta::query()->with(['servicio', 'usuario'])->where('expediente_id', $expediente->id)->orderByDesc('id')->get(),
             'comunicaciones' => ComunicacionOficial::query()->with(['documento', 'anexos'])->where('expediente_id', $expediente->id)->orderByDesc('id')->get(),
@@ -67,6 +71,16 @@ class ExpedienteController extends Controller
             'copias' => $expediente->archivos->whereNotNull('vinculo_id'),
             'partes' => $expediente->partes()->get(), 'funcionariosPartes' => Usuario::query()->where('activo', true)->operadores()->orderBy('apellidos')->get(),
         ]);
+    }
+
+    /** Subrogancias vigentes por las que esta persona gestiona el expediente (vacío si lo gestiona por derecho propio). */
+    private function subrogando(Usuario $u, Expediente $e): Collection
+    {
+        if (($u->unidad_id && $u->unidad_id === $e->unidad_id) || $e->responsable_id === $u->id) {
+            return collect();
+        }
+
+        return Subrogancia::query()->vigentes()->with('titular')->where('subrogante_id', $u->id)->get();
     }
 
     /** Estado de restricción del expediente y autorizaciones (solo para quien puede administrarlas). */
@@ -165,7 +179,7 @@ class ExpedienteController extends Controller
     public function estadoDerivacion(Request $r, Expediente $expediente, Derivacion $derivacion)
     {
         abort_unless($derivacion->expediente_id === $expediente->id && $derivacion->estado !== null, 404);
-        abort_unless($r->user()->id === $derivacion->a_usuario_id || $r->user()->esSuperadmin(), 403);
+        abort_unless($r->user()->id === $derivacion->a_usuario_id || app(SubroganciaService::class)->subrogaA($r->user(), $derivacion->a_usuario_id) || $r->user()->esSuperadmin(), 403);
         $d = $r->validate(['estado' => ['required', Rule::in(['en_proceso', 'cumplida', 'devuelta'])], 'nota' => 'nullable|string|max:1000']);
         if (! $derivacion->abierta()) {
             return back()->with('error', 'Esta derivación ya está '.mb_strtolower(Derivacion::ESTADOS[$derivacion->estado]).'.');

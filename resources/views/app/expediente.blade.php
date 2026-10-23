@@ -4,6 +4,7 @@
 <div class="d-flex justify-content-between"><h1>Expediente {{ $e->codigo }}</h1>
 <div><span class="estado estado-{{ $e->estado }}">{{ $e->estado }}</span> <a class="btn btn-sm btn-outline-primary" href="{{ route('app.expediente.exportar',$e) }}">Exportar metadatos (JSON)</a></div></div>
 @php $m=$e->metadatos; $s=$e->solicitud; @endphp
+@foreach($subrogando as $sg)<div class="alert alert-info" role="note">Usted gestiona este expediente como <strong>subrogante de {{ $sg->titular->nombreCompleto() }}</strong> hasta el {{ $sg->hasta->format('d-m-Y H:i') }}.</div>@endforeach
 @if($s && $s->consentimiento_datos === false)<div class="alert alert-warning" role="note"><strong>El titular no autorizó el tratamiento de sus datos personales</strong> ({{ $s->consentimiento_en?->timezone('America/Santiago')->format('d-m-Y H:i') }}). Trate solo los datos estrictamente necesarios para resolver el trámite y avise al Oficial de Protección de Datos (DPO) si necesita usarlos para otro fin.</div>@endif
 @if($entrante)
 <div class="card border-info mb-3"><div class="card-body">

@@ -52,6 +52,7 @@ class MenuService
             'casilla' => $i('Casilla Única', 'app.casilla', 'app/casilla*', ['app'], 'notificaciones.gestionar,casilla.gestionar', null, 33),
             'archivo' => $i('Archivo municipal', 'app.archivo.index', 'app/archivo*', ['app'], 'archivo.ver', null, 45),
             'docdigital' => $i('DocDigital', 'app.docdigital', 'app/docdigital*', ['app'], 'comunicaciones.ver,docdigital.gestionar', null, 32),
+            'subrogancias' => $i('Subrogancias', 'app.subrogancias', 'app/subrogancias*', ['app'], 'subrogancias.gestionar', null, 41),
             'delegaciones' => $i('Delegaciones de firma', 'app.delegaciones', 'app/delegaciones*', ['app'], 'delegaciones.ver', null, 40),
             'unidades' => $i('Unidades', 'app.admin.index:unidades', 'app/admin/unidades*', ['app'], 'mantenedores.gestionar', $a, 100),
             'usuarios' => $i('Usuarios', 'app.admin.index:usuarios', 'app/admin/usuarios*', ['app'], 'mantenedores.gestionar', $a, 110),
@@ -110,7 +111,7 @@ class MenuService
     /** Ícono (símbolo del sprite `partials.iconos`) y descripción breve de cada ítem del sistema, para el menú lateral y el inicio. */
     public const ICONOS = [
         'espacio' => 'switch', 'archivos_cfg' => 'database', 'produccion' => 'wrench', 'areas' => 'building', 'codificacion' => 'hash', 'seguimiento' => 'search', 'feriados' => 'clock', 'anuncios' => 'bell', 'respuestas' => 'send', 'pagos' => 'file-check', 'firmas' => 'pen', 'alcaldia' => 'activity', 'pagos_tablero' => 'activity', 'pagos_prov' => 'search', 'pagos_config' => 'file-check', 'restringidos' => 'shield', 'transparencia' => 'book', 'transp_activa' => 'globe', 'transp_plazos' => 'clock', 'transp_reportes' => 'file-text', 'transp_req' => 'send', 'oirs' => 'clock', 'inicio' => 'home', 'bandeja' => 'home', 'catalogo' => 'clipboard', 'publico' => 'file-text', 'validar' => 'check-circle', 'mis_solicitudes' => 'folder',
-        'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'unidades' => 'building', 'usuarios' => 'users',
+        'vigentes' => 'file-check', 'formatos' => 'layout', 'comunicaciones' => 'mail', 'delegaciones' => 'pen', 'subrogancias' => 'users', 'unidades' => 'building', 'usuarios' => 'users',
         'roles' => 'shield', 'archivo' => 'archive', 'docdigital' => 'send', 'casilla' => 'inbox', 'tramites' => 'clipboard', 'tipos' => 'tag', 'plantillas' => 'file-text', 'folios' => 'hash', 'firmas' => 'pen', 'instituciones' => 'sitemap',
         'procesos' => 'branch', 'codificador' => 'book', 'pisee' => 'link', 'api' => 'link', 'repositorio' => 'database', 'apariencia' => 'palette', 'menu' => 'menu',
         'seguridad' => 'shield', 'logs' => 'activity', 'sesiones' => 'monitor', 'conexiones' => 'globe', 'recursos' => 'cpu', 'componentes' => 'package', 'diagnostico' => 'wrench', 'ayuda' => 'help', 'datospersonales' => 'shield', 'permisos_usuarios' => 'users', 'asignacion' => 'users', 'cumplimiento' => 'file-check',
@@ -135,7 +136,7 @@ class MenuService
         'feriados' => 'Feriados y días no laborables que no cuentan como días administrativos en los plazos.',
         'espacio' => 'Elija si trabaja como funcionario(a) o realiza trámites como vecino(a).',
         'vigentes' => 'Decretos, oficios y demás documentos firmados y vigentes.', 'casilla' => 'Notificaciones a la ciudadanía por Casilla Única: pendientes, evidencia y reintentos.', 'docdigital' => 'Estado de la conexión, comunicaciones recibidas y enviadas, sincronización y reintentos.', 'archivo' => 'Microformas del archivo municipal: registro, certificación y custodia.', 'formatos' => 'Formatos y plantillas disponibles para su dirección.',
-        'comunicaciones' => 'Comunicaciones oficiales recibidas y enviadas por DocDigital.', 'delegaciones' => 'Delegaciones de firma del alcalde.',
+        'comunicaciones' => 'Comunicaciones oficiales recibidas y enviadas por DocDigital.', 'delegaciones' => 'Delegaciones de firma del alcalde.', 'subrogancias' => 'Reemplazos entre fechas y horas: quién gestiona los expedientes de un funcionario ausente.',
         'tramites' => 'Cree y publique los trámites y servicios de su dirección.', 'usuarios' => 'Altas, roles y direcciones de las personas usuarias.',
         'roles' => 'Roles personalizados y permisos.', 'plantillas' => 'Editor de plantillas con visibilidad por dirección.', 'apariencia' => 'Logo, colores, encabezado y pie.',
         'seguridad' => 'Bitácora de auditoría, incidentes y verificación de la cadena.', 'logs' => 'Registro de eventos con filtros y exportación.', 'conexiones' => 'Mapa y ranking de las conexiones al sistema.',

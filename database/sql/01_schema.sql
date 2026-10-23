@@ -864,4 +864,18 @@ delete from `roles` where `sistema` = 1 and `clave` in ('administrador_municipal
 
 insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('adm_municipal', 'Administrador Municipal', 'Supervisa la gestión municipal con el panel de Alcaldía, visa y firma lo que se le asigne y opera expedientes; es como el Alcalde pero de menor rango: no firma como alcalde ni crea delegaciones.', 'adm_municipal', 1, 1, '2025-12-23 00:00:00', '2025-12-23 00:00:00');
 
+create table `subrogancias` (`id` bigint unsigned not null auto_increment primary key, `titular_id` bigint unsigned not null, `subrogante_id` bigint unsigned not null, `desde` datetime not null, `hasta` datetime not null, `motivo` varchar(250) null, `activo` tinyint(1) not null default '1', `terminada_en` datetime null, `terminada_por` bigint unsigned null, `creado_por` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci' engine = InnoDB;
+
+alter table `subrogancias` add constraint `subrogancias_titular_id_foreign` foreign key (`titular_id`) references `usuarios` (`id`);
+
+alter table `subrogancias` add constraint `subrogancias_subrogante_id_foreign` foreign key (`subrogante_id`) references `usuarios` (`id`);
+
+alter table `subrogancias` add constraint `subrogancias_terminada_por_foreign` foreign key (`terminada_por`) references `usuarios` (`id`);
+
+alter table `subrogancias` add constraint `subrogancias_creado_por_foreign` foreign key (`creado_por`) references `usuarios` (`id`);
+
+alter table `subrogancias` add index `subrogancias_subrogante_id_activo_desde_hasta_index`(`subrogante_id`, `activo`, `desde`, `hasta`);
+
+alter table `subrogancias` add index `subrogancias_titular_id_activo_desde_hasta_index`(`titular_id`, `activo`, `desde`, `hasta`);
+
 SET FOREIGN_KEY_CHECKS = 1;

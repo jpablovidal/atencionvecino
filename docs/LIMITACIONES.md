@@ -272,3 +272,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - Conceder a una persona un permiso fuera de su rol le abre la **función** (pantalla y acción), pero las reglas de datos siguen siendo las de siempre (alcance por dirección, conflicto de interés, restringidos, firma que exige estar habilitado(a)). Quedan marcados «fuera de rol» en la bitácora. Esto puede debilitar la separación de funciones (por ejemplo, auditoría con permisos de operación): es una decisión de quien administra roles.
 - «Administrador Municipal» tiene un conjunto por defecto definido por este equipo (como el Alcalde, sin cuatro permisos y sin delegaciones); el municipio debe confirmar ese conjunto y ajustarlo con permisos individuales.
 - La separación «Por firmar / Por visar» muestra solo los documentos cuyo turno ya llegó a la persona; los que esperan a otro paso no aparecen hasta entonces.
+
+## Subrogancia
+- La subrogancia da acceso a los expedientes que el titular tiene a cargo **al momento de consultar**: si el titular deja de tenerlos (otra persona pasa a ser responsable), el subrogante deja de verlos. Las acciones quedan registradas a nombre del subrogante; el expediente muestra el aviso, pero no hay un campo «en subrogancia de» en cada comentario.
+- No traspasa firmas, visaciones ni expedientes restringidos, ni las solicitudes nuevas por asignar de la dirección del titular (esas siguen llegando a quienes pertenecen a la dirección). No avisa por correo al inicio ni al término.
+- Probada con datos de demostración, no con un caso real del municipio.

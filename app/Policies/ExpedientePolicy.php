@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Expediente;
 use App\Models\Usuario;
+use App\Services\SubroganciaService;
 
 class ExpedientePolicy
 {
@@ -40,10 +41,26 @@ class ExpedientePolicy
         if ($u->unidad_id && $u->unidad_id === $e->unidad_id) {
             return true;
         }
-        if ($e->responsable_id === $u->id || $e->derivaciones()->where('a_usuario_id', $u->id)->exists()) {
+        if ($this->aCargoDe($u->id, $e)) {
+            return true;
+        }
+        // subrogancia vigente: lo que el titular tiene a su cargo (no toda su unidad)
+        foreach (app(SubroganciaService::class)->idsTitulares($u) as $titularId) {
+            if ($this->aCargoDe($titularId, $e)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Es responsable del expediente, se le derivó o tiene un paso de documento en él. */
+    private function aCargoDe(int $usuarioId, Expediente $e): bool
+    {
+        if ($e->responsable_id === $usuarioId || $e->derivaciones()->where('a_usuario_id', $usuarioId)->exists()) {
             return true;
         }
 
-        return $e->documentos()->whereHas('pasos', fn ($q) => $q->where('usuario_id', $u->id))->exists();
+        return $e->documentos()->whereHas('pasos', fn ($q) => $q->where('usuario_id', $usuarioId))->exists();
     }
 }

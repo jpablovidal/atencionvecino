@@ -38,7 +38,7 @@ class ProduccionService
 
     /** Configuración y evidencia que se CONSERVA (cada tabla nueva debe clasificarse en BORRAR o aquí: lo verifica una prueba). */
     public const CONSERVAR = [
-        'anuncios', 'api_config', 'areas', 'audit_log', 'config_sitio', 'conexiones_resumen', 'delegaciones_firma', 'firma_estilos', 'firma_posiciones', 'geo_dns_cache',
+        'anuncios', 'api_config', 'areas', 'audit_log', 'config_sitio', 'conexiones_resumen', 'delegaciones_firma', 'subrogancias', 'firma_estilos', 'firma_posiciones', 'geo_dns_cache',
         'incidentes', 'instituciones', 'menu_items', 'metricas_recursos', 'migrations', 'pago_firmantes', 'pisee_servicios', 'plantilla_unidades', 'plantilla_versiones',
         'plantillas', 'procesos_codificador', 'recursos_imagen', 'repositorio_carpetas', 'repositorio_reubicaciones', 'rol_permisos', 'roles', 'sessions', 'tipos_documento',
         'tramite_anexos', 'tramite_unidad', 'tramite_versiones', 'tramites', 'transparencia_feriados', 'calidad_iniciativas', 'calidad_plataformas', 'docdigital_entidades', 'docdigital_usuarios', 'listas_opciones', 'lista_opciones_items', 'tramite_campos', 'unidades', 'unidades_internas', 'usuario_areas', 'usuario_permisos', 'usuario_roles', 'usuarios', 'sqlite_sequence',

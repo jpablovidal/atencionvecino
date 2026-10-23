@@ -19,6 +19,7 @@ use App\Services\DashboardService;
 use App\Services\ExpedienteService;
 use App\Services\FileVault;
 use App\Services\Firma\ArchivoFirmaService;
+use App\Services\SubroganciaService;
 use App\Services\TramiteService;
 use Illuminate\Http\Request;
 
@@ -29,6 +30,9 @@ class FuncionarioController extends Controller
     public function bandeja(Request $r)
     {
         $u = $r->user();
+        $subro = app(SubroganciaService::class);
+        $titulares = $u->operaExpedientes() ? $subro->titulares($u) : collect();
+        $titularIds = $titulares->pluck('id')->all();
         $entrantes = collect();
         $mios = Expediente::query()->with('solicitud.tramite')->orderByDesc('id');
         $pasos = collect();
@@ -48,7 +52,11 @@ class FuncionarioController extends Controller
         $porFirmar = $pasos->where('tipo', 'firma')->values();
         $porVisar = $pasos->where('tipo', 'visacion')->values();
         $expedientes = $mios->limit(100)->get();
-        $acciones = Derivacion::query()->with(['expediente', 'de'])->where('a_usuario_id', $u->id)->whereIn('estado', ['pendiente', 'en_proceso'])->orderByRaw('plazo is null')->orderBy('plazo')->orderBy('id')->limit(50)->get();
+        $subrogados = $titularIds === [] ? collect() : Expediente::query()->with('solicitud.tramite')->where('estado', 'abierto')
+            ->whereDoesntHave('solicitud', fn ($s) => $s->dePersona($u->run))
+            ->where(fn ($q) => $q->whereIn('responsable_id', $titularIds)->orWhereHas('derivaciones', fn ($d) => $d->whereIn('a_usuario_id', $titularIds)->whereIn('estado', ['pendiente', 'en_proceso'])))
+            ->whereNotIn('id', $expedientes->pluck('id'))->orderByDesc('id')->limit(100)->get();
+        $acciones = Derivacion::query()->with(['expediente', 'de'])->whereIn('a_usuario_id', array_merge([$u->id], $titularIds))->whereIn('estado', ['pendiente', 'en_proceso'])->orderByRaw('plazo is null')->orderBy('plazo')->orderBy('id')->limit(50)->get();
         $kpis = [];
         if ($u->operaExpedientes()) {
             $kpis[] = ['icono' => 'pen', 'valor' => $porFirmar->count(), 'etiqueta' => 'Por firmar', 'nivel' => $porFirmar->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas').'#para-firmar'];
@@ -71,7 +79,7 @@ class FuncionarioController extends Controller
             $kpis[] = ['icono' => 'activity', 'valor' => AuditLog::query()->where('ts', '>=', now()->subDay())->count(), 'etiqueta' => 'Eventos de auditoría (24 h)', 'nivel' => 'ok', 'url' => route('app.logs')];
         }
 
-        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'pasos' => $pasos, 'porFirmar' => $porFirmar, 'porVisar' => $porVisar, 'porAsignar' => $porAsignar, 'acciones' => $acciones, 'kpis' => $kpis, 'u' => $u, 'panel' => app(DashboardService::class)->para($u)]);
+        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'subrogados' => $subrogados, 'titulares' => $titulares, 'pasos' => $pasos, 'porFirmar' => $porFirmar, 'porVisar' => $porVisar, 'porAsignar' => $porAsignar, 'acciones' => $acciones, 'kpis' => $kpis, 'u' => $u, 'panel' => app(DashboardService::class)->para($u)]);
     }
 
     private function solicitudDeMiUnidad(Request $r, string $folio): Solicitud
