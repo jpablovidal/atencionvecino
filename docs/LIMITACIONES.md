@@ -264,3 +264,6 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - **Expedientes de oficio y partes:** las notificaciones por Casilla Única a partes sin solicitud usan el expediente como «folio» (contrato **A VALIDAR**). No hay registro verificado de poderes ni de representantes de personas jurídicas; la persona asistida no tiene acceso propio al sistema.
 - **Formularios de trámites:** los campos son siempre visibles (no hay campos condicionales «mostrar si…»); los cálculos usan solo números, fechas, Sí/No y listas con valores numéricos; un número vacío vale 0 y una fecha vacía deja el cálculo sin resultado. Las respuestas se guardan como texto y valor tal como se enviaron: si el trámite cambia después, las solicitudes antiguas no se recalculan. La vista en vivo del navegador requiere JavaScript; sin él, el servidor calcula igualmente al enviar.
 
+## Asignación masiva y transiciones
+- La asignación masiva procesa hasta 500 personas por operación y se probó con los datos de demostración, no con un directorio municipal completo.
+- Las transiciones entre páginas (`@view-transition`) funcionan en navegadores que las soportan; en los demás se ve la carga normal. Los efectos se desactivan con «reducir movimiento» del sistema o de la barra de accesibilidad.

@@ -554,3 +554,69 @@ html.a11y-contrast .chip,html.a11y-contrast .chip-claro{background:#000;color:#f
 .masiva-tabla tr.masiva-sel{background:rgba(15,105,196,.09)}
 @keyframes sgd-entra{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.masiva-opcion{animation:none}.masiva-tabla tr{transition:none}}
+
+/* ---- Formularios del vecino: look moderno sobre el kit gob.cl (colores y tipografía institucionales se mantienen) ---- */
+@media (prefers-reduced-motion:no-preference){@view-transition{navigation:auto}}
+::view-transition-old(root){animation:sgd-vt-sale .18s ease both}
+::view-transition-new(root){animation:sgd-vt-entra .26s ease both}
+@keyframes sgd-vt-sale{to{opacity:0}}
+@keyframes sgd-vt-entra{from{opacity:0;transform:translateY(6px)}}
+@keyframes sgd-paso-sig{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes sgd-paso-ant{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes sgd-sube{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes sgd-pulso{0%{box-shadow:0 0 0 0 rgba(0,111,179,.45)}100%{box-shadow:0 0 0 .7rem rgba(0,111,179,0)}}
+@keyframes sgd-check{from{transform:scale(.3) rotate(-30deg);opacity:0}to{transform:none;opacity:1}}
+.portal-formulario{position:relative;background:#fff;border:1px solid #dbe4ec;border-radius:16px;padding:1.5rem 1.5rem 1.25rem;box-shadow:0 10px 30px -12px rgba(10,46,77,.25);overflow:hidden;animation:sgd-sube .45s cubic-bezier(.2,.8,.2,1) both}
+.portal-formulario::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#006fb3,#0f69c4 55%,#fe6565)}
+.portal-formulario .form-control,.portal-formulario .custom-select{border-radius:10px;border:1.5px solid #c5d0d8;padding:.65rem .85rem;height:auto;min-height:2.9rem;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease,transform .18s ease}
+.portal-formulario .form-control:hover{border-color:#8fa6b8}
+.portal-formulario .form-control:focus{border-color:#006fb3;box-shadow:0 0 0 .25rem rgba(0,111,179,.18);background:#fbfdff;transform:translateY(-1px)}
+.portal-formulario .form-control[readonly]{background:#f1f5f8;border-style:dashed}
+.portal-formulario .form-control:user-valid:not([readonly]):not(:placeholder-shown){border-color:#1b6b32}
+.portal-formulario .form-control:user-invalid{border-color:#b3261e;box-shadow:0 0 0 .2rem rgba(179,38,30,.12)}
+.portal-formulario label{font-weight:600;color:#14232e;margin-bottom:.3rem}
+.portal-formulario .custom-control-label{font-weight:400}
+.portal-formulario .form-group,.portal-formulario .form-row>[class*=col]{animation:sgd-sube .4s cubic-bezier(.2,.8,.2,1) both}
+.portal-formulario .form-group:nth-child(2){animation-delay:.04s}.portal-formulario .form-group:nth-child(3){animation-delay:.08s}.portal-formulario .form-group:nth-child(4){animation-delay:.12s}.portal-formulario .form-group:nth-child(5){animation-delay:.16s}
+.portal-formulario [data-paso]{animation:sgd-paso-sig .32s cubic-bezier(.2,.8,.2,1) both}
+.portal-formulario[data-dir=atras] [data-paso]{animation-name:sgd-paso-ant}
+.portal-formulario [data-paso]>.form-group,.portal-formulario [data-paso]>.form-row>[class*=col]{animation:none}
+.portal-formulario fieldset[data-paso]{border:0;padding:0}
+.portal-formulario legend.h6{font-size:1.1rem;font-weight:700;color:#0a2e4d;margin-bottom:.75rem}
+.portal-formulario .custom-radio,.portal-formulario fieldset[data-paso]>.custom-control{background:#f6f9fc;border:1.5px solid #d6dee5;border-radius:12px;padding:.7rem .9rem .7rem 2.4rem;margin-bottom:.55rem;transition:border-color .18s ease,background-color .18s ease,transform .18s ease,box-shadow .18s ease;cursor:pointer}
+.portal-formulario .custom-radio:hover{border-color:#006fb3;background:#eef6fc;transform:translateX(3px)}
+.portal-formulario .custom-radio:has(input:checked){border-color:#006fb3;background:#e7f2fb;box-shadow:0 4px 14px -8px rgba(0,111,179,.6)}
+.portal-formulario .custom-radio .custom-control-label{cursor:pointer;width:100%}
+.portal-formulario .custom-control-input:checked~.custom-control-label::before{border-color:#006fb3;background-color:#006fb3}
+.portal-formulario .custom-control-input:focus-visible~.custom-control-label::before{box-shadow:0 0 0 .25rem rgba(0,111,179,.3)}
+.portal-formulario input[type=file]{border:2px dashed #9db3c4;border-radius:12px;padding:1rem;width:100%;background:#f6f9fc;transition:border-color .18s ease,background-color .18s ease}
+.portal-formulario input[type=file]:hover{border-color:#006fb3;background:#eef6fc}
+.portal-formulario .btn{border-radius:999px;padding:.6rem 1.4rem;font-weight:600;transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease}
+.portal-formulario .btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px -8px rgba(0,111,179,.7)}
+.portal-formulario .btn:active{transform:translateY(0) scale(.98)}
+.portal-formulario .btn-link{box-shadow:none}
+.portal-formulario .sgd-consentimiento{border-radius:12px;border-left-width:5px}
+/* pasos: línea de avance, número que crece y marca de verificación */
+.portal-formulario .sgd-pasos{position:relative;margin-bottom:1.6rem}
+.portal-formulario .sgd-pasos::before{content:"";position:absolute;left:1rem;right:1rem;bottom:-.65rem;height:4px;border-radius:4px;background:#e1e8ee}
+.portal-formulario .sgd-pasos::after{content:"";position:absolute;left:1rem;bottom:-.65rem;height:4px;border-radius:4px;width:calc((100% - 2rem) * var(--sgd-avance,0) / 100);background:linear-gradient(90deg,#006fb3,#1b6b32);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.portal-formulario .sgd-paso-btn{border-radius:12px;border-width:1.5px;border-bottom-width:1.5px;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.portal-formulario .sgd-pasos li.actual .sgd-paso-btn{border-color:#006fb3;box-shadow:0 8px 20px -12px rgba(0,111,179,.8);transform:translateY(-2px)}
+.portal-formulario .sgd-pasos li.actual .sgd-paso-num{animation:sgd-pulso 1.6s ease-out infinite}
+.portal-formulario .sgd-pasos li.hecho .sgd-paso-btn{border-color:#1b6b32}
+.portal-formulario .sgd-pasos li.hecho .sgd-paso-btn:hover{transform:translateY(-2px)}
+.portal-formulario .sgd-pasos li.hecho .sgd-paso-num{font-size:0}
+.portal-formulario .sgd-pasos li.hecho .sgd-paso-num::before{content:"✓";font-size:1rem;animation:sgd-check .35s ease both}
+.portal-formulario .sgd-revision{border-radius:14px;animation:sgd-paso-sig .32s ease both}
+.portal-formulario[data-dir=atras] .sgd-revision{animation-name:sgd-paso-ant}
+/* tarjetas del portal: elevación suave al pasar */
+.portal-tarjeta,.portal-direcciones a,.portal-servicios a{transition:transform .2s ease,box-shadow .25s ease,border-color .2s ease}
+.portal-tarjeta:hover,.portal-direcciones a:hover,.portal-servicios a:hover{transform:translateY(-4px);box-shadow:0 14px 28px -16px rgba(10,46,77,.45)}
+@media (max-width:575.98px){.portal-formulario{padding:1.1rem .9rem;border-radius:12px}}
+@media (prefers-reduced-motion:reduce){
+ .portal-formulario,.portal-formulario *,.portal-formulario *::before,.portal-formulario *::after,.portal-tarjeta,.portal-direcciones a,.portal-servicios a{animation:none!important;transition:none!important;transform:none!important}
+}
+html.a11y-contrast .portal-formulario,html.a11y-contrast .portal-formulario .custom-radio,html.a11y-contrast .portal-formulario input[type=file]{background:#000;color:#fff;border-color:#fff}
+html.a11y-contrast .portal-formulario label,html.a11y-contrast .portal-formulario legend{color:#fff}
+html.a11y-contrast .portal-formulario::before{background:#fff}
+html.a11y-motion ::view-transition-old(root),html.a11y-motion ::view-transition-new(root){animation:none!important}

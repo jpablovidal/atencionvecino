@@ -295,3 +295,15 @@ Cuando DocDigital está en modo **DemoDoc** o **Producción**, el sistema carga 
 ## Cargar el Codificador con el listado oficial
 En **Administración › Codificador** puede subir directamente el archivo **«Listado de códigos de Instituciones»** que se descarga del Codificador (CSV separado por «;»). El sistema crea o actualiza las instituciones con su código, nombre, institución padre, OID, tipo y códigos de región, provincia y comuna, y deja **inactivas** las que ya no están vigentes. Si el archivo trae filas incompletas (por ejemplo, códigos «PE-undefined-…» sin nombre), las omite y se las informa. Volver a subir el listado actualiza sin duplicar. En el despacho por DocDigital el destinatario se **busca** por nombre o código (el catálogo tiene más de 6.000 instituciones). Los códigos de región, provincia y comuna de la Municipalidad (`05`, `056`, `05606`) se incluyen en los metadatos de cada expediente.
 
+
+## Asignación masiva de personas
+
+En *Administración → Asignación masiva de personas* (`/app/admin/asignacion`, permiso `roles.gestionar`) se listan **todas las personas** del sistema, incluidas las cargadas desde el directorio. Filtre por nombre, RUN, correo o cargo, por **dirección** (o «Sin dirección»), rol, estado y origen (directorio o creados a mano).
+
+1. Marque las personas (o use el casillero de la cabecera para toda la página). También puede aplicar a **todas las que coinciden con el filtro** (hasta 500 por vez).
+2. Elija la acción: **asignar a una dirección** (con departamento y unidad opcionales, que deben pertenecer a esa dirección), **cambiar el rol principal**, **agregar** o **quitar roles adicionales**, **ajustar funcionalidades** (conceder, denegar o quitar el ajuste de cada permiso; hay un buscador) o **activar/desactivar**.
+3. Confirme. Se muestra cuántas personas se modificaron y, por separado, cuáles se **omitieron y por qué**.
+
+Las **vistas** del menú de cada funcionario(a) siguen a sus permisos: conceder o denegar una funcionalidad agrega o quita la pantalla correspondiente, sin una configuración aparte.
+
+Cada persona se valida con las mismas reglas que la edición individual: no puede modificar su propio rol, unidad ni estado; solo un superadministrador modifica a otro; administración y auditoría no se combinan con otros roles; lo concedido nunca supera el techo de sus roles ni incluye permisos reservados al sistema; y siempre debe quedar una persona administradora activa y una con «Roles y permisos». Cambiar rol o permisos cierra las sesiones de la persona y todo queda en la bitácora (`usuario.masivo` y el detalle por persona).

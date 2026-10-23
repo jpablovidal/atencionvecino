@@ -198,6 +198,8 @@
       });
     }
     function ir(i) {
+      f.setAttribute('data-dir', i < actual ? 'atras' : 'adelante');
+      cab.style.setProperty('--sgd-avance', String(total > 1 ? Math.round(i / (total - 1) * 100) : 0));
       actual = i;
       secciones.forEach(function (s, k) { s.hidden = k !== i; });
       revision.hidden = i !== total - 1; acciones.hidden = i !== total - 1;
