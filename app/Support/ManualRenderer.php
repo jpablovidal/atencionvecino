@@ -33,7 +33,7 @@ class ManualRenderer
     ];
 
     /** Manual principal según el rol base. */
-    public const POR_ROL = ['funcionario' => 'funcionario', 'secretario' => 'secretario', 'alcalde' => 'alcalde', 'admin' => 'administrador', 'auditor' => 'auditor', 'autoridad' => 'autoridad', 'oirs' => 'oirs',
+    public const POR_ROL = ['funcionario' => 'funcionario', 'secretario' => 'secretario', 'alcalde' => 'alcalde', 'administrador_municipal' => 'funcionario', 'admin' => 'administrador', 'auditor' => 'auditor', 'autoridad' => 'autoridad', 'oirs' => 'oirs',
         'transparencia' => 'transparencia', 'oficina_partes' => 'oficina-partes', 'contabilidad' => 'pagos', 'tesorero' => 'tesorero'];
 
     /** Manuales adicionales según permisos (quien tiene la función, tiene el manual). */

@@ -31,7 +31,7 @@ class Usuario extends Model implements AuthenticatableContract
 {
     use Authenticatable, Authorizable;
 
-    public const ROLES = ['admin', 'funcionario', 'alcalde', 'secretario', 'auditor', 'autoridad', 'oirs', 'transparencia'];
+    public const ROLES = ['admin', 'funcionario', 'alcalde', 'secretario', 'auditor', 'autoridad', 'oirs', 'transparencia', 'administrador_municipal'];
 
     protected $table = 'usuarios';
 
@@ -150,7 +150,7 @@ class Usuario extends Model implements AuthenticatableContract
     }
 
     /**
-     * Techo del usuario: lo máximo que pueden llegar a darle sus roles (unión de los techos de sus bases), sin los permisos reservados al sistema.
+     * Alcance habitual de sus roles (unión de los techos de sus bases): sirve para señalar lo que se concede fuera de él; ya no limita los permisos individuales.
      *
      * @return array<int,string>
      */
@@ -165,7 +165,7 @@ class Usuario extends Model implements AuthenticatableContract
     }
 
     /**
-     * Permisos efectivos: unión de los de sus roles, más los concedidos y menos los denegados individualmente (lo concedido nunca supera su techo).
+     * Permisos efectivos: unión de los de sus roles, más los concedidos y menos los denegados individualmente. Lo concedido individualmente puede ser cualquier permiso que no esté reservado al sistema (no se limita al rol).
      *
      * @return array<int,string>
      */
@@ -178,10 +178,9 @@ class Usuario extends Model implements AuthenticatableContract
         foreach ($this->rolesAdicionales() as $clave) {
             $p = array_merge($p, self::permisosDeRol($clave));
         }
-        $techo = $this->techoPermisos();
         $cat = Permisos::catalogo();
         foreach ($this->permisosIndividuales() as $perm => $efecto) {
-            if ($efecto === 'conceder' && in_array($perm, $techo, true) && empty($cat[$perm][3])) {
+            if ($efecto === 'conceder' && isset($cat[$perm]) && empty($cat[$perm][3])) { // personalizado: cualquier permiso no reservado, aunque su rol no lo incluya
                 $p[] = $perm;
             } elseif ($efecto === 'denegar') {
                 $p = array_diff($p, [$perm]);
@@ -207,7 +206,7 @@ class Usuario extends Model implements AuthenticatableContract
     /** Usuarios que operan expedientes (roles base funcionario/alcalde/secretario, incluidos los roles personalizados). */
     public function scopeOperadores($q)
     {
-        $roles = Rol::query()->whereIn('rol_base', ['funcionario', 'alcalde', 'secretario', 'transparencia'])->where('activo', true)->get(['id', 'clave']);
+        $roles = Rol::query()->whereIn('rol_base', ['funcionario', 'alcalde', 'secretario', 'transparencia', 'administrador_municipal'])->where('activo', true)->get(['id', 'clave']);
 
         return $q->where(fn ($w) => $w->whereIn('rol', $roles->pluck('clave')->all())->orWhereIn('id', DB::table('usuario_roles')->whereIn('rol_id', $roles->pluck('id')->all())->select('usuario_id')));
     }
@@ -233,7 +232,7 @@ class Usuario extends Model implements AuthenticatableContract
 
     public function operaExpedientes(): bool
     {
-        return $this->esRol('funcionario', 'alcalde', 'secretario', 'transparencia');
+        return $this->esRol('funcionario', 'alcalde', 'secretario', 'transparencia', 'administrador_municipal');
     }
 
     public function getAuthPassword(): string

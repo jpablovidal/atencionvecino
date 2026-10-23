@@ -43,6 +43,14 @@
     });
   }
 
+  f.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-masiva-marcar]') : null;
+    if (!b) { return; }
+    var m = b.getAttribute('data-masiva-marcar');
+    filas.forEach(function (c) { c.checked = m !== 'ninguna'; });
+    alcance.forEach(function (r) { r.checked = (m === 'filtro' && r.value === 'filtro') || (m !== 'filtro' && r.value === 'marcados'); });
+    refrescar();
+  });
   accion.addEventListener('change', function () { panel(); hijos(); });
   f.addEventListener('change', function (e) {
     var t = e.target;

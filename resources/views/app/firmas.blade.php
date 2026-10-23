@@ -9,6 +9,7 @@
 @foreach($resultado as $r)<tr><td>{{ $r['documento'] }}</td><td><span class="estado {{ $r['ok'] ? 'estado-vigente' : 'estado-fallida' }}">{{ $r['ok'] ? 'Listo' : 'No procesado' }}</span> {{ $r['mensaje'] }}</td></tr>@endforeach</tbody></table></div></div></section>
 @endif
 
+<nav class="sgd-tabs mb-3" aria-label="Ir a"><a class="btn btn-outline-primary btn-sm" href="#para-firmar">Por firmar ({{ $firmas->count() }})</a> <a class="btn btn-outline-success btn-sm" href="#para-visar">Por visar ({{ $visaciones->count() }})</a></nav>
 <h2 class="h4" id="para-firmar">Para firmar ({{ $firmas->count() }})</h2>
 @if(! $puedeFirmar && $firmas->isNotEmpty())<div class="alert alert-warning" role="status">Su cuenta no está habilitada para firmar: pida a la administración que la habilite.</div>@endif
 @if($firmas->isEmpty())<p>No tiene documentos por firmar.</p>@else

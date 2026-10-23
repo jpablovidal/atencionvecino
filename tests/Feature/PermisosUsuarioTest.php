@@ -77,17 +77,22 @@ class PermisosUsuarioTest extends TestCase
         }
     }
 
-    public function test_conceder_y_denegar_permisos_individuales_dentro_del_techo(): void
+    public function test_se_puede_conceder_un_permiso_fuera_del_alcance_del_rol_y_queda_en_bitacora(): void
     {
         $f = $this->usuario('funcionario');
         $this->assertFalse($f->tienePermiso('plantillas.gestionar'));
-        // fuera del techo de un funcionario: no se puede conceder
+        $this->svc()->guardar($f, [], ['plantillas.gestionar' => 'conceder'], $this->usuario('admin'));
+        $this->assertTrue($this->fresco($f)->tienePermiso('plantillas.gestionar'), 'permiso personalizado, no limitado al rol');
+        $this->assertDatabaseHas('audit_log', ['accion' => 'usuario.permisos']);
+    }
+
+    public function test_un_permiso_reservado_al_sistema_no_se_concede(): void
+    {
+        $f = $this->usuario('funcionario');
+        $reservado = collect(Permisos::catalogo())->filter(fn ($d) => ! empty($d[3]))->keys()->first();
+        $this->assertNotNull($reservado);
         $this->expectException(FlujoException::class);
-        try {
-            $this->svc()->guardar($f, [], ['plantillas.gestionar' => 'conceder'], $this->usuario('admin'));
-        } finally {
-            $this->assertFalse($this->fresco($f)->tienePermiso('plantillas.gestionar'));
-        }
+        $this->svc()->guardar($f, [], [$reservado => 'conceder'], $this->usuario('admin'));
     }
 
     public function test_conceder_un_permiso_opcional_y_denegar_uno_del_rol(): void

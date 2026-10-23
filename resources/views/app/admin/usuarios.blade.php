@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Usuarios')
 @section('contenido')
-<div class="d-flex justify-content-between"><h1>Usuarios</h1><a class="btn btn-primary align-self-center" href="{{ route('app.admin.usuarios.crear') }}">Nuevo usuario</a></div>
+<div class="d-flex justify-content-between"><h1>Usuarios</h1><span class="align-self-center">@if(auth()->user()->tienePermiso("roles.gestionar"))<a class="btn btn-outline-primary mr-2" href="{{ route("app.admin.asignacion") }}">Asignación masiva</a>@endif<a class="btn btn-primary" href="{{ route("app.admin.usuarios.crear") }}">Nuevo usuario</a></span></div>
 <form method="get" class="form-inline mb-3" aria-label="Buscar usuarios">
   <label class="mr-2" for="q">Buscar</label><input class="form-control mr-3" id="q" name="q" maxlength="80" value="{{ $f['q'] }}" placeholder="Nombre, correo o RUN">
   <label class="mr-2" for="rol">Rol</label><select class="form-control mr-3" id="rol" name="rol"><option value="">Todos</option>@foreach($roles as $c => $r)<option value="{{ $c }}" @selected($f['rol']===$c)>{{ $r->nombre }}</option>@endforeach</select>

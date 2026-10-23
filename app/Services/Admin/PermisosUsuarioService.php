@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\DB;
  *
  * Reglas (separación de funciones): el ROL PRINCIPAL (`usuarios.rol`) fija el rol base y sus invariantes. Quien tiene un rol base de administración o
  * de auditoría no recibe roles adicionales, y estos no pueden ser de esas bases: así el administrador nunca opera expedientes ni el personal
- * operativo obtiene la lectura total o la administración. Lo concedido individualmente nunca supera el techo de sus roles ni incluye los permisos
- * reservados al sistema. Siempre debe quedar al menos una persona con «Roles y permisos».
+ * operativo obtiene la lectura total o la administración. Lo concedido individualmente es personalizado: puede ser cualquier permiso que no esté reservado al
+ * sistema, aunque su rol no lo incluya (queda registrado en la bitácora como «fuera de rol»). Siempre debe quedar al menos una persona con «Roles y permisos».
  */
 class PermisosUsuarioService
 {
@@ -68,13 +68,13 @@ class PermisosUsuarioService
                 $origen = 'Rol «'.($nombres[$u->rol] ?? $u->rol).'»';
             } elseif ($c = collect($adicionales)->search(fn ($p) => in_array($clave, $p, true))) {
                 $origen = 'Rol adicional «'.($nombres[$c] ?? $c).'»';
-            } elseif (($ind[$clave] ?? null) === 'conceder' && in_array($clave, $techo, true) && ! $reservado) {
-                $origen = 'Concedido individualmente';
+            } elseif (($ind[$clave] ?? null) === 'conceder' && ! $reservado) {
+                $origen = in_array($clave, $techo, true) ? 'Concedido individualmente' : 'Concedido individualmente (fuera del alcance habitual de sus roles)';
             } elseif (! in_array($clave, $techo, true)) {
-                $origen = 'Fuera del alcance de sus roles';
+                $origen = 'Fuera del alcance habitual de sus roles (puede concederse)';
             }
             $out[$d[1]][] = ['clave' => $clave, 'etiqueta' => $d[0], 'efectivo' => $u->tienePermiso($clave), 'origen' => $origen, 'individual' => $ind[$clave] ?? null,
-                'concedible' => in_array($clave, $techo, true) && ! $reservado, 'reservado' => $reservado];
+                'concedible' => ! $reservado, 'reservado' => $reservado, 'fuera_de_rol' => ! in_array($clave, $techo, true)];
         }
 
         return $out;
@@ -107,6 +107,7 @@ class PermisosUsuarioService
         foreach ($roles as $r) {
             $techo = array_merge($techo, Permisos::techo($r->rol_base));
         }
+        $fuera = [];
         $cat = Permisos::catalogo();
         $ajustes = [];
         foreach ($individuales as $perm => $efecto) {
@@ -116,10 +117,16 @@ class PermisosUsuarioService
             if (! isset($cat[$perm])) {
                 throw new FlujoException('Permiso desconocido.');
             }
-            if ($efecto === 'conceder' && (! in_array($perm, $techo, true) || ! empty($cat[$perm][3]))) {
-                throw new FlujoException('«'.$cat[$perm][0].'» no puede concederse a este usuario: supera lo que permiten sus roles o está reservado al sistema.');
+            if ($efecto === 'conceder' && ! empty($cat[$perm][3])) {
+                throw new FlujoException('«'.$cat[$perm][0].'» está reservado al sistema y no puede concederse individualmente.');
+            }
+            if ($efecto === 'conceder' && ! in_array($perm, $techo, true)) {
+                $fuera[] = $perm;
             }
             $ajustes[$perm] = $efecto;
+        }
+        if ($fuera !== [] && $actor->id === $u->id) {
+            throw new FlujoException('No puede concederse a usted mismo(a) permisos fuera del alcance de su rol: pídalo a otra persona administradora (separación de funciones).');
         }
         $teniaGestion = $u->tienePermiso('roles.gestionar');
         $antes = ['roles' => $u->rolesAdicionales(), 'ind' => $u->permisosIndividuales()];
@@ -139,7 +146,7 @@ class PermisosUsuarioService
         });
         $this->audit->registrar('usuario.permisos', 'usuario', $u->id, [
             'roles_adicionales' => $adicionales, 'concedidos' => array_keys(array_filter($ajustes, fn ($e) => $e === 'conceder')), 'denegados' => array_keys(array_filter($ajustes, fn ($e) => $e === 'denegar')),
-            'antes' => ['roles_adicionales' => $antes['roles'], 'individuales' => array_keys($antes['ind'])], 'propio' => $actor->id === $u->id,
+            'antes' => ['roles_adicionales' => $antes['roles'], 'individuales' => array_keys($antes['ind'])], 'fuera_de_rol' => $fuera, 'propio' => $actor->id === $u->id,
         ], true);
         if ($actor->id !== $u->id) {
             DB::table('sessions')->where('user_id', $u->id)->delete(); // los cambios rigen desde un ingreso nuevo

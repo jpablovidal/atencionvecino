@@ -23,7 +23,7 @@
 </div></section>
 <section class="card mb-4"><div class="card-body">
  <h2 class="h5">Matriz de permisos</h2>
- <p class="small text-muted">«Efectivo» es lo que la persona puede hacer hoy. En «Ajuste individual» puede <strong>conceder</strong> un permiso que sus roles no dan (dentro del alcance de sus roles) o <strong>denegar</strong> uno que sí dan. Los permisos marcados «reservado» solo los tiene el rol de administración del sistema. Los cambios se aplican al guardar.</p>
+ <p class="small text-muted">«Efectivo» es lo que la persona puede hacer hoy. En «Ajuste individual» puede <strong>conceder</strong> cualquier permiso que sus roles no dan (la asignación es personalizada y <strong>no se limita al rol</strong>) o <strong>denegar</strong> uno que sí dan. Los permisos marcados «reservado» solo los tiene el rol de administración del sistema. Los cambios se aplican al guardar.</p>
  @foreach($matriz as $grupo => $filas)
  <h3 class="h6 mt-3">{{ $grupo }}</h3>
  <div class="table-responsive"><table class="table table-sm mb-2"><caption class="sr-only">Permisos de {{ $grupo }}</caption>

@@ -8,7 +8,7 @@ Para personas con rol **funcionario** (también aplica, con las particularidades
 
 Después de ingresar verá su **Inicio** (menú lateral con íconos y un panel con indicadores): arriba, **tarjetas con sus pendientes** (visaciones y firmas, solicitudes por asignar, comunicaciones por gestionar, expedientes abiertos y, si su rol lo permite, trámites publicados y en borrador); luego **Requieren su atención** (cada tarea es una tarjeta que lleva directo al documento o la solicitud), **Accesos rápidos** a los módulos que su rol permite y su lista de expedientes. En el celular el menú se abre con el botón ☰. Contenido del Inicio:
 
-- **Mis visaciones y firmas pendientes:** documentos donde es su turno.
+- **Por firmar y Por visar:** en el Inicio, los documentos donde es su turno aparecen en **dos columnas separadas** (con contador y acceso por lote); el detalle y la firma por lote están en *Mis firmas y visaciones*.
 - **Solicitudes de mi unidad por asignar:** solicitudes ciudadanas dirigidas a su unidad.
 - **Comunicaciones oficiales recibidas por gestionar** (si su unidad es la receptora de DocDigital).
 - **Mis expedientes:** los de su unidad o en los que participa.
@@ -62,7 +62,7 @@ Edite el texto con el editor completo (títulos, tipo y tamaño de letra, colore
 
 ### 4.4 Visar y firmar (cuando le toca)
 
-Los documentos que esperan su acción están en **Mis visaciones y firmas pendientes**.
+Los documentos que esperan su acción están en el Inicio, separados en **Por firmar** y **Por visar**.
 
 - **Visar:** puede **Visar** (aprobar) o **Rechazar** con un comentario; si rechaza, el documento vuelve a borrador.
 - **Firmar:** ingrese el **código OTP de 6 dígitos** de FirmaGob y presione **Firmar**. El OTP **no se guarda**. Si FirmaGob falla, nada avanza y puede reintentar.

@@ -42,7 +42,7 @@ Ver `DECISIONES.md` #1, #2 y #5 (ágil=1 / clásico=2 por defecto; primera firma
 - **Cifrado + Drive:** si se pierden las claves de `sgd_secrets`, los archivos en Drive no se pueden recuperar. El respaldo de claves es responsabilidad de la institución.
 - **Firmas en la copia pública:** el sello visual (estilo/posición) se estampa en la copia pública. **No** reemplaza la firma electrónica avanzada: el PDF firmado por FirmaGob conserva su propia representación y sus coordenadas en el proveedor son **A VALIDAR**.
 - **Secretos en BD:** los secretos ingresados desde el panel se guardan cifrados con `APP_KEY` (`SGD_API_SECRETOS_EN_BD=1`, por defecto); quien obtenga la base **y** el `.env` (APP_KEY) los descifra. Si se rota `APP_KEY` hay que volver a ingresarlos. Con `SGD_API_SECRETOS_EN_BD=0` solo valen los de `.env`.
-- **Roles personalizados:** el techo por rol base y los permisos fijos del sistema son una decisión de diseño; no existen permisos por expediente ni por unidad (la visibilidad por unidad sigue las reglas de acceso existentes).
+- **Roles personalizados:** el techo por rol base acota los permisos de un **rol** (los de cada **persona** se pueden personalizar sin ese límite, salvo los reservados al sistema); no existen permisos por expediente ni por unidad (la visibilidad por unidad sigue las reglas de acceso existentes).
 - **Usuarios conectados:** se basa en la tabla de sesiones (actividad dentro del tiempo de vida de sesión); no detecta usuarios con la pestaña abierta pero inactiva más allá de ese plazo.
 - **Log de aplicación:** la redacción es por patrones (RUN, correos, tokens, rutas); puede dejar pasar datos con formatos no previstos. Revíselo antes de compartirlo fuera de la institución.
 - **Logo y accesibilidad:** el sistema exige texto alternativo y valida contraste de colores, pero no puede juzgar si el contenido del logo es legible.
@@ -267,3 +267,8 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 ## Asignación masiva y transiciones
 - La asignación masiva procesa hasta 500 personas por operación y se probó con los datos de demostración, no con un directorio municipal completo.
 - Las transiciones entre páginas (`@view-transition`) funcionan en navegadores que las soportan; en los demás se ve la carga normal. Los efectos se desactivan con «reducir movimiento» del sistema o de la barra de accesibilidad.
+
+## Permisos personalizados, Administrador Municipal y bandeja
+- Conceder a una persona un permiso fuera de su rol le abre la **función** (pantalla y acción), pero las reglas de datos siguen siendo las de siempre (alcance por dirección, conflicto de interés, restringidos, firma que exige estar habilitado(a)). Quedan marcados «fuera de rol» en la bitácora. Esto puede debilitar la separación de funciones (por ejemplo, auditoría con permisos de operación): es una decisión de quien administra roles.
+- «Administrador Municipal» tiene un conjunto por defecto definido por este equipo (como el Alcalde, sin cuatro permisos y sin delegaciones); el municipio debe confirmar ese conjunto y ajustarlo con permisos individuales.
+- La separación «Por firmar / Por visar» muestra solo los documentos cuyo turno ya llegó a la persona; los que esperan a otro paso no aparecen hasta entonces.

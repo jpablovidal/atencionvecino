@@ -7,6 +7,7 @@
 <div class="alert alert-warning" role="status"><strong>Personas omitidas</strong><ul class="mb-0">@foreach(session('omitidos') as $o)<li>{{ $o['nombre'] }}: {{ $o['motivo'] }}</li>@endforeach</ul></div>
 @endif
 <form method="get" class="masiva-filtros" aria-label="Filtrar personas">
+ <input type="hidden" name="por" value="{{ $f['por'] ?? 50 }}">
  <div class="form-row">
   <div class="form-group col-md-3"><label for="fq">Persona, RUN, correo o cargo</label><input class="form-control" id="fq" name="q" value="{{ $f['q'] ?? '' }}" maxlength="80"></div>
   <div class="form-group col-md-2"><label for="fu">Dirección</label><select class="form-control" id="fu" name="unidad"><option value="">Todas</option><option value="sin" @selected(($f['unidad'] ?? '')==='sin')>Sin dirección</option>@foreach($unidades as $un)<option value="{{ $un->id }}" @selected((string)($f['unidad'] ?? '')===(string)$un->id)>{{ $un->nombre }}</option>@endforeach</select></div>
@@ -22,6 +23,9 @@
  <section class="card mb-3 masiva-panel" aria-labelledby="mp-t"><div class="card-body">
   <h2 class="h5" id="mp-t">Qué desea cambiar</h2>
   <p class="mb-2" aria-live="polite"><span class="badge badge-primary" data-masiva-cuenta>0 marcadas</span> <span class="small text-muted">de {{ $coincidencias }} que coinciden con el filtro (máximo {{ $maximo }} por vez).</span></p>
+  <p class="mb-3"><button type="button" class="btn btn-sm btn-outline-primary" data-masiva-marcar="pagina">Marcar las {{ $pag->count() }} de esta página</button>
+   @if($coincidencias > $pag->count())<button type="button" class="btn btn-sm btn-outline-primary" data-masiva-marcar="filtro">Marcar las {{ min($coincidencias, $maximo) }} que coinciden con el filtro</button>@endif
+   <button type="button" class="btn btn-sm btn-outline-secondary" data-masiva-marcar="ninguna">Desmarcar todo</button></p>
   <div class="form-row">
    <div class="form-group col-md-4"><label for="accion">Acción</label>
     <select class="form-control" id="accion" name="accion" data-masiva-accion required>
@@ -61,7 +65,7 @@
   @endforeach
 
   <div class="masiva-opcion" data-accion-panel="permisos" hidden>
-   <p class="small text-muted">Para cada funcionalidad elija «Conceder», «Denegar» o «Quitar el ajuste». Lo no marcado no se toca. Una funcionalidad concedida nunca supera lo que permiten los roles de cada persona.</p>
+   <p class="small text-muted">Para cada funcionalidad elija «Conceder», «Denegar» o «Quitar el ajuste». Lo no marcado no se toca. Puede conceder <strong>cualquier</strong> funcionalidad a cada persona, aunque su rol no la incluya (se registra «fuera de rol» en la bitácora); solo las reservadas al sistema no se pueden conceder.</p>
    <div class="form-group col-md-4 px-0"><label for="m-pbus">Buscar funcionalidad</label><input class="form-control" id="m-pbus" type="search" data-masiva-buscar autocomplete="off" placeholder="Escriba para filtrar…"></div>
    @foreach($grupos as $g => $perms)
    <details class="masiva-grupo" open><summary>{{ $g }}</summary>
@@ -96,6 +100,8 @@
  @empty<tr><td colspan="7" class="text-muted">No hay personas con este criterio.</td></tr>@endforelse
  </tbody></table></div>
 </form>
+<form method="get" class="form-inline mb-2" aria-label="Personas por página">@foreach(['q','rol','unidad','estado','origen'] as $k)@if(! empty($f[$k]))<input type="hidden" name="{{ $k }}" value="{{ $f[$k] }}">@endif @endforeach
+ <label class="mr-2 small" for="por">Personas por página</label><select class="form-control form-control-sm mr-2" id="por" name="por">@foreach([25,50,100,200] as $n)<option value="{{ $n }}" @selected((int)($f['por'] ?? 50)===$n)>{{ $n }}</option>@endforeach</select><button class="btn btn-sm btn-outline-primary">Mostrar</button></form>
 {{ $pag->links() }}
 @push('scripts')<script src="{{ asset('assets/js/asignacion_masiva.js') }}"></script>@endpush
 @endsection

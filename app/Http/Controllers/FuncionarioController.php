@@ -45,11 +45,14 @@ class FuncionarioController extends Controller
                 ->filter(fn ($p) => ! DocumentoPaso::query()->where('documento_id', $p->documento_id)->where('estado', 'pendiente')->where('orden', '<', $p->orden)->exists());
         }
 
+        $porFirmar = $pasos->where('tipo', 'firma')->values();
+        $porVisar = $pasos->where('tipo', 'visacion')->values();
         $expedientes = $mios->limit(100)->get();
         $acciones = Derivacion::query()->with(['expediente', 'de'])->where('a_usuario_id', $u->id)->whereIn('estado', ['pendiente', 'en_proceso'])->orderByRaw('plazo is null')->orderBy('plazo')->orderBy('id')->limit(50)->get();
         $kpis = [];
         if ($u->operaExpedientes()) {
-            $kpis[] = ['icono' => 'pen', 'valor' => $pasos->count(), 'etiqueta' => 'Visaciones y firmas pendientes', 'nivel' => $pasos->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas')];
+            $kpis[] = ['icono' => 'pen', 'valor' => $porFirmar->count(), 'etiqueta' => 'Por firmar', 'nivel' => $porFirmar->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas').'#para-firmar'];
+            $kpis[] = ['icono' => 'check-circle', 'valor' => $porVisar->count(), 'etiqueta' => 'Por visar', 'nivel' => $porVisar->isNotEmpty() ? 'aviso' : 'ok', 'url' => route('app.firmas').'#para-visar'];
             $kpis[] = ['icono' => 'inbox', 'valor' => $entrantes->count(), 'etiqueta' => 'Solicitudes por asignar', 'nivel' => $entrantes->isNotEmpty() ? 'info' : 'ok'];
             if ($porAsignar->isNotEmpty() || $u->tienePermiso('comunicaciones.ver')) {
                 $kpis[] = ['icono' => 'mail', 'valor' => $porAsignar->count(), 'etiqueta' => 'Comunicaciones por gestionar', 'nivel' => $porAsignar->isNotEmpty() ? 'info' : 'ok'];
@@ -68,7 +71,7 @@ class FuncionarioController extends Controller
             $kpis[] = ['icono' => 'activity', 'valor' => AuditLog::query()->where('ts', '>=', now()->subDay())->count(), 'etiqueta' => 'Eventos de auditoría (24 h)', 'nivel' => 'ok', 'url' => route('app.logs')];
         }
 
-        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'pasos' => $pasos, 'porAsignar' => $porAsignar, 'acciones' => $acciones, 'kpis' => $kpis, 'u' => $u, 'panel' => app(DashboardService::class)->para($u)]);
+        return view('app.bandeja', ['entrantes' => $entrantes, 'expedientes' => $expedientes, 'pasos' => $pasos, 'porFirmar' => $porFirmar, 'porVisar' => $porVisar, 'porAsignar' => $porAsignar, 'acciones' => $acciones, 'kpis' => $kpis, 'u' => $u, 'panel' => app(DashboardService::class)->para($u)]);
     }
 
     private function solicitudDeMiUnidad(Request $r, string $folio): Solicitud

@@ -9,12 +9,22 @@
 
 @if($pasos->isNotEmpty() || $entrantes->isNotEmpty() || $porAsignar->isNotEmpty() || $acciones->isNotEmpty())
 <h2 class="seccion">Requieren su atención</h2>
-@if($pasos->count() > 1)<p><a class="btn btn-primary" href="{{ route('app.firmas') }}">Firmar o visar por lote ({{ $pasos->count() }} pendientes)</a></p>@endif
-<div class="dash-alertas">
-@foreach($pasos as $p)
-  <a class="alerta-card alerta-aviso" href="{{ route('app.documento',$p->documento_id) }}"><span class="alerta-chip">{{ $p->tipo==='firma' ? 'Firmar' : 'Visar' }}</span>
-    <strong>{{ $p->documento->titulo }}</strong><small>Expediente {{ $p->documento->expediente->codigo }}</small></a>
+@if($u->operaExpedientes())
+<div class="bandeja-dos">
+@foreach([['firma', 'Por firmar', $porFirmar, 'Firmar', 'para-firmar'], ['visacion', 'Por visar', $porVisar, 'Visar', 'para-visar']] as [$tp, $tit, $lista, $verbo, $ancla])
+<section class="bandeja-col bandeja-{{ $tp }}" aria-labelledby="b-{{ $ancla }}">
+ <h3 class="h5" id="b-{{ $ancla }}">{{ $tit }} <span class="badge {{ $lista->isNotEmpty() ? 'badge-warning' : 'badge-light' }}">{{ $lista->count() }}</span></h3>
+ @if($lista->isEmpty())<p class="small text-muted mb-0">Nada {{ strtolower($tit) }} por ahora.</p>@else
+ @if($lista->count() > 1)<p class="mb-2"><a class="btn btn-sm btn-primary" href="{{ route('app.firmas') }}#{{ $ancla }}">{{ $verbo }} por lote ({{ $lista->count() }})</a></p>@endif
+ <div class="dash-alertas">@foreach($lista as $p)
+  <a class="alerta-card alerta-aviso" href="{{ route('app.documento',$p->documento_id) }}"><span class="alerta-chip">{{ $verbo }}</span>
+   <strong>{{ $p->documento->titulo }}</strong><small>Expediente {{ $p->documento->expediente->codigo }}</small></a>
+ @endforeach</div>@endif
+</section>
 @endforeach
+</div>
+@endif
+<div class="dash-alertas">
 @foreach($entrantes as $s)
   <a class="alerta-card alerta-info" href="{{ route('app.solicitud',$s->folio) }}"><span class="alerta-chip">Nueva solicitud</span>
     <strong>{{ $s->tramite->nombre }}</strong><small>Folio {{ $s->folio }} · ingresó el {{ $s->created_at->format('d-m-Y H:i') }}</small></a>

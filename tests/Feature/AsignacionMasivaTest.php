@@ -124,4 +124,19 @@ class AsignacionMasivaTest extends TestCase
         $this->assertDatabaseHas('audit_log', ['accion' => 'usuario.masivo']);
         $this->comoFuncionario($admin)->post(route('app.admin.asignacion.aplicar'), ['accion' => 'unidad', 'alcance' => 'marcados'])->assertSessionHas('error');
     }
+
+    public function test_concede_a_varias_personas_permisos_fuera_de_su_rol_y_ofrece_marcar_todo(): void
+    {
+        $admin = $this->usuario('admin');
+        $f1 = $this->usuario('funcionario', 1);
+        $f2 = $this->usuario('funcionario', 2);
+        $this->assertFalse($f1->tienePermiso('plantillas.gestionar'));
+        $res = $this->svc()->aplicar('permisos', [$f1->id, $f2->id], ['perm' => ['plantillas.gestionar' => 'conceder', 'menu.gestionar' => 'conceder']], $admin);
+        $this->assertSame(2, $res['aplicados']);
+        $this->assertTrue($f1->fresh()->tienePermiso('plantillas.gestionar'));
+        $this->assertTrue($f2->fresh()->tienePermiso('menu.gestionar'), 'sin límite por rol');
+        $this->comoFuncionario($admin)->get(route('app.admin.asignacion', ['por' => 25]))->assertOk()
+            ->assertSee('data-masiva-marcar="pagina"', false)->assertSee('data-masiva-marcar="ninguna"', false)->assertSee('Personas por página');
+        $this->comoFuncionario($admin)->get(route('app.admin.usuarios'))->assertSee('Asignación masiva');
+    }
 }

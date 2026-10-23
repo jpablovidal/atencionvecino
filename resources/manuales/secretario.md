@@ -4,7 +4,7 @@ La Secretaría Municipal cumple tres funciones en el sistema: (1) **visar y firm
 
 ## 1. Visar y firmar documentos
 
-Desde la **Bandeja → Mis visaciones y firmas pendientes**:
+Desde el **Inicio**, en las columnas **Por firmar** y **Por visar**:
 
 1. Abra el documento y revise el texto y el PDF de la versión actual.
 2. **Visar** o **Rechazar** (con comentario) si el turno es de visación.
