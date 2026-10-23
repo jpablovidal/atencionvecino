@@ -620,3 +620,6 @@ html.a11y-contrast .portal-formulario,html.a11y-contrast .portal-formulario .cus
 html.a11y-contrast .portal-formulario label,html.a11y-contrast .portal-formulario legend{color:#fff}
 html.a11y-contrast .portal-formulario::before{background:#fff}
 html.a11y-motion ::view-transition-old(root),html.a11y-motion ::view-transition-new(root){animation:none!important}
+.masiva-tabla .custom-control{min-height:1.5rem;padding-left:1.5rem}
+.masiva-tabla .custom-control-label{display:inline-block;min-width:1.5rem;min-height:1.5rem;margin:0}
+.masiva-grupo[hidden]{display:none}

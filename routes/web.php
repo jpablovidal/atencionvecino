@@ -2,12 +2,12 @@
 
 use App\Http\Controllers\AdminConfigController;
 use App\Http\Controllers\AnunciosController;
-use App\Http\Controllers\AsignacionMasivaController;
 use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ArchivoMunicipalController;
 use App\Http\Controllers\ArchivoVisorController;
 use App\Http\Controllers\AreasController;
+use App\Http\Controllers\AsignacionMasivaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\CasillaController;

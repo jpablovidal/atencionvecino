@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `efccadb50cd0b99adce826dfffecda54c48a749f729b233543c62776fc156b5b`).
+- Archivo **`sgd-release.zip`** (SHA-256 `01a6d4a1da435d290022f39ffc8e5a40c4ffadfede502231a87ab69eeaf0c47c`).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -238,6 +238,16 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: asignación masiva de personas y formularios del vecino más modernos
+- **Asignación masiva** (*Administración → Asignación masiva de personas*, permiso «Roles y permisos»): lista a todas las personas, incluidas las del directorio; filtre y marque, y asigne en lote **dirección** (con departamento/unidad), **rol principal**, **roles adicionales**, **permisos** (conceder, denegar, quitar el ajuste; las pantallas del menú siguen a los permisos) o **activar/desactivar**. Cada persona se valida con las reglas de siempre; las que no se pueden modificar se omiten y se indica por qué. Hasta 500 por operación; queda en la bitácora.
+- **Formularios del vecino**: tarjeta moderna con banda de color, campos con foco luminoso, opciones como tarjetas, pasos con línea de avance y transiciones ágiles (también entre páginas en navegadores compatibles), conservando el kit de gobierno. Se desactivan con «reducir movimiento».
+- No hay migraciones nuevas ni pasos adicionales: el comando de actualización es el mismo.
+
+## Novedades: manuales solo para el personal y recorrido guiado sobre la pantalla real
+- **Manuales:** el público y los vecinos ven **solo el Manual del ciudadano** (portada, pie de página y menú del vecino); los demás manuales de usuario son únicamente para el personal municipal, según su perfil.
+- **Recorrido guiado:** ya no abre una ventana a pantalla completa. Se muestra **sobre la pantalla real**, resaltando cada elemento con una tarjeta de instrucciones, y lleva a la persona por las pantallas que corresponden (inicio, lista de trámites, ficha, formulario; bandeja, menú y expediente para el personal). Se inicia desde el menú del nombre (o desde el botón de la portada para el público).
+- No hay pasos manuales ni cambios de base de datos.
 
 ## Novedades: constructor de formularios de trámites (campos, listados y cálculos)
 - Al crear o editar un trámite hay un paso nuevo, **Campos del formulario**: textos, números, fechas, listas para elegir (una o varias), Sí/No y **cálculos con fórmulas** (operadores `+ - * / % ^`, comparaciones y funciones como `si`, `min`, `max`, `redondear`, `dias`, `anios`). El vecino ve los resultados en vivo; el servidor los recalcula al recibir la solicitud.

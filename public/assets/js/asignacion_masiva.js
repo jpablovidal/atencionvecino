@@ -54,6 +54,7 @@
     if (!e.target.matches('[data-masiva-buscar]')) { return; }
     var q = e.target.value.trim().toLowerCase();
     [].forEach.call(f.querySelectorAll('[data-perm-texto]'), function (d) { d.hidden = q !== '' && d.getAttribute('data-perm-texto').indexOf(q) === -1; });
+    [].forEach.call(f.querySelectorAll('.masiva-grupo'), function (g) { g.hidden = !g.querySelector('.masiva-perm:not([hidden])'); });
   });
   f.addEventListener('submit', function (e) {
     var n = alcanceFiltro() ? 'todas las personas que coinciden con el filtro' : marcadas() + ' persona(s)';
