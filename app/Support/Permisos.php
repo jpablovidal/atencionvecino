@@ -8,7 +8,7 @@ namespace App\Support;
  */
 class Permisos
 {
-    private const OP = ['funcionario', 'alcalde', 'secretario', 'transparencia', 'administrador_municipal'];
+    private const OP = ['funcionario', 'alcalde', 'secretario', 'transparencia', 'adm_municipal'];
 
     /** «Administrador Municipal»: como el Alcalde pero de menor rango; estos permisos de la Alcaldía no los recibe por defecto (pueden concederse a una persona). */
     private const MENOR_RANGO = ['restringidos.gestionar', 'expedientes.exportar', 'decretopago.ver', 'pisee.consultar'];
@@ -38,7 +38,7 @@ class Permisos
             'tramites.gestionar' => ['Crear, editar y deshabilitar los trámites y servicios de su dirección municipal', 'Trámites y servicios', [...self::OP, 'admin'], false, ['admin']],
             'tramites.publicar' => ['Publicar y reactivar trámites de su dirección (los pone a disposición de la ciudadanía)', 'Trámites y servicios', [...self::OP, 'admin'], false, ['admin']],
             'docdigital.gestionar' => ['Gestionar la conexión con DocDigital (probar, sincronizar ahora y reintentar envíos)', 'Notificaciones y comunicaciones', [...self::OP, 'admin'], false, ['secretario', 'admin']],
-            'seguimiento.consultar' => ['Consultar el seguimiento de solicitudes (por RUN, fechas, dirección, etapa o trámite): estado, etapa, quién la tiene y si terminó', 'Seguimiento de solicitudes', ['autoridad', 'alcalde', 'administrador_municipal', 'auditor'], false, ['autoridad', 'alcalde', 'auditor']],
+            'seguimiento.consultar' => ['Consultar el seguimiento de solicitudes (por RUN, fechas, dirección, etapa o trámite): estado, etapa, quién la tiene y si terminó', 'Seguimiento de solicitudes', ['autoridad', 'alcalde', 'adm_municipal', 'auditor'], false, ['autoridad', 'alcalde', 'auditor']],
             'oirs.ver' => ['Panel OIRS: solicitudes, estado, responsables, plazos vencidos y por vencer', 'Seguimiento de solicitudes', ['oirs', 'auditor'], false, ['oirs']],
             'transparencia.ver' => ['Ver el panel de transparencia: consultas (solicitudes de acceso a la información), plazos y transparencia activa', 'Transparencia', ['transparencia', 'auditor'], false, ['transparencia']],
             'transparencia.gestionar' => ['Gestionar transparencia: prorrogar plazos, requerir a las direcciones, derivar a otro órgano, administrar feriados y registrar la transparencia activa', 'Transparencia', ['transparencia'], false, ['transparencia']],
@@ -52,7 +52,7 @@ class Permisos
             'feriados.gestionar' => ['Administrar los feriados y días no laborables que no cuentan como días administrativos en los plazos', 'Administración', ['admin', 'transparencia'], false, ['admin', 'transparencia']],
             'expedientes.vincular' => ['Buscar otros expedientes y microformas y asociarlos (con su contenido) al expediente que gestiona', 'Expedientes', [...self::OP], false, [...self::OP]],
             'decretopago.ver' => ['Ver los decretos de pago y sus egresos', 'Decreto de pago', [...self::OP, 'auditor'], false, ['auditor', 'alcalde']],
-            'alcaldia.panel' => ['Ver el panel de Alcaldía: firmas pendientes, decretos de pago y solicitudes de toda la municipalidad', 'Seguimiento de solicitudes', ['alcalde', 'secretario', 'administrador_municipal'], false, ['alcalde']],
+            'alcaldia.panel' => ['Ver el panel de Alcaldía: firmas pendientes, decretos de pago y solicitudes de toda la municipalidad', 'Seguimiento de solicitudes', ['alcalde', 'secretario', 'adm_municipal'], false, ['alcalde']],
             'decretopago.gestionar' => ['Crear decretos de pago: cargar el expediente de pago y el proceso de compra, generar o cargar el PDF y enviarlo a firma', 'Decreto de pago', [...self::OP], false, []],
             'decretopago.configurar' => ['Configurar el decreto de pago y el egreso: correlativo y firmantes', 'Decreto de pago', [...self::OP, 'admin'], false, ['admin']],
             'egresos.gestionar' => ['Generar el egreso de un decreto de pago (fecha, medio de pago, monto y detalle) y firmarlo', 'Decreto de pago', [...self::OP], false, []],
@@ -97,7 +97,7 @@ class Permisos
     /** @return array<int,string> permisos que recibe POR DEFECTO un rol del sistema de esa base */
     public static function deBase(string $base): array
     {
-        if ($base === 'administrador_municipal') {
+        if ($base === 'adm_municipal') {
             return array_values(array_diff(array_intersect(self::deBase('alcalde'), self::techo($base)), self::MENOR_RANGO));
         }
         $out = [];

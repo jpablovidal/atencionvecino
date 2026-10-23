@@ -860,6 +860,8 @@ alter table `tramite_campos` add unique `tramite_campos_tramite_id_clave_unique`
 
 alter table `solicitudes` add `datos` longtext null;
 
-insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('administrador_municipal', 'Administrador Municipal', 'Supervisa la gestión municipal con el panel de Alcaldía, visa y firma lo que se le asigne y opera expedientes; es como el Alcalde pero de menor rango: no firma como alcalde ni crea delegaciones.', 'administrador_municipal', 1, 1, '2025-12-23 00:00:00', '2025-12-23 00:00:00');
+delete from `roles` where `sistema` = 1 and `clave` in ('administrador_municipal', 'administrador_munici') and `clave` not in (select `rol` from `usuarios`);
+
+insert ignore into `roles` (`clave`, `nombre`, `descripcion`, `rol_base`, `sistema`, `activo`, `created_at`, `updated_at`) values ('adm_municipal', 'Administrador Municipal', 'Supervisa la gestión municipal con el panel de Alcaldía, visa y firma lo que se le asigne y opera expedientes; es como el Alcalde pero de menor rango: no firma como alcalde ni crea delegaciones.', 'adm_municipal', 1, 1, '2025-12-23 00:00:00', '2025-12-23 00:00:00');
 
 SET FOREIGN_KEY_CHECKS = 1;

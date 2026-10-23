@@ -74,7 +74,7 @@ class DemoSeeder extends Seeder
             $u(16, 10000016, 'Patricia', 'Oficina de Partes Demo', 'oficina_partes', 7, false, 'Encargada de Oficina de Partes'),
             $u(17, 10000017, 'Bernardo', 'Pagos Demo', 'contabilidad', 8, false, 'Encargado de pagos'),
             $u(18, 10000018, 'Tamara', 'Tesorera Demo', 'tesorero', 8, true, 'Tesorera Municipal'),
-            $u(19, 10000019, 'Rodrigo', 'Administrador Municipal Demo', 'administrador_municipal', 1, true, 'Administrador Municipal'),
+            $u(19, 10000019, 'Rodrigo', 'Administrador Municipal Demo', 'adm_municipal', 1, true, 'Administrador Municipal'),
         ]);
 
         DB::table('tramites')->insert([

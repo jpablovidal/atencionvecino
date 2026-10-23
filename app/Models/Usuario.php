@@ -31,7 +31,7 @@ class Usuario extends Model implements AuthenticatableContract
 {
     use Authenticatable, Authorizable;
 
-    public const ROLES = ['admin', 'funcionario', 'alcalde', 'secretario', 'auditor', 'autoridad', 'oirs', 'transparencia', 'administrador_municipal'];
+    public const ROLES = ['admin', 'funcionario', 'alcalde', 'secretario', 'auditor', 'autoridad', 'oirs', 'transparencia', 'adm_municipal'];
 
     protected $table = 'usuarios';
 
@@ -206,7 +206,7 @@ class Usuario extends Model implements AuthenticatableContract
     /** Usuarios que operan expedientes (roles base funcionario/alcalde/secretario, incluidos los roles personalizados). */
     public function scopeOperadores($q)
     {
-        $roles = Rol::query()->whereIn('rol_base', ['funcionario', 'alcalde', 'secretario', 'transparencia', 'administrador_municipal'])->where('activo', true)->get(['id', 'clave']);
+        $roles = Rol::query()->whereIn('rol_base', ['funcionario', 'alcalde', 'secretario', 'transparencia', 'adm_municipal'])->where('activo', true)->get(['id', 'clave']);
 
         return $q->where(fn ($w) => $w->whereIn('rol', $roles->pluck('clave')->all())->orWhereIn('id', DB::table('usuario_roles')->whereIn('rol_id', $roles->pluck('id')->all())->select('usuario_id')));
     }
@@ -232,7 +232,7 @@ class Usuario extends Model implements AuthenticatableContract
 
     public function operaExpedientes(): bool
     {
-        return $this->esRol('funcionario', 'alcalde', 'secretario', 'transparencia', 'administrador_municipal');
+        return $this->esRol('funcionario', 'alcalde', 'secretario', 'transparencia', 'adm_municipal');
     }
 
     public function getAuthPassword(): string
