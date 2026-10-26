@@ -13,6 +13,7 @@ Plataforma de atención al vecino y gestión de expedientes electrónicos alinea
 
 | Documento | Contenido |
 |---|---|
+| [`docs/LEEME_PRIMERO.md`](docs/LEEME_PRIMERO.md) | **Índice de los manuales de implementación** (orden de lectura; PDF en `docs/manuales/pdf/`) |
 | [`docs/NORMATIVA.md`](docs/NORMATIVA.md) | Resumen normativo con enlaces y puntos "A VALIDAR" |
 | [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md) | Matrices OWASP Top 10:2025, OWASP LLM 2025 y Ley 21.663 |
 | [`docs/DECISIONES.md`](docs/DECISIONES.md) | Decisiones de diseño y supuestos |

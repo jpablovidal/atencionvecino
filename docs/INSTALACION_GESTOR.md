@@ -7,7 +7,7 @@ Instalación en **2 pasos**: (1) subir el ZIP con el Administrador de archivos y
 ## Antes de empezar (ya lo tiene hecho)
 - Base de datos y usuario MySQL **`santod85_gestor2`** (ambos con ese nombre) con **todos los privilegios** sobre la base.
 - PHP 8.3 disponible en cPanel (el comando lo comprueba y se detiene con un mensaje claro si falta algo).
-- Archivo **`sgd-release.zip`** (SHA-256 `19be5c1818f037ab5e097e576dfc9e570d3f56bd693f684b1d9151c38bebeb47`).
+- Archivo **`sgd-release.zip`** (SHA-256 el indicado junto con la entrega).
 
 ## Paso 1 — Subir el ZIP (único paso manual)
 cPanel → **Administrador de archivos** → carpeta personal (`/home/su_usuario`, **no** `public_html`) → **Cargar** → `sgd-release.zip`.
@@ -57,7 +57,7 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 DOCDIGITAL_CLIENT_SECRET='%s'
 " "$CID" "$CSEC" >> .env.nuevo && chmod 600 .env.nuevo && mv .env.nuevo .env && unset CID CSEC && $PHP artisan config:clear && echo "Credenciales guardadas"
 ```
-Luego, en el sitio: **Administración → APIs e integraciones → DocDigital**: indique el **modo** (`demo` o `prod`) y, si no usa los valores por defecto, la **URL del servidor** (DemoDoc ya viene: `https://api-demodoc.digital.gob.cl/api`; la de producción no figura en la especificación), el **id de la entidad** y el **tipo de documento** por defecto. El token OAuth2 y las rutas ya vienen según la especificación (https://api-doc.digital.gob.cl/api/swagger-ui/index.html) y **el sistema aún no los trae validados** (ver `docs/LIMITACIONES.md`). Después abra **DocDigital** en el menú lateral y use **Probar conexión**.
+Luego, en el sitio: **Administración → APIs e integraciones → DocDigital**: elija el **modo** `demo` (la URL de DemoDoc, `https://api-demodoc.digital.gob.cl/api`, ya viene configurada; el token OAuth2 y las rutas siguen la especificación OpenAPI v3.2.514 que entregó). Después abra **DocDigital** en el menú lateral y use **Probar conexión**.
 
 > Si compartió el Client Secret por chat o correo, considérelo expuesto: pida a DocDigital que lo **rote** cuando termine las pruebas. No use credenciales de producción para pruebas con envíos reales.
 
@@ -121,6 +121,250 @@ cd ~/sgd && PHP=$(ls /opt/cpanel/ea-php83/root/usr/bin/php 2>/dev/null || comman
 - **Firma avanzada con FirmaGob**: el lote usa el **mismo OTP** para todos los documentos y se **detiene** si el servicio rechaza uno. Si la FirmaGob real exige un código por documento (o tiene firma masiva propia), **A VALIDAR** con la documentación vigente: en ese caso repita con un código nuevo para el resto.
 - La visación por lote solo aprueba; rechazar se hace documento por documento. Los documentos restringidos sin autorización no se firman por lote.
 - Para probar: ingrese como Secretaria (`10000003-2`) o Alcalde (`10000002-4`) con documentos en flujo y use *Mis firmas*. No hay pasos manuales al actualizar.
+
+## Novedades: administración, versiones, visor y paso a producción
+- **Segundo factor obligatorio para administradores:** la primera vez que ingrese la cuenta de administración (`10000001-6` en pruebas) el sistema pedirá escanear un QR con Google/Microsoft Authenticator y entregará **8 códigos de respaldo** (guárdelos). Es una vez por cuenta; después pide un código en cada ingreso.
+- **Menú Administración (nuevo):** *Archivos: pesos y formatos*, *Áreas del municipio* (municipal, salud, educación, corporación; cada usuario en una o más), *Codificación y normas* (municipio ante el Codificador, patrón del identificador y matriz de los Decretos 7, 8, 10, 11 y 12, **A VALIDAR**: no se pudieron leer desde el entorno de desarrollo) y *Pruebas y producción*.
+- **Versiones:** en cada archivo del expediente, *Versiones* permite subir una versión nueva con el motivo; se ve qué cambió, quién la subió y las firmas que trae. En cada documento, *Historial* muestra quién editó, visó y firmó cada versión. Los archivos se abren en una **ventana modal** con botón *Abrir en una pestaña nueva*.
+- **Botón ClaveÚnica:** hay un componente único. Para certificar, copie el **botón oficial** de Gobierno Digital en `~/sgd/public/assets/img/claveunica/boton-claveunica.svg` (ver `LEEME.txt` y `docs/CLAVEUNICA_BOTON.md`); mientras tanto se muestra un botón de texto provisional.
+- **Datos simulados:** *Administración › Pruebas y producción › Cargar datos simulados* o `cd ~/sgd && $PHP artisan sgd:simular` (solo pruebas).
+- **Pasar a producción (irreversible):** desde *Pruebas y producción*. **Antes**, en `~/sgd/.env` ponga `CLAVEUNICA_MODE=real`, `FIRMAGOB_MODE=prod`, correo real (`MAIL_MAILER=gmail_api`), `APP_DEBUG=false`, `SGD_ADMIN_2FA=true`, cree un administrador real (`sgd:crear-admin`, ver Operación) e inscriba su segundo factor, y **respalde** la base y `~/sgd_storage`. El panel lista lo que falta y solo habilita el botón cuando todo está listo. Al confirmar **borra todos los procesos y expedientes de prueba** (con sus archivos), reinicia correlativos, desactiva los usuarios de demostración y conserva la configuración y la auditoría.
+- **Al actualizar:** repita el comando del Paso 2 (crea tablas nuevas y conserva todo); no hay otros pasos manuales.
+
+## Novedades: portal de trámites más claro
+- La **ficha de cada trámite** ahora muestra «Última actualización», cómo se puede realizar (Online / Presencial), la descripción y secciones plegables (documentos, instrucciones, plazo y dirección, pasos), más «Publicado en» y trámites relacionados. El **inicio** suma «Lo más buscado», «Servicios municipales por temas» y «Preguntas frecuentes». No hay pasos manuales al actualizar.
+
+## Novedades: vecino, tiempos de respuesta y DocDigital
+- **Mis solicitudes**, el **detalle de cada solicitud** y el **formulario del trámite** siguen ahora el mismo estilo del portal (migas «Usted está en», secciones plegables, «Lo más buscado»).
+- **Inicio de autoridades, alcaldía, OIRS y administración:** nuevo indicador de **cuántos días hábiles demora el municipio en responder**, con el detalle por **área** y por **dirección** (últimos 12 meses; los feriados no cuentan).
+- **DocDigital** tiene un panel con volumen, acuses atrasados, envíos fallidos, tiempos de acuse y de respuesta, e instituciones con más movimiento. No hay pasos manuales al actualizar.
+
+## Novedades: DocDigital v3 con su especificación real
+- Con la **especificación OpenAPI** que entregó, la conexión a DocDigital quedó alineada: token OAuth2 (`/oauth/token`, Client ID y Client Secret), envío de documentos firmados, recepción, **acuse de recibo** y **devolución** (nuevo botón en el expediente, con motivo). La URL de DemoDoc ya viene configurada.
+- **Para enviar a otra institución** hace falta el **id de su entidad en DocDigital**: búsquelo en *DocDigital → Buscar entidades* y anótelo en *Administración → Instituciones* (campo «Id de la entidad en DocDigital»). Si el nombre coincide exactamente con uno solo, el sistema lo resuelve solo.
+- Al actualizar, repita el comando del Paso 2 (agrega una columna) y, en `~/sgd/.env`, puede **borrar** las líneas `DOCDIGITAL_PATH_*`, `DOCDIGITAL_SCOPE` y `DOCDIGITAL_TOKEN_URL` (ya no se usan). **No se probó contra DemoDoc real**: haga primero *Probar conexión*.
+
+## Novedades: anexos de DocDigital
+- Al crear una comunicación a otra institución puede **marcar archivos del expediente como anexos** (hasta 10; cambie `DOCDIGITAL_MAX_ANEXOS` en `~/sgd/.env`). Los anexos que **reciba** se guardan en el expediente si su formato está habilitado en *Administración → Archivos*; lo demás se omite y se informa el motivo.
+- La URL de **producción** de DocDigital ahora viene por defecto (`https://api-doc.digital.gob.cl/api`, el servidor del Swagger); confírmela con Gobierno Digital antes de pasar a `prod`. Al actualizar, repita el comando del Paso 2 (agrega una tabla).
+
+## Novedades: estado real de lo enviado a DocDigital
+- Un documento cargado en DocDigital **queda pendiente de despacho** hasta que la **Oficina de Partes lo despache en DocDigital**; el sistema no puede hacerlo. Ahora el expediente y el panel de DocDigital muestran el estado real («cargada; pendiente de despacho», «despachada; pendiente de acuse», «recibida y acusada»), y se actualiza solo con cada sincronización. Al actualizar, repita el comando del Paso 2 (agrega dos columnas).
+- Para **devolver** un documento recibido, el usuario de la integración necesita ese permiso en DocDigital (si no, DocDigital responde 403): pídalo a Gobierno Digital.
+- En DemoDoc su entidad aparece con el id **284** (`DOCDIGITAL_ENTIDAD_ID`); en producción confírmelo con la prueba de conexión.
+
+## Novedades: evidencias de DocDigital y credenciales de producción
+- En **DocDigital → «Evidencias de las llamadas»** (solo quien gestiona DocDigital) puede **activar por 24 horas** el registro del JSON enviado y de la respuesta de cada llamada (ingreso, acuse, devolución, consultas), y descargarlo en **JSON** o **ZIP** (un archivo por llamada) para el documento de evidencias de la certificación. No guarda credenciales, el token ni los archivos (los base64 se reemplazan por su tamaño y huella SHA-256). Las capturas de pantalla de DemoDoc las debe tomar usted.
+- DemoDoc y producción tienen **credenciales e ids distintos**. Ahora hay variables propias para producción (`DOCDIGITAL_PROD_*`) que reemplazan a las generales solo con modo `prod`; así puede dejar las de DemoDoc en `DOCDIGITAL_CLIENT_*`.
+- Según el manual de integración, `entidadDestinataria` se envía ahora en la consulta **y** en el cuerpo del acuse y la devolución, y los nombres de archivo se normalizan a 3–150 caracteres.
+- Al actualizar, repita el comando del Paso 2 (agrega una tabla).
+
+### Configurar DocDigital PRODUCCIÓN (paso a paso)
+1. **Guardar las credenciales de producción** (no se muestran ni quedan en el historial):
+```bash
+cd ~/sgd && read -rp "Client ID PRODUCCIÓN: " CID && read -rsp "Client Secret PRODUCCIÓN: " CSEC && echo && grep -v '^DOCDIGITAL_PROD_CLIENT_' .env > .env.nuevo && printf "DOCDIGITAL_PROD_CLIENT_ID='%s'
+DOCDIGITAL_PROD_CLIENT_SECRET='%s'
+" "$CID" "$CSEC" >> .env.nuevo && chmod 600 .env.nuevo && mv .env.nuevo .env && unset CID CSEC && echo "Credenciales de producción guardadas"
+```
+2. **Comprobar el acceso sin cambiar el modo** (solo lectura: pide el token y lista la entidad asociada; no envía ni descarga documentos):
+```bash
+cd ~/sgd && CID=$(grep '^DOCDIGITAL_PROD_CLIENT_ID=' .env | cut -d= -f2- | tr -d "'") && CSEC=$(grep '^DOCDIGITAL_PROD_CLIENT_SECRET=' .env | cut -d= -f2- | tr -d "'") && U=https://api-doc.digital.gob.cl/api && TOK=$(curl -s -u "$CID:$CSEC" -X POST "$U/oauth/token" | php -r '$j=json_decode(stream_get_contents(STDIN),true); echo $j["access_token"] ?? "";') && if [ -z "$TOK" ]; then echo "SIN TOKEN: revise las credenciales"; else echo "Token OK"; curl -s -H "Authorization: Bearer $TOK" "$U/entidades/token"; echo; fi; unset CID CSEC TOK
+```
+   En la respuesta aparece `entidad_id` y `entidad_nombre`: **anote el id** (no es el 284 de DemoDoc).
+3. **Guardar el id de la entidad de producción** (reemplace `NNN`):
+```bash
+cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DOCDIGITAL_PROD_ENTIDAD_ID=NNN" >> .env.nuevo && chmod 600 .env.nuevo && mv .env.nuevo .env && echo OK
+```
+4. **No cambie a modo `prod` todavía** si este sitio sigue siendo de pruebas: con modo `prod` el sistema **importa documentos reales** cada 10 minutos y los envíos serían reales. Antes, Gobierno Digital debe **certificar la integración** (formulario https://digital.gob.cl/incidencia con el documento «Certificación de Integraciones para API DocDigital» y las evidencias de DemoDoc).
+5. Cuando esté certificado y quiera operar de verdad: en el sitio, **Administración → APIs e integraciones → DocDigital → Modo: Producción** (o `DOCDIGITAL_MODE=prod` en `.env`), luego **DocDigital → Probar conexión** (solo lectura) y el id del tipo de documento (`DOCDIGITAL_PROD_TIPO_DOCUMENTO_ID`) que muestre «Tipos de documento». Para el sistema ya en producción vea «Pasar a producción».
+
+## Novedades: botón oficial de ClaveÚnica
+- El botón de ingreso ahora es el **botón oficial** del kit de Gobierno Digital (azul «Iniciar sesión» con el ícono; en el encabezado oscuro, la variante de alto contraste). No hay que subir ningún archivo.
+- Se corrigió un punto que habría fallado la certificación: los datos del usuario se consultan en `accounts.claveunica.gob.cl` (antes `www.`).
+- **Cierre de sesión:** «Cerrar sesión» ahora también cierra la sesión de ClaveÚnica. Para que ClaveÚnica vuelva al sitio, la **Logout URI** debe estar registrada; en `~/sgd/.env` puede fijarla con `CLAVEUNICA_LOGOUT_URI=https://gestor.santodomingo.cl/` (opcional; por defecto la portada).
+- Para probar con **sandbox**: use las credenciales de sandbox y los RUN `44444444-4`, `55555555-5`, `88888888-8` o `99999999-9` (contraseña `testing`). Detalle en `docs/CLAVEUNICA_BOTON.md`.
+- Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: carga de la clave JSON de Drive y Gmail
+- En **Administración → APIs e integraciones → Repositorio de documentos (Google Drive)** (y en *Correo institucional*) ahora hay un botón **«Cargar la clave JSON de la cuenta de servicio»**: suba el archivo descargado de Google Cloud y el sistema lo valida y lo guarda en el servidor (carpeta `~/sgd_secrets`, permisos 600). La clave **no se muestra**; solo verá el correo de la cuenta cargada. Ya no necesita subirlo por el administrador de archivos ni escribir la ruta.
+- Marque **«Usar esta configuración de la base de datos»** y guarde para que se aplique; luego **Validar configuración** o «Probar conexión con Drive».
+- En los campos **ID de la unidad compartida** y **ID de la carpeta raíz** puede pegar la **URL completa** de Drive: el sistema extrae el ID.
+- Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: todas las integraciones se configuran por pantalla
+- En **Administración → APIs e integraciones** cada servicio (ClaveÚnica, FirmaGob, Correo/Gmail, DocDigital, Repositorio de Drive…) se configura **en pantalla**, en tarjetas, sin editar el archivo `.env`:
+  - **ClaveÚnica:** ambiente activo (Sandbox / QA / Producción) y un bloque de credenciales por ambiente (client_id, client_secret, Redirect URI, Logout URI), datos para el trámite en Cerofilas y referencia del manual.
+  - **FirmaGob:** credenciales de **pruebas** y de **producción**, entidad y propósito.
+  - **Correo:** método de envío, remitente (correo del Workspace a suplantar), **carga del JSON** de la cuenta de servicio y **«Enviar correo de prueba»**.
+  - **DocDigital:** bloque DemoDoc y bloque Producción, y **«Probar conexión»** (solo lectura).
+- Los **secretos** (client_secret, secret, tokens) se escriben ahí y se guardan **cifrados** en la base (aparece «guardado, cifrado»); **nunca se vuelven a mostrar**. Déjelos en blanco para conservar el actual.
+- Marque **«Usar esta configuración de la base de datos»** (viene marcada en la primera vez) y guarde. «Volver a .env» devuelve el control al archivo.
+- Al actualizar no hay pasos manuales nuevos. Lo que ya tenía en `.env` sigue valiendo hasta que lo reemplace en pantalla.
+
+## Novedades: validar las credenciales desde el panel
+- Cada integración tiene **«Validar credenciales»** (en DocDigital, «Probar conexión»), que prueba de verdad si funcionan: **ClaveÚnica** consulta si acepta el client_id y client_secret (sin iniciar sesión de nadie), **Correo** pide un token a Google con la delegación de dominio, **DocDigital** consulta token, entidad y tipos, y el **Repositorio** prueba Drive. No hay evaluación de «etapa» (demo, pruebas o producción): usted ingresa las credenciales y el sistema le dice si funcionan.
+- **FirmaGob:** «Probar la firma» firma un PDF de ejemplo con el RUN del titular y su OTP (no queda guardado). **Correo:** «Enviar correo de prueba».
+- Ya no se exige que el dominio de ClaveÚnica termine en «.gob.cl».
+- **Si una pantalla da error 500 después de actualizar:** pegue en la Terminal de cPanel `cd ~/sgd && php artisan route:clear && php artisan view:clear && php artisan config:clear` (la actualización ya lo hace sola desde esta versión).
+
+## Novedades: superadministrador (ver todas las vistas)
+- Un administrador puede ser **superadministrador**: ve **todas las vistas** del sistema y el contenido de todas las unidades (menos lo restringido), para que pueda probar que todo esté en orden. Mantiene el segundo factor obligatorio.
+- Para asignarlo, en la Terminal de cPanel (reemplace el RUN): `cd ~/sgd && php artisan sgd:superadmin 12345678-5`. Para ver qué administradores hay: `php artisan tinker --execute='foreach (App\Models\Usuario::where("rol","admin")->get(["run","nombres","apellidos","activo"]) as $u) echo $u->run." ".$u->nombres." ".$u->apellidos."\n";'`. Después **cierre sesión y vuelva a entrar**.
+- Quien ya es superadministrador también puede otorgarlo a otros en **Administración → Usuarios** (casilla «Superadministrador(a)»). Para quitarlo: `php artisan sgd:superadmin RUN --quitar`.
+- Al actualizar, repita el comando del Paso 2 (agrega una columna). Asígnelo solo a pocas personas.
+
+## Novedades: ingreso con el directorio de funcionarios (sistemas_usuarios)
+- Ahora hay **un solo botón** de ClaveÚnica. Si el RUN figura **habilitado y vigente** en su base `sistemas_usuarios` (tabla `sistemas_users`), la persona entra como **funcionario(a)** (y puede elegir además su espacio de vecino(a)); si no figura, es vecino(a). La primera vez se crea su usuario automáticamente (rol «funcionario», unidad = su dirección) y quien deja de figurar pierde el acceso de funcionario(a).
+- **Configúrelo** en **Administración → APIs e integraciones → Directorio de funcionarios**: servidor, base (`sistemas_usuarios`), usuario, contraseña (se guarda cifrada) y tabla. Pulse **Validar credenciales**. Luego marque «Activar el directorio de funcionarios» y guarde. Para cargos especiales (alcalde, secretario(a)) o firma, edite al usuario en **Administración → Usuarios**.
+- **Seguridad:** el sistema nunca lee las contraseñas de esa base. Su tabla tiene una columna `password` que parece guardar claves en texto plano: elimínela o rotéelas, y use un usuario MySQL **de solo lectura** para esta conexión.
+- Las cuentas creadas a mano (administración) no dependen del directorio.
+- Al actualizar, repita el comando del Paso 2 (agrega dos columnas).
+
+## Novedades: Codificador (API oficial) y municipio por defecto
+- Por defecto el sistema queda con la **Municipalidad de Santo Domingo** (`PE-MUN-00243`, padre `PE-SUB-00573`): el instalador la deja en el catálogo del Codificador y su código identifica los expedientes y documentos (por ejemplo `PE-MUN-00243-EXP-2026-000001`). Si ya había elegido otro municipio en Administración → Codificación, no cambia.
+- **Configuración:** en **Administración → APIs e integraciones → Codificador**: modo (Manual o Sincronización por API), URL (vacía = `https://codificacion.digital.gob.cl/api`), versión (`v1`) e id de la codificación «Instituciones» (1). Pulse **Validar credenciales**: confirma que la API responde y que `PE-MUN-00243` existe, mostrando su OID.
+- **Sincronizar:** con modo «Sincronización por API», `cd ~/sgd && php artisan codificador:sincronizar` trae las instituciones al catálogo (no borra nada). La carga por CSV sigue disponible.
+- No se pudo probar contra el servicio real; el documento tiene detalles por validar (ver `docs/interop/codificador-api.md`).
+- Al actualizar, repita el comando del Paso 2 (agrega tres columnas y deja el municipio en el catálogo).
+
+## Novedades: un solo ingreso en `/login`
+- Hay **una sola ruta de ingreso, `https://gestor.santodomingo.cl/login`**, y **un solo botón** de ClaveÚnica. Las rutas `/ingreso/ciudadano` y `/ingreso/funcionario` quedaron reemplazadas (redirigen a `/login`). Si la persona figura en el directorio `sistemas_usuarios` entra como funcionario(a); si no, como vecino(a).
+- El Redirect URI certificado es `…/claveunica/callback`; solo cambia la dirección que inicia el ingreso.
+- Al actualizar no hay pasos manuales nuevos.
+
+
+## Novedades: elegir la IA del asistente de redacción
+- En **Administración → APIs → Asistente de redacción (IA)** elija el **proveedor**: Google AI Studio (Gemini), Alibaba Qwen, OpenRouter, Groq, Mistral, Anthropic u «Otro compatible con OpenAI» (con su dirección HTTPS).
+- Pegue la **clave de ese proveedor** (se guarda cifrada) y, si quiere, el **nombre del modelo** (solo el nombre, por ejemplo `gemini-flash-latest` o `qwen-plus`; vacío usa el sugerido). Marque **Habilitado**, guarde y pulse **«Validar credenciales»**: hace una consulta mínima sin datos de personas.
+- Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
+- Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: permisos personalizados, Administrador Municipal y bandeja Por firmar / Por visar
+- **Permisos personalizados:** en el detalle de cada persona y en la asignación masiva se puede conceder **cualquier permiso** (salvo los reservados al sistema), aunque su rol no lo incluya. Nadie puede concederse a sí mismo permisos fuera de su rol. Se registra «fuera de rol» en la bitácora.
+- **Selección:** casilla por persona y botones «marcar la página», «marcar lo que coincide con el filtro» y «desmarcar todo»; 25 a 200 personas por página; acceso desde *Usuarios*.
+- **Administrador Municipal:** nuevo perfil del sistema, como el Alcalde pero de menor rango (panel de Alcaldía, opera, visa y firma lo asignado; sin firma como alcalde, delegaciones ni cuatro permisos sensibles por defecto). **Una migración nueva** crea el rol (clave `adm_municipal`); el comando de actualización es el mismo.
+- **Bandeja:** el Inicio separa **Por firmar** y **Por visar** (columnas con contador y acceso por lote).
+- **Subrogancias** (*Subrogancias*, permiso `subrogancias.gestionar`): un funcionario(a) ausente es reemplazado **entre dos fechas y horas**; el subrogante ve en su Inicio *Expedientes que subroga* y los gestiona hasta que venza el plazo (se cierra solo) o se termine antes. No traspasa firmas ni restringidos. **Una migración nueva** crea la tabla.
+
+## Novedades: asignación masiva de personas y formularios del vecino más modernos
+- **Asignación masiva** (*Administración → Asignación masiva de personas*, permiso «Roles y permisos»): lista a todas las personas, incluidas las del directorio; filtre y marque, y asigne en lote **dirección** (con departamento/unidad), **rol principal**, **roles adicionales**, **permisos** (conceder, denegar, quitar el ajuste; las pantallas del menú siguen a los permisos) o **activar/desactivar**. Cada persona se valida con las reglas de siempre; las que no se pueden modificar se omiten y se indica por qué. Hasta 500 por operación; queda en la bitácora.
+- **Formularios del vecino**: tarjeta moderna con banda de color, campos con foco luminoso, opciones como tarjetas, pasos con línea de avance y transiciones ágiles (también entre páginas en navegadores compatibles), conservando el kit de gobierno. Se desactivan con «reducir movimiento».
+- No hay migraciones nuevas ni pasos adicionales: el comando de actualización es el mismo.
+
+## Novedades: manuales solo para el personal y recorrido guiado sobre la pantalla real
+- **Manuales:** el público y los vecinos ven **solo el Manual del ciudadano** (portada, pie de página y menú del vecino); los demás manuales de usuario son únicamente para el personal municipal, según su perfil.
+- **Recorrido guiado:** ya no abre una ventana a pantalla completa. Se muestra **sobre la pantalla real**, resaltando cada elemento con una tarjeta de instrucciones, y lleva a la persona por las pantallas que corresponden (inicio, lista de trámites, ficha, formulario; bandeja, menú y expediente para el personal). Se inicia desde el menú del nombre (o desde el botón de la portada para el público).
+- No hay pasos manuales ni cambios de base de datos.
+
+## Novedades: constructor de formularios de trámites (campos, listados y cálculos)
+- Al crear o editar un trámite hay un paso nuevo, **Campos del formulario**: textos, números, fechas, listas para elegir (una o varias), Sí/No y **cálculos con fórmulas** (operadores `+ - * / % ^`, comparaciones y funciones como `si`, `min`, `max`, `redondear`, `dias`, `anios`). El vecino ve los resultados en vivo; el servidor los recalcula al recibir la solicitud.
+- **Listados de opciones reutilizables** (Trámites → Listados de opciones): se crean una vez y se eligen en cualquier trámite nuevo. Una opción puede tener un valor numérico (`0.5;Media tarifa`) para usarlo en cálculos.
+- Las respuestas se ven en el expediente («Datos del formulario»), en el comprobante y en los metadatos. La vista previa del trámite muestra el formulario funcionando.
+- Al actualizar se crean 3 tablas y una columna nueva (`php artisan migrate` lo hace el instalador). No hay pasos manuales.
+- Pendiente (si lo necesitan): campos condicionales («mostrar solo si…»).
+
+## Novedades: verificación del Codificador con el listado oficial
+- Se contrastó el módulo con la documentación del Codificador y el **«Listado de códigos de Instituciones»** oficial (6.452 filas). El listado se puede subir tal cual en **Administración → Codificador**: el sistema reconoce el padre, el OID, el tipo, la vigencia y los códigos de región/provincia/comuna. Lo que ya no está vigente queda inactivo.
+- La Municipalidad de Santo Domingo coincide con el listado: `PE-MUN-00243` (id 243, padre `PE-SUBDERE 00573`). Los metadatos de cada expediente ahora llevan región 05, provincia 056 y comuna 05606.
+- En el despacho por DocDigital, la institución destinataria se busca por nombre o código (antes era una lista de miles de opciones).
+- **Recomendado al actualizar:** suba el listado oficial en *Administración → Codificador → Importar CSV* (instituciones). La API no se probó contra el servicio real; la doble dirección que muestra la documentación sigue por validar con Gobierno Digital.
+- No hay pasos manuales obligatorios.
+
+## Novedades: directorio de DocDigital, expedientes de oficio y solicitudes a nombre de otra persona
+- **Directorio de DocDigital:** si DocDigital está en modo DemoDoc o Producción, el sistema carga **solo** todas las entidades y personas habilitadas (cada 10 minutos hasta completarse y luego cada 24 horas). Lo ve en **DocDigital → Directorio de DocDigital**. Al despachar un documento puede elegir la entidad y personas de esa entidad. El RUN de las personas no se guarda (solo una huella). La instalación hace una primera carga y la tarea programada (`schedule:run`) la continúa.
+- **Expediente de oficio:** un funcionario con el permiso nuevo «Iniciar expedientes de oficio» puede crear un expediente sin solicitud previa, registrar sus partes (vecinos, funcionarios, externos, organismos de DocDigital), redactar decretos, reglamentos u oficios y, al cerrarlo, **notificar a cada parte por su canal** (Casilla Única, correo, entrega física, aviso interno o DocDigital).
+- **Solicitudes a nombre de otra persona:** el formulario del vecino permite presentar una solicitud en representación o ayuda de otra persona (relación, acreditación declarada y declaración). El funcionario lo ve en el expediente; el sistema no verifica el poder.
+- Al actualizar se crean 2 tablas del directorio, la de partes y columnas nuevas; `php artisan migrate` lo hace el instalador. Opcional en `.env`: `DOCDIGITAL_DIRECTORIO_USUARIOS=todos|propia` y `DOCDIGITAL_DIRECTORIO_HORAS=24`.
+- Pendiente de validar con Gobierno Digital: cómo trata DocDigital los despachos dirigidos a personas y el contrato de Casilla Única para partes sin solicitud.
+
+## Novedades: revisión de ciberseguridad (OWASP Top 10 y rutas)
+- Se revisaron las 323 rutas y el código nuevo. Se cerró un caso menor: el cierre de sesión (`/logout`) ya no se activa desde imágenes o marcos de otros sitios, y se desactivó el servidor de archivos integrado de Laravel.
+- Hay pruebas nuevas que recorren todas las rutas: si en el futuro se agrega una ruta interna sin protección, la suite falla.
+- No hay pasos manuales. Detalle en `docs/PENTEST.md` §35.
+
+## Novedades: Decreto 7 (seguridad) y normas técnicas 7 a 12
+- Con el texto del **Decreto 7** la matriz quedó completa (Decretos 7 a 12). En **Cumplimiento normativo** hay un registro nuevo para la **Política de Seguridad de la Información y Ciberseguridad**: acto que la aprueba, responsable institucional de seguridad, responsable de los activos de información y diagnóstico inicial. La política, el análisis de riesgos y el plan de recuperación los elabora el municipio; el sistema solo lleva el control.
+
+## Novedades: normas técnicas (Decretos 8 a 12) y cumplimiento normativo
+- Con los textos oficiales de los **Decretos 8, 9, 10, 11 y 12** se rehízo la matriz de cumplimiento **por artículo**: lo que el sistema hace, lo que falta y lo que le corresponde al municipio. Está en **Administración → Cumplimiento normativo** (filtros por decreto y estado) y en `docs/NORMAS_TECNICAS.md`.
+- **Importante — PISEE termina el 31-12-2026** (Decreto 12). Desde esa fecha solo sirve la red de interoperabilidad del Estado: hay que pedir el nodo a la Secretaría de Gobierno Digital. El sistema muestra el aviso con los días que faltan.
+- **Nuevo registro de cumplimiento:** política de gestión documental (con aviso de revisión), coordinador(a) de transformación digital (precargado con el Decreto Alcaldicio 2372), catálogo de plataformas con línea de base y **Plan de Mejora Continua** con informe imprimible.
+- **Hora UTC:** la bitácora de auditoría muestra y exporta también la hora en UTC. Los metadatos del expediente incluyen la ubicación (Santo Domingo, San Antonio, Valparaíso, Chile).
+- **Comprobante de ingreso:** ahora trae origen, órgano y código, plataforma receptora y hora UTC.
+- **Consentimiento de datos:** el vecino puede cambiar o revocar su respuesta desde su solicitud (no afecta lo ya realizado).
+- **Panel «Datos personales (DPO)»:** suma el registro de accesos a contenido con datos sensibles.
+- **Decisión que debe tomar el municipio:** el ingreso de funcionarios con usuario y contraseña del directorio no es un mecanismo oficial; el Decreto 9 (art. 3) exige autorización previa de SEGPRES. Puede desactivarse en *APIs e integraciones → Directorio*.
+- Faltan por entregar las **guías técnicas** de cada norma; mientras tanto esos puntos siguen «A VALIDAR».
+- Al actualizar se agregan las tablas del catálogo y del plan. No hay otros pasos manuales.
+
+## Novedades: gestión de comunicaciones recibidas por DocDigital
+- En el expediente de una comunicación recibida: **acusar recibo** (o devolver), **cambiar el estado de gestión** (en gestión, respondida, archivada) y **derivar** a quien debe actuar indicando la **acción** (responder, informar, revisar, etc.) y un **plazo**.
+- La persona derivada ve en su bandeja **«Acciones que le derivaron»** (las vencidas se marcan) y actualiza el estado de su tarea (en proceso, cumplida, devuelta) con una nota. Todo queda como comentario del expediente y en la auditoría.
+- El **superadministrador** puede ahora gestionar cualquier expediente (acusar, derivar, cambiar estados). El administrador común sigue sin operar expedientes.
+- Los estados de gestión son internos: no se envían a DocDigital.
+- Al actualizar se agregan columnas a `derivaciones` y `comunicaciones_oficiales`. No hay pasos manuales nuevos.
+
+## Novedades: documentos vigentes
+- **Documentos vigentes** muestra todos los vigentes (decretos, oficios y demás) en una tabla con N°, fecha, tipo, dirección, materia, tipo de materia, macrotema, expediente y **Ver aquí**. Por defecto carga el **año actual**.
+- Filtros: búsqueda de texto, año, **Decretos / Oficios / un tipo**, dirección, tipo de materia, macrotema y fechas; se ordena haciendo clic en los títulos de columna.
+- Ver que un documento existe no da acceso a su contenido: «Ver aquí» solo aparece si usted puede abrirlo.
+- *Tipo de materia* y *macrotema* son campos opcionales al redactar un documento (los documentos anteriores quedan con esas columnas vacías).
+- Al actualizar se agregan dos columnas a `documentos`. No hay pasos manuales nuevos.
+
+## Novedades: varios roles por usuario y matriz de permisos
+- En **Administración → Matriz de permisos por usuario** (o el botón *Permisos* en la lista de usuarios) se ve cada persona con su rol principal, roles adicionales y permisos efectivos. **Descargar la matriz completa (CSV)** trae una fila por usuario y una columna por permiso.
+- Al elegir una persona: marque sus **roles adicionales** y, por cada permiso, elija *Según sus roles*, *Conceder* o *Denegar*. La tabla indica si el permiso está efectivo y de dónde viene. Guarde: la persona lo ve desde su próximo ingreso.
+- **Reglas:** administración y auditoría no se combinan con otros roles; lo concedido no supera el alcance de sus roles; siempre debe quedar al menos una persona con «Roles y permisos». El administrador puede ajustar sus propios permisos (queda auditado), pero no darse permisos de operación de expedientes.
+- Al actualizar, el instalador crea dos tablas nuevas. No hay otros pasos manuales.
+
+## Novedades: manuales por perfil, recorrido guiado, datos personales, directorio y favicon
+- **Manuales por perfil:** en el menú de su nombre → *Manuales de usuario* cada persona ve solo los manuales de su perfil (el superadministrador, todos). **Recorrido guiado** (mismo menú, y en Ayuda) abre una presentación a pantalla completa del portal con enlaces al manual; se muestra sola la primera vez.
+- **Sin consentimiento de datos:** quien marca «No consiento» **igual puede enviar** su solicitud; queda marcada para los funcionarios (aviso en el expediente) y para el DPO (menú **Datos personales (DPO)**, permiso `datospersonales.ver`: lo tienen por defecto administración y auditoría).
+- **Superadministrador:** el instalador crea/promueve a **17454784-K** (Juan Pablo Vidal Araya) como superadministrador; ingresa con ClaveÚnica. Cambiable con las variables `SUPERADMIN_RUN`, `SUPERADMIN_NOMBRES`, `SUPERADMIN_APELLIDOS`, `SUPERADMIN_CORREO`.
+- **Direcciones, departamentos y unidades:** en *APIs e integraciones → Directorio* pulse **Importar ahora** (o en la Terminal `cd ~/sgd && php artisan directorio:sincronizar --usuarios`). Crea las direcciones, departamentos y unidades que falten y carga cargo y correo; con `--usuarios` (o la casilla) crea además las cuentas de los funcionarios vigentes. Es seguro repetirlo. Luego, en *Usuarios* se asocia cada persona a su dirección, departamento y unidad.
+- **Favicon:** el logo municipal aparece en la pestaña del navegador.
+- **Si Wordfence bloquea (403 «A potentially unsafe operation…»):** ejecute `bash ~/sgd/scripts/wordfence-excluir.sh` y espere unos 5 minutos (o reinicie PHP en cPanel → MultiPHP Manager). Para deshacerlo: `bash ~/sgd/scripts/wordfence-excluir.sh --revertir`. Alternativa: en el WordPress, Wordfence → Firewall → All Firewall Options → *Allowlisted URLs*, agregue `/ciudadano/solicitudes`.
+- Al actualizar, el instalador agrega las tablas/columnas nuevas. No hay otros pasos manuales.
+
+## Novedades: formulario de solicitud del vecino(a)
+- **Detalle de la solicitud:** máximo **2.000 caracteres**, con contador (avisa al acercarse y cuánto se pasó).
+- **Anexos:** cada archivo muestra su tarjeta con barra de avance, **Ver** (vista previa en una ventana), **Reemplazar**, **Quitar** y **Tomar fotografía** (en el teléfono abre la cámara). Al enviar se ve la barra de subida.
+- **Último paso:** el vecino(a) indica si **consiente o no** el tratamiento de sus datos personales (Decreto Alcaldicio N° 2590). Si no consiente, la solicitud no se ingresa por este medio. El consentimiento queda guardado con fecha y se ve en el detalle de la solicitud. Hay una página pública **/privacidad** (enlace en el pie) con el resumen y el decreto en PDF.
+- Al actualizar, el instalador agrega tres columnas a `solicitudes` (las solicitudes anteriores quedan sin dato de consentimiento). No hay pasos manuales nuevos.
+
+## Novedades: perfil de funcionario(a) y vecino(a) con ClaveÚnica
+Tras entrar con ClaveÚnica, el sistema busca el RUT en `sistemas_usuarios` → `sistemas_users`: si figura (habilitado «si», credencial «Vigente», sin término vencido) puede elegir **funcionario(a)** o **vecino(a)**; si no figura, entra solo como vecino(a). Para que funcione, el directorio debe estar configurado:
+1. Administración → APIs → **Directorio**: marque **Activar**, servidor `localhost`, puerto `3306`, base `sistemas_usuarios`, tabla `sistemas_users`, el **usuario de base de datos** con permiso SELECT y su contraseña. Guarde y pulse **«Validar credenciales»**.
+2. En la misma pantalla, **«Probar con un RUN»** (o en la Terminal `cd ~/sgd && php artisan directorio:consultar 12345678-9`) dice paso a paso por qué un RUN se reconoce o no: directorio activado, conexión, si el RUT figura, dígito verificador y vigencia (sin mostrar datos personales).
+3. En cPanel, el usuario de base de datos debe estar **agregado a la base** `sistemas_usuarios` con al menos SELECT (cPanel → Bases de datos MySQL → «Agregar usuario a la base de datos»).
+- Si la columna `habilitado` no vale «si» o `credencial` no vale «Vigente», la persona entra solo como vecino(a) (la prueba por RUN lo indica).
+- Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: ClaveÚnica con las URI certificadas
+Datos certificados por Gobierno Digital (el sistema los usa por defecto):
+| Campo | Valor |
+|---|---|
+| URL del sitio | `https://gestor.santodomingo.cl/login` |
+| Callback (Redirect URI) | `https://gestor.santodomingo.cl/claveunica/callback` |
+| Logout | `https://gestor.santodomingo.cl/logout` |
+
+- El sistema recibe la respuesta en **`/claveunica/callback`** y, al cerrar sesión, ClaveÚnica vuelve a **`/logout`**.
+- **Revise en el panel** (Administración → APIs → ClaveÚnica → Credenciales — Producción) que *Redirect URI* sea `https://gestor.santodomingo.cl/claveunica/callback` y *Logout URI* `https://gestor.santodomingo.cl/logout`. Si los deja **vacíos**, el sistema usa esos valores. Si había guardado `/auth/callback` o solo la portada, corríjalos: el Redirect URI enviado debe ser idéntico al certificado.
+- **«invalid_client»** en *Validar credenciales* significa que ClaveÚnica rechaza el **client_id o el client_secret**: revise que sean los de **producción**, sin espacios al inicio o final, y que estén habilitados. Para ver la respuesta cruda (las claves no se muestran ni quedan en el historial):
+```
+read -rp "client_id: " CID; read -rsp "client_secret: " CSE; echo
+curl -sS -X POST https://accounts.claveunica.gob.cl/openid/token/ -d "client_id=$CID" -d "client_secret=$CSE" -d "grant_type=authorization_code" -d "redirect_uri=https://gestor.santodomingo.cl/claveunica/callback" -d "code=prueba" -d "state=prueba"; echo; unset CID CSE
+```
+Si responde `invalid_grant` las credenciales fueron aceptadas; `invalid_client` indica que ClaveÚnica no las reconoce y debe pedir/confirmar las de producción a Gobierno Digital.
+- Al actualizar no hay pasos manuales nuevos.
+
+## Novedades: ingreso sin ClaveÚnica con usuario y contraseña del directorio
+- En la página de ingreso aparece **«Ingresar con usuario y contraseña»** (`/login/usuario`) para funcionarios(as): usa el **`username`** y la contraseña de la tabla `sistemas_users` de la base `sistemas_usuarios`. Ya **no se usa el RUN** (el ingreso de pruebas por RUN deja de mostrarse mientras esta vía esté activa).
+- La contraseña se verifica **solo** contra el hash de la columna **`pass`** (bcrypt, `$2y$…`); **nunca** contra la columna `password`. Si una cuenta no tiene hash en `pass`, no puede entrar por esta vía (use ClaveÚnica). **Le recomiendo eliminar la columna `password`** (texto plano) de esa base.
+- Solo entra quien figura habilitado, con credencial «Vigente» y sin fecha de término vencida; la **administración no puede entrar así** (solo ClaveÚnica con segundo factor). Se bloquea tras 5 intentos fallidos por 15 minutos.
+- Se enciende/apaga en **Administración → APIs → Directorio de funcionarios → «Permitir ingresar con usuario y contraseña»** (viene encendido cuando el directorio está activo).
+- Corrección: una cuenta desactivada a mano que seguía en el directorio daba error 500 al ingresar; ya no.
+- Al actualizar no hay pasos manuales nuevos.
 
 ## Operación
 ```bash
