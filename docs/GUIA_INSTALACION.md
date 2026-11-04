@@ -239,6 +239,11 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
 
+## Novedades: membrete municipal en documentos y plantillas
+- Los PDF de **decretos, reglamentos, ordenanzas, instructivos, oficios** y demás documentos (también sus copias públicas y la vista previa de los formatos) salen con el **membrete del decreto alcaldicio**: logotipo municipal, «REPÚBLICA DE CHILE / I. MUNICIPALIDAD DE SANTO DOMINGO», sellos de certificación y, en cada hoja, el pie con dirección, teléfono, sitio web y número de página (Arial 11 justificado).
+- Las **plantillas por secciones** se componen al estilo del decreto (REF./fecha a la derecha, VISTOS, CONSIDERANDO y título centrados, distribución). El instalador ejecuta `plantillas:estilo`, que actualiza las plantillas existentes y guarda una versión nueva de cada una (repetible sin riesgo). Los documentos ya firmados no cambian.
+- Los sellos se pueden quitar con `SGD_MEMBRETE_SELLOS=false` en el `.env`. **No hay migraciones nuevas.**
+
 ## Novedades: permisos personalizados, Administrador Municipal y bandeja Por firmar / Por visar
 - **Permisos personalizados:** en el detalle de cada persona y en la asignación masiva se puede conceder **cualquier permiso** (salvo los reservados al sistema), aunque su rol no lo incluya. Nadie puede concederse a sí mismo permisos fuera de su rol. Se registra «fuera de rol» en la bitácora.
 - **Selección:** casilla por persona y botones «marcar la página», «marcar lo que coincide con el filtro» y «desmarcar todo»; 25 a 200 personas por página; acceso desde *Usuarios*.
