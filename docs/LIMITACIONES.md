@@ -277,3 +277,9 @@ Ver `docs/ACCESIBILIDAD.md`: pruebas automáticas (PHPUnit y axe-core en navegad
 - La subrogancia da acceso a los expedientes que el titular tiene a cargo **al momento de consultar**: si el titular deja de tenerlos (otra persona pasa a ser responsable), el subrogante deja de verlos. Las acciones quedan registradas a nombre del subrogante; el expediente muestra el aviso, pero no hay un campo «en subrogancia de» en cada comentario.
 - No traspasa firmas, visaciones ni expedientes restringidos, ni las solicitudes nuevas por asignar de la dirección del titular (esas siguen llegando a quienes pertenecen a la dirección). No avisa por correo al inicio ni al término.
 - Probada con datos de demostración, no con un caso real del municipio.
+
+## Membrete y estilo de los documentos
+- La fuente de los PDF ahora es Helvetica/Arial (como el decreto de referencia): los caracteres fuera de Latin-1 (por ejemplo símbolos matemáticos o alfabetos no latinos) pueden salir como «?». Para español, comillas y guiones no hay problema.
+- La disposición se reprodujo desde **un** decreto de ejemplo, comparando a ojo; no se validó con la oficina de partes ni con asesoría jurídica. Márgenes y tamaño del logotipo pueden requerir ajuste fino. Los documentos ya firmados **conservan** su PDF original (el membrete se aplica a los que se generan desde ahora).
+- Los sellos de certificación (Subdere N°1 y Certificación Ambiental) se incluyeron porque aparecen en el decreto; su vigencia la controla el municipio (`SGD_MEMBRETE_SELLOS`).
+- No se probó la impresión en papel ni la apertura en Word: el sistema genera PDF, no Word.

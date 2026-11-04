@@ -3,8 +3,13 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:11px;color:#111} h1,h2,h3{co
 .enc{border-bottom:2px solid #006fb3;margin-bottom:12px;padding-bottom:6px;font-size:10px;color:#333} .hoja{page-break-before:always} .sim{color:#b00020;font-weight:bold}
 .k{width:30%;background:#eef4f9;font-weight:bold}
 </style></head><body>
+@if(! empty($membrete))
+@include('pdf._oficial')
+<p class="folio-of">{{ $doc->tipo->nombre }}@if($doc->numero) · <strong>{{ $doc->numeroFormateado() }}</strong>@else · <span class="sim">BORRADOR v{{ $version }} (sin validez)</span>@endif</p>
+@else
 <div class="enc">@if(! empty($logoPdf))<img src="{{ $logoPdf }}" alt="" style="height:12mm;vertical-align:middle;margin-right:3mm">@endif<strong>I. Municipalidad de Santo Domingo</strong> — {{ $doc->tipo->nombre }}
 @if($doc->numero) · {{ $doc->numeroFormateado() }} @else · BORRADOR v{{ $version }} (sin validez) @endif</div>
+@endif
 {{-- $contenido ya fue sanitizado con HTMLPurifier al guardarse --}}
 @if(! empty($sellos['inicio'])){!! $sellos['inicio'] !!}@endif
 {!! $contenido !!}

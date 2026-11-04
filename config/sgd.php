@@ -36,6 +36,18 @@ return [
     'ambiente' => env('SGD_AMBIENTE', 'produccion'),
     'acceso_pruebas_hasta' => env('SGD_ACCESO_PRUEBAS_HASTA'),
 
+    // Membrete de los documentos oficiales en PDF (estilo de los decretos alcaldicios): logotipo, encabezado y pie. Los sellos de certificación (esquina superior derecha) se
+    // muestran mientras estén vigentes: apáguelos con SGD_MEMBRETE_SELLOS=false.
+    'membrete' => [
+        'activo' => (bool) env('SGD_MEMBRETE', true),
+        'sellos' => (bool) env('SGD_MEMBRETE_SELLOS', true),
+        'republica' => env('SGD_MEMBRETE_REPUBLICA', 'REPÚBLICA DE CHILE'),
+        'institucion' => env('SGD_MEMBRETE_INSTITUCION', 'I. MUNICIPALIDAD DE SANTO DOMINGO'),
+        'pie' => env('SGD_MEMBRETE_PIE', 'Municipalidad de Santo Domingo'),
+        'direccion' => env('SGD_MEMBRETE_DIRECCION', 'Avda. Santa Teresa N° 1, (32)2381603'),
+        'web' => env('SGD_MEMBRETE_WEB', 'www.santodomingo.cl'),
+    ],
+
     // Reconocimiento de firmas electrónicas en PDF: paquete PEM de CA de confianza (prestadores acreditados; A VALIDAR). Vacío = no se afirma confianza.
     'firma' => ['ca_bundle' => env('SGD_FIRMA_CA_BUNDLE')],
 

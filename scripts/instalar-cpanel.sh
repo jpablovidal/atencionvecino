@@ -137,6 +137,7 @@ if [ "$ACTUALIZACION" = 0 ]; then
 else
   "$PHP" artisan view:clear >/dev/null; "$PHP" artisan cache:clear >/dev/null 2>&1 || true
   "$PHP" artisan plantillas:ejemplos || true   # plantillas de ejemplo por secciones (solo crea las que faltan)
+  "$PHP" artisan plantillas:estilo || true   # pone las plantillas por secciones ya existentes al estilo de los decretos (membrete va en el PDF; idempotente)
   if grep -q "^SGD_AMBIENTE=pruebas" .env; then
     echo; echo "Archivo municipal: creando (solo si faltan) su unidad, roles y cuentas de prueba (contraseñas aleatorias, se muestran una sola vez):"
     "$PHP" artisan pruebas:archivo || true

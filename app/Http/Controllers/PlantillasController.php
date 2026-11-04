@@ -59,7 +59,7 @@ class PlantillasController extends Controller
     {
         $this->permiso('plantillas.ver');
         $this->autorizar($r, $plantilla);
-        $bin = $pdf->html($this->svc->conMuestra($plantilla->contenido_html), 'Vista previa de formato — '.$plantilla->nombre.' (datos de ejemplo, sin validez)');
+        $bin = $pdf->html($this->svc->conMuestra($plantilla->contenido_html), 'Vista previa de formato — '.$plantilla->nombre.' (datos de ejemplo, sin validez)', true);
 
         return response($bin, 200, ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'inline; filename="formato-'.$plantilla->id.'.pdf"', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'no-store']);
     }

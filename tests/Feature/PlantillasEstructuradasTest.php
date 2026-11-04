@@ -46,7 +46,7 @@ class PlantillasEstructuradasTest extends TestCase
         $san = app(HtmlSanitizer::class);
         $e = PlantillaEstructura::normalizar($this->entrada(), $san);
         $h = PlantillaEstructura::componer($e);
-        $orden = ['MATERIA:', 'VISTOS:', 'CONSIDERANDO:', 'DECRETO:', 'ANÓTESE, COMUNÍQUESE Y ARCHÍVESE.', 'ALCALDE', 'SECRETARIA MUNICIPAL', 'Cadena de responsabilidad', 'Director de Obras'];
+        $orden = ['REF.:', 'VISTOS:', 'CONSIDERANDO:', 'DECRETO:', 'ANÓTESE, COMUNÍQUESE Y ARCHÍVESE.', 'ALCALDE', 'SECRETARIA MUNICIPAL', 'Cadena de responsabilidad', 'Director de Obras'];
         $pos = -1;
         foreach ($orden as $t) {
             $p = strpos($h, $t);

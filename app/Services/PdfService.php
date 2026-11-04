@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Documento;
 use App\Models\Solicitud;
 use App\Services\Firma\FirmaRenderer;
+use App\Support\Membrete;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -12,15 +13,15 @@ class PdfService
 {
     public function __construct(private readonly QrService $qr, private readonly FirmaRenderer $firmas, private readonly RecursoImagenService $imagenes, private readonly HtmlSanitizer $san) {}
 
-    public function html(string $html, ?string $tituloPie = null): string
+    public function html(string $html, ?string $tituloPie = null, bool $membrete = false): string
     {
-        return $this->render('pdf.base', ['contenido' => $this->san->limpiar($html), 'pie' => $tituloPie]);
+        return $this->render('pdf.base', ['contenido' => $this->san->limpiar($html), 'pie' => $tituloPie, 'membrete' => $membrete ? Membrete::datos() : null]);
     }
 
     /** PDF de un borrador/versión (sin número aún). */
     public function documento(Documento $d, string $html, int $version): string
     {
-        return $this->render('pdf.documento', ['doc' => $d, 'contenido' => $this->san->limpiar($html), 'version' => $version, 'copia' => false]);
+        return $this->render('pdf.documento', ['doc' => $d, 'contenido' => $this->san->limpiar($html), 'version' => $version, 'copia' => false, 'membrete' => Membrete::datos()]);
     }
 
     /** Copia pública: documento + sellos de firma configurados + hoja de certificado. */
@@ -35,7 +36,7 @@ class PdfService
 
         return view('pdf.documento', [
             'doc' => $d->loadMissing(['tipo', 'pasos.usuario', 'expediente']), 'contenido' => $this->san->limpiar((string) $d->html), 'version' => $d->version_actual,
-            'copia' => true, 'sha' => $sha256Version, 'url' => $url, 'qr' => $this->qr->dataUri($url), 'sellos' => $this->firmas->html($d),
+            'copia' => true, 'membrete' => Membrete::datos(), 'sha' => $sha256Version, 'url' => $url, 'qr' => $this->qr->dataUri($url), 'sellos' => $this->firmas->html($d),
         ])->render();
     }
 

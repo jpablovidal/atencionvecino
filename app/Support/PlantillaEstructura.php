@@ -113,19 +113,21 @@ class PlantillaEstructura
     {
         $tipo = $e['cuerpo_tipo'];
         $oficio = $tipo === 'oficio';
-        $h = '<p style="text-align:right">Santo Domingo, {{fecha}}</p>';
-        $h .= '<p><strong>'.($oficio ? 'MAT.' : 'MATERIA').':</strong> '.e($e['materia']).'</p>';
+        // Estilo de los decretos alcaldicios de la municipalidad: bloque de referencia a la derecha, títulos centrados en negrita y listas numeradas justificadas
+        $h = '<p style="margin-left:50%"><strong>'.($oficio ? 'MAT.' : 'REF.').':</strong> '.e($e['materia']).'</p>';
+        $h .= '<p style="margin-left:50%"><strong>SANTO DOMINGO, {{fecha}}</strong></p>';
+        $titulo = fn (string $t) => '<p style="text-align:center"><strong>'.$t.'</strong></p>';
         $items = fn (array $l) => '<ol>'.implode('', array_map(fn ($x) => '<li>'.e($x).'</li>', $l)).'</ol>';
         if ($e['vistos']) {
-            $h .= '<p><strong>'.($oficio ? 'ANT.' : 'VISTOS').':</strong></p>'.$items($e['vistos']);
+            $h .= $titulo($oficio ? 'ANT.:' : 'VISTOS:').$items($e['vistos']);
         }
         if ($e['considerando']) {
-            $h .= '<p><strong>CONSIDERANDO:</strong></p>'.$items($e['considerando']);
+            $h .= $titulo('CONSIDERANDO:').$items($e['considerando']);
         }
-        $h .= '<p><strong>'.mb_strtoupper(self::TIPOS_CUERPO[$tipo]).($oficio ? '' : ':').'</strong></p>'.$e['cuerpo_html'];
-        $h .= '<p>'.e($e['cierre']).'</p>';
+        $h .= $titulo(mb_strtoupper(self::TIPOS_CUERPO[$tipo]).($oficio ? '' : ':')).$e['cuerpo_html'];
+        $h .= '<p><strong>'.e($e['cierre']).'</strong></p>';
         $n = max(1, count($e['firmas']));
-        $celdas = implode('', array_map(fn ($f) => '<td style="text-align:center;width:'.floor(100 / $n).'%"><p>&nbsp;</p><p>&nbsp;</p><p><strong>'.e(mb_strtoupper($f['cargo'])).'</strong></p></td>', $e['firmas']));
+        $celdas = implode('', array_map(fn ($f) => '<td style="border:0;text-align:center;width:'.floor(100 / $n).'%"><p>&nbsp;</p><p>&nbsp;</p><p><strong>'.e(mb_strtoupper($f['cargo'])).'</strong></p></td>', $e['firmas']));
         $h .= '<table style="width:100%;border-collapse:collapse;margin-top:24px"><tbody><tr>'.$celdas.'</tr></tbody></table>';
         if ($e['cadena']) {
             $filas = '';
@@ -137,6 +139,7 @@ class PlantillaEstructura
         } else {
             $h .= '<p style="font-size:9pt;margin-top:18px">Elaboró: {{autor_iniciales}}</p>';
         }
+        $h .= '<p style="font-size:9pt;margin-top:12px">DISTRIBUCIÓN DIGITAL: Distribución electrónica. Archivo Municipal.</p>';
 
         return $h;
     }
