@@ -6,7 +6,7 @@
   $base = fn (array $cambios) => route('catalogo', array_filter(array_merge(['q' => $f['q'], 'direccion' => $f['direccion'], 'orden' => $f['orden'] !== 'nombre' ? $f['orden'] : null], $cambios), fn ($v) => $v !== null && $v !== ''));
 @endphp
 @php $dirSel = $f['direccion'] ? $direcciones->firstWhere('id', (int) $f['direccion']) : null; @endphp
-<nav aria-label="Usted está en" class="portal-migas"><span class="portal-migas-et">Usted está en:</span><ol><li><a href="{{ route('inicio') }}">Inicio</a></li><li aria-current="page">Trámites y servicios</li></ol></nav>
+<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item active" aria-current="page">Trámites y servicios</li></ol></nav>
 <h1>{{ $dirSel ? 'Trámites de '.$dirSel->nombre : 'Trámites y servicios municipales' }}</h1>
 <p class="lead-sub">Encuentre qué necesita para hacer su trámite y solicítelo en línea con ClaveÚnica.</p>
 <div class="portal-catalogo">

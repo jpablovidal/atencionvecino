@@ -103,21 +103,7 @@
   @yield('contenido')
 </main>
 @if($esLogin)</div>@endif
-<footer class="sgd-footer"><div class="container">
-  @if($marca['footer']['texto'] !== '')<p class="mb-2">{{ $marca['footer']['texto'] }}</p>@endif
-  <ul class="list-inline mb-0">
-    @forelse($marca['footer']['enlaces'] as $e)
-      <li class="list-inline-item"><a href="{{ str_starts_with($e['url'], '/') ? url($e['url']) : $e['url'] }}" @unless(str_starts_with($e['url'], '/')) rel="noopener noreferrer" @endunless>{{ $e['etiqueta'] }}</a></li>
-    @empty
-      <li class="list-inline-item"><a href="{{ route('accesibilidad') }}">Accesibilidad</a></li>
-      <li class="list-inline-item"><a href="{{ route('privacidad') }}">Privacidad y datos personales</a></li>
-      <li class="list-inline-item"><a href="{{ \App\Support\ManualRenderer::ayudaUrl() }}">{{ \App\Support\ManualRenderer::ayudaEtiqueta() }}</a></li>
-      <li class="list-inline-item"><a href="{{ route('publico.listado') }}">Documentos públicos</a></li>
-      <li class="list-inline-item"><a href="{{ route('validar.form') }}">Validar un documento</a></li>
-    @endforelse
-  </ul>
-  @if($marca['footer']['texto_legal'] !== '')<p class="small mt-2 mb-0">{{ $marca['footer']['texto_legal'] }}</p>@endif
-</div></footer>
+@include('partials.pie', ['esLogin' => $esLogin])
 @unless($esLogin)</div></div>@endunless
 @include('partials.anuncios')
 <script src="{{ asset('assets/js/jquery.min.js') }}"></script>

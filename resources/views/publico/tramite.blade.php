@@ -8,7 +8,7 @@
   $otras = $tramite->unidades->where('id', '!=', $tramite->unidad_propietaria_id)->pluck('nombre');
   $plazo = $tramite->plazo_dias.' días'.($tramite->plazo_habiles ? ' hábiles' : '');
 @endphp
-<nav aria-label="Usted está en" class="portal-migas"><span class="portal-migas-et">Usted está en:</span><ol><li><a href="{{ route('inicio') }}">Inicio</a></li><li><a href="{{ route('catalogo') }}">Trámites y servicios</a></li>@if($tramite->unidad_propietaria_id)<li><a href="{{ route('catalogo', ['direccion' => $tramite->unidad_propietaria_id]) }}">{{ $dir }}</a></li>@endif<li aria-current="page">{{ \Illuminate\Support\Str::limit($tramite->nombre, 50) }}</li></ol></nav>
+<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item"><a href="{{ route('catalogo') }}">Trámites y servicios</a></li>@if($tramite->unidad_propietaria_id)<li class="breadcrumb-item"><a href="{{ route('catalogo', ['direccion' => $tramite->unidad_propietaria_id]) }}">{{ $dir }}</a></li>@endif<li class="breadcrumb-item active" aria-current="page">{{ \Illuminate\Support\Str::limit($tramite->nombre, 50) }}</li></ol></nav>
 <h1>{{ $tramite->nombre }}</h1>
 <p class="portal-actualizado">Última actualización: {{ $actualizado }}</p>
 

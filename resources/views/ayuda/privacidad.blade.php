@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Privacidad y protección de datos personales')
 @section('contenido')
-<nav aria-label="Usted está en" class="portal-migas"><span class="portal-migas-et">Usted está en:</span><ol><li><a href="{{ route('inicio') }}">Inicio</a></li><li aria-current="page">Privacidad y datos personales</li></ol></nav>
+<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item active" aria-current="page">Privacidad y datos personales</li></ol></nav>
 <h1 class="h3">Privacidad y protección de datos personales</h1>
 <p>Resumen de la <strong>Política de Privacidad y Protección de Datos Personales de la I. Municipalidad de Santo Domingo</strong>, aprobada por el <strong>Decreto Alcaldicio N° 2590 del 31 de agosto de 2026</strong>, conforme a la Ley N° 19.628 modificada por la Ley N° 21.719. El texto oficial es el del decreto: <a href="{{ asset('assets/docs/decreto-2590-politica-privacidad.pdf') }}" target="_blank" rel="noopener noreferrer">ver el Decreto N° 2590 (PDF)<span class="sr-only"> (se abre en otra pestaña)</span></a>.</p>
 

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Permisos de '.$u->nombreCompleto())
 @section('contenido')
-<nav aria-label="Usted está en" class="portal-migas"><span class="portal-migas-et">Usted está en:</span><ol><li><a href="{{ route('app.admin.permisos') }}">Matriz de permisos</a></li><li aria-current="page">{{ $u->nombreCompleto() }}</li></ol></nav>
+<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('app.admin.permisos') }}">Matriz de permisos</a></li><li class="breadcrumb-item active" aria-current="page">{{ $u->nombreCompleto() }}</li></ol></nav>
 <h1>Roles y permisos de {{ $u->nombreCompleto() }}</h1>
 <p class="lead-sub">{{ $u->run }}@if($u->cargo) · {{ $u->cargo }}@endif · rol principal: <strong>{{ $nombres[$u->rol] ?? $u->rol }}</strong>@if($u->esSuperadmin()) · <span class="badge badge-dark">superadministrador(a)</span>@endif @unless($u->activo) · <em>cuenta inactiva</em>@endunless
  · <a href="{{ route('app.admin.usuarios.editar', $u) }}">Editar datos y rol principal</a></p>

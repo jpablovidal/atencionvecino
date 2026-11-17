@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Nueva solicitud')
 @section('contenido')
-<nav aria-label="Usted está en" class="portal-migas"><span class="portal-migas-et">Usted está en:</span><ol><li><a href="{{ route('inicio') }}">Inicio</a></li><li><a href="{{ route('ciudadano.index') }}">Mis solicitudes</a></li><li><a href="{{ route('catalogo.ficha', [$tramite->id, \Illuminate\Support\Str::slug($tramite->nombre)]) }}">{{ \Illuminate\Support\Str::limit($tramite->nombre, 40) }}</a></li><li aria-current="page">Realizar trámite</li></ol></nav>
+<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item"><a href="{{ route('ciudadano.index') }}">Mis solicitudes</a></li><li class="breadcrumb-item"><a href="{{ route('catalogo.ficha', [$tramite->id, \Illuminate\Support\Str::slug($tramite->nombre)]) }}">{{ \Illuminate\Support\Str::limit($tramite->nombre, 40) }}</a></li><li class="breadcrumb-item active" aria-current="page">Realizar trámite</li></ol></nav>
 @include('partials.tramite_ficha', ['tramite' => $tramite])
 <h2 class="h4 mt-4" id="completar">Complete su solicitud</h2>
 <p class="small text-muted">Son 3 pasos: sus datos, los documentos y cómo desea ser notificado(a). Al final podrá revisar todo antes de enviar.</p>

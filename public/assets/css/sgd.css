@@ -630,3 +630,9 @@ html.a11y-motion ::view-transition-old(root),html.a11y-motion ::view-transition-
 .bandeja-col.bandeja-visacion{border-top-color:#1b6b32}
 .bandeja-col h3{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
 html.a11y-contrast .bandeja-col{background:#000;color:#fff;border-color:#fff}
+
+/* ---- Pie con la estructura del Framework kit de Gobierno (footer-1) ---- */
+.sgd-footer .line{margin-bottom:1.25rem;border-color:currentColor;opacity:.5}
+.sgd-footer .row a{display:block;padding:.1rem 0;margin:0}
+.sgd-footer .text-uppercase{font-weight:700;letter-spacing:.04em;font-size:.85rem}
+.sgd-pie-logo{background:#fff;padding:4px;border-radius:4px;height:64px;width:auto}
