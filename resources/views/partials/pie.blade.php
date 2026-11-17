@@ -34,7 +34,7 @@
       <div class="text-uppercase mb-3">Atención</div>
       <b class="d-block">{{ $mb['pie'] ?? 'Municipalidad de Santo Domingo' }}</b>
       <p class="mb-1">{{ $mb['direccion'] ?? '' }}</p>
-      @if(! empty($mb['web']))<a class="py-0" href="https://{{ $mb['web'] }}" rel="noopener noreferrer">{{ $mb['web'] }}</a>@endif
+      @if(! empty($mb['web']))<span class="d-block">{{ $mb['web'] }}</span>@endif
     </div>
   </div>
   @if($marca['footer']['texto_legal'] !== '')<p class="small mt-2 mb-0">{{ $marca['footer']['texto_legal'] }}</p>@endif

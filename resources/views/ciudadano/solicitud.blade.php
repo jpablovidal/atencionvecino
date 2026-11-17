@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('titulo', 'Solicitud '.$s->folio)
 @section('contenido')
-<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item"><a href="{{ route('ciudadano.index') }}">Mis solicitudes</a></li><li class="breadcrumb-item active" aria-current="page">{{ $s->folio }}</li></ol></nav>
+<nav aria-label="Usted está en"><span class="sr-only">Usted está en:</span><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item"><a href="{{ route('ciudadano.index') }}">Mis solicitudes</a></li><li class="breadcrumb-item active" aria-current="page">{{ $s->folio }}</li></ol></nav>
 <h1>Solicitud {{ $s->folio }}</h1>
 <p class="portal-actualizado">Última actualización: {{ ($linea->last()['fecha'] ?? $s->updated_at)->copy()->setTimezone('America/Santiago')->locale('es')->translatedFormat('d \d\e F, Y') }}</p>
 <p><span class="estado estado-{{ $s->estado }}">{{ str_replace('_',' ',$s->estado) }}</span> · {{ $s->tramite->nombre }}</p>

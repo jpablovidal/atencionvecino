@@ -19,7 +19,7 @@
 </div>
 @endif
 
-<nav aria-label="Usted está en"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item active" aria-current="page">Mis solicitudes</li></ol></nav>
+<nav aria-label="Usted está en"><span class="sr-only">Usted está en:</span><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('inicio') }}">Inicio</a></li><li class="breadcrumb-item active" aria-current="page">Mis solicitudes</li></ol></nav>
 <h2 class="seccion" id="mas-buscado">Lo más buscado</h2>
 @php $listado = $tramites->flatten(1)->take(6); $icoDir = ['DOM' => 'building', 'DIDECO' => 'users', 'ALC' => 'home', 'SECMUN' => 'file-text', 'ARCH' => 'archive', 'TRANSP' => 'book']; @endphp
 <ul class="portal-masbuscado" aria-labelledby="mas-buscado">
