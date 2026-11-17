@@ -16,6 +16,7 @@ Este paquete (`sgd-release.zip`) es **único y autocontenido**: trae la aplicaci
 
 ## 3. Saber qué está verificado y qué no
 - **`docs/LIMITACIONES.md`** (PDF `implementacion-03-limitaciones.pdf`): todo lo que depende de credenciales o contratos reales y no se pudo probar. Léalo antes de pasar a producción.
+- `docs/KIT_GOBIERNO.md`: cómo usa el sitio el Framework kit de Gobierno.
 - `docs/NORMATIVA.md`, `docs/NORMAS_TECNICAS.md`, `docs/DECISIONES.md`, `docs/PENTEST.md`.
 
 ## 4. Capacitar a las personas

@@ -239,6 +239,10 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
 
+## Novedades: sitio con componentes del Framework kit de Gobierno
+- El **pie de página** sigue la estructura oficial `footer-1` del kit (franja decorativa y columnas de Secciones, Enlaces internos y Atención); las **migas de pan** usan el componente `breadcrumb`; las **preguntas frecuentes** son colapsables `collapsible-flush` y los servicios para el vecino son `banner` con los íconos del kit.
+- El CSS del kit del sitio es idéntico a la **versión 3.0.10**, la última publicada. Qué componentes se usan y cuáles no: `docs/KIT_GOBIERNO.md`. **No hay migraciones nuevas.**
+
 ## Novedades: membrete municipal en documentos y plantillas
 - Los PDF de **decretos, reglamentos, ordenanzas, instructivos, oficios** y demás documentos (también sus copias públicas y la vista previa de los formatos) salen con el **membrete del decreto alcaldicio**: logotipo municipal, «REPÚBLICA DE CHILE / I. MUNICIPALIDAD DE SANTO DOMINGO», sellos de certificación y, en cada hoja, el pie con dirección, teléfono, sitio web y número de página (Arial 11 justificado).
 - Las **plantillas por secciones** se componen al estilo del decreto (REF./fecha a la derecha, VISTOS, CONSIDERANDO y título centrados, distribución). El instalador ejecuta `plantillas:estilo`, que actualiza las plantillas existentes y guarda una versión nueva de cada una (repetible sin riesgo). Los documentos ya firmados no cambian.
