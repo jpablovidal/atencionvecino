@@ -637,3 +637,42 @@ html.a11y-contrast .bandeja-col{background:#000;color:#fff;border-color:#fff}
 .sgd-footer .text-uppercase{font-weight:700;letter-spacing:.04em;font-size:.85rem}
 .sgd-pie-logo{background:#fff;padding:4px;border-radius:4px;height:64px;width:auto}
 .breadcrumb{background:transparent}.breadcrumb-item.active{color:#4a5864}
+
+/* ---- Coherencia con los demás desarrollos municipales (Firma Electrónica Avanzada y Escritorio Municipal) ---- */
+/* Encabezado del portal público y del vecino: blanco, franja superior azul/roja, título en Roboto Slab y filete azul inferior */
+.sgd-header-publico{position:relative;background:#fff;color:#0a2e4d;border-bottom:3px solid #0f69c4;padding-top:4px}
+.sgd-header-publico::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#0f69c4 0 22%,#fe6565 22%)}
+.sgd-header-publico a,.sgd-header-publico .sgd-user>summary,.sgd-header-publico .a11y-mas>summary{color:#0a2e4d}
+.sgd-header-publico .titulo{font-family:"Roboto Slab",serif;font-weight:700;font-size:1.3rem;color:#0a2e4d}
+.sgd-header-publico .sgd-marca small{opacity:1;color:#4a5864;font-weight:400;font-size:.8rem}
+.sgd-header-publico .sgd-logo-defecto{height:46px;width:auto}
+.sgd-header-publico .a11y-icon{background:#fff;color:#0a2e4d;border:1px solid #8aa3b8}
+.sgd-header-publico .a11y-icon:hover{border-color:#0f69c4;background:#eef5fb}
+.sgd-header-publico .a11y-icon[aria-pressed="true"]{background:#0f69c4;border-color:#0f69c4;color:#fff}
+.sgd-header-publico .a11y-mas>summary{border-color:#8aa3b8}
+.sgd-header-publico .a11y-mas[open]>summary,.sgd-header-publico .sgd-user[open]>summary,.sgd-header-publico .sgd-user>summary:hover{background:#eef5fb}
+html.a11y-contrast .sgd-header-publico a,html.a11y-contrast .sgd-header-publico .sgd-user>summary,html.a11y-contrast .sgd-header-publico .a11y-mas>summary,html.a11y-contrast .sgd-header-publico .titulo,html.a11y-contrast .sgd-header-publico .sgd-marca small{color:#fff}
+html.a11y-contrast .sgd-header-publico::before{background:#fff}
+/* Pasos: círculos con marca de verificación unidos por una línea, etiqueta debajo; el activo en azul y negrita */
+.sgd-pasos{display:flex;gap:0;margin:0 0 1.8rem;padding:0;list-style:none;counter-reset:none}
+.sgd-pasos li{flex:1 1 0;position:relative;display:flex;justify-content:center;min-width:0}
+.sgd-pasos li:not(:first-child)::before{content:"";position:absolute;top:1.05rem;right:50%;width:100%;height:3px;background:#b8c6d3;z-index:0}
+.sgd-pasos li.hecho:not(:first-child)::before,.sgd-pasos li.actual:not(:first-child)::before{background:#2a6b73}
+.sgd-paso-btn{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.45rem;background:transparent!important;border:0!important;box-shadow:none!important;padding:0 .4rem;text-align:center;width:auto;transform:none!important}
+.sgd-paso-num{width:2.1rem;height:2.1rem;flex:0 0 2.1rem;border-radius:50%;background:#fff;border:2px solid #b8c6d3;color:#33414d;font-weight:700;font-size:.95rem}
+.sgd-paso-txt{font-size:.9rem;color:#33414d;line-height:1.2}
+.sgd-pasos li.hecho .sgd-paso-num{background:#2a6b73;border-color:#2a6b73;color:#fff}
+.sgd-pasos li.actual .sgd-paso-num{background:#0f69c4;border-color:#0f69c4;color:#fff;animation:none}
+.sgd-pasos li.actual .sgd-paso-txt{font-weight:700;color:#0a132d}
+.sgd-pasos li.hecho .sgd-paso-btn{cursor:pointer}
+.portal-formulario .sgd-pasos::before,.portal-formulario .sgd-pasos::after{display:none}
+@media (max-width:575.98px){.sgd-paso-txt{font-size:.75rem}.sgd-pasos li:not(.actual) .sgd-paso-txt{position:static;width:auto;height:auto;clip:auto}}
+html.a11y-contrast .sgd-paso-num{background:#000;color:#fff;border-color:#fff}html.a11y-contrast .sgd-pasos li.actual .sgd-paso-num{background:#ff0;color:#000}html.a11y-contrast .sgd-paso-txt{color:#fff}
+/* Indicadores del escritorio: tarjeta con cifra azul centrada, rótulo en negrita y descripción */
+.kpi{flex-direction:column;justify-content:center;text-align:center;border:1px solid #d6dee5;border-left:1px solid #d6dee5;border-top:4px solid var(--sgd-primary,#0f69c4);padding:1rem .8rem;gap:.2rem}
+.kpi-ico{display:none}
+.kpi-txt{align-items:center}
+.kpi-valor{font-family:"Roboto Slab",serif;font-weight:400;font-size:2.4rem;color:#0f69c4;line-height:1.05}
+.kpi-etiqueta{font-weight:700;font-size:.95rem;color:#14232e}
+.kpi-ok{border-top-color:#2a6b73}.kpi-aviso{border-top-color:#b36b00}.kpi-info{border-top-color:#0f69c4}
+@media (max-width:575.98px){.kpi-valor{font-size:1.9rem}}

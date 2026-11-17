@@ -40,7 +40,8 @@
   </header>
   <nav id="navegacion" class="sgd-login-nav" aria-label="Navegación principal" tabindex="-1"><a href="{{ route('inicio') }}">Inicio</a><a href="{{ route('catalogo') }}">Trámites y servicios</a><a href="{{ \App\Support\ManualRenderer::ayudaUrl() }}">Ayuda</a></nav>
 @else
-<header class="sgd-header">
+@php $publico = ! $lateral; @endphp
+<header class="sgd-header{{ $publico ? ' sgd-header-publico' : '' }}">
   <div class="sgd-topbar">
     @if($lateral)<button type="button" class="sgd-burger" id="sgd-burger" aria-controls="navegacion" aria-expanded="true" title="Mostrar u ocultar el menú"><span aria-hidden="true">☰</span><span class="sr-only">Mostrar u ocultar el menú</span></button>@endif
     <a href="{{ route('inicio') }}" class="titulo text-decoration-none d-inline-flex align-items-center">
@@ -63,7 +64,7 @@
             <ul class="list-unstyled small mb-2"><li><button type="button" class="btn btn-link btn-sm p-0" data-recorrido>Recorrido guiado</button></li><li><a href="{{ auth()->check() ? route('ayuda') : route('ayuda.manual', 'ciudadano') }}">{{ auth()->check() ? 'Manuales de usuario' : 'Manual del ciudadano' }}</a></li></ul>
             <form method="post" action="{{ route('salir') }}" class="mt-2">@csrf<button class="btn btn-sm btn-outline-secondary btn-block">Cerrar sesión</button></form></div></details>
       @else
-        @include('partials.boton_claveunica', ['href' => route('ingreso'), 'oscuro' => true])
+        @include('partials.boton_claveunica', ['href' => route('ingreso'), 'oscuro' => ! $publico])
       @endif
     </div>
   </div>

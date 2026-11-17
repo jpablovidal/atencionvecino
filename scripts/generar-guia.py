@@ -240,6 +240,10 @@ cd ~/sgd && grep -v '^DOCDIGITAL_PROD_ENTIDAD_ID=' .env > .env.nuevo && echo "DO
 - Para cambiar de IA basta cambiar el proveedor y la clave. Los niveles gratuitos pueden usar lo que se envía para mejorar sus modelos: el sistema quita RUN, correos y teléfonos, pero no use la IA con información reservada. No se probó contra los proveedores reales; los nombres de modelo sugeridos son **A VALIDAR**.
 - Al actualizar no hay pasos manuales nuevos.
 
+## Novedades: estilo coherente con los demás desarrollos municipales
+- **Portal público y del vecino:** encabezado blanco con franja superior azul/roja, título institucional en tipografía Roboto Slab y filete azul, como el servicio de Firma Electrónica Avanzada.
+- **Formularios por pasos:** pasos en círculos con marca de verificación unidos por una línea. **Escritorio del personal:** indicadores con cifra azul centrada. El menú lateral y la barra oscura del personal se mantienen. **No hay migraciones nuevas.**
+
 ## Novedades: sitio con componentes del Framework kit de Gobierno
 - El **pie de página** sigue la estructura oficial `footer-1` del kit (franja decorativa y columnas de Secciones, Enlaces internos y Atención); las **migas de pan** usan el componente `breadcrumb`; las **preguntas frecuentes** son colapsables `collapsible-flush` y los servicios para el vecino son `banner` con los íconos del kit.
 - El CSS del kit del sitio es idéntico a la **versión 3.0.10**, la última publicada. Qué componentes se usan y cuáles no: `docs/KIT_GOBIERNO.md`. **No hay migraciones nuevas.**

@@ -21,3 +21,6 @@ Fuente: documento «Framework kit Gobierno» entregado por la municipalidad (bas
 - Navbar oficial (`navbar-light/dark`): el sitio mantiene la barra superior oscura tipo intranet y el menú lateral del personal, pedidos por la municipalidad; usan los colores de la paleta del kit.
 - Lector de pantalla (Read Speaker): requiere licencia pagada; no incluido.
 - Sin JavaScript, las preguntas frecuentes (colapsables de Bootstrap) quedan cerradas salvo la primera.
+
+## Coherencia con otros desarrollos municipales
+El portal público y del vecino sigue el estilo del servicio de Firma Electrónica Avanzada (encabezado blanco con franja azul/roja, pasos con círculos) y el área del personal el del Escritorio Municipal (barra oscura, menú lateral, indicadores con cifra azul). Ver decisión 162.
