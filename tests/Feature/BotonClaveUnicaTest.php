@@ -20,7 +20,7 @@ class BotonClaveUnicaTest extends TestCase
         $r->assertSee('btn-cu btn-m btn-color-estandar', false)->assertSee('class="cl-claveunica" aria-hidden="true"', false)->assertSee('assets/css/claveunica.css', false);
         $r->assertSee('aria-label="Iniciar sesión con ClaveÚnica"', false)->assertSee(route('login'), false);
         $this->get('/pagos-proveedores')->assertSee('btn-cu', false);
-        $this->get('/')->assertSee('btn-color-highContrast', false); // encabezado oscuro: variante de alto contraste del kit
+        $this->get('/')->assertSee('btn-color-estandar', false); // encabezado blanco del portal: variante estándar del kit
     }
 
     public function test_los_archivos_oficiales_estan_y_el_css_no_fue_alterado(): void

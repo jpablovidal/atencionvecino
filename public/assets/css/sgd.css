@@ -648,7 +648,7 @@ html.a11y-contrast .bandeja-col{background:#000;color:#fff;border-color:#fff}
 .sgd-header-publico .sgd-logo-defecto{height:46px;width:auto}
 .sgd-header-publico .a11y-icon{background:#fff;color:#0a2e4d;border:1px solid #8aa3b8}
 .sgd-header-publico .a11y-icon:hover{border-color:#0f69c4;background:#eef5fb}
-.sgd-header-publico .a11y-icon[aria-pressed="true"]{background:#0f69c4;border-color:#0f69c4;color:#fff}
+.sgd-header-publico .a11y-icon[aria-pressed="true"]{background:#0f69c4;color:#fff;border-color:#0f69c4}
 .sgd-header-publico .a11y-mas>summary{border-color:#8aa3b8}
 .sgd-header-publico .a11y-mas[open]>summary,.sgd-header-publico .sgd-user[open]>summary,.sgd-header-publico .sgd-user>summary:hover{background:#eef5fb}
 html.a11y-contrast .sgd-header-publico a,html.a11y-contrast .sgd-header-publico .sgd-user>summary,html.a11y-contrast .sgd-header-publico .a11y-mas>summary,html.a11y-contrast .sgd-header-publico .titulo,html.a11y-contrast .sgd-header-publico .sgd-marca small{color:#fff}
@@ -661,8 +661,8 @@ html.a11y-contrast .sgd-header-publico::before{background:#fff}
 .sgd-paso-btn{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.45rem;background:transparent!important;border:0!important;box-shadow:none!important;padding:0 .4rem;text-align:center;width:auto;transform:none!important}
 .sgd-paso-num{width:2.1rem;height:2.1rem;flex:0 0 2.1rem;border-radius:50%;background:#fff;border:2px solid #b8c6d3;color:#33414d;font-weight:700;font-size:.95rem}
 .sgd-paso-txt{font-size:.9rem;color:#33414d;line-height:1.2}
-.sgd-pasos li.hecho .sgd-paso-num{background:#2a6b73;border-color:#2a6b73;color:#fff}
-.sgd-pasos li.actual .sgd-paso-num{background:#0f69c4;border-color:#0f69c4;color:#fff;animation:none}
+.sgd-pasos li.hecho .sgd-paso-num{background:#2a6b73;color:#fff;border-color:#2a6b73}
+.sgd-pasos li.actual .sgd-paso-num{background:#0f69c4;color:#fff;border-color:#0f69c4;animation:none}
 .sgd-pasos li.actual .sgd-paso-txt{font-weight:700;color:#0a132d}
 .sgd-pasos li.hecho .sgd-paso-btn{cursor:pointer}
 .portal-formulario .sgd-pasos::before,.portal-formulario .sgd-pasos::after{display:none}
